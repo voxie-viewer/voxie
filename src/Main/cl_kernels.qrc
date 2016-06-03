@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>cl_kernels/sliceimagegenerator.cl</file>
+        <file>cl_kernels/colorizer.cl</file>
+        <file>cl_kernels/imageComparator.cl</file>
+    </qresource>
+</RCC>
