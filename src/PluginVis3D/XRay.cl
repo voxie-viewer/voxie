@@ -20,7 +20,7 @@ __kernel void render(
     __write_only image2d_t resultImage,
     __read_only image3d_t sourceImage,
     float3 coordinateTransform,
-    float3 cameraPosition,
+    float16 invViewProjection,
     float2 voxelRange,
     int numSamples,
     float scale)
@@ -28,24 +28,26 @@ __kernel void render(
     int x = get_global_id(0);
     int y = get_global_id(1);
 
-    float2 size = (float2)((float)get_global_size(0), (float)get_global_size(1));
-
-    float fx = (float)(x) / size.x;
-    float fy = (float)(y) / size.y;
-    float aspect = size.x / size.y;
-
-    Camera camera;
-    camera.position = cameraPosition;
-    camera.front = -normalize(camera.position);
-    camera.right = normalize(cross(camera.front, (float3)(0,1,0)));
-    camera.up = normalize(cross(camera.front, camera.right));
+    float fx = ((float) x + 0.5f) / get_global_size(0) * 2 - 1;
+    float fy = 1 - ((float) y + 0.5f) / get_global_size(1) * 2;
 
     Ray ray;
-    ray.origin = camera.position;
-    ray.direction = normalize(
-        1.5f * camera.front +
-        aspect * 2.0f * camera.right * (fx - 0.5f) +
-        2.0f * camera.up * (fy - 0.5f));
+    // TODO: handle orthogonal projection?
+    // ray.origin = toVector3 (invViewProjection * (0, 0, -1, 0))
+    ray.origin = invViewProjection.s26a / invViewProjection.se;
+    //float4 temp = { fx, fy, 0, 1 };
+    float4 temp0 = { fx, fy, 0, 1 };
+    float4 temp1 = { fx, fy, 1, 1 };
+    float4 Mtemp0, Mtemp1;
+    Mtemp0.x = dot(temp0, (invViewProjection.s0123));
+    Mtemp0.y = dot(temp0, (invViewProjection.s4567));
+    Mtemp0.z = dot(temp0, (invViewProjection.s89ab));
+    Mtemp0.w = dot(temp0, (invViewProjection.scdef));
+    Mtemp1.x = dot(temp1, (invViewProjection.s0123));
+    Mtemp1.y = dot(temp1, (invViewProjection.s4567));
+    Mtemp1.z = dot(temp1, (invViewProjection.s89ab));
+    Mtemp1.w = dot(temp1, (invViewProjection.scdef));
+    ray.direction = normalize ((float3) {Mtemp0.w * Mtemp1.x - Mtemp1.w * Mtemp0.x, Mtemp0.w * Mtemp1.y - Mtemp1.w * Mtemp0.y, Mtemp0.w * Mtemp1.z - Mtemp1.w * Mtemp0.z});
 
 
     float tnear, tfar;

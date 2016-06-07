@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Voxie/data/slice.hpp>
+#include <Voxie/visualization/view3d.hpp>
 
 #include <QtOpenGL/QGLWidget>
 
@@ -15,9 +16,11 @@ class PlaneView : public QGLWidget
 private:
     voxie::data::Slice *slice;
     float fWidth, fHeight;
-    float pan, tilt, zoom;
 
     QPoint mouseLast;
+
+    voxie::visualization::View3D* view3d;
+
 public:
     explicit PlaneView(voxie::data::Slice *slice, QWidget *parent = 0);
 

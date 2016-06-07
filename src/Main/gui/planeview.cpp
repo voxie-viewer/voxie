@@ -14,8 +14,11 @@ PlaneView::PlaneView(Slice *slice, QWidget *parent) :
 	QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::Rgba), parent),
 	slice(slice),
 	fWidth(1), fHeight(1),
-    pan(0.0f), tilt(0.0f), zoom(1.5f)
+    view3d(new voxie::visualization::View3D(this, 1.5f, 2.5f))
 {
+    view3d->pan = view3d->tilt = 0.0f;
+    view3d->zoom = 1.5f;
+
 	this->setMinimumHeight(150);
 	QMetaObject::Connection conni = connect(this->slice, &QObject::destroyed, [this]() -> void
 	{
@@ -25,10 +28,13 @@ PlaneView::PlaneView(Slice *slice, QWidget *parent) :
 	{
 		this->disconnect(conni);
 	});
+
+    connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->repaint(); });
 }
 
 void PlaneView::mousePressEvent(QMouseEvent *event)
 {
+    view3d->mousePressEvent(mouseLast, event);
 	this->mouseLast = event->pos();
 }
 
@@ -37,54 +43,33 @@ void PlaneView::mouseMoveEvent(QMouseEvent *event)
 	int dx = event->x() - this->mouseLast.x();
 	int dy = event->y() - this->mouseLast.y();
 
-    if (event->buttons() & Qt::LeftButton)
-    {
-		this->pan += 0.02f * dx;
-		this->tilt += 0.02f * dy;
-		if(this->tilt > 0.49f * M_PI)
-			this->tilt = (float)(0.49f * M_PI);
-		if(this->tilt < -0.49f * M_PI)
-			this->tilt = (float)(-0.49f * M_PI);
-		this->repaint();
-	}
-    else if((event->buttons() & Qt::RightButton) && (this->slice != nullptr))
+    if((event->buttons() & Qt::RightButton) && (this->slice != nullptr))
     {
         float ax = 0.12f * dx;
         float ay = 0.12f * dy;
 
         QQuaternion src = this->slice->rotation();
 
-        QMatrix4x4 matViewProj;
-        QVector3D position(
-                cosf(this->pan) * cosf(this->tilt),
-                sinf(this->tilt),
-                sinf(this->pan) * cosf(this->tilt));
-        matViewProj.lookAt(
-                    position,
-                    QVector3D(0.0f, 0.0f, 0.0f),
-                    QVector3D(0.0f, 1.0f, 0.0f));
-        matViewProj.setRow(3, QVector4D(0,0,0,1)); // Remove translation
+        QMatrix4x4 matView = view3d->viewMatrix(1);
+        matView.setRow(3, QVector4D(0,0,0,1)); // Remove translation
 
-        QQuaternion quatX = QQuaternion::fromAxisAndAngle((QVector4D(0, 1, 0, 0) * matViewProj).toVector3D(), ax);
-        QQuaternion quatY = QQuaternion::fromAxisAndAngle((QVector4D(1, 0, 0, 0) * matViewProj).toVector3D(), ay);
+        QQuaternion quatX = QQuaternion::fromAxisAndAngle((QVector4D(0, 1, 0, 0) * matView).toVector3D(), ax);
+        QQuaternion quatY = QQuaternion::fromAxisAndAngle((QVector4D(1, 0, 0, 0) * matView).toVector3D(), ay);
 
         QQuaternion quat = quatX * quatY;
 
         this->slice->setRotation(quat * src);
 
         this->repaint();
+    } else {
+        view3d->mouseMoveEvent(mouseLast, event);
     }
 	this->mouseLast = event->pos();
 }
 
 void PlaneView::wheelEvent(QWheelEvent *event)
 {
-	this->zoom += 0.1f * event->angleDelta().y() / 120.0f;
-	if(this->zoom < 1.5f)
-		this->zoom = 1.5f;
-	if(this->zoom > 2.5f)
-		this->zoom = 2.5f;
-	this->repaint();
+    view3d->wheelEvent(event);
 }
 
 void PlaneView::initializeGL()
@@ -126,22 +111,7 @@ void PlaneView::paintGL()
 	///////////////////////////////////////////////////////////////////////////////////
 	glMatrixMode(GL_PROJECTION);
 	{
-		QVector3D position(
-				cosf(this->pan) * cosf(this->tilt),
-				sinf(this->tilt),
-				sinf(this->pan) * cosf(this->tilt));
-        position *= this->zoom * scaling;
-
-		QMatrix4x4 matViewProj;
-		matViewProj.perspective(
-					80,
-					this->fWidth / this->fHeight,
-					0.1f * scaling,
-					10000.0f * scaling);
-		matViewProj.lookAt(
-					position,
-					QVector3D(0.0f, 0.0f, 0.0f),
-					QVector3D(0.0f, 1.0f, 0.0f));
+        QMatrix4x4 matViewProj = view3d->projectionMatrix(scaling, this->fWidth, this->fHeight) * view3d->viewMatrix(scaling);
 
 		glLoadMatrixf(matViewProj.constData());
 	}

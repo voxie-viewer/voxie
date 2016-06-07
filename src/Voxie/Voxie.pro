@@ -51,6 +51,7 @@ SOURCES += \
     visualization/filterchain2dwidget.cpp \
     visualization/filterchain3dwidget.cpp \
     visualization/qveclineedit.cpp \
+    visualization/view3d.cpp \
     visualization/visualizer.cpp \
     ivoxie.cpp
 
@@ -95,6 +96,7 @@ HEADERS += \
     visualization/filterchain2dwidget.hpp \
     visualization/filterchain3dwidget.hpp \
     visualization/qveclineedit.hpp \
+    visualization/view3d.hpp \
     visualization/visualizer.hpp \
     _minmax.hpp \
     ivoxie.hpp \

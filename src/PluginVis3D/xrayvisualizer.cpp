@@ -21,7 +21,8 @@ using namespace voxie::opencl;
 
 XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
     VolumeDataVisualizer(parent),
-    dataSet_(dataSet)
+    dataSet_(dataSet),
+    view3d(new voxie::visualization::View3D(this))
 {
     this->setObjectName(dataSet->objectName() + "_xray");
     this->setWindowTitle(dataSet->objectName() + " - XRay");
@@ -34,9 +35,6 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
         this->disconnect(conni);
     });
     this->kernel = CLInstance::getDefaultInstance()->getKernel("voxie3d::x-ray-3d", "render");
-    this->pan = (float)(M_PI * 40.0 / 180.0);
-    this->tilt = (float)(M_PI * 30.0 / 180.0);
-    this->zoom = 2.0f;
 
     QWidget *sidePanel = new QWidget();
     {
@@ -84,6 +82,8 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
     }
     this->dynamicSections().append(sidePanel);
     this->setMinimumSize(300,200);
+
+    connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->repaint(); });
 }
 
 void XRayVisualizer::paintEvent(QPaintEvent *event)
@@ -106,19 +106,30 @@ void XRayVisualizer::paintEvent(QPaintEvent *event)
             spacing.y(),
             spacing.z()
         }};
-
-        QVector3D position(
-                cosf(this->pan) * cosf(this->tilt),
-                sinf(this->tilt),
-                sinf(this->pan) * cosf(this->tilt));
-        position *= this->zoom;
-
-        cl_float3 cameraPosition =
+        transform =
         {{
-            position.x(),
-            position.y(),
-            position.z()
+                1,1,1
         }};
+
+        QMatrix4x4 invViewProjectionMatrix =  (view3d->projectionMatrix(1, this->image.width(), this->image.height()) * view3d->viewMatrix(1)).inverted();
+        cl_float16 invViewProjection = {{
+                invViewProjectionMatrix(0, 0),
+                invViewProjectionMatrix(0, 1),
+                invViewProjectionMatrix(0, 2),
+                invViewProjectionMatrix(0, 3),
+                invViewProjectionMatrix(1, 0),
+                invViewProjectionMatrix(1, 1),
+                invViewProjectionMatrix(1, 2),
+                invViewProjectionMatrix(1, 3),
+                invViewProjectionMatrix(2, 0),
+                invViewProjectionMatrix(2, 1),
+                invViewProjectionMatrix(2, 2),
+                invViewProjectionMatrix(2, 3),
+                invViewProjectionMatrix(3, 0),
+                invViewProjectionMatrix(3, 1),
+                invViewProjectionMatrix(3, 2),
+                invViewProjectionMatrix(3, 3),
+            }};
 
         cl_int quality = 32;
         if(this->radioQ1->isChecked()) quality = 64;
@@ -138,7 +149,8 @@ void XRayVisualizer::paintEvent(QPaintEvent *event)
         this->kernel.setArg(0, this->clImage);
         this->kernel.setArg(1, this->dataSet()->filteredData()->getCLImage());
         this->kernel.setArg(2, transform);
-        this->kernel.setArg(3, cameraPosition);
+        //this->kernel.setArg(3, invViewProjection);
+        this->kernel.setArg(3, sizeof (cl_float16), &invViewProjection);
         this->kernel.setArg(4, voxelRange);
         this->kernel.setArg(5, quality);
         this->kernel.setArg(6, scale);
@@ -201,37 +213,19 @@ void XRayVisualizer::resizeEvent(QResizeEvent *event)
 }
 void XRayVisualizer::mousePressEvent(QMouseEvent *event)
 {
+    view3d->mousePressEvent(mouseLast, event);
     this->mouseLast = event->pos();
 }
 
 void XRayVisualizer::mouseMoveEvent(QMouseEvent *event)
 {
-    int dx = event->x() - this->mouseLast.x();
-    int dy = event->y() - this->mouseLast.y();
-
-    if (event->buttons() & Qt::LeftButton) {
-        this->pan += 0.02f * dx;
-        this->tilt += 0.02f * dy;
-        if(this->tilt > 0.49f * M_PI)
-            this->tilt = (float)(0.49f * M_PI);
-        if(this->tilt < -0.49f * M_PI)
-            this->tilt = (float)(-0.49f * M_PI);
-        this->repaint();
-    }
+    view3d->mouseMoveEvent(mouseLast, event);
     this->mouseLast = event->pos();
 }
 
 void XRayVisualizer::wheelEvent(QWheelEvent *event)
 {
-    this->zoom += 0.1f * event->angleDelta().y() / 120.0f;
-    if(false)
-    {
-        if(this->zoom < 1.5f)
-            this->zoom = 1.5f;
-        if(this->zoom > 2.5f)
-            this->zoom = 2.5f;
-    }
-    this->repaint();
+    view3d->wheelEvent(event);
 }
 
 // Local Variables:

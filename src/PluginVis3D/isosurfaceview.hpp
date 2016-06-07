@@ -2,6 +2,8 @@
 
 #include <Voxie/data/dataset.hpp>
 
+#include <Voxie/visualization/view3d.hpp>
+
 #include <QtOpenGL/QGLWidget>
 
 #include <QtWidgets/QProgressBar>
@@ -14,11 +16,12 @@ class IsosurfaceView :
 private:
     bool generating = false;
     float fWidth, fHeight;
-    float pan, tilt, zoom;
     QPoint mouseLast;
     QVector<GLuint> lists;
 
     QProgressBar *progressBar;
+
+    voxie::visualization::View3D* view3d;
 
     void genCube(const QVector3D &pos, int sides);
 

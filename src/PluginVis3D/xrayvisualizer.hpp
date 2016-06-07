@@ -2,6 +2,7 @@
 
 #include <Voxie/data/voxeldata.hpp>
 
+#include <Voxie/visualization/view3d.hpp>
 #include <Voxie/visualization/visualizer.hpp>
 
 #include <Voxie/lib/CL/cl.hpp>
@@ -21,8 +22,8 @@ private:
     QImage image;
     cl::Kernel kernel;
     cl::Image2D clImage;
-    float pan, tilt, zoom;
     QPoint mouseLast;
+    voxie::visualization::View3D* view3d;
 private:
     QRadioButton *radioQ0, *radioQ1, *radioQ2, *radioQ3;
     QSlider *minSlider, *maxSlider, *scaleSlider;
