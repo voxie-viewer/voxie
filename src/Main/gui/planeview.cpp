@@ -14,11 +14,8 @@ PlaneView::PlaneView(Slice *slice, QWidget *parent) :
 	QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::Rgba), parent),
 	slice(slice),
 	fWidth(1), fHeight(1),
-    view3d(new voxie::visualization::View3D(this, 1.5f, 2.5f))
+    view3d(new voxie::visualization::View3D(this, false, this->slice->getDataset()->diagonalSize(), 0.3f, 1.0f))
 {
-    view3d->pan = view3d->tilt = 0.0f;
-    view3d->zoom = 1.5f;
-
 	this->setMinimumHeight(150);
 	QMetaObject::Connection conni = connect(this->slice, &QObject::destroyed, [this]() -> void
 	{
@@ -34,7 +31,7 @@ PlaneView::PlaneView(Slice *slice, QWidget *parent) :
 
 void PlaneView::mousePressEvent(QMouseEvent *event)
 {
-    view3d->mousePressEvent(mouseLast, event);
+    view3d->mousePressEvent(mouseLast, event, size());
 	this->mouseLast = event->pos();
 }
 
@@ -50,7 +47,7 @@ void PlaneView::mouseMoveEvent(QMouseEvent *event)
 
         QQuaternion src = this->slice->rotation();
 
-        QMatrix4x4 matView = view3d->viewMatrix(1);
+        QMatrix4x4 matView = view3d->viewMatrix();
         matView.setRow(3, QVector4D(0,0,0,1)); // Remove translation
 
         QQuaternion quatX = QQuaternion::fromAxisAndAngle((QVector4D(0, 1, 0, 0) * matView).toVector3D(), ax);
@@ -62,14 +59,14 @@ void PlaneView::mouseMoveEvent(QMouseEvent *event)
 
         this->repaint();
     } else {
-        view3d->mouseMoveEvent(mouseLast, event);
+        view3d->mouseMoveEvent(mouseLast, event, size());
     }
 	this->mouseLast = event->pos();
 }
 
 void PlaneView::wheelEvent(QWheelEvent *event)
 {
-    view3d->wheelEvent(event);
+    view3d->wheelEvent(event, size());
 }
 
 void PlaneView::initializeGL()
@@ -102,7 +99,6 @@ void PlaneView::paintGL()
 
 	QVector3D extends = this->slice->getDataset()->size();
 	QVector3D origin = this->slice->getDataset()->origin();
-	float scaling = extends.x();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -111,7 +107,7 @@ void PlaneView::paintGL()
 	///////////////////////////////////////////////////////////////////////////////////
 	glMatrixMode(GL_PROJECTION);
 	{
-        QMatrix4x4 matViewProj = view3d->projectionMatrix(scaling, this->fWidth, this->fHeight) * view3d->viewMatrix(scaling);
+        QMatrix4x4 matViewProj = view3d->projectionMatrix(this->fWidth, this->fHeight) * view3d->viewMatrix();
 
 		glLoadMatrixf(matViewProj.constData());
 	}

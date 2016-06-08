@@ -22,7 +22,8 @@ using namespace voxie::opencl;
 XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
     VolumeDataVisualizer(parent),
     dataSet_(dataSet),
-    view3d(new voxie::visualization::View3D(this))
+    //view3d(new voxie::visualization::View3D(this, this->dataSet()->diagonalSize()))
+    view3d(new voxie::visualization::View3D(this, true, 2))
 {
     this->setObjectName(dataSet->objectName() + "_xray");
     this->setWindowTitle(dataSet->objectName() + " - XRay");
@@ -111,7 +112,7 @@ void XRayVisualizer::paintEvent(QPaintEvent *event)
                 1,1,1
         }};
 
-        QMatrix4x4 invViewProjectionMatrix =  (view3d->projectionMatrix(1, this->image.width(), this->image.height()) * view3d->viewMatrix(1)).inverted();
+        QMatrix4x4 invViewProjectionMatrix =  (view3d->projectionMatrix(this->image.width(), this->image.height()) * view3d->viewMatrix()).inverted();
         cl_float16 invViewProjection = {{
                 invViewProjectionMatrix(0, 0),
                 invViewProjectionMatrix(0, 1),
@@ -213,19 +214,19 @@ void XRayVisualizer::resizeEvent(QResizeEvent *event)
 }
 void XRayVisualizer::mousePressEvent(QMouseEvent *event)
 {
-    view3d->mousePressEvent(mouseLast, event);
+    view3d->mousePressEvent(mouseLast, event, size());
     this->mouseLast = event->pos();
 }
 
 void XRayVisualizer::mouseMoveEvent(QMouseEvent *event)
 {
-    view3d->mouseMoveEvent(mouseLast, event);
+    view3d->mouseMoveEvent(mouseLast, event, size());
     this->mouseLast = event->pos();
 }
 
 void XRayVisualizer::wheelEvent(QWheelEvent *event)
 {
-    view3d->wheelEvent(event);
+    view3d->wheelEvent(event, size());
 }
 
 // Local Variables:

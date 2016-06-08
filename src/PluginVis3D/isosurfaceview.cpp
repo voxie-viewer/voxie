@@ -23,7 +23,7 @@ IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent)
     voxelData(voxelData),
     fWidth(1.0f), fHeight(1.0f),
     lists(),
-    view3d(new voxie::visualization::View3D(this)),
+    view3d(new voxie::visualization::View3D(this, true, this->voxelData->diagonalSize())),
     threshold(10),
     inverted(false),
     useMarchingCubes(true)
@@ -439,16 +439,14 @@ void IsosurfaceView::paintGL()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    QVector3D extends = this->voxelData->filteredData()->getDimensionsMetric();
     QVector3D origin = this->voxelData->filteredData()->getFirstVoxelPosition();
-    float scaling = extends.x();
 
     ///////////////////////////////////////////////////////////////////////////////////
     /// Setup projection and view matrix
     ///////////////////////////////////////////////////////////////////////////////////
     glMatrixMode(GL_PROJECTION);
     {
-        QMatrix4x4 matViewProj = view3d->projectionMatrix(scaling, this->fWidth, this->fHeight) * view3d->viewMatrix(scaling);
+        QMatrix4x4 matViewProj = view3d->projectionMatrix(this->fWidth, this->fHeight) * view3d->viewMatrix();
 
         glLoadMatrixf(matViewProj.constData());
     }
@@ -475,19 +473,19 @@ void IsosurfaceView::paintGL()
 
 void IsosurfaceView::mousePressEvent(QMouseEvent *event)
 {
-    view3d->mousePressEvent(mouseLast, event);
+    view3d->mousePressEvent(mouseLast, event, size());
 	this->mouseLast = event->pos();
 }
 
 void IsosurfaceView::mouseMoveEvent(QMouseEvent *event)
 {
-    view3d->mouseMoveEvent(mouseLast, event);
+    view3d->mouseMoveEvent(mouseLast, event, size());
 	this->mouseLast = event->pos();
 }
 
 void IsosurfaceView::wheelEvent(QWheelEvent *event)
 {
-    view3d->wheelEvent(event);
+    view3d->wheelEvent(event, size());
 }
 
 // Local Variables:

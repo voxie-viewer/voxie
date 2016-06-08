@@ -76,6 +76,10 @@ QVector3D DataSet::size() const {
     return originalData()->getDimensionsMetric();
 }
 
+float DataSet::diagonalSize() const {
+    return size().length();
+}
+
 QVector3D DataSet::volumeCenter() const {
     return origin() + size() / 2;
 }

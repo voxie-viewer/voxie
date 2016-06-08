@@ -86,6 +86,7 @@ class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptingContain
         QVector3D origin() const;
         QVector3D size() const;
         QVector3D volumeCenter() const;
+        float diagonalSize() const;
 
     signals:
         /**
