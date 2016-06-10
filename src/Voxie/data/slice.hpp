@@ -245,6 +245,9 @@ public:
     voxie::scripting::Plane plane();
     void setPlane(const voxie::scripting::Plane& plane);
 
+    Q_PROPERTY (QString DisplayName READ displayName)
+    QString displayName ();
+
 public slots:
     
 };

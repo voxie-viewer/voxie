@@ -79,6 +79,10 @@ public:
 
     ~DeUni_stuttgartVoxieDataSetInterface();
 
+    Q_PROPERTY(QString DisplayName READ displayName)
+    inline QString displayName() const
+    { return qvariant_cast< QString >(property("DisplayName")); }
+
     Q_PROPERTY(QDBusObjectPath FilteredData READ filteredData)
     inline QDBusObjectPath filteredData() const
     { return qvariant_cast< QDBusObjectPath >(property("FilteredData")); }
@@ -356,6 +360,10 @@ public:
     Q_PROPERTY(QDBusObjectPath DataSet READ dataSet)
     inline QDBusObjectPath dataSet() const
     { return qvariant_cast< QDBusObjectPath >(property("DataSet")); }
+
+    Q_PROPERTY(QString DisplayName READ displayName)
+    inline QString displayName() const
+    { return qvariant_cast< QString >(property("DisplayName")); }
 
     Q_PROPERTY(voxie::scripting::Plane Plane READ plane WRITE setPlane)
     inline voxie::scripting::Plane plane() const

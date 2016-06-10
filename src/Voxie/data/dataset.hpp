@@ -115,6 +115,9 @@ public:
     Q_PROPERTY (QDBusObjectPath FilteredData READ filteredData)
     QDBusObjectPath filteredData ();
 
+    Q_PROPERTY (QString DisplayName READ displayName)
+    QString displayName ();
+
 public slots:
     QDBusObjectPath CreateSlice(const QMap<QString, QVariant>& options);
 

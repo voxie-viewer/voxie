@@ -228,6 +228,10 @@ void SliceAdaptor::setPlane(const voxie::scripting::Plane& plane) {
     object->setPlane(plane);
 }
 
+QString SliceAdaptor::displayName () {
+    return object->objectName();
+}
+
 // Local Variables:
 // mode: c++
 // tab-width: 4

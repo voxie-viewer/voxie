@@ -108,6 +108,10 @@ QDBusObjectPath DataSetAdaptor::filteredData () {
     return voxie::scripting::ScriptingContainerBase::getPath(object->filteredData());
 }
 
+QString DataSetAdaptor::displayName () {
+    return object->objectName();
+}
+
 QDBusObjectPath DataSetAdaptor::CreateSlice(const QMap<QString, QVariant>& options) {
     try {
         voxie::scripting::ScriptingContainerBase::checkOptions(options);

@@ -17,6 +17,7 @@
   <interface name="de.uni_stuttgart.Voxie.DataSet">
     <property access="read" name="OriginalData" type="o" />
     <property access="read" name="FilteredData" type="o" />
+    <property access="read" name="DisplayName" type="s" />
     <method name="CreateSlice">
       <arg direction="out" type="o" />
       <arg direction="in" name="options" type="a{sv}" />
@@ -103,6 +104,7 @@
     <property access="readwrite" name="Plane" type="((ddd)(dddd))">
       <annotation name="org.qtproject.QtDBus.QtTypeName" value="voxie::scripting::Plane" />
     </property>
+    <property access="read" name="DisplayName" type="s" />
   </interface>
   <interface name="de.uni_stuttgart.Voxie.SliceDataVisualizer">
     <property access="read" name="Slice" type="o" />
