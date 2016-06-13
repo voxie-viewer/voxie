@@ -156,6 +156,11 @@ public:
     QDBusObjectPath getActiveVisualizer();
 
     Q_SCRIPTABLE void RaiseWindow(const QMap<QString, QVariant>& options);
+
+    // The Window ID of the main window, useful e.g. for using it as a transient
+    // parent
+    // Returns 0 if not supported.
+    Q_SCRIPTABLE qulonglong GetMainWindowID();
 };
 
 }

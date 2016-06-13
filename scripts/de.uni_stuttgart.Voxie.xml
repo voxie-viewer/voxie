@@ -33,6 +33,9 @@
       <arg direction="in" name="options" type="a{sv}" />
       <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantMap" />
     </method>
+    <method name="GetMainWindowID">
+      <arg direction="out" type="t" />
+    </method>
   </interface>
   <interface name="de.uni_stuttgart.Voxie.Image">
     <property access="read" name="Width" type="t" />

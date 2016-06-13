@@ -90,6 +90,10 @@ void GuiDBusObject::RaiseWindow(const QMap<QString, QVariant>& options) {
     }
 }
 
+qulonglong GuiDBusObject::GetMainWindowID() {
+    return window->winId();
+}
+
 CoreWindow::CoreWindow(QWidget *parent) :
     QMainWindow(parent),
     visualizers(),

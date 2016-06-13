@@ -128,6 +128,12 @@ public:
     { return qvariant_cast< QDBusObjectPath >(property("ActiveVisualizer")); }
 
 public Q_SLOTS: // METHODS
+    inline QDBusPendingReply<qulonglong> GetMainWindowID()
+    {
+        QList<QVariant> argumentList;
+        return asyncCallWithArgumentList(QLatin1String("GetMainWindowID"), argumentList);
+    }
+
     inline QDBusPendingReply<> RaiseWindow(const QVariantMap &options)
     {
         QList<QVariant> argumentList;
