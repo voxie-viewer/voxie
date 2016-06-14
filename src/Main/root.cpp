@@ -126,11 +126,6 @@ int Root::startVoxie(QApplication &app, QCommandLineParser& parser)
 
 	app.setOrganizationName("voxie");
 	app.setApplicationName("voxie");
-#if QTCORE_VERSION >= 0x050300
-	// https://forum.qt.io/topic/51574/opengl-dynamic-selected-driver
-	// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
-	app.setAttribute(Qt::AA_UseDesktopOpenGL, true);
-#endif
 
 	if(::root != nullptr)
 	{

@@ -2,8 +2,6 @@ QT += core gui script opengl
 QT += dbus
 QT += widgets
 
-win32:LIBS += -lopengl32
-
 include($$PWD/../CompilerFlags.pri)
 include($$PWD/../OpenCL.pri)
 include($$PWD/../LinkVoxie.pri)
