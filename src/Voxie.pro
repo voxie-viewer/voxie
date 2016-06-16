@@ -1,10 +1,9 @@
 TEMPLATE = subdirs
 
-FOO = bar
-
 CONFIG += ordered
 
 SUBDIRS += \
+	lib \
 	Voxie \
 	Main \
 	PluginVisSlice \
