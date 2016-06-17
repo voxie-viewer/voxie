@@ -10,5 +10,17 @@ POS="$(readlink -f -- "$POS")"
 mkdir -p "$VOXIE_BUILD_DIR"
 cd "$VOXIE_BUILD_DIR"
 
-qmake "$(readlink -f -- "$POS/../src")"
-make -sj16 "$@"
+FLAGS=-s
+if [ "$1" = "--verbose" ]; then
+    shift
+    FLAGS=
+fi
+
+ASSIGN1="NOTHING="
+if [ "$1" != "${1#--hdf5-path}" ]; then
+    ASSIGN1="HDF5_PATH=${1#--hdf5-path}"
+    shift
+fi
+
+qmake "$ASSIGN1" "$(readlink -f -- "$POS/../src")"
+make $FLAGS -j16 "$@"

@@ -1,0 +1,63 @@
+stages:
+  - build-manual
+  - build
+
+build-manual:
+  stage: build-manual
+
+  tags:
+    - linux
+
+  artifacts:
+    paths:
+      - manual.pdf
+
+  script: "tools/create-manual.sh"
+
+build-linux:
+  stage: build
+
+  tags:
+    - linux
+
+  artifacts:
+    paths:
+      - voxie*.tar.gz
+
+  script: "tools/create-release.sh"
+
+  variables:
+    VOXIEBUILD_PATH_HDF5: "/home/src/hdf5-1.10.0-patch1-linux-centos7-x86_64-gcc485-shared"
+    # http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/bin/linux-centos7-x86_64-gcc485/hdf5-1.10.0-patch1-linux-centos7-x86_64-gcc485-shared.tar.gz
+    VOXIEBUILD_URL_HDF5: "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.bz2"
+
+build-windows:
+  stage: build
+
+  tags:
+    - windows
+
+  script: "powershell -ExecutionPolicy Unrestricted .\\tools\\build-windows.ps1"
+
+  dependencies:
+    - build-manual
+
+  artifacts:
+    paths:
+      - voxie*.zip
+
+  variables:
+    VOXIEBUILD_PATH_CMAKE: "e:\\CMake 2.8"
+    VOXIEBUILD_PATH_VISUAL_STUDIO: "e:\\Microsoft Visual Studio 14.0"
+    VOXIEBUILD_PATH_QT: "e:\\Qt\\Qt5.6.0\\5.6\\msvc2015_64"
+    VOXIEBUILD_URL_QT: "https://download.qt.io/official_releases/qt/5.6/5.6.0/single/qt-everywhere-opensource-src-5.6.0.tar.gz"
+    VOXIEBUILD_URL_QT_COPY: "https://www.ipvs.uni-stuttgart.de/files/pas/src/qt-everywhere-opensource-src-5.6.0.tar.gz"
+    # http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/bin/windows/extra/hdf5-1.10.0-patch1-win64-vs2015-shared.zip
+    VOXIEBUILD_PATH_HDF5: "E:\\HDF5\\1.10.0"
+    VOXIEBUILD_URL_HDF5: "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.bz2"
+    VOXIEBUILD_PATH_BOOST_INCLUDE: "E:\\Sources\\boost_1_61_0"
+    VOXIEBUILD_PATH_EXPAT_SRC: "e:\\Sources\\expat-2.1.0"
+    VOXIEBUILD_URL_EXPAT_SRC: "http://sourceforge.net/projects/expat/files/expat/2.1.0/expat-2.1.0.tar.gz/download"
+    #VOXIEBUILD_PATH_DBUS_SRC: "e:\\Sources\\dbus-1.8.2.zip"
+    VOXIEBUILD_PATH_DBUS_SRC: "e:\\Sources\\dbus-1.8.2"
+    VOXIEBUILD_URL_DBUS_SRC: "https://dbus.freedesktop.org/releases/dbus/dbus-1.8.2.tar.gz"

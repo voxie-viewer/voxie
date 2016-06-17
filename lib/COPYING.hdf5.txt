@@ -1,0 +1,1 @@
+This is the HDF5 copyright file (taken from hdf5-1.10.0-patch1.tar.bz2 / http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.bz2) which is not included in the binary package.
