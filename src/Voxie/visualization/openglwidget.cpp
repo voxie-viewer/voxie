@@ -1,5 +1,7 @@
 #include "openglwidget.hpp"
 
+#include <Voxie/ivoxie.hpp>
+
 #include <QDebug>
 
 using namespace voxie::visualization;
@@ -50,6 +52,10 @@ void OpenGLWidget::initializeGL() {
         qCritical() << x;                       \
         return;                                 \
     } while (0)
+
+    if (voxieRoot().disableOpenGL()) {
+        FAIL("OpenGL support is disabled from the command line");
+    }
 
     if (!context()->isValid()) {
         FAIL("OpenGL context is not valid");

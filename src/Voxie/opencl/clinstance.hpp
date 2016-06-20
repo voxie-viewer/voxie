@@ -43,6 +43,11 @@ private:
 
 public:
     /**
+     * Create an invalid instance
+     */
+    CLInstance(){}
+
+    /**
      * @return new CLInstance of given context
      */
     static CLInstance* createInstance(const cl::Context& context) NOEXCEPT;
@@ -413,7 +418,6 @@ public:
 
 private:
     CLInstance(cl::Context context);
-    CLInstance(){/*invalid instance*/}
     Q_DISABLE_COPY(CLInstance)
 };
 

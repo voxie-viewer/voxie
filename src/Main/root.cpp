@@ -60,7 +60,9 @@ Root::Root(QObject *parent) :
 	scripting::ScriptingContainer(parent),
 	coreWindow(nullptr),
 	jsEngine(),
-    scriptWrapper(&jsEngine)
+    scriptWrapper(&jsEngine),
+    disableOpenGL_(false),
+    disableOpenCL_(false)
 {
 	voxieInstance = new VoxieInstance(this);
     directoryManager_ = new DirectoryManager(this);
@@ -220,6 +222,9 @@ int Root::startVoxie(QApplication &app, QCommandLineParser& parser)
 
 	::root = new Root();
 
+    ::root->disableOpenGL_ = parser.isSet("no-opengl");
+    ::root->disableOpenCL_ = parser.isSet("no-opencl");
+
 	setVoxieRoot(::root);
 
 	::root->initOpenCL();
@@ -339,6 +344,12 @@ void Root::loadPlugins(QString pluginDirectory)
 bool
 Root::initOpenCL()
 {
+    if (disableOpenCL()) {
+        qWarning() << "OpenCL disabled from the command line";
+		opencl::CLInstance::initialize(new opencl::CLInstance());
+        return false;
+    }
+
     // load from qsettings
     using namespace gui::preferences;
     QString platformName = settings()->value(OpenclPreferences::defaultPlatformSettingsKey).value<QString>();

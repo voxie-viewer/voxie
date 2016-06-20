@@ -27,6 +27,12 @@ int main(int argc, char *argv[])
     QCommandLineOption noDBusOption("no-dbus", "Do not use DBus (implies --new-instance)");
     parser.addOption(noDBusOption);
 
+    QCommandLineOption noOpenGLOption("no-opengl", "Disable usage of OpenGL");
+    parser.addOption(noOpenGLOption);
+
+    QCommandLineOption noOpenCLOption("no-opencl", "Disable usage of OpenCL");
+    parser.addOption(noOpenCLOption);
+
     QCommandLineOption newInstanceOption("new-instance", "Create a new instance, even if voxie is already runnung");
     parser.addOption(newInstanceOption);
 

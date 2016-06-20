@@ -50,6 +50,9 @@ public:
      * @return
      */
     virtual QVector<voxie::plugin::VoxiePlugin*> plugins() const = 0;
+
+    virtual bool disableOpenGL() const = 0;
+    virtual bool disableOpenCL() const = 0;
 };
 
 void VOXIECORESHARED_EXPORT setVoxieRoot(IVoxie *voxie);

@@ -60,6 +60,9 @@ private:
 
     QSettings* settings_;
 
+    bool disableOpenGL_;
+    bool disableOpenCL_;
+
     explicit Root(QObject *parent = 0);
 
     ~Root();
@@ -150,6 +153,8 @@ public:
      */
     virtual QVector<voxie::plugin::VoxiePlugin*> plugins() const override;
 
+    virtual bool disableOpenGL() const { return disableOpenGL_; }
+    virtual bool disableOpenCL() const { return disableOpenCL_; }
 
 public:
     /**
