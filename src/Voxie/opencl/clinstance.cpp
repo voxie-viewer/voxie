@@ -183,7 +183,7 @@ CLInstance::createProgram(const QString& source, const QString& buildOptions, co
 	cl_int error;
 	cl::Program program(this->context, sources, &error);
 	if(error){
-		raiseCLException(error, file_func_line());
+		raiseCLException(error, file_func_line() + ": " + id);
 	}
 
 	error = program.build(this->getDevices().toStdVector(), buildOptions.toStdString().c_str());
@@ -271,7 +271,7 @@ CLInstance::executeKernel(const cl::Kernel& kernel, const cl::NDRange& globalWor
 {
     cl_int error = commandQueue.enqueueNDRangeKernel(kernel, cl::NullRange, globalWorkSize, cl::NullRange);
 	if(error){
-		raiseCLException(error, file_func_line());
+		raiseCLException(error, file_func_line() + ": " + kernel.getInfo<CL_KERNEL_FUNCTION_NAME>().c_str());
 	}
 	if(blocking){
 		error = commandQueue.finish();
@@ -379,6 +379,16 @@ CLInstance::createImage3D(const cl::ImageFormat& format, size_t width, size_t he
 	if(error){
 		raiseCLException(error, file_func_line());
 	}
+
+    // Make sure image was actually allocated on the device
+	cl::size_t<3> origin; origin[0] = origin[1] = origin[2] = 0;
+	cl::size_t<3> size; size[0] = size[1] = size[2] = 1;
+    char temp[256];
+    error = this->getCommandQueue().enqueueReadImage(buffer, true, origin, size, 0, 0, temp);
+	if(error){
+		raiseCLException(error, file_func_line());
+	}
+
 	return buffer;
 }
 
@@ -392,6 +402,16 @@ CLInstance::createImage2D(const cl::ImageFormat& format, size_t width, size_t he
 	if(error){
 		raiseCLException(error, file_func_line());
 	}
+
+    // Make sure image was actually allocated on the device
+	cl::size_t<3> origin; origin[0] = origin[1] = origin[2] = 0;
+	cl::size_t<3> size; size[0] = size[1] = size[2] = 1;
+    char temp[256];
+    error = this->getCommandQueue().enqueueReadImage(buffer, true, origin, size, 0, 0, temp);
+	if(error){
+		raiseCLException(error, file_func_line());
+	}
+
 	return buffer;
 }
 

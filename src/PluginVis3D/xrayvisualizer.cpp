@@ -2,6 +2,7 @@
 
 #include <Voxie/opencl/clinstance.hpp>
 #include <Voxie/opencl/clutil.hpp>
+#include <Voxie/scripting/scriptingexception.hpp>
 
 #include <QtGui/QPainter>
 #include <QtGui/QPaintEvent>
@@ -25,6 +26,13 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
     //view3d(new voxie::visualization::View3D(this, this->dataSet()->diagonalSize()))
     view3d(new voxie::visualization::View3D(this, true, 2))
 {
+    if (!CLInstance::getDefaultInstance()->isValid())
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.NoOpenCLSupport", "OpenCL support not available but needed for XRay visualizer");
+    if (this->dataSet()->filteredData()->getCLImage()() == nullptr)
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.NoOpenCLImage", "Upload of data to GPU failed");
+    // TODO: handle case when a filter gets added later and the filtered dataset
+    // cannot be uploaded to the GPU?
+
     this->setObjectName(dataSet->objectName() + "_xray");
     this->setWindowTitle(dataSet->objectName() + " - XRay");
     QMetaObject::Connection conni = connect(this->dataSet_, &QObject::destroyed, [this]() -> void

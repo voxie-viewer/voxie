@@ -182,10 +182,14 @@ cl::Image3D &VoxelData::getCLImage()
 					this->dimensions.y,
 					this->dimensions.z,
 					this->getData());
-            this->isImageInit = this->clImageValid = true;
         } catch (voxie::opencl::CLException& ex){
-            qWarning() << ex;
+            this->clImage = cl::Image3D();
+            qWarning() << "Error when allocing OpenCL image for voxel data:" << ex;
         }
+        // Set isImageInit even if allocating the image failed. In this case,
+        // clImage is null and there will be no further attempt to allocate
+        // the image.
+        this->isImageInit = this->clImageValid = true;
 	}
     if(!this->clImageValid){
         updateClImage();
@@ -195,7 +199,7 @@ cl::Image3D &VoxelData::getCLImage()
 
 void VoxelData::updateClImage()
 {
-    if(isImageInit) {
+    if(isImageInit && clImage() != nullptr) {
         try {
             voxie::opencl::CLInstance::getDefaultInstance()->fillImage(&this->clImage, this->getData());
             this->clImageValid = true;
@@ -266,6 +270,13 @@ void VoxelData::extractSlice(const QVector3D& origin, const QQuaternion& rotatio
         throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.IndexOutOfRange", "Index is out of range");
 
     bool useCL = true;
+    // When OpenCL is not available, fall back to CPU
+    if (useCL)
+        useCL = voxie::opencl::CLInstance::getDefaultInstance()->isValid();
+    // When OpenCL is available but allocating the OpenCL image for the current
+    // dataset failed, fall back to CPU
+    if (useCL)
+        useCL = getCLImage()() != nullptr;
     bool clFailed = false;
     if(useCL){
         using namespace voxie::opencl;
@@ -323,7 +334,7 @@ void VoxelData::extractSlice(const QVector3D& origin, const QQuaternion& rotatio
     }
 
     if(!useCL || clFailed){
-        qDebug() << "creating slice on cpu";
+        //qDebug() << "creating slice on cpu";
         QTime timer;
         timer.start();
         if(outputImage.getMode() != SliceImage::STDMEMORY_MODE){
@@ -339,9 +350,8 @@ void VoxelData::extractSlice(const QVector3D& origin, const QQuaternion& rotatio
                 buffer[y*outputImage.getWidth() + x] = this->getVoxelMetric(volumePoint.x(), volumePoint.y(), volumePoint.z(), interpolation);
             }
         }
-        int total = timer.elapsed();
-        qDebug() << "cpu Time:" << total;
-
+        //int total = timer.elapsed();
+        //qDebug() << "cpu Time:" << total;
     }
 }
 

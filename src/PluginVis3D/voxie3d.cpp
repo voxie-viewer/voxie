@@ -13,7 +13,8 @@ Voxie3D::Voxie3D(QObject *parent) :
 {
     Q_INIT_RESOURCE(Voxie3D);
     try {
-        CLInstance::getDefaultInstance()->createProgramFromFile(":/XRay.cl", "", "voxie3d::x-ray-3d");
+        if (CLInstance::getDefaultInstance()->isValid())
+            CLInstance::getDefaultInstance()->createProgramFromFile(":/XRay.cl", "", "voxie3d::x-ray-3d");
     } catch (CLException &ex){
         qWarning() << ex;
     }

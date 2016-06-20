@@ -118,6 +118,11 @@ public:
     cl::Device getDevice(cl_device_type preferredType = CL_DEVICE_TYPE_GPU) const EXCEPT;
 
     /**
+     * @return true iff this is a valid context
+     */
+    bool isValid() const NOEXCEPT { return context() != nullptr; }
+
+    /**
      * @return this instance's context
      */
     cl::Context getContext() const NOEXCEPT
