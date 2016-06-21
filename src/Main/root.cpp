@@ -70,7 +70,7 @@ Root::Root(QObject *parent) :
 
     connect(this, &Root::logEmitted, [](const QString& msg) {
             QDateTime now = QDateTime::currentDateTime();
-            QTextStream(stdout) << "[" << now.toString(Qt::ISODate) << "] " << msg << endl;
+            QTextStream(stderr) << "[" << now.toString(Qt::ISODate) << "] " << msg << endl << flush;
         });
 
 	this->coreWindow = new CoreWindow();
@@ -121,8 +121,52 @@ Root::~Root()
 	delete this->coreWindow;
 }
 
+static const size_t bufferMax = 1000;
+static QString bufferedMessages[bufferMax];
+static size_t bufferPos = 0;
+static size_t bufferCount = 0;
+static QMutex bufferMutex;
+static QString msgTypeToString(QtMsgType type) {
+    switch (type) {
+    case QtDebugMsg: return "Debug";
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+    case QtInfoMsg: return "Info";
+#endif
+    case QtWarningMsg: return "Warning";
+    case QtCriticalMsg: return "Critical";
+    case QtFatalMsg: return "Fatal";
+    default: return QString::number(type);
+    }
+}
+static QtMessageHandler handler = nullptr;
+static void myHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+    QString fullMsg = "[" + msgTypeToString(type) + "] " + msg;
+    {
+        QMutexLocker locker(&bufferMutex);
+        bufferedMessages[bufferPos] = fullMsg;
+        if (bufferPos + 1 > bufferCount)
+            bufferCount = bufferPos + 1;
+        bufferPos = (bufferPos + 1) % bufferMax;
+    }
+    if (::root)
+        emit ::root->logEmitted(fullMsg);
+    else if (handler)
+        handler(type, context, msg);
+    else
+        abort();
+}
+QVector<QString> Root::getBufferedMessages() {
+    QMutexLocker locker(&bufferMutex);
+    QVector<QString> list(bufferCount);
+    for (std::size_t i = 0; i < bufferCount; i++)
+        list[i] = bufferedMessages[(bufferPos + bufferMax - bufferCount + i) % bufferMax];
+    return list;
+}
+
 int Root::startVoxie(QApplication &app, QCommandLineParser& parser)
 {
+    handler = qInstallMessageHandler(myHandler);
+
     MetatypeRegistration::registerMetatypes();
     initDBusTypes();
 

@@ -44,6 +44,9 @@ ScriptConsole::ScriptConsole(QWidget *parent) :
 	this->setLayout(vlayout);
 
 	connect(Root::instance(), &Root::logEmitted, this, &ScriptConsole::appendLog);
+
+    for (const auto& msg : Root::getBufferedMessages())
+        this->scriptLog->append(msg);
 }
 
 void ScriptConsole::executeScript()

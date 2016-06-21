@@ -156,6 +156,8 @@ public:
     virtual bool disableOpenGL() const { return disableOpenGL_; }
     virtual bool disableOpenCL() const { return disableOpenCL_; }
 
+    static QVector<QString> getBufferedMessages();
+
 public:
     /**
      * @brief Quits voxie.
