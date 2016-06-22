@@ -1,9 +1,14 @@
 #include "isosurfaceview.hpp"
 
-#include <PluginVis3D/marchingcubes.hpp>
 #include <PluginVis3D/sharpthread.hpp>
+#include <PluginVis3D/surfaceextractor.hpp>
+#include <PluginVis3D/cuberille.hpp>
+#include <PluginVis3D/marchingcubes.hpp>
 
 #include <Voxie/data/voxeldata.hpp>
+#include <Voxie/data/surfacebuilder.hpp>
+
+#include <Voxie/io/operation.hpp>
 
 #include <math.h>
 
@@ -19,10 +24,8 @@
 using namespace voxie::data;
 
 IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent) :
-    QGLWidget(parent),
+    OpenGLWidget(parent),
     voxelData(voxelData),
-    fWidth(1.0f), fHeight(1.0f),
-    lists(),
     view3d(new voxie::visualization::View3D(this, true, this->voxelData->diagonalSize())),
     threshold(10),
     inverted(false),
@@ -46,8 +49,12 @@ IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent)
         {
             vlayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
             this->progressBar = new QProgressBar();
+            this->progressBar->setMinimum(0);
+            this->progressBar->setMaximum(1000000);
             this->progressBar->setMaximumSize(250, 30);
-            connect(this, &IsosurfaceView::progressChanged, this->progressBar, &QProgressBar::setValue);
+            connect(this, &IsosurfaceView::progressChanged, this->progressBar, [this](float value) {
+                    this->progressBar->setValue((int) (value * 1000000 + 0.5));
+                });
             vlayout->addWidget(this->progressBar);
             vlayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
         }
@@ -57,138 +64,167 @@ IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent)
     this->setLayout(hlayout);
 
     connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->repaint(); });
+
+    qRegisterMetaType<QSharedPointer<voxie::data::Surface>>();
+
+    connect(this, &IsosurfaceView::generationDone, this, &IsosurfaceView::updateSurface);
 }
 
-void IsosurfaceView::genCube(const QVector3D &position, int sides)
-{
-    QVector3D spacing = this->voxelData->filteredData()->getSpacing();
-
-    QVector3D size = 0.5f * spacing;
-
-    QVector3D pos;
-    pos.setX(position.x() * spacing.x());
-    pos.setY(position.y() * spacing.y());
-    pos.setZ(position.z() * spacing.z());
-
-    QVector3D min = pos - size;
-    QVector3D max = pos + size;
-
-    // Front (+z)
-    if(sides & 1)
-    {
-        glColor3f(0.8f, 0.8f, 0.8f);
-        glVertex3f(min.x(), min.y(), max.z());
-        glVertex3f(max.x(), min.y(), max.z());
-        glVertex3f(max.x(), max.y(), max.z());
-        glVertex3f(min.x(), max.y(), max.z());
+QString IsosurfaceView::initialize() {
+    if (!vao.create()) {
+        return "Creating VAO failed";
+        //qWarning() << "Creating VAO failed";
     }
 
-    // Back (-z)
-    if(sides & 2)
-    {
-        glColor3f(0.4f, 0.4f, 0.4f);
-        glVertex3f(min.x(), min.y(), min.z());
-        glVertex3f(max.x(), min.y(), min.z());
-        glVertex3f(max.x(), max.y(), min.z());
-        glVertex3f(min.x(), max.y(), min.z());
+    const char* vshader =
+        "#version 110\n"
+        "\n"
+        "attribute vec3 vertexPosition_modelspace;\n"
+        "attribute vec3 vertexColor;\n"
+        "\n"
+        "varying vec4 fragmentColor;\n"
+        "\n"
+        "uniform mat4 MVP;\n"
+        "\n"
+        "void main() {\n"
+        "    gl_Position = MVP * vec4(vertexPosition_modelspace,1);\n"
+        "    fragmentColor = vec4(vertexColor, 1);\n"
+        "}\n"
+        ;
+    if (!program.addShaderFromSourceCode(QOpenGLShader::Vertex, vshader)) {
+        return "Compiling vertex shader failed";
+    }
+    
+    const char* fshader =
+        "#version 110\n"
+        "\n"
+        "varying vec4 fragmentColor;\n"
+        "\n"
+        "void main(){\n"
+        "\n"
+        "    gl_FragColor = fragmentColor;\n"
+        "\n"
+        "}\n"
+        ;
+    if (!program.addShaderFromSourceCode(QOpenGLShader::Fragment, fshader)) {
+        return "Compiling fragment shader failed";
     }
 
-    // Left (+x)
-    if(sides & 4)
-    {
-        glColor3f(0.6f, 0.6f, 0.6f);
-        glVertex3f(max.x(), min.y(), min.z());
-        glVertex3f(max.x(), min.y(), max.z());
-        glVertex3f(max.x(), max.y(), max.z());
-        glVertex3f(max.x(), max.y(), min.z());
+    if (!program.link()) {
+        return "Linking shaders failed";
     }
 
-    // Right (-x)
-    if(sides & 8)
-    {
-        glColor3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(min.x(), min.y(), min.z());
-        glVertex3f(min.x(), min.y(), max.z());
-        glVertex3f(min.x(), max.y(), max.z());
-        glVertex3f(min.x(), max.y(), min.z());
+    MVP_ID = glGetUniformLocation(program.programId(), "MVP");
+    
+    vertexPosition_modelspaceID = glGetAttribLocation(program.programId(), "vertexPosition_modelspace");
+    vertexColorID = glGetAttribLocation(program.programId(), "vertexColor");
+
+    vao.bind();
+
+    if (!program.bind()) {
+        return "Binding shaders failed";
     }
 
-    // Top (+y)
-    if(sides & 16)
-    {
-        glColor3f(0.7f, 0.7f, 0.7f);
-        glVertex3f(min.x(), max.y(), min.z());
-        glVertex3f(min.x(), max.y(), max.z());
-        glVertex3f(max.x(), max.y(), max.z());
-        glVertex3f(max.x(), max.y(), min.z());
+    if (!vertexbuffer.create()) {
+        return "Vertex buffer create failed";
     }
 
-    // Bottom (-y)
-    if(sides & 32)
-    {
-        glColor3f(0.3f, 0.3f, 0.3f);
-        glVertex3f(min.x(), min.y(), min.z());
-        glVertex3f(min.x(), min.y(), max.z());
-        glVertex3f(max.x(), min.y(), max.z());
-        glVertex3f(max.x(), min.y(), min.z());
+    if (!colorbuffer.create()) {
+        return "Color buffer create failed";
     }
+
+    return "";
 }
 
-void IsosurfaceView::initializeGL()
-{
+static void push(QVector<GLfloat>& array, const QVector3D& data) {
+    array.push_back(data.x());
+    array.push_back(data.y());
+    array.push_back(data.z());
 }
+
+/*
+static void push(QVector<GLfloat>& array, const QVector4D& data) {
+    array.push_back(data.x());
+    array.push_back(data.y());
+    array.push_back(data.z());
+    array.push_back(data.w());
+}
+*/
 
 void IsosurfaceView::regenerate()
 {
     if(this->voxelData == nullptr)
         return;
 
-    SharpThread *threat = new SharpThread([this]() -> void { this->generateModel(); }, this);
+    SharpThread *thread = new SharpThread([this]() -> void { this->generateModel(); }, this);
 
-    connect(threat, &QThread::finished, threat, &QObject::deleteLater);
-    connect(threat, &QThread::finished, this->progressBar, &QWidget::hide);
-    connect(threat, &QThread::started, this->progressBar, &QWidget::show);
+    this->progressBar->setValue(0);
+
+    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    connect(thread, &QThread::finished, this->progressBar, &QWidget::hide);
+    connect(thread, &QThread::started, this->progressBar, &QWidget::show);
 
     this->generating = true;
-    this->context()->doneCurrent();
-    this->context()->moveToThread(threat);
-    threat->start();
+    thread->start();
 }
 
 void IsosurfaceView::generateModel()
 {
-    qDebug() << "Regenrating...";
+    qDebug() << "Regenrating surface...";
+
+    QScopedPointer<voxie::io::Operation> operation(new voxie::io::Operation());
+    connect(operation.data(), &voxie::io::Operation::progressChanged, this, &IsosurfaceView::progressChanged);
+
+    QScopedPointer<SurfaceExtractor> extractor;
+    if (!this->useMarchingCubes) {
+        extractor.reset(new Cuberille());
+    } else {
+        extractor.reset(new MarchingCubes());
+    }
+
+    auto surface = extractor->extract(operation.data(), this->voxelData->filteredData(), this->threshold, this->inverted);
+
+    qDebug() << "Generated surface: Vertices:" << surface->vertices().size() << "/ Triangles:" << surface->triangles().size();
+
+    emit generationDone(surface);
+}
+
+void IsosurfaceView::updateSurface(const QSharedPointer<voxie::data::Surface>& surface) {
+    this->generating = false;
+    this->surface = surface;
+    this->uploadData();
+    this->update();
+}
+
+// Like QVector3D::normalized(), but with a smaller minimum size
+static QVector3D normalized(const QVector3D& value) {
+    double absSquared = double(value.x()) * double(value.x()) +
+        double(value.y()) * double(value.y()) +
+        double(value.z()) * double(value.z());
+    if (absSquared >= 1e-50) { // minimum length 1e-25
+        double len = std::sqrt(absSquared);
+        return QVector3D(float(double(value.x()) / len),
+                         float(double(value.y()) / len),
+                         float(double(value.z()) / len));
+    } else {
+        return QVector3D();
+    }
+}
+
+void IsosurfaceView::uploadData() {
+    // TODO: Use indexed mode?
+    // TODO: Do normal / light calculation in shader?
+
+    triangleCount = 0;
+
     this->makeCurrent();
 
-    for(GLuint list : this->lists)
-    {
-        glDeleteLists(list, 1);
-    }
-    this->lists.clear();
-
-    size_t x, y, z;
-    voxie::scripting::IntVector3 dim = this->voxelData->filteredData()->getDimensions();
-    voxie::scripting::IntVector3 upper = dim;
-    upper.x -= 1;
-    upper.y -= 1;
-    upper.z -= 1;
-
-    const size_t voxelPerList = 250000;
-
-    this->progressBar->setMinimum(0);
-    this->progressBar->setMaximum(dim.x - 1);
-
-    QVector3D spacing = this->voxelData->filteredData()->getSpacing();
-    QVector3D origin = this->voxelData->filteredData()->getFirstVoxelPosition();
-
-    struct Light
-    {
+    struct Light {
         QVector3D dir;
         QVector3D color;
     };
 
-    Light lights[] =
-    {
+    Light lights[] = {
         {
             QVector3D(0.7f, -1.0f, 0.4f).normalized(),
             //{ 0.8f, 0.8f, 1.0f }
@@ -200,274 +236,117 @@ void IsosurfaceView::generateModel()
         }
     };
 
-    static const QVector3D offsets[] =
-    {
-        QVector3D(0, 0, 1),
-        QVector3D(1, 0, 1),
-        QVector3D(1, 0, 0),
-        QVector3D(0, 0, 0),
-        QVector3D(0, 1, 1),
-        QVector3D(1, 1, 1),
-        QVector3D(1, 1, 0),
-        QVector3D(0, 1, 0)
-    };
+    QVector<GLfloat> vertices;
+    QVector<GLfloat> colors;
 
-    bool regen = true;
-    size_t counter = 0;
-    for(x = 0; x < dim.x; x++)
-    {
-        for(y = 0; y < dim.y; y++)
-        {
-            for(z = 0; z < dim.z; z++)
-            {
-                if(this->voxelData == nullptr)
-                    return;
-                Voxel voxel = this->voxelData->filteredData()->getVoxel(x, y, z);
-                if(this->useMarchingCubes == false)
-                {
-                    if((voxel < this->threshold) ^ this->inverted)
-                        continue;
+    for (int i = 0; i < surface->triangles().size(); i++) {
+        const auto& triangle = surface->triangles()[i];
+        QVector3D a = surface->vertices()[triangle[0]];
+        QVector3D b = surface->vertices()[triangle[1]];
+        QVector3D c = surface->vertices()[triangle[2]];
 
-                    int majoraMask = 0xFF;
-                    if((x > 0) && ((this->voxelData->filteredData()->getVoxel(x-1,y,z) >= this->threshold) ^ this->inverted))
-                    {
-                        majoraMask &= ~8;
-                    }
-                    if((y > 0) && ((this->voxelData->filteredData()->getVoxel(x,y-1,z) >= this->threshold) ^ this->inverted))
-                    {
-                        majoraMask &= ~32;
-                    }
-                    if((z > 0) && ((this->voxelData->filteredData()->getVoxel(x,y,z-1) >= this->threshold) ^ this->inverted))
-                    {
-                        majoraMask &= ~2;
-                    }
-                    if((x < upper.x) && ((this->voxelData->filteredData()->getVoxel(x+1,y,z) >= this->threshold) ^ this->inverted))
-                    {
-                        majoraMask &= ~4;
-                    }
-                    if((y < upper.y) && ((this->voxelData->filteredData()->getVoxel(x,y+1,z) >= this->threshold) ^ this->inverted))
-                    {
-                        majoraMask &= ~16;
-                    }
-                    if((z < upper.z) && ((this->voxelData->filteredData()->getVoxel(x,y,z+1) >= this->threshold) ^ this->inverted))
-                    {
-                        majoraMask &= ~1;
-                    }
+        QVector3D normal = normalized(QVector3D::crossProduct(b - c, c - a));
+ 
+        // TODO: What to do with very small triangles where the cross product is almost zero?
+        /*
+          if (normal == QVector3D(0,0,0))
+          qDebug()<<"X"<<triangles[i].p[0]<<triangles[i].p[1]<<triangles[i].p[2];
+        */
 
-                    if((majoraMask & 192) != 0)
-                    {
-                        if(counter == 0 && regen)
-                        {
-                            GLuint list = glGenLists(1);
+        QVector3D color(0.1f, 0.1f, 0.1f);
 
-                            this->lists.append(list);
-
-                            glNewList(list, GL_COMPILE);
-                            glPointSize(1.0f);
-                            glBegin(GL_QUADS);
-                            regen = false;
-                        }
-                        glColor3f(voxel, voxel, voxel);
-                        QVector3D pos(x,y,z);
-                        this->genCube(pos, majoraMask);
-
-                        counter++;
-                    }
-                }
-                else
-                {
-                    ::TRIANGLE triangles[64];
-                    ::GRIDCELL cell;
-
-                    QVector3D pos = QVector3D(
-                                x * spacing.x(),
-                                y * spacing.y(),
-                                z * spacing.z()) - 0.5f * spacing;
-
-                    for(int i = 0; i < 8; i++)
-                    {
-                        cell.p[i] = pos + offsets[i] * spacing + origin;
-                        cell.val[i] = this->voxelData->filteredData()->getVoxelMetric(
-                                    cell.p[i].x(),
-                                    cell.p[i].y(),
-                                    cell.p[i].z(),
-                                    InterpolationMethod::linear);
-                        if(this->inverted)
-                        {
-                            cell.val[i] = -(cell.val[i] - this->threshold) + this->threshold;
-                        }
-                        if(isnan(cell.val[i]))
-                            cell.val[i] = 0.5 * this->threshold;
-                    }
-                    int count = Polygonise(cell, this->threshold, triangles, false);
-                    if(count == 0)
-                        continue;
-
-                    if(counter == 0 && regen)
-                    {
-                        GLuint list = glGenLists(1);
-
-                        this->lists.append(list);
-
-                        glNewList(list, GL_COMPILE);
-                        glPointSize(1.0f);
-                        glBegin(GL_TRIANGLES);
-                        regen = false;
-                    }
-
-                    for(int i = 0; i < count; i++)
-                    {
-                        QVector3D _a = (triangles[i].p[1] - triangles[i].p[0]).normalized();
-                        QVector3D _b = (triangles[i].p[2] - triangles[i].p[0]).normalized();
-
-                        QVector3D normal = QVector3D::crossProduct(_a, _b).normalized();
-
-                        // TODO: What to do with very small triangles where the cross product is almost zero?
-                        /*
-                        if (normal == QVector3D(0,0,0))
-                            qDebug()<<"X"<<triangles[i].p[0]<<triangles[i].p[1]<<triangles[i].p[2];
-                        */
-
-                        QVector3D color(0.1f, 0.1f, 0.1f);
-
-                        for(size_t i = 0; i < (sizeof(lights) / sizeof(Light)); i++)
-                        {
-                            float lighting = fmax(0.0f, QVector3D::dotProduct(normal, lights[i].dir));
-                            color += 0.5f * lighting * lights[i].color;
-                        }
-
-                        glColor3f(color.x(), color.y(), color.z());
-
-                        for(int j = 0; j < 3; j++)
-                        {
-                            glVertex3f(
-                                triangles[i].p[j].x() - origin.x(),
-                                triangles[i].p[j].y() - origin.x(),
-                                triangles[i].p[j].z() - origin.x());
-                        }
-
-                        counter += 50;
-                    }
-                }
-                if(counter >= voxelPerList)
-                {
-                    glEnd();
-                    glEndList();
-                    counter = 0;
-                    regen = true;
-                    qDebug() << "Generated list:" << this->lists.size();
-                }
-            }
-            emit this->progressChanged(x);
+        for(size_t i = 0; i < (sizeof(lights) / sizeof(Light)); i++) {
+            float lighting = fmax(0.0f, QVector3D::dotProduct(normal, lights[i].dir));
+            color += 0.5f * lighting * lights[i].color;
         }
+
+        /*
+        QVector4D colorA(color.x(), color.y(), color.z(), 1.0f);
+        push(colors, colorA);
+        push(colors, colorA);
+        push(colors, colorA);
+        */
+        push(colors, color);
+        push(colors, color);
+        push(colors, color);
+
+        push(vertices, a);
+        push(vertices, b);
+        push(vertices, c);
     }
 
-    if(counter > 0)
-    {
-        glEnd();
-        glEndList();
-    }
-
-    qDebug() << "Generated" << this->lists.size() << "lists.";
-
-    this->context()->doneCurrent();
-    this->context()->moveToThread(this->thread());
-
-    this->generating = false;
-}
-
-void IsosurfaceView::glInit()
-{
-    if(this->generating == true)
-        return;
-    QGLWidget::glInit();
-}
-
-void IsosurfaceView::glDraw()
-{
-    if(this->generating == true)
-        return;
-    QGLWidget::glDraw();
-}
-
-void IsosurfaceView::resizeEvent(QResizeEvent *event)
-{
-    if(this->generating == true)
-        return;
-    QGLWidget::resizeEvent(event);
-}
-
-void IsosurfaceView::paintEvent(QPaintEvent *event)
-{
-    if(this->generating == true)
-    {
+    if (!vertexbuffer.bind()) {
+        qCritical() << "Binding vertex buffer failed";
         return;
     }
-    else
-    {
-        QGLWidget::paintEvent(event);
-    }
-}
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-void IsosurfaceView::resizeGL(int w, int h)
-{
-    this->fWidth = static_cast<float>(w);
-    this->fHeight = static_cast<float>(h);
-    this->fHeight = std::max<float>(this->fHeight, 1);
-}
-
-void IsosurfaceView::paintGL()
-{
-    if(this->generating)
-    {
-        // Render nothing here
+    if (!colorbuffer.bind()) {
+        qCritical() << "Binding color buffer failed";
         return;
     }
-    glViewport(0, 0, static_cast<int>(this->fWidth), static_cast<int>(this->fHeight));
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
 
+    triangleCount = vertices.size() / 3;
+
+    this->doneCurrent();
+}
+
+void IsosurfaceView::paint() {
     QColor color = this->palette().background().color();
 
     glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if(this->voxelData == nullptr)
-    {
+    if (!voxelData || !surface)
         return;
-    }
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    QVector3D origin = this->voxelData->filteredData()->getFirstVoxelPosition();
+    //glEnable(GL_CULL_FACE);
+    //glFrontFace(GL_CW);
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    /// Setup projection and view matrix
-    ///////////////////////////////////////////////////////////////////////////////////
-    glMatrixMode(GL_PROJECTION);
-    {
-        QMatrix4x4 matViewProj = view3d->projectionMatrix(this->fWidth, this->fHeight) * view3d->viewMatrix();
+    glPointSize(1.0f);
 
-        glLoadMatrixf(matViewProj.constData());
+    glUseProgram(program.programId());
+
+    QMatrix4x4 matViewProj = view3d->projectionMatrix(this->width(), this->height()) * view3d->viewMatrix();
+    glUniformMatrix4fv(MVP_ID, 1, GL_FALSE, matViewProj.constData());
+
+    // 1st attribute buffer : vertices
+    glEnableVertexAttribArray(vertexPosition_modelspaceID);
+    if (!vertexbuffer.bind()) {
+        qCritical() << "Binding vertex buffer failed";
+        return;
     }
-    glMatrixMode(0);
+    glVertexAttribPointer(vertexPosition_modelspaceID,  // attribute
+                          3,                  // size
+                          GL_FLOAT,           // type
+                          GL_FALSE,           // normalized?
+                          0,                  // stride
+                          (void*)0            // array buffer offset
+                          );
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    /// Render data set cuboid
-    ///////////////////////////////////////////////////////////////////////////////////
-    glMatrixMode(GL_MODELVIEW);
-    {
-        glLoadIdentity();
-        glTranslatef(origin.x(), origin.y(), origin.z());
+    // 2nd attribute buffer : colors
+    glEnableVertexAttribArray(vertexColorID);
+    if (!colorbuffer.bind()) {
+        qCritical() << "Binding color buffer failed";
+        return;
     }
-    glMatrixMode(0);
+    glVertexAttribPointer(vertexColorID,  // attribute
+                          3,              // size
+                          GL_FLOAT,       // type
+                          GL_FALSE,       // normalized?
+                          0,              // stride
+                          (void*)0        // array buffer offset
+                          );
 
-    if(this->lists.size() > 0)
-    {
-        glCallLists(this->lists.size(), GL_UNSIGNED_INT, this->lists.data());
-    }
+    glDrawArrays(GL_TRIANGLES, 0, triangleCount);
 
-    this->update();
+    glDisableVertexAttribArray(vertexPosition_modelspaceID);
+    glDisableVertexAttribArray(vertexColorID);
 }
 
 

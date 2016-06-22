@@ -2,45 +2,62 @@
 
 #include <Voxie/data/dataset.hpp>
 
+#include <Voxie/visualization/openglwidget.hpp>
 #include <Voxie/visualization/view3d.hpp>
 
-#include <QtOpenGL/QGLWidget>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QtGui/QOpenGLVertexArrayObject>
+#include <QtGui/QOpenGLBuffer>
+#include <QtGui/QOpenGLFunctions>
 
 #include <QtWidgets/QProgressBar>
 
-class IsosurfaceView :
-        public QGLWidget
-{
+namespace voxie { namespace data {
+    class Surface;
+    class SurfaceBuilder;
+} }
+
+class IsosurfaceView : public voxie::visualization::OpenGLWidget {
     Q_OBJECT
     voxie::data::DataSet *voxelData;
 private:
     bool generating = false;
-    float fWidth, fHeight;
     QPoint mouseLast;
-    QVector<GLuint> lists;
+    QSharedPointer<voxie::data::Surface> surface;
 
     QProgressBar *progressBar;
 
     voxie::visualization::View3D* view3d;
 
-    void genCube(const QVector3D &pos, int sides);
+    QOpenGLVertexArrayObject vao;
+    QOpenGLShaderProgram program;
+    GLuint MVP_ID;
+    GLuint vertexPosition_modelspaceID;
+    GLuint vertexColorID;
+    QOpenGLBuffer vertexbuffer;
+    QOpenGLBuffer colorbuffer;
+    size_t triangleCount;
+
+    void draw(GLenum mode, const QVector<GLfloat>& vertices, const QVector<GLfloat>& colors, size_t count, const QMatrix4x4& modelMatrix);
+
+    void genCube(const QVector3D &pos, int sides, voxie::data::SurfaceBuilder* sb);
 
     void generateModel();
+
+    void uploadData();
+
+private slots:
+    void updateSurface(const QSharedPointer<voxie::data::Surface>& surface);
+
 public:
     explicit IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent = 0);
 
-    virtual void glInit() override;
-    virtual void glDraw() override;
-
-    virtual void initializeGL() override;
-    virtual void resizeGL(int w, int h) override;
-    virtual void paintGL() override;
+    virtual QString initialize() override;
+    virtual void paint() override;
 
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void mouseMoveEvent(QMouseEvent *event) override;
     virtual void wheelEvent(QWheelEvent *event) override;
-    virtual void resizeEvent(QResizeEvent *event) override;
-    virtual void paintEvent(QPaintEvent *event) override;
 
     void regenerate();
 
@@ -50,10 +67,9 @@ public:
     bool useMarchingCubes;
 
 signals:
-    void progressChanged(int x);
+    void progressChanged(float x);
 
-public slots:
-
+    void generationDone(const QSharedPointer<voxie::data::Surface>& surface);
 };
 
 

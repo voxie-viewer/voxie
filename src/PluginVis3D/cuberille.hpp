@@ -2,14 +2,12 @@
 
 #include <PluginVis3D/surfaceextractor.hpp>
 
-#include <QtGui/QVector3D>
-
-class MarchingCubes : public SurfaceExtractor {
+class Cuberille : public SurfaceExtractor {
     Q_OBJECT
 
 public:
-    MarchingCubes(QObject* parent = nullptr);
-    ~MarchingCubes();
+    Cuberille(QObject* parent = nullptr);
+    ~Cuberille();
 
     virtual QSharedPointer<voxie::data::Surface> extract(voxie::io::Operation* operation, voxie::data::VoxelData* data, float threshold, bool invert);
 };

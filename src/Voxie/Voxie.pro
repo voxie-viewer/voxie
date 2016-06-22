@@ -19,6 +19,8 @@ SOURCES += \
     data/sharedmemory.cpp \
     data/slice.cpp \
     data/sliceimage.cpp \
+    data/surface.cpp \
+    data/surfacebuilder.cpp \
     data/voxeldata.cpp \
     filter/filter2d.cpp \
     filter/filter3d.cpp \
@@ -35,6 +37,7 @@ SOURCES += \
     histogram/histogram.cpp \
     io/importer.cpp \
     io/loader.cpp \
+    io/operation.cpp \
     io/sliceexporter.cpp \
     io/voxelexporter.cpp \
     opencl/clinstance.cpp \
@@ -69,6 +72,8 @@ HEADERS += \
     data/slice.hpp \
     data/sliceimage.hpp \
     data/sliceimagecontext.hpp \
+    data/surface.hpp \
+    data/surfacebuilder.hpp \
     data/voxeldata.hpp \
     filter/filter2d.hpp \
     filter/filter3d.hpp \
@@ -84,6 +89,7 @@ HEADERS += \
     histogram/histogram.hpp \
     io/importer.hpp \
     io/loader.hpp \
+    io/operation.hpp \
     io/sliceexporter.hpp \
     io/voxelexporter.hpp \
     opencl/clinstance.hpp \

@@ -116,6 +116,7 @@ Voxel VoxelData::getVoxelMetric(qreal x, qreal y, qreal z, InterpolationMethod m
 		qreal kx = x - (size_t)x;
 		qreal ky = y - (size_t)y;
 		qreal kz = z - (size_t)z;
+        //qDebug() << kx << ky << kz;
 		Voxel vox =	 kx*ky*kz*			   getVoxelSafe(x+1,y+1,z+1)
 				+	   kx*ky*(1-kz)*		   getVoxelSafe(x+1,y+1,z)
 				+	   kx*(1-ky)*kz*		   getVoxelSafe(x+1,y,z+1)

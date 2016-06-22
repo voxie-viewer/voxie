@@ -1,5 +1,42 @@
 #include "marchingcubes.hpp"
 
+#include <Voxie/data/surfacebuilder.hpp>
+#include <Voxie/data/voxeldata.hpp>
+
+#include <Voxie/io/operation.hpp>
+
+#include <QtCore/QSharedPointer>
+
+using namespace voxie::data;
+
+struct TRIANGLE
+{
+   QVector3D p[3];
+};
+
+struct GRIDCELL
+{
+   QVector3D p[8];
+   double val[8];
+};
+
+/*
+   Linearly interpolate the position where an isosurface cuts
+   an edge between two vertices, each with their own scalar value
+*/
+static QVector3D VertexInterp(double isolevel, const QVector3D &p1, const QVector3D &p2, double valp1, double valp2);
+
+
+/*
+   Given a grid cell and an isolevel, calculate the triangular
+   facets required to represent the isosurface through the cell.
+   Return the number of triangular facets, the array "triangles"
+   will be loaded up with the vertices at most 5 triangular facets.
+    0 will be returned if the grid cell is either totally above
+   of totally below the isolevel.
+*/
+static int Polygonise(const GRIDCELL &grid, double isolevel, TRIANGLE *triangles, bool invert);
+
 int edgeTable[256]={
     0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
     0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
@@ -399,6 +436,65 @@ int Polygonise(const GRIDCELL &grid, double isolevel, TRIANGLE *triangles, bool 
    }
 
    return(ntriang);
+}
+
+MarchingCubes::MarchingCubes(QObject* parent) : SurfaceExtractor(parent) {
+}
+MarchingCubes::~MarchingCubes() {
+}
+
+QSharedPointer<Surface> MarchingCubes::extract(voxie::io::Operation* operation, voxie::data::VoxelData* data, float threshold, bool invert) {
+    voxie::scripting::IntVector3 dim = data->getDimensions();
+
+    QVector3D spacing = data->getSpacing();
+    QVector3D origin = data->getFirstVoxelPosition();
+
+    static const int offsets[][3] = {
+        {0, 0, 1},
+        {1, 0, 1},
+        {1, 0, 0},
+        {0, 0, 0},
+        {0, 1, 1},
+        {1, 1, 1},
+        {1, 1, 0},
+        {0, 1, 0},
+    };
+
+    QScopedPointer<SurfaceBuilder> sb(new SurfaceBuilder());
+
+    for(ptrdiff_t x = 0; x <= (ptrdiff_t) dim.x; x++) {
+        for(ptrdiff_t y = 0; y <= (ptrdiff_t) dim.y; y++) {
+            for(ptrdiff_t z = 0; z <= (ptrdiff_t) dim.z; z++) {
+                operation->throwIfCancelled();
+
+                ::TRIANGLE triangles[64];
+                ::GRIDCELL cell;
+
+                for(int i = 0; i < 8; i++) {
+                    QVector3D pos = origin + QVector3D
+                        ((x + offsets[i][0] - 0.5f) * spacing.x(),
+                         (y + offsets[i][1] - 0.5f) * spacing.y(),
+                         (z + offsets[i][2] - 0.5f) * spacing.z());
+
+                    cell.p[i] = pos;
+                    cell.val[i] = data->getVoxelSafe(x + offsets[i][0] - 1, y + offsets[i][1] - 1, z + offsets[i][2] - 1);
+                    if(invert)
+                        cell.val[i] = -(cell.val[i] - threshold) + threshold;
+                    if(isnan(cell.val[i]))
+                        cell.val[i] = 0;
+                }
+                int count = Polygonise(cell, threshold, triangles, false);
+                if(count == 0)
+                    continue;
+
+                for(int i = 0; i < count; i++)
+                    sb->addTriangle(triangles[i].p[0], triangles[i].p[1], triangles[i].p[2]);
+            }
+        }
+        operation->updateProgress(1.0f * x / dim.x);
+    }
+
+    return sb->createSurfaceClearBuilder();
 }
 
 // Local Variables:
