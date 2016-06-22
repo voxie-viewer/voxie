@@ -22,6 +22,7 @@ class IsosurfaceView : public voxie::visualization::OpenGLWidget {
     voxie::data::DataSet *voxelData;
 private:
     bool generating = false;
+    bool generationRequested = false;
     QPoint mouseLast;
     QSharedPointer<voxie::data::Surface> surface;
 
@@ -61,10 +62,21 @@ public:
 
     void regenerate();
 
+    // Like QVector3D::normalized(), but with a smaller minimum size
+    static QVector3D normalized(const QVector3D& value);
+
+    const QSharedPointer<voxie::data::Surface>& getSurface() const { return surface; }
+
+    enum Culling {
+        NO_CULLING, SHOW_FRONT, SHOW_BACK
+    };
+
 public:
     float threshold;
     bool inverted;
     bool useMarchingCubes;
+
+    Culling culling;
 
 signals:
     void progressChanged(float x);

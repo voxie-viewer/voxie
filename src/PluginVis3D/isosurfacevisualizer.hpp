@@ -10,21 +10,22 @@
 
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QLineEdit>
-#include <QtWidgets/QSlider>
+#include <QtWidgets/QDoubleSpinBox>
 
 class IsosurfaceVisualizer :
         public voxie::visualization::VolumeDataVisualizer
 {
     Q_OBJECT
-private:
+
     voxie::data::DataSet *voxelData_;
     IsosurfaceView *view;
 
-    QLineEdit *thresholdEdit;
-    QSlider *thresholdSlider;
-    QComboBox *methodBox;
-    QCheckBox *invertedCheck;
+    QDoubleSpinBox* thresholdEdit;
+    QComboBox* methodBox;
+    QCheckBox* invertedCheck;
+
+    QComboBox* culling;
+
 public:
     explicit IsosurfaceVisualizer(voxie::data::DataSet *voxelData, QWidget *parent = 0);
 
@@ -35,14 +36,7 @@ public:
 private slots:
     void refresh3D();
 
-    void refreshTextEdit(int value);
-
-    void refreshSlider(const QString &text);
-
-signals:
-
-public slots:
-
+    void saveAsSTL();
 };
 
 // Local Variables:

@@ -155,6 +155,10 @@ void IsosurfaceView::regenerate()
 {
     if(this->voxelData == nullptr)
         return;
+    if (generating) {
+        generationRequested = true;
+        return;
+    }
 
     SharpThread *thread = new SharpThread([this]() -> void { this->generateModel(); }, this);
 
@@ -194,10 +198,14 @@ void IsosurfaceView::updateSurface(const QSharedPointer<voxie::data::Surface>& s
     this->surface = surface;
     this->uploadData();
     this->update();
+    if (generationRequested) {
+        generationRequested = false;
+        regenerate();
+    }
 }
 
 // Like QVector3D::normalized(), but with a smaller minimum size
-static QVector3D normalized(const QVector3D& value) {
+QVector3D IsosurfaceView::normalized(const QVector3D& value) {
     double absSquared = double(value.x()) * double(value.x()) +
         double(value.y()) * double(value.y()) +
         double(value.z()) * double(value.z());
@@ -305,8 +313,19 @@ void IsosurfaceView::paint() {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    //glEnable(GL_CULL_FACE);
-    //glFrontFace(GL_CW);
+    switch (culling) {
+    case SHOW_FRONT:
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
+        break;
+    case SHOW_BACK:
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CW);
+        break;
+    default:
+        glDisable(GL_CULL_FACE);
+        break;
+    }
 
     glPointSize(1.0f);
 
