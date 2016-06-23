@@ -56,6 +56,7 @@ Slice* DataSet::createSlice()
 {
 	auto slice = new Slice(this);
 	voxie::voxieRoot().registerSlice(slice);
+    emit sliceCreated(slice);
     return slice;
 }
 
@@ -65,6 +66,7 @@ QString DataSet::createSlice(QString sliceName)
     if(!sliceName.isEmpty())
         slice->setObjectName(sliceName);
     voxie::voxieRoot().registerSlice(slice);
+    emit sliceCreated(slice);
     return slice->objectName();
 }
 

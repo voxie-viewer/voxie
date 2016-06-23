@@ -7,6 +7,7 @@
 
 #include <Voxie/data/voxeldata.hpp>
 #include <Voxie/data/surfacebuilder.hpp>
+#include <Voxie/data/slice.hpp>
 
 #include <Voxie/io/operation.hpp>
 
@@ -24,7 +25,7 @@
 using namespace voxie::data;
 
 IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent) :
-    OpenGLWidget(parent),
+    OpenGLDrawWidget(parent),
     voxelData(voxelData),
     view3d(new voxie::visualization::View3D(this, true, this->voxelData->diagonalSize())),
     threshold(10),
@@ -68,12 +69,48 @@ IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent)
     qRegisterMetaType<QSharedPointer<voxie::data::Surface>>();
 
     connect(this, &IsosurfaceView::generationDone, this, &IsosurfaceView::updateSurface);
+
+    connect(this->voxelData, &DataSet::sliceCreated, this, [this](Slice* slice){ this->addSlice(slice, true); });
+    for (auto slice : this->voxelData->getSlices()) {
+        addSlice(slice, false);
+    }
+
+    highlightTimer.setSingleShot(true);
+    connect(&highlightTimer, &QTimer::timeout, this, &IsosurfaceView::highlightTimeout);
+}
+
+void IsosurfaceView::addSlice(Slice* slice, bool changedNow) {
+    connect(slice, &Slice::planeChanged, this, [this](Plane oldPlane, Plane newPlane, bool equivalent) {
+            Q_UNUSED(oldPlane);
+            Q_UNUSED(equivalent);
+            updateSlice(newPlane);
+        });
+    if (changedNow)
+        updateSlice(slice->getCuttingPlane());
+}
+void IsosurfaceView::updateSlice(const Plane& newPlane) {
+    //qDebug() << newPlane.origin << newPlane.rotation;
+
+    highlightTimer.start(2000);
+    highlightedPlane = newPlane;
+    hasHighlightedPlane = true;
+    update();
+}
+void IsosurfaceView::highlightTimeout() {
+    //qDebug() << "Timeout";
+
+    hasHighlightedPlane = false;
+    update();
 }
 
 QString IsosurfaceView::initialize() {
+    QString error = OpenGLDrawWidget::initialize();
+    if (error != "")
+        return error;
+
     if (!vao.create()) {
-        return "Creating VAO failed";
-        //qWarning() << "Creating VAO failed";
+        //return "Creating VAO failed";
+        qWarning() << "Creating VAO failed";
     }
 
     const char* vshader =
@@ -119,37 +156,20 @@ QString IsosurfaceView::initialize() {
     vertexPosition_modelspaceID = glGetAttribLocation(program.programId(), "vertexPosition_modelspace");
     vertexColorID = glGetAttribLocation(program.programId(), "vertexColor");
 
-    vao.bind();
-
     if (!program.bind()) {
         return "Binding shaders failed";
     }
 
-    if (!vertexbuffer.create()) {
-        return "Vertex buffer create failed";
+    if (!surfaceVertexBuffer.create()) {
+        return "Surface vertex buffer create failed";
     }
 
-    if (!colorbuffer.create()) {
-        return "Color buffer create failed";
+    if (!surfaceColorBuffer.create()) {
+        return "Surface color buffer create failed";
     }
 
     return "";
 }
-
-static void push(QVector<GLfloat>& array, const QVector3D& data) {
-    array.push_back(data.x());
-    array.push_back(data.y());
-    array.push_back(data.z());
-}
-
-/*
-static void push(QVector<GLfloat>& array, const QVector4D& data) {
-    array.push_back(data.x());
-    array.push_back(data.y());
-    array.push_back(data.z());
-    array.push_back(data.w());
-}
-*/
 
 void IsosurfaceView::regenerate()
 {
@@ -223,7 +243,7 @@ void IsosurfaceView::uploadData() {
     // TODO: Use indexed mode?
     // TODO: Do normal / light calculation in shader?
 
-    triangleCount = 0;
+    vertexCount = 0;
 
     this->makeCurrent();
 
@@ -270,32 +290,36 @@ void IsosurfaceView::uploadData() {
 
         /*
         QVector4D colorA(color.x(), color.y(), color.z(), 1.0f);
-        push(colors, colorA);
-        push(colors, colorA);
-        push(colors, colorA);
+        PrimitiveBuffer::push(colors, colorA);
+        PrimitiveBuffer::push(colors, colorA);
+        PrimitiveBuffer::push(colors, colorA);
         */
-        push(colors, color);
-        push(colors, color);
-        push(colors, color);
+        PrimitiveBuffer::push(colors, color);
+        PrimitiveBuffer::push(colors, color);
+        PrimitiveBuffer::push(colors, color);
 
-        push(vertices, a);
-        push(vertices, b);
-        push(vertices, c);
+        PrimitiveBuffer::push(vertices, a);
+        PrimitiveBuffer::push(vertices, b);
+        PrimitiveBuffer::push(vertices, c);
     }
 
-    if (!vertexbuffer.bind()) {
-        qCritical() << "Binding vertex buffer failed";
+    if (!surfaceVertexBuffer.bind()) {
+        qCritical() << "Binding surface vertex buffer failed";
+        vertexCount = 0;
+        this->doneCurrent();
         return;
     }
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-    if (!colorbuffer.bind()) {
-        qCritical() << "Binding color buffer failed";
+    if (!surfaceColorBuffer.bind()) {
+        qCritical() << "Binding surface color buffer failed";
+        vertexCount = 0;
+        this->doneCurrent();
         return;
     }
     glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
 
-    triangleCount = vertices.size() / 3;
+    vertexCount = vertices.size() / 3;
 
     this->doneCurrent();
 }
@@ -307,65 +331,132 @@ void IsosurfaceView::paint() {
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (!voxelData || !surface)
+    if (!voxelData)
         return;
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-
-    switch (culling) {
-    case SHOW_FRONT:
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CCW);
-        break;
-    case SHOW_BACK:
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CW);
-        break;
-    default:
-        glDisable(GL_CULL_FACE);
-        break;
-    }
-
-    glPointSize(1.0f);
-
-    glUseProgram(program.programId());
 
     QMatrix4x4 matViewProj = view3d->projectionMatrix(this->width(), this->height()) * view3d->viewMatrix();
-    glUniformMatrix4fv(MVP_ID, 1, GL_FALSE, matViewProj.constData());
 
-    // 1st attribute buffer : vertices
-    glEnableVertexAttribArray(vertexPosition_modelspaceID);
-    if (!vertexbuffer.bind()) {
-        qCritical() << "Binding vertex buffer failed";
-        return;
+    if (surface && vertexCount != 0) {
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+
+        switch (culling) {
+        case SHOW_FRONT:
+            glEnable(GL_CULL_FACE);
+            glFrontFace(GL_CCW);
+            break;
+        case SHOW_BACK:
+            glEnable(GL_CULL_FACE);
+            glFrontFace(GL_CW);
+            break;
+        default:
+            glDisable(GL_CULL_FACE);
+            break;
+        }
+
+        glPointSize(1.0f);
+
+        glUseProgram(program.programId());
+
+        glUniformMatrix4fv(MVP_ID, 1, GL_FALSE, matViewProj.constData());
+
+        vao.bind();
+
+        // 1st attribute buffer : vertices
+        glEnableVertexAttribArray(vertexPosition_modelspaceID);
+        if (!surfaceVertexBuffer.bind()) {
+            qCritical() << "Binding surface vertex buffer failed";
+            return;
+        }
+        glVertexAttribPointer(vertexPosition_modelspaceID,  // attribute
+                              3,                  // size
+                              GL_FLOAT,           // type
+                              GL_FALSE,           // normalized?
+                              0,                  // stride
+                              (void*)0            // array buffer offset
+                              );
+        surfaceVertexBuffer.release();
+
+        // 2nd attribute buffer : colors
+        glEnableVertexAttribArray(vertexColorID);
+        if (!surfaceColorBuffer.bind()) {
+            qCritical() << "Binding surface color buffer failed";
+            return;
+        }
+        glVertexAttribPointer(vertexColorID,  // attribute
+                              3,              // size
+                              GL_FLOAT,       // type
+                              GL_FALSE,       // normalized?
+                              0,              // stride
+                              (void*)0        // array buffer offset
+                              );
+        surfaceColorBuffer.release();
+
+        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+
+        glDisableVertexAttribArray(vertexPosition_modelspaceID);
+        glDisableVertexAttribArray(vertexColorID);
+
+        vao.release();
     }
-    glVertexAttribPointer(vertexPosition_modelspaceID,  // attribute
-                          3,                  // size
-                          GL_FLOAT,           // type
-                          GL_FALSE,           // normalized?
-                          0,                  // stride
-                          (void*)0            // array buffer offset
-                          );
 
-    // 2nd attribute buffer : colors
-    glEnableVertexAttribArray(vertexColorID);
-    if (!colorbuffer.bind()) {
-        qCritical() << "Binding color buffer failed";
-        return;
+    if (hasHighlightedPlane) {
+        //qDebug() << highlightedPlane.origin << highlightedPlane.rotation;
+
+        float volumeDiag = this->voxelData->diagonalSize();
+        float planeSize = volumeDiag / 3;
+        float axisLength = volumeDiag / 3;
+
+        PrimitiveBuffer buffer;
+
+        glDisable(GL_CULL_FACE);
+
+        ///////////////////////////////////////////////////////////////////////////////////
+        /// Render plane
+        ///////////////////////////////////////////////////////////////////////////////////
+
+        QMatrix4x4 transformPlane = matViewProj;
+
+        // Adjust origin
+        //transformPlane.translate(origin);
+
+        // Slice transformation
+        transformPlane.translate(highlightedPlane.origin);
+        transformPlane.rotate(highlightedPlane.rotation);
+
+        buffer.clear();
+
+        buffer.addQuad(QVector4D(1.0f, 0.0f, 0.0f, 0.4f),
+                       QVector3D(-planeSize, -planeSize, 0),
+                       QVector3D(-planeSize, planeSize,  0),
+                       QVector3D( planeSize, planeSize,  0),
+                       QVector3D( planeSize, -planeSize, 0));
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE);
+
+        draw(buffer, transformPlane);
+
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+
+        buffer.clear();
+
+        buffer.addLine(QVector3D(0.0f, 1.0f, 0.0f),
+                       QVector3D(0.0f, 0.0f, 0.0f),
+                       QVector3D(axisLength, 0.0f, 0.0f));
+
+        buffer.addLine(QVector3D(0.0f, 0.0f, 1.0f),
+                       QVector3D(0.0f, 0.0f, 0.0f),
+                       QVector3D(0.0f, axisLength, 0.0f));
+
+        buffer.addLine(QVector3D(1.0f, 0.0f, 0.0f),
+                       QVector3D(0.0f, 0.0f, 0.0f),
+                       QVector3D(0.0f, 0.0f, axisLength));
+
+        draw(buffer, transformPlane);
     }
-    glVertexAttribPointer(vertexColorID,  // attribute
-                          3,              // size
-                          GL_FLOAT,       // type
-                          GL_FALSE,       // normalized?
-                          0,              // stride
-                          (void*)0        // array buffer offset
-                          );
-
-    glDrawArrays(GL_TRIANGLES, 0, triangleCount);
-
-    glDisableVertexAttribArray(vertexPosition_modelspaceID);
-    glDisableVertexAttribArray(vertexColorID);
 }
 
 

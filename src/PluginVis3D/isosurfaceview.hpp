@@ -1,9 +1,12 @@
 #pragma once
 
 #include <Voxie/data/dataset.hpp>
+#include <Voxie/data/plane.hpp>
 
 #include <Voxie/visualization/openglwidget.hpp>
 #include <Voxie/visualization/view3d.hpp>
+
+#include <QtCore/QTimer>
 
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLVertexArrayObject>
@@ -17,7 +20,7 @@ namespace voxie { namespace data {
     class SurfaceBuilder;
 } }
 
-class IsosurfaceView : public voxie::visualization::OpenGLWidget {
+class IsosurfaceView : public voxie::visualization::OpenGLDrawWidget {
     Q_OBJECT
     voxie::data::DataSet *voxelData;
 private:
@@ -35,11 +38,13 @@ private:
     GLuint MVP_ID;
     GLuint vertexPosition_modelspaceID;
     GLuint vertexColorID;
-    QOpenGLBuffer vertexbuffer;
-    QOpenGLBuffer colorbuffer;
-    size_t triangleCount;
+    QOpenGLBuffer surfaceVertexBuffer;
+    QOpenGLBuffer surfaceColorBuffer;
+    size_t vertexCount;
 
-    void draw(GLenum mode, const QVector<GLfloat>& vertices, const QVector<GLfloat>& colors, size_t count, const QMatrix4x4& modelMatrix);
+    bool hasHighlightedPlane = false;
+    voxie::data::Plane highlightedPlane;
+    QTimer highlightTimer;
 
     void genCube(const QVector3D &pos, int sides, voxie::data::SurfaceBuilder* sb);
 
@@ -49,6 +54,10 @@ private:
 
 private slots:
     void updateSurface(const QSharedPointer<voxie::data::Surface>& surface);
+
+    void addSlice(voxie::data::Slice* slice, bool changedNow);
+    void updateSlice(const voxie::data::Plane& newPlane);
+    void highlightTimeout();
 
 public:
     explicit IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent = 0);

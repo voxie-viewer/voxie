@@ -93,7 +93,8 @@ class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptingContain
          * @brief changed will be signalled after changes to the data set are complete (it then will be rerendered).
          */
         void changed();
-        void sliceChanged(Slice* slice);
+
+        void sliceCreated(Slice* slice);
 };
 
 namespace internal {
