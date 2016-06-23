@@ -39,7 +39,7 @@ ScriptingContainerBase::ScriptingContainerBase(QObject* obj, const QString& type
       QMutexLocker lock (&mutex);
       id = ++currentId[type];
     }
-    path = QString ("/de/uni_stuttgart/Main/%1/%2").arg (type).arg (id);
+    path = QString ("/de/uni_stuttgart/Voxie/%1/%2").arg (type).arg (id);
   }
   QDBusConnection::sessionBus().registerObject(
 		path,
