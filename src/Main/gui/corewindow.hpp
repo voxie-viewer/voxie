@@ -67,6 +67,8 @@ private:
 
     bool isBeginDestroyed;
 
+    quint64 currentScriptExecId = 0;
+
 signals:
     void activeVisualizerChanged(visualization::Visualizer* visualizer);
 
@@ -121,6 +123,8 @@ private:
      * @brief Populates the script menu with script files.
      */
     void populateScriptsMenu();
+
+    void startScript(const QString& scriptFile, const QString* executable = nullptr);
 public:
     explicit CoreWindow(QWidget *parent = 0);
     ~CoreWindow();

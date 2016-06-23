@@ -592,30 +592,7 @@ void CoreWindow::populateScriptsMenu()
                 continue;
             QAction *action = this->scriptsMenu->addAction(QIcon(":/icons/script-attribute-e.png"), script);
             connect(action, &QAction::triggered, [this, scriptFile]() -> void {
-                    if (!QDBusConnection::sessionBus().isConnected()) {
-                        QMessageBox(QMessageBox::Critical, this->windowTitle(), QString("Cannot run external script because DBus is not available"), QMessageBox::Ok, this).exec();
-                        return;
-                    }
-
-                    QFileInfo fileInfo(scriptFile);
-
-                    QStringList args;
-                    //args.append("--voxie-bus-address=" + ...);
-                    args.append("--voxie-bus-name=" + QDBusConnection::sessionBus().baseService());
-                    QProcess *process = new QProcess();
-                    process->setProcessChannelMode(QProcess::MergedChannels);
-                    process->setProgram(scriptFile);
-                    process->setArguments(args);
-                    connect<void(QProcess::*)(int), std::function<void(int)>>(process, &QProcess::finished, std::function<void(int)>([process](int exitCode) ->  void
-                        {
-                            Root::instance()->log("Process finished: " + QString::number(exitCode));
-                            process->deleteLater();
-                        }));
-                    connect(process, &QProcess::readChannelFinished, [process]() -> void {
-                            Root::instance()->log(QString(process->readAll()));
-                        });
-                    process->start();
-                    //qDebug() << "started";
+                    startScript(scriptFile);
                 });
         }
     }
@@ -645,13 +622,6 @@ void CoreWindow::populateScriptsMenu()
                         continue;
                     QAction *action = this->scriptsMenu->addAction(QIcon(":/icons/script-attribute-p.png"), script);
                     connect(action, &QAction::triggered, [this, scriptFile]() -> void {
-                            if (!QDBusConnection::sessionBus().isConnected()) {
-                                QMessageBox(QMessageBox::Critical, this->windowTitle(), QString("Cannot run external script because DBus is not available"), QMessageBox::Ok, this).exec();
-                                return;
-                            }
-
-                            QFileInfo fileInfo(scriptFile);
-
                             Root::instance()->settings()->beginGroup("scripting");
                             int size = Root::instance()->settings()->beginReadArray("externals");
                             for (int i = 0; i < size; ++i) {
@@ -662,27 +632,10 @@ void CoreWindow::populateScriptsMenu()
 
                                 for(const QString &ext : Root::instance()->settings()->value("extension").toString().split(';')) {
                                     QRegExp regexp(ext, Qt::CaseInsensitive, QRegExp::WildcardUnix);
-                                    if(regexp.exactMatch(fileInfo.fileName()) == false)
+                                    if(regexp.exactMatch(scriptFile) == false)
                                         continue;
 
-                                    QStringList args;
-                                    args.append(scriptFile);
-                                    //args.append("--voxie-bus-address=" + ...);
-                                    args.append("--voxie-bus-name=" + QDBusConnection::sessionBus().baseService());
-                                    args.append(QDBusConnection::sessionBus().baseService());
-                                    QProcess *process = new QProcess();
-                                    process->setProgram(executable);
-                                    process->setArguments(args);
-                                    connect<void(QProcess::*)(int), std::function<void(int)>>(process, &QProcess::finished, std::function<void(int)>([process](int exitCode) ->  void
-                                        {
-                                            Root::instance()->log("Process finished: " + QString::number(exitCode));
-                                            process->deleteLater();
-                                        }));
-                                    connect(process, &QProcess::readChannelFinished, [process]() -> void {
-                                            Root::instance()->log(QString(process->readAll()));
-                                        });
-                                    process->start();
-                                    //qDebug() << "started";
+                                    startScript(scriptFile, &executable);
                                 }
                             }
                             Root::instance()->settings()->endArray();
@@ -692,6 +645,71 @@ void CoreWindow::populateScriptsMenu()
             }
         }
     }
+}
+
+void CoreWindow::startScript(const QString& scriptFile, const QString* executable) {
+    currentScriptExecId++;
+    quint64 id = currentScriptExecId;
+
+    if (!QDBusConnection::sessionBus().isConnected()) {
+        QMessageBox(QMessageBox::Critical, this->windowTitle(), QString("Cannot run external script because DBus is not available"), QMessageBox::Ok, this).exec();
+        return;
+    }
+
+    QFileInfo fileInfo(scriptFile);
+
+    QStringList args;
+    if (executable)
+        args.append(scriptFile);
+    //args.append("--voxie-bus-address=" + ...);
+    args.append("--voxie-bus-name=" + QDBusConnection::sessionBus().baseService());
+    QProcess *process = new QProcess();
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    if (executable)
+        process->setProgram(*executable);
+    else
+        process->setProgram(scriptFile);
+    process->setArguments(args);
+    connect<void(QProcess::*)(int), std::function<void(int)>>(process, &QProcess::finished, this, std::function<void(int)>([process, id](int exitCode) -> void
+        {
+            Root::instance()->log(QString("Script %1 finished with exit code %2").arg(id).arg(exitCode));
+            process->deleteLater();
+        }));
+    auto buffer = QSharedPointer<QString>::create();
+    connect(process, &QProcess::readyRead, this, [process, id, buffer]() -> void {
+            int pos = 0;
+            QString data = QString(process->readAll());
+            for (;;) {
+                int index = data.indexOf('\n', pos);
+                if (index == -1)
+                    break;
+                Root::instance()->log(QString("Script %1: %2%3").arg(id).arg(*buffer).arg(data.mid(pos, index - pos)));
+                buffer->clear();
+                pos = index + 1;
+            }
+            *buffer += data.mid(pos);
+        });
+    connect(process, &QProcess::readChannelFinished, this, [process, id, buffer]() -> void {
+            int pos = 0;
+            QString data = QString(process->readAll());
+            for (;;) {
+                int index = data.indexOf('\n', pos);
+                if (index == -1)
+                    break;
+                Root::instance()->log(QString("Script %1: %2%3").arg(id).arg(*buffer).arg(data.mid(pos, index - pos)));
+                buffer->clear();
+                pos = index + 1;
+            }
+            *buffer += data.mid(pos);
+            if (*buffer != "") {
+                Root::instance()->log(QString("Script %1: %2").arg(id).arg(*buffer));
+                buffer->clear();
+            }
+        });
+    process->start();
+    //qDebug() << "started";
+    
+    Root::instance()->log(QString("Started execution of %1 with ID %2").arg(scriptFile).arg(id));
 }
 
 void CoreWindow::loadFile()

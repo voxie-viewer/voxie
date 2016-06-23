@@ -62,7 +62,7 @@ void setTransientParent(QWidget* widget) {
 }
 
 void error(const QString& str) {
-    qCritical("%s", str.toUtf8().data());
+    QTextStream(stderr) << str << endl << flush;
 
     auto box = new QMessageBox(QMessageBox::Critical, "ScriptGetAverage", str);
     setTransientParent(box);
@@ -73,7 +73,7 @@ void error(const QString& str) {
 }
 
 void msg(const QString& str) {
-    qDebug("%s", str.toUtf8().data());
+    QTextStream(stderr) << str << endl << flush;
 
     auto box = new QMessageBox(QMessageBox::Information, "ScriptGetAverage", str);
     setTransientParent(box);
