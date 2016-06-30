@@ -31,7 +31,13 @@ class VOXIECORESHARED_EXPORT View3D : public QObject {
     float zoom;
 
     float viewSize() const {
-        return viewSizeStandard / zoom;
+        //return viewSizeStandard / zoom;
+        return viewSizeStandard;
+    }
+
+    float pixelSize(const QSize& windowSize) const {
+        // Size of 1 pixel at the centerPoint in m
+        return viewSize() / windowSize.height() / this->zoom;
     }
 
     // Distance from centerPoint to camera

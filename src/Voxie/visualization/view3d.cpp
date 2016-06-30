@@ -16,11 +16,18 @@ View3D::View3D(QObject* parent, bool allowMove, float viewSizeStandard, float zo
     centerPoint(0, 0, 0),
     rotation(1, 0, 0, 0)
 {
+    // Set viewSizeStandard to 0.25m
+    float factor = 0.25 / this->viewSizeStandard;
+    this->viewSizeStandard *= factor;
+    this->zoom *= factor;
+    this->zoomMin *= factor;
+    this->zoomMax *= factor;
 }
 
 QMatrix4x4 View3D::viewMatrix() {
         QMatrix4x4 matView;
         matView.translate(0, 0, -distanceCameraCenter());
+        matView.scale(zoom);
         matView.rotate(QQuaternion(rotation.scalar(), -rotation.vector()));
         matView.translate(-centerPoint);
         //qDebug() << "matView" << matView;
@@ -75,7 +82,7 @@ void View3D::mouseMoveEvent(const QPoint& mouseLast, QMouseEvent *event, const Q
         if (event->modifiers().testFlag(Qt::ControlModifier)) {
             if (allowMove) {
                 QVector3D move(dx, -dy, 0);
-                move *= viewSize() / windowSize.height();
+                move *= pixelSize(windowSize);
                 centerPoint -= rotation.rotatedVector(move);
             }
         } else {
@@ -90,9 +97,9 @@ void View3D::mouseMoveEvent(const QPoint& mouseLast, QMouseEvent *event, const Q
 	}
 }
 void View3D::wheelEvent(QWheelEvent *event, const QSize& windowSize) {
-    float mult = 1;
+    float mult = 2;
     if (event->modifiers().testFlag(Qt::ShiftModifier))
-        mult = 0.1;
+        mult = 0.2;
     if (event->modifiers().testFlag(Qt::ControlModifier)) {
         if (allowMove) {
             //QVector3D direction(0, 0, 1);
@@ -100,7 +107,7 @@ void View3D::wheelEvent(QWheelEvent *event, const QSize& windowSize) {
             QVector3D direction = -(projectionMatrix(windowSize.width(), windowSize.height()).inverted() * toVector(event->pos(), windowSize)).normalized();
             float distance = mult * 10.0f * event->angleDelta().y() / 120.0f;
             QVector3D move = direction * distance;
-            move *= viewSize() / windowSize.height();
+            move *= pixelSize(windowSize);
             centerPoint -= rotation.rotatedVector(move);
         }
     } else {
@@ -113,7 +120,7 @@ void View3D::wheelEvent(QWheelEvent *event, const QSize& windowSize) {
             if (allowMove) {
                 QVector3D p(event->pos().x(), -event->pos().y(), 0);
                 p -= QVector3D(windowSize.width(), -windowSize.height(), 0) / 2;
-                p *= viewSize() / windowSize.height();
+                p *= pixelSize(windowSize);
                 centerPoint += rotation.rotatedVector(p * (1 - this->zoom / zoomNew));
             }
         }
