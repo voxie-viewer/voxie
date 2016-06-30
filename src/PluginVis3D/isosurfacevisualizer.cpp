@@ -13,6 +13,10 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
+#ifdef ENABLE_OSVR
+#include <PluginVis3D/osvr/osvrdisplay.hpp>
+#endif
+
 using namespace voxie::data;
 using namespace voxie::visualization;
 
@@ -36,11 +40,12 @@ IsosurfaceVisualizer::IsosurfaceVisualizer(DataSet *data, QWidget *parent) :
     this->setLayout(layout);
 
 
+    QFormLayout *controlLayout;
     {
         QWidget *sectionControl = new QWidget();
         sectionControl->setWindowTitle("3D Settings");
         {
-            QFormLayout *controlLayout = new QFormLayout();
+            controlLayout = new QFormLayout();
             {
                 auto range = this->dataSet()->filteredData()->getMinMaxValue();
                 float position = range.first + 0.05f * (range.second - range.first);
@@ -93,6 +98,53 @@ IsosurfaceVisualizer::IsosurfaceVisualizer(DataSet *data, QWidget *parent) :
         connect(this->methodBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &IsosurfaceVisualizer::refresh3D);
         connect(this->invertedCheck, &QCheckBox::stateChanged, this, &IsosurfaceVisualizer::refresh3D);
     }
+
+#ifdef ENABLE_OSVR
+    auto osvrEnabled = new QCheckBox();
+    controlLayout->addRow("OSVR", osvrEnabled);
+    connect(osvrEnabled, &QCheckBox::stateChanged, this, [this, osvrEnabled] (int state) {
+            if (!state) {
+                if (!this->osvrDisplay)
+                    return;
+                osvrDisplay->deleteLater();
+            } else {
+                if (this->osvrDisplay)
+                    return;
+                try {
+                    auto osvr = new OsvrDisplay(view->context()->contextHandle(), view, this);
+                    this->osvrDisplay = osvr;
+                    connect(osvr, &QObject::destroyed, osvrEnabled, [osvrEnabled] {
+                            osvrEnabled->setChecked(false);
+                        });
+                    connect(osvr, &OsvrDisplay::render, this, [this] (const QMatrix4x4& projectionMatrix, const QMatrix4x4& viewMatrix) {
+                            QMatrix4x4 matViewProj = projectionMatrix * viewMatrix * view->getView3D()->viewMatrix();
+                            view->paint(matViewProj);
+                        });
+                } catch (voxie::scripting::ScriptingException& e) {
+                    qCritical() << "Failed to create OsvrDisplay:" << e.message();
+                }
+            }
+        });
+
+#if !defined(Q_OS_WIN)
+    QPushButton* toggleSideBySide;
+    controlLayout->addRow("", (toggleSideBySide = new QPushButton("Toggle side-by-side")));
+    connect(toggleSideBySide, &QPushButton::clicked, this, [this] {
+            QFile file("/dev/ttyUSB.OSVRHDK");
+            if (file.open(QIODevice::ReadWrite)) {
+                const char* str = "\n#f1s\n";
+                qint64 len = strlen(str);
+                if (file.write(str, len) != len) {
+                    QMessageBox(QMessageBox::Critical, "OSVR", QString("Error while writing to %1").arg(file.fileName()), QMessageBox::Ok, this).exec();
+                }
+            } else {
+                QMessageBox(QMessageBox::Critical, "OSVR", QString("Failed to open %1").arg(file.fileName()), QMessageBox::Ok, this).exec();
+            }
+        });
+#endif
+
+#endif
+
     refresh3D();
 }
 

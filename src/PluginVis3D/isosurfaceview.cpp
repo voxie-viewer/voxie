@@ -79,6 +79,9 @@ IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent)
     connect(&highlightTimer, &QTimer::timeout, this, &IsosurfaceView::highlightTimeout);
 }
 
+IsosurfaceView::~IsosurfaceView() {
+}
+
 void IsosurfaceView::addSlice(Slice* slice, bool changedNow) {
     connect(slice, &Slice::planeChanged, this, [this](Plane oldPlane, Plane newPlane, bool equivalent) {
             Q_UNUSED(oldPlane);
@@ -108,10 +111,12 @@ QString IsosurfaceView::initialize() {
     if (error != "")
         return error;
 
+    /*
     if (!vao.create()) {
         //return "Creating VAO failed";
         qWarning() << "Creating VAO failed";
     }
+    */
 
     const char* vshader =
         "#version 110\n"
@@ -325,6 +330,18 @@ void IsosurfaceView::uploadData() {
 }
 
 void IsosurfaceView::paint() {
+    QMatrix4x4 matViewProj = view3d->projectionMatrix(this->width(), this->height()) * view3d->viewMatrix();
+    paint(matViewProj);
+}
+
+void IsosurfaceView::paint(const QMatrix4x4& matViewProj) {
+    // Create new vao to make sure it is valid for the current context
+    QOpenGLVertexArrayObject vao;
+    if (!vao.create()) {
+        //return "Creating VAO failed";
+        qWarning() << "Creating VAO failed";
+    }
+
     QColor color = this->palette().background().color();
 
     glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
@@ -333,8 +350,6 @@ void IsosurfaceView::paint() {
 
     if (!voxelData)
         return;
-
-    QMatrix4x4 matViewProj = view3d->projectionMatrix(this->width(), this->height()) * view3d->viewMatrix();
 
     if (surface && vertexCount != 0) {
         glEnable(GL_DEPTH_TEST);
@@ -398,6 +413,8 @@ void IsosurfaceView::paint() {
         glDisableVertexAttribArray(vertexColorID);
 
         vao.release();
+
+        glUseProgram(0);
     }
 
     if (hasHighlightedPlane) {

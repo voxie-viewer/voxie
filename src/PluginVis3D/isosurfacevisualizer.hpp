@@ -6,7 +6,7 @@
 
 #include <Voxie/visualization/visualizer.hpp>
 
-#include <QtOpenGL/QGLWidget>
+#include <QtCore/QPointer>
 
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
@@ -25,6 +25,8 @@ class IsosurfaceVisualizer :
     QCheckBox* invertedCheck;
 
     QComboBox* culling;
+
+    QPointer<QObject> osvrDisplay = nullptr;
 
 public:
     explicit IsosurfaceVisualizer(voxie::data::DataSet *voxelData, QWidget *parent = 0);

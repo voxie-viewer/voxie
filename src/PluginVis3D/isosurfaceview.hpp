@@ -23,6 +23,7 @@ namespace voxie { namespace data {
 class IsosurfaceView : public voxie::visualization::OpenGLDrawWidget {
     Q_OBJECT
     voxie::data::DataSet *voxelData;
+
 private:
     bool generating = false;
     bool generationRequested = false;
@@ -33,7 +34,7 @@ private:
 
     voxie::visualization::View3D* view3d;
 
-    QOpenGLVertexArrayObject vao;
+    //QOpenGLVertexArrayObject vao;
     QOpenGLShaderProgram program;
     GLuint MVP_ID;
     GLuint vertexPosition_modelspaceID;
@@ -61,9 +62,11 @@ private slots:
 
 public:
     explicit IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent = 0);
+    ~IsosurfaceView();
 
     virtual QString initialize() override;
     virtual void paint() override;
+    void paint(const QMatrix4x4& matViewProjection);
 
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void mouseMoveEvent(QMouseEvent *event) override;
@@ -79,6 +82,8 @@ public:
     enum Culling {
         NO_CULLING, SHOW_FRONT, SHOW_BACK
     };
+
+    voxie::visualization::View3D* getView3D() const { return view3d; }
 
 public:
     float threshold;

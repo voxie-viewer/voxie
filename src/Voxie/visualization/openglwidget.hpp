@@ -49,7 +49,7 @@ class VOXIECORESHARED_EXPORT OpenGLDrawWidget : public OpenGLWidget {
     Q_OBJECT
 
 private:
-    QOpenGLVertexArrayObject vao;
+    //QOpenGLVertexArrayObject vao;
     QOpenGLShaderProgram program;
     GLuint MVP_ID;
     GLuint vertexPosition_modelspaceID;

@@ -124,10 +124,12 @@ OpenGLDrawWidget::OpenGLDrawWidget(QWidget *parent) : OpenGLWidget(parent) {
 }
 
 QString OpenGLDrawWidget::initialize() {
+    /*
     if (!vao.create()) {
         //return "Creating VAO failed";
         qWarning() << "Creating VAO failed";
     }
+    */
 
     const char* vshader =
         "#version 110\n"
@@ -246,6 +248,13 @@ void OpenGLDrawWidget::PrimitiveBuffer::clear() {
 }
 
 void OpenGLDrawWidget::draw(GLenum mode, const QVector<GLfloat>& vertices, const QVector<GLfloat>& colors, const QMatrix4x4& modelViewProjectionMatrix) {
+    // Create new vao to make sure it is valid for the current context
+    QOpenGLVertexArrayObject vao;
+    if (!vao.create()) {
+        //return "Creating VAO failed";
+        qWarning() << "Creating VAO failed";
+    }
+
     vao.bind();
 
     if (!vertexbuffer.bind()) {
