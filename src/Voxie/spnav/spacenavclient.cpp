@@ -6,15 +6,23 @@
 
 using namespace voxie::spnav;
 
+SpaceNavClient::Private::~Private() {}
+
 SpaceNavClient::SpaceNavClient() : QObject() {
     //qDebug() << "SpaceNavClient()";
 
     if (!priv)
         priv.reset(createPrivateX11());
-    // TODO: add implementation for windows
-
     if (priv && !priv->isOk())
         priv.reset();
+
+    if (!priv)
+        priv.reset(createPrivateUnix());
+    if (priv && !priv->isOk())
+        priv.reset();
+
+    // TODO: add implementation for windows
+
 }
 SpaceNavClient::~SpaceNavClient() {
     //qDebug() << "~SpaceNavClient()";

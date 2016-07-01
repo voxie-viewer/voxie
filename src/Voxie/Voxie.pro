@@ -2,6 +2,7 @@ QT += widgets script opengl
 QT += dbus
 unix {
     QT += x11extras
+    QT += network
 }
 
 TARGET = Voxie
@@ -64,6 +65,7 @@ SOURCES += \
     spnav/spacenavevent.cpp \
     spnav/spacenavclient.cpp \
     spnav/spacenavclient_x11.cpp \
+    spnav/spacenavclient_unix.cpp \
     spnav/spacenavvisualizer.cpp
 
 HEADERS += \

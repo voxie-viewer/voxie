@@ -27,8 +27,6 @@ using namespace voxie::spnav;
 const quint32 CMD_APP_WINDOW = 27695;
 const quint32 CMD_APP_SENS = 27696;
 
-SpaceNavClient::Private::~Private() {}
-
 static xcb_screen_t* screen_of_display (xcb_connection_t* connection, int screen) {
     for (auto iter = xcb_setup_roots_iterator (xcb_get_setup (connection)); iter.rem; --screen, xcb_screen_next (&iter))
         if (screen == 0)

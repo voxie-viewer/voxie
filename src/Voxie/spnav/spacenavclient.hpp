@@ -22,6 +22,9 @@ class VOXIECORESHARED_EXPORT SpaceNavClient : public QObject {
     class PrivateX11;
     Private* createPrivateX11();
 
+    class PrivateUnix;
+    Private* createPrivateUnix();
+
     QScopedPointer<Private> priv;
 
     SpaceNavClient();
