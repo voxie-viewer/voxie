@@ -158,6 +158,8 @@ public:
 
     static QVector<QString> getBufferedMessages();
 
+    ActiveVisualizerProvider* activeVisualizerProvider() const override { return &mainWindow()->activeVisualizerProvider; }
+
 public:
     /**
      * @brief Quits voxie.

@@ -1,5 +1,7 @@
 #include "isosurfacevisualizer.hpp"
 
+#include <Voxie/spnav/spacenavvisualizer.hpp>
+
 #include <Voxie/data/surface.hpp>
 
 #include <Voxie/scripting/scriptingexception.hpp>
@@ -146,6 +148,9 @@ IsosurfaceVisualizer::IsosurfaceVisualizer(DataSet *data, QWidget *parent) :
 #endif
 
     refresh3D();
+
+    auto sn = new voxie::spnav::SpaceNavVisualizer(this);
+    view->getView3D()->registerSpaceNavVisualizer(sn);
 }
 
 void IsosurfaceVisualizer::refresh3D()

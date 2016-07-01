@@ -2,6 +2,8 @@
 
 voxie::IVoxie *root = nullptr;
 
+voxie::ActiveVisualizerProvider::~ActiveVisualizerProvider() {}
+
 void voxie::setVoxieRoot(IVoxie *voxie)
 {
 	::root = voxie;

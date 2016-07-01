@@ -1,5 +1,10 @@
 #include "view3d.hpp"
 
+#include <Voxie/spnav/spacenavvisualizer.hpp>
+
+#include <QtCore/QSharedPointer>
+#include <QtCore/QTimer>
+
 #include <QtGui/QVector3D>
 #include <QtGui/QMatrix4x4>
 
@@ -128,6 +133,89 @@ void View3D::wheelEvent(QWheelEvent *event, const QSize& windowSize) {
         this->zoom = zoomNew;
     }
     emit changed();
+}
+
+void View3D::move(QVector3D vectorViewSpace) {
+    if (!allowMove)
+        return;
+
+    //centerPoint -= rotation.rotatedVector(vectorViewSpace / this->zoom);
+    centerPoint -= viewMatrix().inverted().mapVector(vectorViewSpace);
+
+    emit changed();
+}
+
+void View3D::rotate(QQuaternion rotation) {
+    this->rotation = this->rotation * QQuaternion(rotation.scalar(), -rotation.vector());
+    this->rotation.normalize();
+
+    emit changed();
+}
+
+void View3D::moveZoom(float value) {
+    float zoomNew = this->zoom * std::exp(value);
+    zoomNew = std::min(zoomMax, std::max(zoomMin, zoomNew));
+    this->zoom = zoomNew;
+
+    emit changed();
+}
+
+void View3D::registerSpaceNavVisualizer(voxie::spnav::SpaceNavVisualizer* sn) {
+    int interval = 20;
+
+    auto zoomButton = QSharedPointer<int>::create();
+    *zoomButton = -1;
+
+    auto zoomTimer = new QTimer(sn);
+    connect(this, &QObject::destroyed, zoomTimer, [zoomTimer] { zoomTimer->deleteLater(); });
+    zoomTimer->setInterval(interval);
+    zoomTimer->setSingleShot(false);
+
+    connect(zoomTimer, &QTimer::timeout, this, [this, interval, zoomButton] {
+            //qDebug() << "timeout";
+            float scale = 1;
+            scale *= interval / 1000.0f;
+            if (*zoomButton == 0)
+                moveZoom(-scale);
+            else if (*zoomButton == 1)
+                moveZoom(scale);
+        });
+
+    connect(sn, &voxie::spnav::SpaceNavVisualizer::motionEvent, this, [this, zoomButton, zoomTimer] (voxie::spnav::SpaceNavMotionEvent* ev) {
+            //qDebug() << "Event" << this << ev->translation() << ev->rotation();
+
+            move(ev->translation() * 2e-5f);
+
+            QVector3D rotation = ev->rotation() * 1e-4f;
+            auto angle = rotation.length();
+            if (angle > 1e-4)
+                rotate(QQuaternion::fromAxisAndAngle(rotation, angle / M_PI * 180));
+        });
+    connect(sn, &voxie::spnav::SpaceNavVisualizer::buttonPressEvent, this, [this, zoomButton, zoomTimer] (voxie::spnav::SpaceNavButtonPressEvent* ev) {
+            //qDebug() << "Button Press Event" << this << ev->button();
+            /*
+            if (ev->button() == 0)
+                moveZoom(-1);
+            else if (ev->button() == 1)
+                moveZoom(1);
+            */
+            if (ev->button() == 0) {
+                *zoomButton = 0;
+                zoomTimer->start();
+            } else if (ev->button() == 1) {
+                *zoomButton = 1;
+                zoomTimer->start();
+            }
+        });
+    connect(sn, &voxie::spnav::SpaceNavVisualizer::buttonReleaseEvent, this, [this, zoomButton, zoomTimer] (voxie::spnav::SpaceNavButtonReleaseEvent* ev) {
+            //qDebug() << "Button Release Event" << this << ev->button();
+            if (ev->button() == *zoomButton)
+                zoomTimer->stop();
+        });
+    connect(sn, &voxie::spnav::SpaceNavVisualizer::looseFocus, this, [this, zoomButton, zoomTimer] {
+            //qDebug() << "Loose Focus Event" << this;
+            zoomTimer->stop();
+        });
 }
 
 // Local Variables:

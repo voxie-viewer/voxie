@@ -11,7 +11,7 @@ Compiling from source on Linux
 
 First, install the packages required to run Voxie. On Ubuntu 14.04 this can be done using:
 
-    sudo apt-get install build-essential qt5-default qtscript5-dev libqt5opengl5-dev opencl-headers libhdf5-dev libboost-all-dev
+    sudo apt-get install build-essential qt5-default qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev opencl-headers libhdf5-dev libboost-all-dev
 
 If you want to compile the manual, you also have to install LaTeX:
 
@@ -68,7 +68,7 @@ from <https://github.com/voxie-viewer/voxie/releases>.
 The Linux binaries in `voxie-...-lin64.tar.gz1` require Qt5, the OpenCL ICD and
 DBus to be available. To install Qt5 and the OpenCL ICD under Ubuntu, type:
 
-    sudo apt-get install libqt5script5 libqt5opengl5 ocl-icd-libopencl1 
+    sudo apt-get install libqt5script5 libqt5opengl5 libqt5x11extras5 ocl-icd-libopencl1
 
 The Windows binaries in `voxie-...-win64-noqt.zip` require Qt5 64-bit for
 VS2013 to be available in %PATH%, all other libraries are bundled.

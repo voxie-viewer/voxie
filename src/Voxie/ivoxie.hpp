@@ -20,6 +20,17 @@ namespace plugin
     class VoxiePlugin;
 }
 
+class VOXIECORESHARED_EXPORT ActiveVisualizerProvider : public QObject {
+    Q_OBJECT
+
+public:
+    virtual voxie::visualization::Visualizer* activeVisualizer() const = 0;
+    ~ActiveVisualizerProvider();
+
+signals:
+    void activeVisualizerChanged(voxie::visualization::Visualizer* current);
+};
+
 class IVoxie
 {
 public:
@@ -53,6 +64,8 @@ public:
 
     virtual bool disableOpenGL() const = 0;
     virtual bool disableOpenCL() const = 0;
+
+    virtual ActiveVisualizerProvider* activeVisualizerProvider() const = 0;
 };
 
 void VOXIECORESHARED_EXPORT setVoxieRoot(IVoxie *voxie);

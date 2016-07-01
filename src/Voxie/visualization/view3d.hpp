@@ -9,6 +9,10 @@
 
 namespace voxie {
 
+namespace spnav {
+class SpaceNavVisualizer;
+}
+
 namespace visualization {
 
 class VOXIECORESHARED_EXPORT View3D : public QObject {
@@ -62,6 +66,12 @@ public:
     void mousePressEvent(const QPoint& mouseLast, QMouseEvent *event, const QSize& windowSize);
     void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent *event, const QSize& windowSize);
     void wheelEvent(QWheelEvent *event, const QSize& windowSize);
+
+    void move(QVector3D vectorViewSpace);
+    void rotate(QQuaternion rotation);
+    void moveZoom(float value);
+
+    void registerSpaceNavVisualizer(voxie::spnav::SpaceNavVisualizer* sn);
 
 signals:
     void changed();

@@ -33,6 +33,8 @@
 #include <QtDBus/QDBusMessage>
 
 #include <QtGui/QDesktopServices>
+#include <QtGui/QWindow>
+#include <QtGui/QScreen>
 
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QFileDialog>
@@ -51,6 +53,12 @@ using namespace voxie::gui;
 using namespace voxie::data;
 using namespace voxie::plugin;
 using namespace voxie::visualization;
+
+ActiveVisualizerProviderImpl::~ActiveVisualizerProviderImpl() {}
+
+voxie::visualization::Visualizer* ActiveVisualizerProviderImpl::activeVisualizer() const {
+    return win->getActiveVisualizer(); 
+}
 
 GuiDBusObject::GuiDBusObject (CoreWindow* window) : ScriptingContainer ("Gui", window, true, true), window (window) {
   // https://bugreports.qt.io/browse/QTBUG-48008
@@ -98,8 +106,10 @@ CoreWindow::CoreWindow(QWidget *parent) :
     QMainWindow(parent),
     visualizers(),
     activeVisualizer(nullptr),
-    isBeginDestroyed(false)
+    isBeginDestroyed(false),
+    activeVisualizerProvider(this)
 {
+    connect(this, &CoreWindow::activeVisualizerChanged, this, [this] (voxie::visualization::Visualizer* current) { emit activeVisualizerProvider.activeVisualizerChanged(current); });
     this->guiDBusObject = new GuiDBusObject (this);
     this->initMenu();
     this->initStatusBar();

@@ -1,5 +1,8 @@
 QT += widgets script opengl
 QT += dbus
+unix {
+    QT += x11extras
+}
 
 TARGET = Voxie
 TEMPLATE = lib
@@ -57,7 +60,11 @@ SOURCES += \
     visualization/qveclineedit.cpp \
     visualization/view3d.cpp \
     visualization/visualizer.cpp \
-    ivoxie.cpp
+    ivoxie.cpp \
+    spnav/spacenavevent.cpp \
+    spnav/spacenavclient.cpp \
+    spnav/spacenavclient_x11.cpp \
+    spnav/spacenavvisualizer.cpp
 
 HEADERS += \
     data/colorizer.hpp \
@@ -118,7 +125,10 @@ HEADERS += \
     scripting/dbustypes.hpp \
     scripting/scriptingcontainer.hpp \
     scripting/scriptingexception.hpp \
-    filtermask/test.hpp
+    filtermask/test.hpp \
+    spnav/spacenavevent.hpp \
+    spnav/spacenavclient.hpp \
+    spnav/spacenavvisualizer.hpp
 
 
 win32-msvc* {

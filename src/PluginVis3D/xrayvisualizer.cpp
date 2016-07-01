@@ -1,5 +1,7 @@
 #include "xrayvisualizer.hpp"
 
+#include <Voxie/spnav/spacenavvisualizer.hpp>
+
 #include <Voxie/opencl/clinstance.hpp>
 #include <Voxie/opencl/clutil.hpp>
 #include <Voxie/scripting/scriptingexception.hpp>
@@ -93,6 +95,9 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
     this->setMinimumSize(300,200);
 
     connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->repaint(); });
+
+    auto sn = new voxie::spnav::SpaceNavVisualizer(this);
+    view3d->registerSpaceNavVisualizer(sn);
 }
 
 void XRayVisualizer::paintEvent(QPaintEvent *event)

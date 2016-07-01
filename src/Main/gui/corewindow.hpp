@@ -3,6 +3,7 @@
 #include <Main/gui/visualizercontainer.hpp>
 
 #include <Voxie/plugin/metavisualizer.hpp>
+#include <Voxie/ivoxie.hpp>
 
 #include <QtCore/QMap>
 
@@ -36,6 +37,20 @@ namespace gui
 
 class GuiDBusObject;
 
+class CoreWindow;
+
+class ActiveVisualizerProviderImpl : public ActiveVisualizerProvider {
+    Q_OBJECT
+
+    CoreWindow* win;
+
+public:
+    ActiveVisualizerProviderImpl(CoreWindow* win) : win(win) {}
+    ~ActiveVisualizerProviderImpl();
+
+    voxie::visualization::Visualizer* activeVisualizer() const override;
+};
+
 /**
  * @brief The main window of voxie.
  */
@@ -68,6 +83,8 @@ private:
     bool isBeginDestroyed;
 
     quint64 currentScriptExecId = 0;
+
+    ActiveVisualizerProviderImpl activeVisualizerProvider;
 
 signals:
     void activeVisualizerChanged(visualization::Visualizer* visualizer);
