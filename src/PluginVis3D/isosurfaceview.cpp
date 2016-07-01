@@ -417,6 +417,27 @@ void IsosurfaceView::paint(const QMatrix4x4& matViewProj) {
         glUseProgram(0);
     }
 
+    {
+        float halfLength = this->voxelData->diagonalSize() / 50.0f;
+        QVector3D center = this->view3d->getCenterPoint();
+
+        PrimitiveBuffer buffer;
+
+        buffer.addLine(QVector3D(0.0f, 1.0f, 0.0f),
+                       center + QVector3D(-halfLength, 0.0f, 0.0f),
+                       center + QVector3D(halfLength, 0.0f, 0.0f));
+
+        buffer.addLine(QVector3D(0.0f, 0.0f, 1.0f),
+                       center + QVector3D(0.0f, -halfLength, 0.0f),
+                       center + QVector3D(0.0f, halfLength, 0.0f));
+
+        buffer.addLine(QVector3D(1.0f, 0.0f, 0.0f),
+                       center + QVector3D(0.0f, 0.0f, -halfLength),
+                       center + QVector3D(0.0f, 0.0f, halfLength));
+
+        draw(buffer, matViewProj);
+    }
+
     if (hasHighlightedPlane) {
         //qDebug() << highlightedPlane.origin << highlightedPlane.rotation;
 

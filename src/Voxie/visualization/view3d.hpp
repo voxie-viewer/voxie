@@ -73,6 +73,8 @@ public:
 
     void registerSpaceNavVisualizer(voxie::spnav::SpaceNavVisualizer* sn);
 
+    const QVector3D& getCenterPoint() const { return centerPoint; }
+
 signals:
     void changed();
 };
