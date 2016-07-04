@@ -63,6 +63,7 @@ IsosurfaceVisualizer::IsosurfaceVisualizer(DataSet *data, QWidget *parent) :
                 controlLayout->addRow("Method", (this->methodBox = new QComboBox()));
                 this->methodBox->addItem("Cuberille");
                 this->methodBox->addItem("Marching Cubes");
+                this->methodBox->setCurrentIndex(1);
 
                 controlLayout->addRow("Invert", (this->invertedCheck = new QCheckBox()));
                 this->invertedCheck->setChecked(this->view->inverted);

@@ -427,15 +427,14 @@ int Polygonise(const GRIDCELL &grid, double isolevel, TRIANGLE *triangles, bool 
 
    /* Create the triangle */
    ntriang = 0;
-   for (i=0;triTable[cubeindex][i]!=-1;i+=3)
-   {
+   for (i=0;triTable[cubeindex][i]!=-1;i+=3) {
       triangles[ntriang].p[0] = vertlist[triTable[cubeindex][i  ]];
       triangles[ntriang].p[1] = vertlist[triTable[cubeindex][i+1]];
       triangles[ntriang].p[2] = vertlist[triTable[cubeindex][i+2]];
       ntriang++;
    }
 
-   return(ntriang);
+   return ntriang;
 }
 
 MarchingCubes::MarchingCubes(QObject* parent) : SurfaceExtractor(parent) {
@@ -462,13 +461,21 @@ QSharedPointer<Surface> MarchingCubes::extract(voxie::io::Operation* operation, 
 
     QScopedPointer<SurfaceBuilder> sb(new SurfaceBuilder());
 
-    for(ptrdiff_t x = 0; x <= (ptrdiff_t) dim.x; x++) {
+    ::TRIANGLE triangles[5];
+    ::GRIDCELL cell;
+
+    for(ptrdiff_t z = 0; z <= (ptrdiff_t) dim.z; z++) {
         for(ptrdiff_t y = 0; y <= (ptrdiff_t) dim.y; y++) {
-            for(ptrdiff_t z = 0; z <= (ptrdiff_t) dim.z; z++) {
+            for(ptrdiff_t x = 0; x <= (ptrdiff_t) dim.x; x++) {
                 operation->throwIfCancelled();
 
-                ::TRIANGLE triangles[64];
-                ::GRIDCELL cell;
+                int cubeindex = 0;
+                for(int i = 0; i < 8; i++) {
+                    if (data->getVoxelSafe(x + offsets[i][0] - 1, y + offsets[i][1] - 1, z + offsets[i][2] - 1) < threshold)
+                        cubeindex |= 1 << i;
+                }
+                if (cubeindex == 0 || cubeindex == 255)
+                    continue;
 
                 for(int i = 0; i < 8; i++) {
                     QVector3D pos = origin + QVector3D
@@ -491,7 +498,7 @@ QSharedPointer<Surface> MarchingCubes::extract(voxie::io::Operation* operation, 
                     sb->addTriangle(triangles[i].p[0], triangles[i].p[1], triangles[i].p[2]);
             }
         }
-        operation->updateProgress(1.0f * x / dim.x);
+        operation->updateProgress(1.0f * z / dim.z);
     }
 
     return sb->createSurfaceClearBuilder();
