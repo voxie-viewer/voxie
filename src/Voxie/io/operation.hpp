@@ -4,6 +4,7 @@
 
 #include <QtCore/QAtomicInt>
 #include <QtCore/QObject>
+#include <QtCore/QMutex>
 
 namespace voxie { namespace io {
 
@@ -17,6 +18,12 @@ class VOXIECORESHARED_EXPORT Operation : public QObject {
     Q_OBJECT
 
     QAtomicInt cancelled;
+
+    QMutex progressMutex;
+    bool progressUpdating = false;
+    bool progressPending = false;
+    float progressPendingValue;
+    void emitProgressChanged();
 
 public:
     Operation(QObject* parent = nullptr);

@@ -14,6 +14,7 @@
 #include <math.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QElapsedTimer>
 
 #include <QtGui/QMatrix4x4>
 #include <QtGui/QMouseEvent>
@@ -185,24 +186,23 @@ void IsosurfaceView::regenerate()
         return;
     }
 
-    SharpThread *thread = new SharpThread([this]() -> void { this->generateModel(); }, this);
+    auto operation = QSharedPointer<voxie::io::Operation>::create();
+
+    SharpThread *thread = new SharpThread([this, operation]() -> void { this->generateModel(operation); }, this);
 
     this->progressBar->setValue(0);
 
     connect(thread, &QThread::finished, thread, &QObject::deleteLater);
     connect(thread, &QThread::finished, this->progressBar, &QWidget::hide);
     connect(thread, &QThread::started, this->progressBar, &QWidget::show);
+    connect(operation.data(), &voxie::io::Operation::progressChanged, this, &IsosurfaceView::progressChanged);
 
     this->generating = true;
     thread->start();
 }
 
-void IsosurfaceView::generateModel()
-{
+void IsosurfaceView::generateModel(const QSharedPointer<voxie::io::Operation>& operation) {
     qDebug() << "Regenrating surface...";
-
-    QScopedPointer<voxie::io::Operation> operation(new voxie::io::Operation());
-    connect(operation.data(), &voxie::io::Operation::progressChanged, this, &IsosurfaceView::progressChanged);
 
     QScopedPointer<SurfaceExtractor> extractor;
     if (!this->useMarchingCubes) {
@@ -211,9 +211,14 @@ void IsosurfaceView::generateModel()
         extractor.reset(new MarchingCubes());
     }
 
+    QElapsedTimer timer;
+    timer.start();
+
     auto surface = extractor->extract(operation.data(), this->voxelData->filteredData(), this->threshold, this->inverted);
 
-    qDebug() << "Generated surface: Vertices:" << surface->vertices().size() << "/ Triangles:" << surface->triangles().size();
+    auto timeMS = timer.elapsed();
+
+    qDebug() << "Generated surface in" << timeMS << "ms: Vertices:" << surface->vertices().size() << "/ Triangles:" << surface->triangles().size();
 
     emit generationDone(surface);
 }

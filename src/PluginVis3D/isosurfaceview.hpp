@@ -15,10 +15,15 @@
 
 #include <QtWidgets/QProgressBar>
 
-namespace voxie { namespace data {
+namespace voxie {
+namespace data {
     class Surface;
     class SurfaceBuilder;
-} }
+}
+namespace io {
+    class Operation;
+}
+}
 
 class IsosurfaceView : public voxie::visualization::OpenGLDrawWidget {
     Q_OBJECT
@@ -49,7 +54,7 @@ private:
 
     void genCube(const QVector3D &pos, int sides, voxie::data::SurfaceBuilder* sb);
 
-    void generateModel();
+    void generateModel(const QSharedPointer<voxie::io::Operation>& operation);
 
     void uploadData();
 
