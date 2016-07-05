@@ -3,6 +3,7 @@
 #include <Voxie/data/surface.hpp>
 
 #include <QtCore/QMap>
+#include <QtCore/QDebug>
 
 namespace voxie { namespace data {
 
@@ -42,26 +43,36 @@ class VOXIECORESHARED_EXPORT SurfaceBuilder : public QObject {
 
     QVector<QVector3D> vertices_;
     QVector<Triangle> triangles_;
-    QMap<Vec3Wrapper, IndexType> indices_;
+    //QMap<Vec3Wrapper, IndexType> indices_;
 
  public:
     SurfaceBuilder(QObject* parent = nullptr);
     ~SurfaceBuilder();
 
-    // TODO: this should merge vertices which are very close to each other
     IndexType addVertex(QVector3D vertex) {
+        /*
         auto it = indices_.constFind(vertex);
-        if (it != indices_.constEnd())
-            return *it;
+        if (it != indices_.constEnd()) {
+            qWarning() << "Added vertex" << vertex << "multiple times";
+            //return *it;
+        }
+        */
 
         IndexType index = vertices_.size();
         vertices_.push_back(vertex);
-        indices_.insert(vertex, index);
+        //indices_.insert(vertex, index);
         return index;
     }
 
+    void addTriangle(IndexType a, IndexType b, IndexType c) {
+        /*
+        if (a == b || a == c || b == c)
+            qWarning() << "Warning: Got collapsed triangle with indices" << a << b << c;
+        */
+        triangles_.push_back({a, b, c});
+    }
     void addTriangle(QVector3D a, QVector3D b, QVector3D c) {
-        triangles_.push_back({addVertex(a), addVertex(b), addVertex(c)});
+        addTriangle(addVertex(a), addVertex(b), addVertex(c));
     }
 
     void clear();

@@ -14,75 +14,130 @@ Cuberille::Cuberille(QObject* parent) : SurfaceExtractor(parent) {
 Cuberille::~Cuberille() {
 }
 
-static void addQuad(SurfaceBuilder* sb, const QVector3D &a, const QVector3D &b, const QVector3D &c, const QVector3D &d) {
-    sb->addTriangle(a, b, c);
-    sb->addTriangle(a, c, d);
+namespace {
+    // Caches the vertex indices for all the vertices for 1 plane
+    //
+    // This is used to make sure that there are no duplicate vertices in
+    // the resulting surface
+    class VertexCache {
+        size_t dimX, dimY;
+        size_t planeCount;
+        QVector<Surface::IndexType> plane1;
+        QVector<Surface::IndexType> plane2;
+        Surface::IndexType* planeLow;
+        Surface::IndexType* planeUpp;
+
+    public:
+        VertexCache(size_t dimX, size_t dimY) :
+            dimX(dimX), dimY(dimY),
+            planeCount((dimX+1) * (dimY+1)),
+            plane1(planeCount),
+            plane2(planeCount)
+        {
+            planeLow = plane1.data();
+            planeUpp = plane2.data();
+
+            memset(planeUpp, -1, planeCount * sizeof (Surface::IndexType));
+        }
+
+        void nextPlane() {
+            std::swap(planeLow, planeUpp);
+            memset(planeUpp, -1, planeCount * sizeof (Surface::IndexType));
+        }
+
+        Surface::IndexType& get(size_t x, size_t y, size_t z) {
+            //qDebug() << x << (dimX+1) << y << (dimY+1) << z;
+            if (x >= (dimX+1) || y >= (dimY+1) || z >= 2)
+                abort();
+
+            Surface::IndexType* ptr = z ? planeUpp : planeLow;
+
+            return ptr[x + (dimX+1) * y];
+        }
+    };
 }
 
-static void genCube(const QVector3D &position, const QVector3D &size, int sides, SurfaceBuilder* sb) {
-    QVector3D min = position - size;
-    QVector3D max = position + size;
+// Return a vertex at (x-1/2, y-1/2, zBase+z-1/2)
+static Surface::IndexType addVertex(SurfaceBuilder* sb, VertexCache& cache, VoxelData* data, size_t x, size_t y, size_t z, size_t zBase) {
+    Surface::IndexType& cacheItem = cache.get(x, y, z);
+    if (cacheItem != Surface::invalidIndex)
+        return cacheItem;
 
+    QVector3D pos(x - 0.5f, y - 0.5f, zBase + z - 0.5f);
+    pos = data->getFirstVoxelPosition() + data->getSpacing() * pos;
+    return cacheItem = sb->addVertex(pos);
+}
+
+static void addQuad(SurfaceBuilder* sb, VertexCache& cache, VoxelData* data, voxie::scripting::IntVector3 pos, const std::array<int, 3>& a, const std::array<int, 3>& b, const std::array<int, 3>& c, const std::array<int, 3>& d) {
+    size_t x = pos.x;
+    size_t y = pos.y;
+    size_t z = pos.z;
+    auto va = addVertex(sb, cache, data, x + a[0], y + a[1], a[2], z);
+    auto vb = addVertex(sb, cache, data, x + b[0], y + b[1], b[2], z);
+    auto vc = addVertex(sb, cache, data, x + c[0], y + c[1], c[2], z);
+    auto vd = addVertex(sb, cache, data, x + d[0], y + d[1], d[2], z);
+
+    sb->addTriangle(va, vb, vc);
+    sb->addTriangle(va, vc, vd);
+}
+
+static void genCube(const voxie::scripting::IntVector3 &position, int sides, SurfaceBuilder* sb, VertexCache& cache, VoxelData* data) {
     // Front (+z)
     if (sides & 1) {
-        addQuad(sb,
-                QVector3D(min.x(), min.y(), max.z()),
-                QVector3D(max.x(), min.y(), max.z()),
-                QVector3D(max.x(), max.y(), max.z()),
-                QVector3D(min.x(), max.y(), max.z()));
+        addQuad(sb, cache, data, position,
+                {0, 0, 1},
+                {1, 0, 1},
+                {1, 1, 1},
+                {0, 1, 1});
     }
 
     // Back (-z)
     if (sides & 2) {
-        addQuad(sb,
-                QVector3D(min.x(), min.y(), min.z()),
-                QVector3D(min.x(), max.y(), min.z()),
-                QVector3D(max.x(), max.y(), min.z()),
-                QVector3D(max.x(), min.y(), min.z()));
+        addQuad(sb, cache, data, position,
+                {0, 0, 0},
+                {0, 1, 0},
+                {1, 1, 0},
+                {1, 0, 0});
     }
 
     // Left (+x)
     if (sides & 4) {
-        addQuad(sb,
-                QVector3D(max.x(), min.y(), min.z()),
-                QVector3D(max.x(), max.y(), min.z()),
-                QVector3D(max.x(), max.y(), max.z()),
-                QVector3D(max.x(), min.y(), max.z()));
+        addQuad(sb, cache, data, position,
+                {1, 0, 0},
+                {1, 1, 0},
+                {1, 1, 1},
+                {1, 0, 1});
     }
 
     // Right (-x)
     if (sides & 8) {
-        addQuad(sb,
-                QVector3D(min.x(), min.y(), min.z()),
-                QVector3D(min.x(), min.y(), max.z()),
-                QVector3D(min.x(), max.y(), max.z()),
-                QVector3D(min.x(), max.y(), min.z()));
+        addQuad(sb, cache, data, position,
+                {0, 0, 0},
+                {0, 0, 1},
+                {0, 1, 1},
+                {0, 1, 0});
     }
 
     // Top (+y)
     if (sides & 16) {
-        addQuad(sb,
-                QVector3D(min.x(), max.y(), min.z()),
-                QVector3D(min.x(), max.y(), max.z()),
-                QVector3D(max.x(), max.y(), max.z()),
-                QVector3D(max.x(), max.y(), min.z()));
+        addQuad(sb, cache, data, position,
+                {0, 1, 0},
+                {0, 1, 1},
+                {1, 1, 1},
+                {1, 1, 0});
     }
 
     // Bottom (-y)
     if (sides & 32) {
-        addQuad(sb,
-                QVector3D(min.x(), min.y(), min.z()),
-                QVector3D(max.x(), min.y(), min.z()),
-                QVector3D(max.x(), min.y(), max.z()),
-                QVector3D(min.x(), min.y(), max.z()));
+        addQuad(sb, cache, data, position,
+                {0, 0, 0},
+                {1, 0, 0},
+                {1, 0, 1},
+                {0, 0, 1});
     }
 }
 
 QSharedPointer<Surface> Cuberille::extract(voxie::io::Operation* operation, voxie::data::VoxelData* data, float threshold, bool invert) {
-    QVector3D spacing = data->getSpacing();
-
-    QVector3D size = 0.5f * spacing;
-
     auto dim = data->getDimensions();
 
     auto upper = dim;
@@ -90,13 +145,15 @@ QSharedPointer<Surface> Cuberille::extract(voxie::io::Operation* operation, voxi
     upper.y -= 1;
     upper.z -= 1;
 
-    QVector3D origin = data->getFirstVoxelPosition();
-
     QScopedPointer<SurfaceBuilder> sb(new SurfaceBuilder());
 
-    for(size_t x = 0; x < dim.x; x++) {
+    VertexCache cache(dim.x, dim.y);
+
+    for(size_t z = 0; z < dim.z; z++) {
+        cache.nextPlane();
+
         for(size_t y = 0; y < dim.y; y++) {
-            for(size_t z = 0; z < dim.z; z++) {
+            for(size_t x = 0; x < dim.x; x++) {
                 operation->throwIfCancelled();
 
                 Voxel voxel = data->getVoxel(x, y, z);
@@ -118,14 +175,10 @@ QSharedPointer<Surface> Cuberille::extract(voxie::io::Operation* operation, voxi
                     majoraMask &= ~1;
 
                 if((majoraMask & 192) != 0) {
-                    QVector3D pos = QVector3D(x * spacing.x(),
-                                              y * spacing.y(),
-                                              z * spacing.z())
-                        + 0.5f * spacing + origin;
-                    genCube(pos, size, majoraMask, sb.data());
+                    genCube(voxie::scripting::IntVector3(x, y, z), majoraMask, sb.data(), cache, data);
                 }
             }
-            operation->updateProgress(1.0f * x / dim.x);
+            operation->updateProgress(1.0f * z / dim.z);
         }
     }
 

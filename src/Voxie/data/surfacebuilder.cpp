@@ -12,7 +12,7 @@ SurfaceBuilder::~SurfaceBuilder() {
 void SurfaceBuilder::clear() {
     triangles_.clear();
     vertices_.clear();
-    indices_.clear();
+    //indices_.clear();
 }
 
 QSharedPointer<Surface> SurfaceBuilder::createSurfaceClearBuilder() {

@@ -85,12 +85,12 @@ class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptingConta
         /**
          * @return voxel value at the given position. x,y,z outside the dimensions will return NAN.
          */
-        inline Voxel getVoxelSafe(size_t x, size_t y, size_t z) const
+        inline Voxel getVoxelSafe(size_t x, size_t y, size_t z, Voxel def = NAN) const
         {
             if(isInBounds(x, y, z, this->getDimensions())){
                 return this->getData()[x + y * this->dimensions.x + z * this->dimensions.x * this->dimensions.y];
             } else {
-                return NAN;
+                return def;
             }
         }
 

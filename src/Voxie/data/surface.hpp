@@ -22,6 +22,8 @@ class VOXIECORESHARED_EXPORT Surface : public QObject {
     typedef quint32 IndexType;
     typedef std::array<IndexType, 3> Triangle;
 
+    static const IndexType invalidIndex = -1;
+
  private:
     QVector<QVector3D> vertices_;
     QVector<Triangle> triangles_;

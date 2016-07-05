@@ -11,31 +11,16 @@ using namespace voxie::data;
 
 struct TRIANGLE
 {
-   QVector3D p[3];
+    //QVector3D p[3];
+    Surface::IndexType i[3];
 };
 
 struct GRIDCELL
 {
+   size_t x, y, z;
    QVector3D p[8];
    double val[8];
 };
-
-/*
-   Linearly interpolate the position where an isosurface cuts
-   an edge between two vertices, each with their own scalar value
-*/
-static QVector3D VertexInterp(double isolevel, const QVector3D &p1, const QVector3D &p2, double valp1, double valp2);
-
-
-/*
-   Given a grid cell and an isolevel, calculate the triangular
-   facets required to represent the isosurface through the cell.
-   Return the number of triangular facets, the array "triangles"
-   will be loaded up with the vertices at most 5 triangular facets.
-    0 will be returned if the grid cell is either totally above
-   of totally below the isolevel.
-*/
-static int Polygonise(const GRIDCELL &grid, double isolevel, TRIANGLE *triangles, bool invert);
 
 int edgeTable[256]={
     0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -333,27 +318,184 @@ int triTable[256][16] =
    Linearly interpolate the position where an isosurface cuts
    an edge between two vertices, each with their own scalar value
 */
-QVector3D VertexInterp(double isolevel, const QVector3D &p1, const QVector3D &p2, double valp1, double valp2)
-{
-   double mu;
+Surface::IndexType VertexInterp(SurfaceBuilder* sb, double isolevel, const QVector3D &p1, const QVector3D &p2, double valp1, double valp2) {
+    double mu;
 
-   if (fabs(isolevel-valp1) < 0.00001)
-      return (p1);
-   if (fabs(isolevel-valp2) < 0.00001)
-      return (p2);
-   if (fabs(valp1-valp2) < 0.00001)
-      return (p1);
-   mu = (isolevel - valp1) / (valp2 - valp1);
+    if (fabs(isolevel-valp1) < 0.00001)
+        return sb->addVertex(p1);
+    if (fabs(isolevel-valp2) < 0.00001)
+        return sb->addVertex(p2);
+    if (fabs(valp1-valp2) < 0.00001)
+        return sb->addVertex(p1);
+    mu = (isolevel - valp1) / (valp2 - valp1);
+    //mu = (isolevel - valp1 + (rand() * 1.0 / RAND_MAX / 1e5)) / (valp2 - valp1);
 
+    QVector3D p;
+    p.setX(p1.x() + mu * (p2.x() - p1.x()));
+    p.setY(p1.y() + mu * (p2.y() - p1.y()));
+    p.setZ(p1.z() + mu * (p2.z() - p1.z()));
 
-   QVector3D p;
-   p.setX(p1.x() + mu * (p2.x() - p1.x()));
-   p.setY(p1.y() + mu * (p2.y() - p1.y()));
-   p.setZ(p1.z() + mu * (p2.z() - p1.z()));
-
-   return(p);
+    return sb->addVertex(p);
 }
 
+namespace {
+    // Caches the vertex indices for all the vertices for 1 plane
+    //
+    // This is used to make sure that there are no duplicate vertices in
+    // the resulting surface
+    class VertexCache {
+        size_t dimX, dimY;
+        size_t planeXCount;
+        size_t planeYCount;
+        size_t planeZCount;
+        QVector<Surface::IndexType> plane1X;
+        QVector<Surface::IndexType> plane1Y;
+        QVector<Surface::IndexType> plane2X;
+        QVector<Surface::IndexType> plane2Y;
+        QVector<Surface::IndexType> planeZ;
+        Surface::IndexType* planeLowX;
+        Surface::IndexType* planeLowY;
+        Surface::IndexType* planeUppX;
+        Surface::IndexType* planeUppY;
+
+    public:
+        VertexCache(size_t dimX, size_t dimY) :
+            dimX(dimX), dimY(dimY),
+            planeXCount((dimX+1) * (dimY+2)),
+            planeYCount((dimX+2) * (dimY+1)),
+            planeZCount((dimX+2) * (dimY+2)),
+            plane1X(planeXCount),
+            plane1Y(planeYCount),
+            plane2X(planeXCount),
+            plane2Y(planeYCount),
+            planeZ(planeZCount)
+        {
+            planeLowX = plane1X.data();
+            planeLowY = plane1Y.data();
+            planeUppX = plane2X.data();
+            planeUppY = plane2Y.data();
+
+            memset(planeUppX, -1, planeXCount * sizeof (Surface::IndexType));
+            memset(planeUppY, -1, planeYCount * sizeof (Surface::IndexType));
+        }
+
+        void nextPlane() {
+            std::swap(planeLowX, planeUppX);
+            std::swap(planeLowY, planeUppY);
+            memset(planeUppX, -1, planeXCount * sizeof (Surface::IndexType));
+            memset(planeUppY, -1, planeYCount * sizeof (Surface::IndexType));
+            memset(planeZ.data(), -1, planeZCount * sizeof (Surface::IndexType));
+        }
+
+        Surface::IndexType& get(int axis, size_t x, size_t y, size_t z) {
+            Surface::IndexType* ptr;
+
+            size_t sizeX, sizeY;
+
+            switch (axis) {
+            case 0:
+                ptr = z ? planeUppX : planeLowX;
+                sizeX = dimX + 1;
+                sizeY = dimY + 2;
+                break;
+
+            case 1:
+                ptr = z ? planeUppY : planeLowY;
+                sizeX = dimX + 2;
+                sizeY = dimY + 1;
+                break;
+
+            case 2:
+                ptr = planeZ.data();
+                sizeX = dimX + 2;
+                sizeY = dimY + 2;
+                break;
+
+            default:
+                abort();
+            }
+
+            //qDebug() << x << sizeX << y << sizeY << z << axis;
+            if (x >= sizeX || y >= sizeY || z >= 2 || (z && axis == 2))
+                abort();
+
+            return ptr[x + sizeX * y];
+        }
+    };
+}
+
+static void AddVertex(Surface::IndexType* vertices, int index, SurfaceBuilder* sb, VertexCache& cache, double isolevel, const GRIDCELL &grid, int index1, int index2) {
+    /*
+    vertices[index] = VertexInterp(sb, isolevel,
+                                   grid.p[index1], grid.p[index2],
+                                   grid.val[index1], grid.val[index2]);
+    */
+
+    /*
+    static const int offsets[][3] = {
+        {0, 0, 1},
+        {1, 0, 1},
+        {1, 0, 0},
+        {0, 0, 0},
+        {0, 1, 1},
+        {1, 1, 1},
+        {1, 1, 0},
+        {0, 1, 0},
+    };
+    */
+
+    /*
+      0 => 0 <-> 1
+      1 => 1 <-> 2
+      2 => 2 <-> 3
+      3 => 3 <-> 0
+      4 => 4 <-> 5
+      5 => 5 <-> 6
+      6 => 6 <-> 7
+      7 => 7 <-> 4
+      8 => 0 <-> 4
+      9 => 1 <-> 5
+     10 => 2 <-> 6
+     11 => 3 <-> 7
+    */
+
+    static const int axis[12] = {
+        0, 2, 0, 2,
+        0, 2, 0, 2,
+        1, 1, 1, 1,
+    };
+
+    static const int offsets[12][3] = {
+        {0/**/, 0, 1},
+        {1, 0, 0/**/},
+        {0/**/, 0, 0},
+        {0, 0, 0/**/},
+
+        {0/**/, 1, 1},
+        {1, 1, 0/**/},
+        {0/**/, 1, 0},
+        {0, 1, 0/**/},
+
+        {0, 0/**/, 1},
+        {1, 0/**/, 1},
+        {1, 0/**/, 0},
+        {0, 0/**/, 0},
+    };
+
+    size_t x = grid.x + offsets[index][0];
+    size_t y = grid.y + offsets[index][1];
+    size_t z = offsets[index][2];
+
+    Surface::IndexType& cacheItem = cache.get(axis[index], x, y, z);
+    if (cacheItem != Surface::invalidIndex) {
+        vertices[index] = cacheItem;
+        return;
+    }
+
+    vertices[index] = cacheItem = VertexInterp(sb, isolevel,
+                                               grid.p[index1], grid.p[index2],
+                                               grid.val[index1], grid.val[index2]);
+}
 
 /*
    Given a grid cell and an isolevel, calculate the triangular
@@ -363,78 +505,65 @@ QVector3D VertexInterp(double isolevel, const QVector3D &p1, const QVector3D &p2
     0 will be returned if the grid cell is either totally above
    of totally below the isolevel.
 */
-int Polygonise(const GRIDCELL &grid, double isolevel, TRIANGLE *triangles, bool invert)
-{
-   int i,ntriang;
-   int cubeindex;
-   QVector3D vertlist[12];
+static int Polygonise(const GRIDCELL &grid, double isolevel, TRIANGLE *triangles, SurfaceBuilder* sb, VertexCache& cache, bool invert) {
+    int i,ntriang;
+    int cubeindex;
+    Surface::IndexType vertlist[12];
 
-   /*
+    /*
       Determine the index into the edge table which
       tells us which vertices are inside of the surface
-   */
-   cubeindex = 0;
-   if ((grid.val[0] < isolevel) ^ invert) cubeindex |= 1;
-   if ((grid.val[1] < isolevel) ^ invert) cubeindex |= 2;
-   if ((grid.val[2] < isolevel) ^ invert) cubeindex |= 4;
-   if ((grid.val[3] < isolevel) ^ invert) cubeindex |= 8;
-   if ((grid.val[4] < isolevel) ^ invert) cubeindex |= 16;
-   if ((grid.val[5] < isolevel) ^ invert) cubeindex |= 32;
-   if ((grid.val[6] < isolevel) ^ invert) cubeindex |= 64;
-   if ((grid.val[7] < isolevel) ^ invert) cubeindex |= 128;
+    */
+    cubeindex = 0;
+    if ((grid.val[0] < isolevel) ^ invert) cubeindex |= 1;
+    if ((grid.val[1] < isolevel) ^ invert) cubeindex |= 2;
+    if ((grid.val[2] < isolevel) ^ invert) cubeindex |= 4;
+    if ((grid.val[3] < isolevel) ^ invert) cubeindex |= 8;
+    if ((grid.val[4] < isolevel) ^ invert) cubeindex |= 16;
+    if ((grid.val[5] < isolevel) ^ invert) cubeindex |= 32;
+    if ((grid.val[6] < isolevel) ^ invert) cubeindex |= 64;
+    if ((grid.val[7] < isolevel) ^ invert) cubeindex |= 128;
 
-   /* Cube is entirely in/out of the surface */
-   if (edgeTable[cubeindex] == 0)
-      return(0);
+    /* Cube is entirely in/out of the surface */
+    if (edgeTable[cubeindex] == 0)
+        return(0);
 
-   /* Find the vertices where the surface intersects the cube */
-   if (edgeTable[cubeindex] & 1)
-      vertlist[0] =
-         VertexInterp(isolevel,grid.p[0],grid.p[1],grid.val[0],grid.val[1]);
-   if (edgeTable[cubeindex] & 2)
-      vertlist[1] =
-         VertexInterp(isolevel,grid.p[1],grid.p[2],grid.val[1],grid.val[2]);
-   if (edgeTable[cubeindex] & 4)
-      vertlist[2] =
-         VertexInterp(isolevel,grid.p[2],grid.p[3],grid.val[2],grid.val[3]);
-   if (edgeTable[cubeindex] & 8)
-      vertlist[3] =
-         VertexInterp(isolevel,grid.p[3],grid.p[0],grid.val[3],grid.val[0]);
-   if (edgeTable[cubeindex] & 16)
-      vertlist[4] =
-         VertexInterp(isolevel,grid.p[4],grid.p[5],grid.val[4],grid.val[5]);
-   if (edgeTable[cubeindex] & 32)
-      vertlist[5] =
-         VertexInterp(isolevel,grid.p[5],grid.p[6],grid.val[5],grid.val[6]);
-   if (edgeTable[cubeindex] & 64)
-      vertlist[6] =
-         VertexInterp(isolevel,grid.p[6],grid.p[7],grid.val[6],grid.val[7]);
-   if (edgeTable[cubeindex] & 128)
-      vertlist[7] =
-         VertexInterp(isolevel,grid.p[7],grid.p[4],grid.val[7],grid.val[4]);
-   if (edgeTable[cubeindex] & 256)
-      vertlist[8] =
-         VertexInterp(isolevel,grid.p[0],grid.p[4],grid.val[0],grid.val[4]);
-   if (edgeTable[cubeindex] & 512)
-      vertlist[9] =
-         VertexInterp(isolevel,grid.p[1],grid.p[5],grid.val[1],grid.val[5]);
-   if (edgeTable[cubeindex] & 1024)
-      vertlist[10] =
-         VertexInterp(isolevel,grid.p[2],grid.p[6],grid.val[2],grid.val[6]);
-   if (edgeTable[cubeindex] & 2048)
-      vertlist[11] =
-         VertexInterp(isolevel,grid.p[3],grid.p[7],grid.val[3],grid.val[7]);
+    /* Find the vertices where the surface intersects the cube */
+    if (edgeTable[cubeindex] & 1)
+        AddVertex(vertlist, 0, sb, cache, isolevel, grid, 0, 1);
+    if (edgeTable[cubeindex] & 2)
+        AddVertex(vertlist, 1, sb, cache, isolevel, grid, 1, 2);
+    if (edgeTable[cubeindex] & 4)
+        AddVertex(vertlist, 2, sb, cache, isolevel, grid, 2, 3);
+    if (edgeTable[cubeindex] & 8)
+        AddVertex(vertlist, 3, sb, cache, isolevel, grid, 3, 0);
+    if (edgeTable[cubeindex] & 16)
+        AddVertex(vertlist, 4, sb, cache, isolevel, grid, 4, 5);
+    if (edgeTable[cubeindex] & 32)
+        AddVertex(vertlist, 5, sb, cache, isolevel, grid, 5, 6);
+    if (edgeTable[cubeindex] & 64)
+        AddVertex(vertlist, 6, sb, cache, isolevel, grid, 6, 7);
+    if (edgeTable[cubeindex] & 128)
+        AddVertex(vertlist, 7, sb, cache, isolevel, grid, 7, 4);
+    if (edgeTable[cubeindex] & 256)
+        AddVertex(vertlist, 8, sb, cache, isolevel, grid, 0, 4);
+    if (edgeTable[cubeindex] & 512)
+        AddVertex(vertlist, 9, sb, cache, isolevel, grid, 1, 5);
+    if (edgeTable[cubeindex] & 1024)
+        AddVertex(vertlist, 10, sb, cache, isolevel, grid, 2, 6);
+    if (edgeTable[cubeindex] & 2048)
+        AddVertex(vertlist, 11, sb, cache, isolevel, grid, 3, 7);
 
-   /* Create the triangle */
-   ntriang = 0;
-   for (i=0;triTable[cubeindex][i]!=-1;i+=3) {
-      triangles[ntriang].p[0] = vertlist[triTable[cubeindex][i  ]];
-      triangles[ntriang].p[1] = vertlist[triTable[cubeindex][i+1]];
-      triangles[ntriang].p[2] = vertlist[triTable[cubeindex][i+2]];
-      ntriang++;
-   }
+    /* Create the triangle */
+    ntriang = 0;
+    for (i=0;triTable[cubeindex][i]!=-1;i+=3) {
+        triangles[ntriang].i[0] = vertlist[triTable[cubeindex][i  ]];
+        triangles[ntriang].i[1] = vertlist[triTable[cubeindex][i+1]];
+        triangles[ntriang].i[2] = vertlist[triTable[cubeindex][i+2]];
+        ntriang++;
+    }
 
-   return ntriang;
+    return ntriang;
 }
 
 MarchingCubes::MarchingCubes(QObject* parent) : SurfaceExtractor(parent) {
@@ -464,14 +593,18 @@ QSharedPointer<Surface> MarchingCubes::extract(voxie::io::Operation* operation, 
     ::TRIANGLE triangles[5];
     ::GRIDCELL cell;
 
+    VertexCache cache(dim.x, dim.y);
+
     for(ptrdiff_t z = 0; z <= (ptrdiff_t) dim.z; z++) {
+        cache.nextPlane();
+
         for(ptrdiff_t y = 0; y <= (ptrdiff_t) dim.y; y++) {
             for(ptrdiff_t x = 0; x <= (ptrdiff_t) dim.x; x++) {
                 operation->throwIfCancelled();
 
                 int cubeindex = 0;
                 for(int i = 0; i < 8; i++) {
-                    if (data->getVoxelSafe(x + offsets[i][0] - 1, y + offsets[i][1] - 1, z + offsets[i][2] - 1) < threshold)
+                    if (data->getVoxelSafe(x + offsets[i][0] - 1, y + offsets[i][1] - 1, z + offsets[i][2] - 1, 0) < threshold)
                         cubeindex |= 1 << i;
                 }
                 if (cubeindex == 0 || cubeindex == 255)
@@ -484,18 +617,23 @@ QSharedPointer<Surface> MarchingCubes::extract(voxie::io::Operation* operation, 
                          (z + offsets[i][2] - 0.5f) * spacing.z());
 
                     cell.p[i] = pos;
-                    cell.val[i] = data->getVoxelSafe(x + offsets[i][0] - 1, y + offsets[i][1] - 1, z + offsets[i][2] - 1);
+                    cell.val[i] = data->getVoxelSafe(x + offsets[i][0] - 1, y + offsets[i][1] - 1, z + offsets[i][2] - 1, 0);
                     if(invert)
                         cell.val[i] = -(cell.val[i] - threshold) + threshold;
+                    /*
                     if(isnan(cell.val[i]))
                         cell.val[i] = 0;
+                    */
                 }
-                int count = Polygonise(cell, threshold, triangles, false);
+                cell.x = x;
+                cell.y = y;
+                cell.z = z;
+                int count = Polygonise(cell, threshold, triangles, sb.data(), cache, false);
                 if(count == 0)
                     continue;
 
                 for(int i = 0; i < count; i++)
-                    sb->addTriangle(triangles[i].p[0], triangles[i].p[1], triangles[i].p[2]);
+                    sb->addTriangle(triangles[i].i[0], triangles[i].i[1], triangles[i].i[2]);
             }
         }
         operation->updateProgress(1.0f * z / dim.z);
