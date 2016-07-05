@@ -42,6 +42,7 @@ SOURCES += \
     io/importer.cpp \
     io/loader.cpp \
     io/operation.cpp \
+    io/savefiledialog.cpp \
     io/sliceexporter.cpp \
     io/voxelexporter.cpp \
     opencl/clinstance.cpp \
@@ -99,6 +100,7 @@ HEADERS += \
     io/importer.hpp \
     io/loader.hpp \
     io/operation.hpp \
+    io/savefiledialog.hpp \
     io/sliceexporter.hpp \
     io/voxelexporter.hpp \
     opencl/clinstance.hpp \

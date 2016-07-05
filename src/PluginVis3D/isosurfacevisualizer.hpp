@@ -35,10 +35,14 @@ public:
 		return this->voxelData_;
 	}
 
+    static void saveToSTL(const voxie::data::Surface* surface, const QString& filename);
+    static void saveToPLY(const voxie::data::Surface* surface, const QString& filename);
+    static void saveToFTR(const voxie::data::Surface* surface, const QString& filename);
+
 private slots:
     void refresh3D();
 
-    void saveAsSTL();
+    void saveAs();
 };
 
 // Local Variables:
