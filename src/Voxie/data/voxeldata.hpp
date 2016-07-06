@@ -71,6 +71,7 @@ class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptingConta
         }
 
     public:
+        // throws ScriptingException
         VoxelData(size_t width, size_t height, size_t depth, QObject *parent);
         ~VoxelData();
 
@@ -266,9 +267,11 @@ class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptingConta
         /**
          * This does not copy any references, except for parent.
          * @return a copy of the origin data set.
+         * @throw ScriptingException
          */
         VoxelData* clone() const;
 
+        // throws ScriptingException
         VoxelData* reducedSize(uint xStepsize = 2, uint yStepsize = 2, uint zStepsize = 2) const;
 
         cl::Image3D &getCLImage();

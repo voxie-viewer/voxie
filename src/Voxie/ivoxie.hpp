@@ -66,6 +66,8 @@ public:
     virtual bool disableOpenCL() const = 0;
 
     virtual ActiveVisualizerProvider* activeVisualizerProvider() const = 0;
+
+    virtual QWidget* mainWindow() const = 0;
 };
 
 void VOXIECORESHARED_EXPORT setVoxieRoot(IVoxie *voxie);

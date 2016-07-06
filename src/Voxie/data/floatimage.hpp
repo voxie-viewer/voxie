@@ -44,6 +44,7 @@ private:
     /** stores all data of the image */
     class FloatImageData{
     public:
+        // throws ScriptingException if enableSharedMemory is true
         FloatImageData(size_t w, size_t h, bool enableSharedMemory): width(w), height(h), pixels(w*h, enableSharedMemory), clPixels(), mode(STDMEMORY_MODE), clInstance(nullptr){}
         size_t width, height;
         FloatBuffer pixels;
@@ -265,6 +266,7 @@ public:
      * copy cl pixel buffer but may fail, then clone will be in STDMEMORY_MODE
      * @return clone of this image.
      */
+    // throws ScriptingException if enableSharedMemory is true
     FloatImage clone(bool enableSharedMemory = false) const;
 
     static void testColorizing();
@@ -275,6 +277,7 @@ public:
      * @param width of image
      * @param height of image
      */
+    // throws ScriptingException if enableSharedMemory is true
     FloatImage(size_t width, size_t height, bool enableSharedMemory);
     /**
      * @brief FloatImage creates an empty FloatImage of dimension (0,0)

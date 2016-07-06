@@ -19,6 +19,7 @@ class SharedMemory {
     void* data_;
     std::size_t bytes_;
 public:
+    // throws ScriptingException
     SharedMemory (std::size_t bytes);
     ~SharedMemory ();
     void* getData() const { return data_; }

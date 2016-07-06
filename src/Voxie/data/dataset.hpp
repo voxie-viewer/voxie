@@ -62,6 +62,7 @@ class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptingContain
          * @brief resetData Resets the voxel data to the original, unfiltered data.
          * Should be called at the beginning of the 3d filter chain.
          * When resetData is called the first time, a clone of the original data is created.
+         * @throw ScriptingException
          */
         void resetData();
 
@@ -78,6 +79,7 @@ class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptingContain
          */
         Q_INVOKABLE QString createSlice(QString sliceName);
     public:
+        // throws ScriptingException
         static DataSet* getTestDataSet();
 
         VoxelData* originalData() const { return originalDataSet; }

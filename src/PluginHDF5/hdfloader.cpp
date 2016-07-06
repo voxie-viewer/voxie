@@ -70,6 +70,8 @@ voxie::data::VoxelData* HDFLoader::loadImpl(const QString &fileName) {
             voxelData->setSpacing(QVector3D(1, 1, 1));
 
         voxelData->setObjectName(QFileInfo(fileName).fileName());
+    } catch (ScriptingException& e) {
+        throw;
     } catch (std::exception& e) {
         throw ScriptingException("de.uni_stuttgart.Voxie.HDFLoader.Error", QString() + "Failure while loading file: " + e.what());
     }

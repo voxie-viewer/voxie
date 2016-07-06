@@ -18,6 +18,7 @@ class VOXIECORESHARED_EXPORT Image : public voxie::scripting::ScriptingContainer
     FloatImage image_;
 
 public:
+    // throws ScriptingException
     Image(quint64 width, quint64 height);
     virtual ~Image();
 

@@ -5,6 +5,7 @@
 #include <QtCore/QString>
 #include <QtCore/QSysInfo>
 #include <QtCore/QUuid>
+#include <QtCore/QDebug>
 
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusUnixFileDescriptor>
@@ -43,17 +44,17 @@ SharedMemory::SharedMemory (std::size_t bytes) :
     quint32 sizeLow = (quint32) bytes;
     mapFile = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, sizeHigh, sizeLow, handleName.toUtf8().data());
     if (!mapFile) {
-        qCritical() << "Error creating file mapping object:" << GetLastError();
-        return;
+        auto error = GetLastError();
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.OutOfMemory", "Error creating file mapping object: " + QString::number(error));
     }
 
     data_ = MapViewOfFile(mapFile, FILE_MAP_WRITE, 0, 0, bytes);
     if (!data_) {
-        qCritical() << "Error mapping file:" << GetLastError();
+        auto error = GetLastError();
         if (!CloseHandle(mapFile))
             qCritical() << "Error closing file mapping handle:" << GetLastError();
         mapFile = nullptr;
-        return;
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.OutOfMemory", "Error mapping file: " + QString::number(error));
     }
 
     bytes_ = bytes;
@@ -62,37 +63,49 @@ SharedMemory::SharedMemory (std::size_t bytes) :
     QString filename = "/dev/shm/voxie-shm-" + QUuid::createUuid().toString();
     rwfd = open (filename.toUtf8().data(), O_RDWR | O_CREAT | O_EXCL | O_NOCTTY | O_CLOEXEC, 0400);
     if (rwfd == -1) {
-        perror (("open: " + filename).toUtf8().data());
-        return;
+        int error = errno;
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: open: " + filename + ": " + qt_error_string(error));
     }
     if (unlink (filename.toUtf8().data()) < 0) {
-        perror (("unlink: " + filename).toUtf8().data());
+        int error = errno;
         close (rwfd); rwfd = -1;
-        return;
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: unlink: " + filename + ": " + qt_error_string(error));
     }
     QString filenameFd = "/proc/self/fd/" + QString::number(rwfd);
     //rofd = open (filename.toUtf8().data(), O_RDONLY | O_NOCTTY | O_CLOEXEC);
     rofd = open (filenameFd.toUtf8().data(), O_RDONLY | O_NOCTTY | O_CLOEXEC);
     if (rofd == -1) {
-        perror (("open (RO): " + filenameFd).toUtf8().data());
+        int error = errno;
         close (rwfd); rwfd = -1;
-        return;
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: open (RO): " + filename + ": " + qt_error_string(error));
     }
     if (bytes > 0) {
+        /*
         char c = 0;
         if (pwrite (rwfd, &c, 1, bytes - 1) < 0) {
-            perror (("write: " + filename).toUtf8().data());
+            int error = errno;
             close (rwfd); rwfd = -1;
             close (rofd); rofd = -1;
+            throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: pwrite: " + filename + ": " + qt_error_string(error));
             return;
+        }
+        */
+        int error = posix_fallocate(rwfd, 0, bytes);
+        if (error) {
+            close (rwfd); rwfd = -1;
+            close (rofd); rofd = -1;
+            if (error == ENOSPC)
+                throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.OutOfMemory", "Out of memory while creating shared memory object " + filename);
+            else
+                throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: posix_fallocate: " + filename + ": " + qt_error_string(error));
         }
     }
     data_ = mmap (NULL, bytes, PROT_READ | PROT_WRITE, MAP_SHARED, rwfd, 0);
     if (!data_) {
-        perror (("mmap: " + filename).toUtf8().data());
+        int error = errno;
         close (rwfd); rwfd = -1;
         close (rofd); rofd = -1;
-        return;
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: mmap: " + filename + ": " + qt_error_string(error));
     }
     bytes_ = bytes;
 #endif

@@ -24,6 +24,7 @@ public:
      * @param height
      * @param context
      */
+    // throws ScriptingException if enableSharedMemory is true
     SliceImage(size_t width, size_t height, SliceImageContext context, bool enableSharedMemory) : FloatImage(width, height, enableSharedMemory), _context(context)
     {}
 
@@ -40,6 +41,7 @@ public:
      * (1,1,1) (cubic meter). The Floatimages Data is cloned.
      * @param floatimg for creating sliceimage from
      */
+    // throws ScriptingException if enableSharedMemory is true
     explicit SliceImage(const FloatImage& floatimg, bool enableSharedMemory) : FloatImage(floatimg.clone(enableSharedMemory)), _context(SliceImageContext())
     {this->_context.planeArea = QRectF(QPointF(0,0),this->getDimension());this->_context.voxelGridSpacing = QVector3D(1,1,1);}
 

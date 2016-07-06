@@ -5,6 +5,8 @@
 #include <Voxie/plugin/metafilter3d.hpp>
 #include <Voxie/plugin/voxieplugin.hpp>
 
+#include <Voxie/scripting/scriptingexception.hpp>
+
 #include <QtWidgets/QMessageBox>
 
 using namespace voxie::data;
@@ -27,7 +29,13 @@ FilterChain3D::~FilterChain3D()
 void FilterChain3D::applyTo(voxie::data::DataSet* dataSet)
 {
 	Filter3D* activeFilter;
-    dataSet->resetData();
+    try {
+        dataSet->resetData();
+    } catch (voxie::scripting::ScriptingException& e) {
+        qCritical() << "Error while applying filters:" << e.message();
+        QMessageBox(QMessageBox::Critical, "Voxie: Error while applying filters", QString("Error while applying filters: %1").arg(e.message()), QMessageBox::Ok, voxieRoot().mainWindow()).exec();
+        return;
+    }
     voxie::data::VoxelData* volume = dataSet->filteredData();
     for(int x=0; x < this->filters.length(); x++)
 	{

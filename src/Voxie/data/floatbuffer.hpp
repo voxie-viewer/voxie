@@ -13,6 +13,7 @@
 class VOXIECORESHARED_EXPORT FloatBuffer
 {
 public:
+    // throws ScriptingException if enableSharedMemory is true
     FloatBuffer(size_t numElements, bool enableSharedMemory);
 
     inline size_t numElements() const {return this->_numElements;}
@@ -37,6 +38,7 @@ public:
                 memcpy(vec.data(), this->data(), this->byteSize());
             return vec;
         }
+    // throws ScriptingException if enableSharedMemory is true
     inline FloatBuffer copy(bool enableSharedMemory) const
         {
             FloatBuffer bufferCopy(this->_numElements, enableSharedMemory);

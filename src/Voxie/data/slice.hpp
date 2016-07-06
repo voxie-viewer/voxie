@@ -169,6 +169,7 @@ public:
     QRectF getBoundingRectangle() const;
 
 
+    // throws ScriptingException
     static Slice* getTestSlice()
         {return new Slice(DataSet::getTestDataSet());}
 
@@ -181,6 +182,7 @@ public:
     Q_INVOKABLE
     SliceImage generateImage(const QRectF& sliceArea, const QSize& imageSize, InterpolationMethod interpolation = linear) const;
 
+    // throws ScriptingException
     static SliceImage generateTestImage(int width = 200, int height = 200);
 
     /**

@@ -139,7 +139,7 @@ public:
      * @brief Gets the main window.
      * @return
      */
-    gui::CoreWindow *mainWindow() const { return this->coreWindow; }
+    gui::CoreWindow *mainWindow() const override { return this->coreWindow; }
 
     /**
      * @brief Gets a vector with all open data sets.
