@@ -6,18 +6,60 @@
 #include <QtCore/QSysInfo>
 #include <QtCore/QUuid>
 #include <QtCore/QDebug>
+#include <QtCore/QMutex>
 
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusUnixFileDescriptor>
 
 #if !defined(Q_OS_WIN)
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <sys/syscall.h>
+
+#ifndef MFD_CLOEXEC
+#define MFD_CLOEXEC 0x0001U
+#endif
+#ifndef MFD_ALLOW_SEALING
+#define MFD_ALLOW_SEALING 0x0002U
+#endif
+#ifndef F_ADD_SEALS
+#define F_ADD_SEALS (1024 + 9)
+#endif
+#ifndef F_SEAL_SEAL
+#define F_SEAL_SEAL     0x0001
+#endif
+#ifndef F_SEAL_SHRINK
+#define F_SEAL_SHRINK   0x0002
+#endif
+#ifndef F_SEAL_GROW
+#define F_SEAL_GROW     0x0004
+#endif
+#ifndef F_SEAL_WRITE
+#define F_SEAL_WRITE    0x0008
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_X86_32) && !defined(SYS_memfd_create)
+#define SYS_memfd_create 356
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_X86_64) && !defined(SYS_memfd_create)
+#define SYS_memfd_create 319
+#endif
+static inline int sys_memfd_create(const char* name, unsigned int flags) {
+#if defined(Q_OS_LINUX) && defined(SYS_memfd_create)
+    return syscall(SYS_memfd_create, name, flags);
 #else
+    errno = ENOSYS;
+    return -1;
+#endif
+}
+
+#else
+
 #include <windows.h>
+
 #endif
 
 using namespace voxie::data;
@@ -60,16 +102,38 @@ SharedMemory::SharedMemory (std::size_t bytes) :
     bytes_ = bytes;
 
 #else
-    QString filename = "/dev/shm/voxie-shm-" + QUuid::createUuid().toString();
-    rwfd = open (filename.toUtf8().data(), O_RDWR | O_CREAT | O_EXCL | O_NOCTTY | O_CLOEXEC, 0400);
-    if (rwfd == -1) {
-        int error = errno;
-        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: open: " + filename + ": " + qt_error_string(error));
+    static QMutex mutex;
+    static quint64 lastId = 0;
+    quint64 id;
+    {
+        QMutexLocker lock(&mutex);
+        lastId++;
+        id = lastId;
     }
-    if (unlink (filename.toUtf8().data()) < 0) {
+    QString prefix = QString("voxie-shm-%1-%2").arg(getpid()).arg(id);
+
+    QString filename = "/memfd:" + prefix;
+
+    bool haveMemfd = true;
+    rwfd = sys_memfd_create(prefix.toUtf8().data(), MFD_CLOEXEC | MFD_ALLOW_SEALING);
+    if (rwfd == -1 && errno != ENOSYS) {
         int error = errno;
-        close (rwfd); rwfd = -1;
-        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: unlink: " + filename + ": " + qt_error_string(error));
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: memfd_create: " + prefix + ": " + qt_error_string(error));
+    }
+
+    if (rwfd == -1) {
+        haveMemfd = false;
+        filename = "/dev/shm/" + prefix + "-" + QUuid::createUuid().toString();
+        rwfd = open (filename.toUtf8().data(), O_RDWR | O_CREAT | O_EXCL | O_NOCTTY | O_CLOEXEC, 0400);
+        if (rwfd == -1) {
+            int error = errno;
+            throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: open: " + filename + ": " + qt_error_string(error));
+        }
+        if (unlink (filename.toUtf8().data()) < 0) {
+            int error = errno;
+            close (rwfd); rwfd = -1;
+            throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: unlink: " + filename + ": " + qt_error_string(error));
+        }
     }
     QString filenameFd = "/proc/self/fd/" + QString::number(rwfd);
     //rofd = open (filename.toUtf8().data(), O_RDONLY | O_NOCTTY | O_CLOEXEC);
@@ -100,6 +164,17 @@ SharedMemory::SharedMemory (std::size_t bytes) :
                 throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: posix_fallocate: " + filename + ": " + qt_error_string(error));
         }
     }
+
+    if (haveMemfd) {
+        // Prevent file from being grown or shrinked
+        if (fcntl(rwfd, F_ADD_SEALS, F_SEAL_SEAL | F_SEAL_SHRINK | F_SEAL_GROW) < 0) {
+            int error = errno;
+            close (rwfd); rwfd = -1;
+            close (rofd); rofd = -1;
+            throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating shared memory object: fcntl(F_ADD_SEALS): " + filename + ": " + qt_error_string(error));
+        }
+    }
+
     data_ = mmap (NULL, bytes, PROT_READ | PROT_WRITE, MAP_SHARED, rwfd, 0);
     if (!data_) {
         int error = errno;
