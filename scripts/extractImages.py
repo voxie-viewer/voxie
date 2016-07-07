@@ -34,7 +34,7 @@ with instance.createClient() as client:
     posmin = posmax = None
     for corner in [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]:
         cpos = numpy.array(corner,dtype=numpy.double) * size
-        cpos = rotation * (dorigin + dspacing * cpos)
+        cpos = rotation.inverse * (dorigin + dspacing * cpos)
         if posmin is None:
             posmin = cpos
         if posmax is None:
