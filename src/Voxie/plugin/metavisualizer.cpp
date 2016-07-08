@@ -51,13 +51,13 @@ QDBusObjectPath MetaVisualizerAdaptor::Create(const QVector<QDBusObjectPath>& da
         QVector<data::Slice*> sliceObjects;
 
         for (const QDBusObjectPath& path : dataSets) {
-            data::DataSet* obj = qobject_cast<data::DataSet*> (voxie::scripting::ScriptingContainerBase::lookupWeakObject(path)->scriptingContainerGetQObject());
+            data::DataSet* obj = qobject_cast<data::DataSet*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(path));
             if (!obj)
                 throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find DataSet object");
             dataSetObjects.push_back (obj);
         }
         for (const QDBusObjectPath& path : slices) {
-            data::Slice* obj = qobject_cast<data::Slice*> (voxie::scripting::ScriptingContainerBase::lookupWeakObject(path)->scriptingContainerGetQObject());
+            data::Slice* obj = qobject_cast<data::Slice*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(path));
             if (!obj)
                 throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find Slice object");
             sliceObjects.push_back (obj);

@@ -221,6 +221,10 @@ public:
 
     Q_SCRIPTABLE QDBusObjectPath CreateImage (const QDBusObjectPath& client, const voxie::scripting::IntVector2& size, const QMap<QString, QVariant>& options);
 
+    Q_SCRIPTABLE QDBusObjectPath CreateVoxelData (const QDBusObjectPath& client, const voxie::scripting::IntVector3& size, const QMap<QString, QVariant>& options);
+
+    Q_SCRIPTABLE QDBusObjectPath CreateDataSet (const QString& name, const QDBusObjectPath& data, const QMap<QString, QVariant>& options);
+
     Q_SCRIPTABLE void Quit (const QMap<QString, QVariant>& options);
 
     Q_SCRIPTABLE QDBusVariant ExecuteQScriptCode (const QString& code, const QMap<QString, QVariant>& options);

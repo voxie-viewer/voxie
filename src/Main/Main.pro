@@ -16,6 +16,8 @@ INSTALLS += target
 GIT_VERSION = $$system(git --git-dir $$PWD/../../.git --work-tree $$PWD describe --always --tags)
 DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
 
+DEFINES += VOXIE_MAIN
+
 HEADERS += \
     dbusproxies.hpp \
     directorymanager.hpp \

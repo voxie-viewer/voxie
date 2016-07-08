@@ -199,6 +199,21 @@
       <arg direction="in" name="options" type="a{sv}" />
       <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QVariantMap" />
     </method>
+    <method name="CreateVoxelData">
+      <arg direction="out" type="o" />
+      <arg direction="in" name="client" type="o" />
+      <arg direction="in" name="size" type="(ttt)" />
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="voxie::scripting::IntVector3" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QVariantMap" />
+    </method>
+    <method name="CreateDataSet">
+      <arg direction="out" type="o" />
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="data" type="o" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QVariantMap" />
+    </method>
     <method name="Quit">
       <arg direction="in" name="options" type="a{sv}" />
       <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantMap" />

@@ -537,6 +537,13 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("CreateClient"), argumentList);
     }
 
+    inline QDBusPendingReply<QDBusObjectPath> CreateDataSet(const QString &name, const QDBusObjectPath &data, const QVariantMap &options)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(name) << QVariant::fromValue(data) << QVariant::fromValue(options);
+        return asyncCallWithArgumentList(QLatin1String("CreateDataSet"), argumentList);
+    }
+
     inline QDBusPendingReply<QDBusObjectPath> CreateImage(const QDBusObjectPath &client, voxie::scripting::IntVector2 size, const QVariantMap &options)
     {
         QList<QVariant> argumentList;
@@ -549,6 +556,13 @@ public Q_SLOTS: // METHODS
         QList<QVariant> argumentList;
         argumentList << QVariant::fromValue(options);
         return asyncCallWithArgumentList(QLatin1String("CreateIndependentClient"), argumentList);
+    }
+
+    inline QDBusPendingReply<QDBusObjectPath> CreateVoxelData(const QDBusObjectPath &client, voxie::scripting::IntVector3 size, const QVariantMap &options)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(client) << QVariant::fromValue(size) << QVariant::fromValue(options);
+        return asyncCallWithArgumentList(QLatin1String("CreateVoxelData"), argumentList);
     }
 
     inline QDBusPendingReply<bool> DestroyClient(const QDBusObjectPath &client, const QVariantMap &options)

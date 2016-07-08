@@ -9,8 +9,11 @@
 #include <QtGui/QVector2D>
 #include <QtGui/QVector3D>
 
-#if defined(VOXIECORE_LIBRARY)
+#if defined(VOXIECORE_LIBRARY) || defined(VOXIE_PLUGIN) || defined(VOXIE_MAIN)
 #include <Voxie/voxiecore_global.hpp>
+#define DBUSTYPES_EXPORT VOXIECORESHARED_EXPORT
+#else
+#define DBUSTYPES_EXPORT
 #endif
 
 Q_DECLARE_METATYPE(QVector<QDBusObjectPath>)
@@ -94,30 +97,28 @@ struct Plane {
     QQuaternion rotation;
 };
 
-#if defined(VOXIECORE_LIBRARY)
-VOXIECORESHARED_EXPORT
-#endif
+DBUSTYPES_EXPORT
 void initDBusTypes();
 
 }
 }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const QVector2D &value);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QVector2D &value);
-QDBusArgument &operator<<(QDBusArgument &argument, const QVector3D &value);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QVector3D &value);
-QDBusArgument &operator<<(QDBusArgument &argument, const QQuaternion &value);
-const QDBusArgument &operator>>(const QDBusArgument &argument, QQuaternion &value);
-QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::IntVector2 &value);
-const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::IntVector2 &value);
-QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::IntVector3 &value);
-const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::IntVector3 &value);
-QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::Array2Info &value);
-const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::Array2Info &value);
-QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::Array3Info &value);
-const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::Array3Info &value);
-QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::Plane &value);
-const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::Plane &value);
+DBUSTYPES_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const QVector2D &value);
+DBUSTYPES_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, QVector2D &value);
+DBUSTYPES_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const QVector3D &value);
+DBUSTYPES_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, QVector3D &value);
+DBUSTYPES_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const QQuaternion &value);
+DBUSTYPES_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, QQuaternion &value);
+DBUSTYPES_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::IntVector2 &value);
+DBUSTYPES_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::IntVector2 &value);
+DBUSTYPES_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::IntVector3 &value);
+DBUSTYPES_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::IntVector3 &value);
+DBUSTYPES_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::Array2Info &value);
+DBUSTYPES_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::Array2Info &value);
+DBUSTYPES_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::Array3Info &value);
+DBUSTYPES_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::Array3Info &value);
+DBUSTYPES_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const voxie::scripting::Plane &value);
+DBUSTYPES_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, voxie::scripting::Plane &value);
 
 Q_DECLARE_METATYPE(voxie::scripting::IntVector2)
 Q_DECLARE_METATYPE(voxie::scripting::IntVector3)

@@ -81,8 +81,6 @@ QSharedPointer<voxie::data::VoxelData> RAWImporter::loadImpl(const QString &file
 
 	file.close();
 
-	data->setObjectName(QFileInfo(file.fileName()).fileName());
-
     return data;
 }
 

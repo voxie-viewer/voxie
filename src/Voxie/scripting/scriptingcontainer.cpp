@@ -92,6 +92,13 @@ void ScriptingContainerBase::checkOptions (const QMap<QString, QVariant>& option
     }
 }
 
+Q_NORETURN void ScriptingContainerBase::throwMissingOption(const QString& name) {
+    throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.MissingOptionValue", "No value given for '" + name + "' option");
+}
+Q_NORETURN void ScriptingContainerBase::throwInvalidOption(const QString& name, const QString& expected, const QString& actual) {
+    throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.InvalidOptionValue", "Invalid type for '" + name + "' option: got " + actual + ", expected " + expected);
+}
+
 QDBusObjectPath ScriptingContainerBase::getPath() const {
     return QDBusObjectPath (path);
 }
@@ -102,6 +109,12 @@ ScriptingContainerBase* ScriptingContainerBase::lookupWeakObject(const QDBusObje
     if (it == weakReferences.end ())
         return nullptr;
     return *it;
+}
+QObject* ScriptingContainerBase::lookupWeakQObject(const QDBusObjectPath& path) {
+    auto obj = lookupWeakObject(path);
+    if (!obj)
+        return nullptr;
+    return obj->scriptingContainerGetQObject();
 }
 
 void ScriptingContainer::registerObject(const QSharedPointer<ScriptingContainer>& obj) {

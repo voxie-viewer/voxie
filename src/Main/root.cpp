@@ -672,7 +672,7 @@ QDBusObjectPath VoxieInstance::CreateIndependentClient (const QMap<QString, QVar
 bool VoxieInstance::DestroyClient (const QDBusObjectPath& client, const QMap<QString, QVariant>& options) {
     try {
         voxie::scripting::ScriptingContainerBase::checkOptions(options);
-        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakObject(client)->scriptingContainerGetQObject());
+        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(client));
         if (!clientPtr) {
             return false;
         }
@@ -687,7 +687,7 @@ bool VoxieInstance::DestroyClient (const QDBusObjectPath& client, const QMap<QSt
 QDBusObjectPath VoxieInstance::CreateImage (const QDBusObjectPath& client, const voxie::scripting::IntVector2& size, const QMap<QString, QVariant>& options) {
     try {
         voxie::scripting::ScriptingContainerBase::checkOptions(options);
-        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakObject(client)->scriptingContainerGetQObject());
+        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(client));
         if (!clientPtr) {
             throw ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find client object");
         }
@@ -696,6 +696,54 @@ QDBusObjectPath VoxieInstance::CreateImage (const QDBusObjectPath& client, const
         ScriptingContainer::registerObject(image);
         clientPtr->IncRefCount(image);
         return voxie::scripting::ScriptingContainerBase::getPath(image.data());
+    } catch (voxie::scripting::ScriptingException& e) {
+        e.handle(this);
+        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+    }
+}
+
+QDBusObjectPath VoxieInstance::CreateVoxelData (const QDBusObjectPath& client, const voxie::scripting::IntVector3& size, const QMap<QString, QVariant>& options) {
+    try {
+        voxie::scripting::ScriptingContainerBase::checkOptions(options, "Origin", "Spacing");
+        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(client));
+        if (!clientPtr) {
+            throw ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find client object");
+        }
+
+        QVector3D origin(0, 0, 0);
+        if (hasOption(options, "Origin"))
+            origin = getOptionValue<QVector3D>(options, "Origin");
+
+        QVector3D spacing(1, 1, 1);
+        if (hasOption(options, "Spacing"))
+            spacing = getOptionValue<QVector3D>(options, "Spacing");
+
+        auto data = VoxelData::create(size.x, size.y, size.z);
+        data->setFirstVoxelPos(origin);
+        data->setSpacing(spacing);
+        clientPtr->IncRefCount(data);
+        return voxie::scripting::ScriptingContainerBase::getPath(data.data());
+    } catch (voxie::scripting::ScriptingException& e) {
+        e.handle(this);
+        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+    }
+}
+
+QDBusObjectPath VoxieInstance::CreateDataSet (const QString& name, const QDBusObjectPath& data, const QMap<QString, QVariant>& options) {
+    try {
+        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+
+        QSharedPointer<voxie::scripting::ScriptingContainer> obj = voxie::scripting::ScriptingContainer::lookupObject(data);
+        if (!obj)
+            throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Object " + data.path() + " not found");
+        auto voxelData = qSharedPointerCast<VoxelData> (obj);
+        if (!voxelData)
+            throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.InvalidObjectType", "Object " + data.path() + " is not a voxel data object");
+
+        auto dataSet = new DataSet(voxelData);
+        dataSet->setObjectName(name);
+        root->registerDataSet(dataSet);
+        return voxie::scripting::ScriptingContainerBase::getPath(dataSet);
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(this);
         return voxie::scripting::ScriptingContainerBase::getPath(nullptr);

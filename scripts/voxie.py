@@ -45,11 +45,17 @@ class Voxie:
             objectName = vis_properties.Get('de.uni_stuttgart.Voxie.SliceDataVisualizer', 'Slice')
         return Slice (self, objectName)
 
-    def createClient(self):
-        return Client (self, self.dbus.CreateClient(emptyOptions))
+    def createClient(self, options = emptyOptions):
+        return Client (self, self.dbus.CreateClient(options))
 
-    def createImage(self, client, size):
-        return Image (client, self.dbus.CreateImage(client.path, size, emptyOptions))
+    def createImage(self, client, size, options = emptyOptions):
+        return Image (client, self.dbus.CreateImage(client.path, size, options))
+
+    def createVoxelData(self, client, size, options = emptyOptions):
+        return VoxelData (self, self.dbus.CreateVoxelData(client.path, size, options), client)
+
+    def createDataSet(self, name, data, options = emptyOptions):
+        return DataSet (self, self.dbus.CreateDataSet(name, data.path, options))
 
     def getPlugin(self, name):
         return Plugin (self, self.dbus.GetPluginByName(name))
@@ -70,9 +76,10 @@ class DataSet:
         return VoxelData (self.voxie, self.get ('FilteredData'))
 
 class VoxelData:
-    def __init__(self, voxie, path):
+    def __init__(self, voxie, path, client = None):
         self.voxie = voxie
         self.path = path
+        self.client = client
         self.dbus_properties = dbus.Interface (self.voxie.bus.get_object(self.voxie.bus_name, self.path), 'org.freedesktop.DBus.Properties')
         self.dbus = dbus.Interface (self.voxie.bus.get_object(self.voxie.bus_name, self.path), 'de.uni_stuttgart.Voxie.VoxelData')
     def get(self, name):
@@ -81,6 +88,12 @@ class VoxelData:
         return Buffer (self.dbus.GetDataReadonly(), 3, False)
     def getDataWritable(self):
         return Buffer (self.dbus.GetDataWritable(), 3, True)
+    def __enter__(self):
+        return self
+    def __exit__(self, type, value, traceback):
+        if self.client is not None:
+            self.client.dbus.DecRefCount(self.path)
+        return False
 
 class Slice:
     def __init__(self, voxie, path):

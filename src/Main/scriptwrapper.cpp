@@ -267,6 +267,13 @@ QScriptValue ScriptWrapper::toScriptValue(const QVariant& value) {
         if (val.path() == "/")
             return engine->nullValue();
         voxie::scripting::ScriptingContainerBase* obj = voxie::scripting::ScriptingContainerBase::lookupWeakObject(val);
+        if (!obj) {
+            // Should not happen because this path was just returned by some
+            // function and there wasn't any opportunity yet to destroy the
+            // object
+            qCritical() << "Could not find returned DBus object";
+            return engine->nullValue();
+        }
         return getWrapper(obj);
     }
 

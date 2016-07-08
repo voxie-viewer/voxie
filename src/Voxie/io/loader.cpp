@@ -55,7 +55,7 @@ voxie::data::DataSet* Loader::load(const QString &fileName) {
 voxie::data::DataSet* Loader::registerVoxelData(const QSharedPointer<voxie::data::VoxelData>& data, const QString &fileName) {
     voxie::data::DataSet* dataSet = new voxie::data::DataSet(data);
     dataSet->setFileInfo(QFileInfo(fileName));
-    dataSet->setObjectName(data->objectName());
+    dataSet->setObjectName(dataSet->getFileInfo().fileName());
     emit dataLoaded(dataSet);
     return dataSet;
 }

@@ -68,8 +68,6 @@ QSharedPointer<voxie::data::VoxelData> HDFLoader::loadImpl(const QString &fileNa
             voxelData->setSpacing(toQVector(*volume->GridSpacing));
         else
             voxelData->setSpacing(QVector3D(1, 1, 1));
-
-        voxelData->setObjectName(QFileInfo(fileName).fileName());
     } catch (ScriptingException& e) {
         throw;
     } catch (std::exception& e) {

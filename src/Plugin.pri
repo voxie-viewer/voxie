@@ -8,6 +8,8 @@ include($$PWD/LinkVoxie.pri)
 
 OTHER_FILES += Voxie$$TARGET.json
 
+DEFINES += VOXIE_PLUGIN
+
 unix {
     target.path = /usr/local/lib/voxie/plugins/
     INSTALLS += target
