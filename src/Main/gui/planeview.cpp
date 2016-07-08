@@ -25,7 +25,7 @@ PlaneView::PlaneView(Slice *slice, QWidget *parent) :
         this->disconnect(conni);
     });
 
-    connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->repaint(); });
+    connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->update(); });
 }
 
 void PlaneView::mousePressEvent(QMouseEvent *event)
@@ -56,7 +56,7 @@ void PlaneView::mouseMoveEvent(QMouseEvent *event)
 
         this->slice->setRotation(quat * src);
 
-        this->repaint();
+        this->update();
     } else {
         view3d->mouseMoveEvent(mouseLast, event, size());
     }

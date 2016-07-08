@@ -65,7 +65,7 @@ IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent)
     }
     this->setLayout(hlayout);
 
-    connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->repaint(); });
+    connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->update(); });
 
     qRegisterMetaType<QSharedPointer<voxie::data::Surface>>();
 

@@ -94,7 +94,7 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
     this->dynamicSections().append(sidePanel);
     this->setMinimumSize(300,200);
 
-    connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->repaint(); });
+    connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->update(); });
 
     auto sn = new voxie::spnav::SpaceNavVisualizer(this);
     view3d->registerSpaceNavVisualizer(sn);
