@@ -25,16 +25,16 @@ TheSphereGenerator::~TheSphereGenerator()
 
 }
 
-voxie::data::VoxelData* TheSphereGenerator::importImpl()
+QSharedPointer<voxie::data::VoxelData> TheSphereGenerator::importImpl()
 {
 	return this->genSphereImpl(129);
 }
 
-voxie::data::VoxelData* TheSphereGenerator::genSphereImpl(int size)
+QSharedPointer<voxie::data::VoxelData> TheSphereGenerator::genSphereImpl(int size)
 {
 	QVector3D origin(-(size - 1) / 2.0f, -(size - 1) / 2.0f, -(size - 1) / 2.0f);
 
-	QScopedPointer<VoxelData> data(new VoxelData(size, size, size, nullptr));
+	auto data = VoxelData::create(size, size, size);
 	data->setFirstVoxelPos(origin);
 	srand(1337); // Seed some random data
 
@@ -60,7 +60,7 @@ voxie::data::VoxelData* TheSphereGenerator::genSphereImpl(int size)
 
     data->setObjectName("thesphere");
     data->setSpacing(QVector3D(0.7f,0.7f,0.7f));
-    return data.take();
+    return data;
 }
 
 voxie::data::DataSet* TheSphereGenerator::genSphere(int size) {

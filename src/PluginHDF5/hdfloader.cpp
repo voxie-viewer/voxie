@@ -36,20 +36,20 @@ static QVector3D toQVector (Math::DiagMatrix3<double> vec) {
     return QVector3D(vec.m11(), vec.m22(), vec.m33());
 }
 
-voxie::data::VoxelData* HDFLoader::loadImpl(const QString &fileName) {
+QSharedPointer<voxie::data::VoxelData> HDFLoader::loadImpl(const QString &fileName) {
     // check if file exists
     QFile qFile(fileName);
     if (!qFile.exists()) {
         throw ScriptingException("de.uni_stuttgart.Voxie.HDFLoader.FileNotFound", "File not found");
     }
 
-    QScopedPointer<VoxelData> voxelData;
+    QSharedPointer<VoxelData> voxelData;
     try {
         boost::shared_ptr<VolumeGen<float, true> > volume = HDF5::matlabDeserialize<VolumeGen<float, true> >(fileName.toUtf8().data());
         Math::Vector3<size_t> size = getSize(*volume);
 
         // create and fill the voxel data object
-        voxelData.reset(new VoxelData(size.x(), size.y(), size.z(), nullptr));
+        voxelData = VoxelData::create(size.x(), size.y(), size.z());
         size_t shape[3] = { size.x(), size.y(), size.z() };
         ptrdiff_t stridesBytes[3] = {
             (ptrdiff_t) (sizeof (float)),
@@ -76,7 +76,7 @@ voxie::data::VoxelData* HDFLoader::loadImpl(const QString &fileName) {
         throw ScriptingException("de.uni_stuttgart.Voxie.HDFLoader.Error", QString() + "Failure while loading file: " + e.what());
     }
 
-    return voxelData.take();
+    return voxelData;
 }
 
 // Local Variables:

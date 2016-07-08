@@ -44,7 +44,7 @@ public:
      * @return
      */
     Q_INVOKABLE
-    virtual voxie::data::VoxelData* applyTo(voxie::data::VoxelData* input);
+    virtual QSharedPointer<voxie::data::VoxelData> applyTo(const QSharedPointer<voxie::data::VoxelData>& input);
 
 
     /**
@@ -137,7 +137,7 @@ protected:
     * @param input volume for which a source volume should be returned
     * @return source volume for filter result
     */
-    virtual voxie::data::VoxelData* getSourceVolume(voxie::data::VoxelData* input)=0;
+    virtual QSharedPointer<voxie::data::VoxelData> getSourceVolume(const QSharedPointer<voxie::data::VoxelData>& input)=0;
 
     /**
      * @brief applyTo
@@ -146,7 +146,7 @@ protected:
      * @param input volume before filter applied
      * @param output volume after filter applied
      */
-    virtual void applyTo(voxie::data::VoxelData* source, voxie::data::VoxelData* target)=0;
+    virtual void applyTo(const QSharedPointer<voxie::data::VoxelData>& source, const QSharedPointer<voxie::data::VoxelData>& target)=0;
 
     /**
      * convenience method for 'emit this->filterchanged(this)'

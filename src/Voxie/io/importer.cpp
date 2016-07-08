@@ -23,9 +23,8 @@ voxie::data::DataSet* Importer::import() {
     return registerVoxelData(importImpl());
 }
 
-voxie::data::DataSet* Importer::registerVoxelData(voxie::data::VoxelData* data) {
-    QScopedPointer<voxie::data::VoxelData> dataPtr(data);
-    voxie::data::DataSet* dataSet = new voxie::data::DataSet(dataPtr);
+voxie::data::DataSet* Importer::registerVoxelData(const QSharedPointer<voxie::data::VoxelData>& data) {
+    voxie::data::DataSet* dataSet = new voxie::data::DataSet(data);
     dataSet->setObjectName(data->objectName());
     emit dataLoaded(dataSet);
     return dataSet;

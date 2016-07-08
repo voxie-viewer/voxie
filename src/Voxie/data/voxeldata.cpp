@@ -18,11 +18,11 @@ class TransformWorker :
         public QRunnable
 {
 private:
-    VoxelData *dataSet;
+    QSharedPointer<VoxelData> dataSet;
     size_t slice;
     const std::function<Voxel(Voxel)> &f;
 public:
-    TransformWorker(VoxelData *dataSet, size_t slice, const std::function<Voxel(Voxel)> &f) :
+    TransformWorker(const QSharedPointer<VoxelData>& dataSet, size_t slice, const std::function<Voxel(Voxel)> &f) :
         QRunnable(),
         dataSet(dataSet),
         slice(slice),
@@ -33,11 +33,12 @@ public:
 
     virtual void run() override
     {
-        for(size_t y = 0; y < this->dataSet->getDimensions().y; y++)
+        auto data = this->dataSet.data();
+        for(size_t y = 0; y < data->getDimensions().y; y++)
         {
-            for(size_t x = 0; x < this->dataSet->getDimensions().x; x++)
+            for(size_t x = 0; x < data->getDimensions().x; x++)
             {
-                this->dataSet->setVoxel(x, y, this->slice, this->f(this->dataSet->getVoxel(x, y, this->slice)));
+                data->setVoxel(x, y, this->slice, this->f(data->getVoxel(x, y, this->slice)));
             }
         }
     }
@@ -47,11 +48,11 @@ class CoordinatedTransformWorker :
         public QRunnable
 {
 private:
-    VoxelData *dataSet;
+    QSharedPointer<VoxelData> dataSet;
     size_t slice;
     const std::function<Voxel(size_t,size_t,size_t,Voxel)> &f;
 public:
-    CoordinatedTransformWorker(VoxelData *dataSet, size_t slice, const std::function<Voxel(size_t,size_t,size_t,Voxel)> &f) :
+    CoordinatedTransformWorker(const QSharedPointer<VoxelData>& dataSet, size_t slice, const std::function<Voxel(size_t,size_t,size_t,Voxel)> &f) :
         QRunnable(),
         dataSet(dataSet),
         slice(slice),
@@ -62,18 +63,19 @@ public:
 
     virtual void run() override
     {
-        for(size_t y = 0; y < this->dataSet->getDimensions().y; y++)
+        auto data = this->dataSet.data();
+        for(size_t y = 0; y < data->getDimensions().y; y++)
         {
-            for(size_t x = 0; x < this->dataSet->getDimensions().x; x++)
+            for(size_t x = 0; x < data->getDimensions().x; x++)
             {
-                this->dataSet->setVoxel(x, y, this->slice, this->f(x, y, this->slice, this->dataSet->getVoxel(x, y, this->slice)));
+                data->setVoxel(x, y, this->slice, this->f(x, y, this->slice, data->getVoxel(x, y, this->slice)));
             }
         }
     }
 };
 
-VoxelData::VoxelData(size_t width, size_t height, size_t depth, QObject *parent) :
-    voxie::scripting::ScriptingContainer("VoxelData", parent),
+VoxelData::VoxelData(size_t width, size_t height, size_t depth) :
+    voxie::scripting::ScriptingContainer("VoxelData"),
 	//data(nullptr),
     dataSH(width*height*depth*sizeof(Voxel)),
     size(width * height * depth),
@@ -86,6 +88,13 @@ VoxelData::VoxelData(size_t width, size_t height, size_t depth, QObject *parent)
 
 	//this->data = new Voxel[width*height*depth];
     connect(this, &VoxelData::changed, this, &VoxelData::invalidate);
+}
+
+QSharedPointer<VoxelData> VoxelData::create(size_t width, size_t height, size_t depth) {
+    QSharedPointer<VoxelData> data(new VoxelData(width, height, depth), [](QObject* obj) { obj->deleteLater(); });
+    data->thisPointerWeak = data;
+    ScriptingContainer::registerObject(data);
+    return data;
 }
 
 VoxelData::~VoxelData()
@@ -130,9 +139,9 @@ Voxel VoxelData::getVoxelMetric(qreal x, qreal y, qreal z, InterpolationMethod m
 	return NAN;
 }
 
-VoxelData* VoxelData::clone() const
+QSharedPointer<VoxelData> VoxelData::clone() const
 {
-    VoxelData* clone = new VoxelData(this->dimensions.x, this->dimensions.y, this->dimensions.z, this->parent());
+    QSharedPointer<VoxelData> clone = create(this->dimensions.x, this->dimensions.y, this->dimensions.z);
     memcpy(clone->getData(), this->getData(), this->getByteSize());
     clone->spacing = this->spacing;
     clone->firstVoxelPos = this->firstVoxelPos;
@@ -141,7 +150,7 @@ VoxelData* VoxelData::clone() const
 }
 
 
-VoxelData*
+QSharedPointer<VoxelData>
 VoxelData::reducedSize(uint xStepsize, uint yStepsize, uint zStepsize) const
 {
     xStepsize = xStepsize == 0 ? 1:xStepsize;
@@ -154,7 +163,7 @@ VoxelData::reducedSize(uint xStepsize, uint yStepsize, uint zStepsize) const
                 (currentDims.y + yStepsize-1)/yStepsize,
                 (currentDims.z + zStepsize-1)/zStepsize);
 
-    VoxelData* newVoxelData = new VoxelData(newDims.x,newDims.y,newDims.z,nullptr);
+    auto newVoxelData = create(newDims.x,newDims.y,newDims.z);
 
     QVector3D spacing = this->spacing * QVector3D(xStepsize, yStepsize, zStepsize);
     newVoxelData->setSpacing(spacing);
@@ -213,10 +222,15 @@ void VoxelData::updateClImage()
 
 void VoxelData::transform(const std::function<Voxel(Voxel)> &f)
 {
+    QSharedPointer<VoxelData> thisPointer(thisPointerWeak);
+    if (!thisPointer) {
+        qCritical() << "VoxelData::transform() called before constructor has finished or during destruction";
+        return;
+    }
     QThreadPool pool;
     for(size_t z = 0; z < this->dimensions.z; z++)
     {
-        pool.start(new TransformWorker(this, z, f));
+        pool.start(new TransformWorker(thisPointer, z, f));
     }
     pool.waitForDone();
     this->invalidate();
@@ -224,10 +238,15 @@ void VoxelData::transform(const std::function<Voxel(Voxel)> &f)
 
 void VoxelData::transformCoordinate(const std::function<Voxel(size_t,size_t,size_t,Voxel)> &f)
 {
+    QSharedPointer<VoxelData> thisPointer(thisPointerWeak);
+    if (!thisPointer) {
+        qCritical() << "VoxelData::transformCoordinate() called before constructor has finished or during destruction";
+        return;
+    }
     QThreadPool pool;
     for(size_t z = 0; z < this->dimensions.z; z++)
     {
-        pool.start(new CoordinatedTransformWorker(this, z, f));
+        pool.start(new CoordinatedTransformWorker(thisPointer, z, f));
     }
     pool.waitForDone();
     this->invalidate();

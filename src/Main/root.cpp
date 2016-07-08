@@ -587,10 +587,10 @@ void runTests()
 {
     qDebug() << "---- running tests ----";
 
-    VoxelData data(8,8,8,nullptr);
-    qDebug() << data.getDimensions().toQVector3D();
-    qDebug() << data.getSize();
-    qDebug() << data.calcMinMaxValue();
+    QSharedPointer<VoxelData> data = VoxelData::create(8,8,8);
+    qDebug() << data->getDimensions().toQVector3D();
+    qDebug() << data->getSize();
+    qDebug() << data->calcMinMaxValue();
     // does this crash for you too?
 
     qDebug() << "---- tests done ----";
@@ -692,7 +692,7 @@ QDBusObjectPath VoxieInstance::CreateImage (const QDBusObjectPath& client, const
             throw ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find client object");
         }
 
-        QSharedPointer<Image> image(new Image(size.x, size.y));
+        QSharedPointer<Image> image(new Image(size.x, size.y), [](QObject* obj) { obj->deleteLater(); });
         ScriptingContainer::registerObject(image);
         clientPtr->IncRefCount(image);
         return voxie::scripting::ScriptingContainerBase::getPath(image.data());

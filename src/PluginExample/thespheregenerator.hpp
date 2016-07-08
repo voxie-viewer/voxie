@@ -11,9 +11,9 @@ public:
 	~TheSphereGenerator();
 
     Q_INVOKABLE voxie::data::DataSet* genSphere(int size);
-    voxie::data::VoxelData* genSphereImpl(int size);
+    QSharedPointer<voxie::data::VoxelData> genSphereImpl(int size);
 
-	virtual voxie::data::VoxelData* importImpl() override;
+	virtual QSharedPointer<voxie::data::VoxelData> importImpl() override;
 };
 
 namespace internal {

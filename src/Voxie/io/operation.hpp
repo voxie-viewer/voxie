@@ -29,10 +29,16 @@ public:
     Operation(QObject* parent = nullptr);
     ~Operation();
 
+    // thread-safe
     void updateProgress(float progress);
 
+public slots:
     void cancel();
+
+public:
+    // thread-safe
     bool isCancelled() { return cancelled.load() != 0; }
+    // thread-safe
     void throwIfCancelled() {
         if (isCancelled())
             throw OperationCancelledException();

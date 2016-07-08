@@ -15,16 +15,12 @@
 using namespace voxie::data;
 using namespace voxie::data::internal;
 
-DataSet::DataSet(QScopedPointer<VoxelData>& data, QObject *parent) :
+DataSet::DataSet(const QSharedPointer<VoxelData>& data, QObject *parent) :
     voxie::scripting::ScriptingContainer("DataSet", parent) {
     new DataSetAdaptor(this);
 
-    originalDataSet = data.take();
-    if (originalDataSet->parent() == nullptr)
-        originalDataSet->setParent(this);
-    else
-        qCritical() << "Warning: VoxelData already has a parent";
-    connect(originalDataSet, &VoxelData::changed, [this]() {
+    originalDataSet = data;
+    connect(originalDataSet.data(), &VoxelData::changed, [this]() {
             if (filteredDataSet == nullptr) {
                 emit DataSet::changed();
             }
@@ -41,8 +37,7 @@ void DataSet::resetData()
 {
     if (this->filteredDataSet == nullptr) {
         this->filteredDataSet = originalDataSet->clone();
-        this->filteredDataSet->setParent(this);
-        connect(filteredDataSet, &VoxelData::changed, [this]() {
+        connect(filteredDataSet.data(), &VoxelData::changed, [this]() {
                 emit DataSet::changed();
             });
     } else {
@@ -88,7 +83,7 @@ QVector3D DataSet::volumeCenter() const {
 
 DataSet* DataSet::getTestDataSet()
 {
-    QScopedPointer<VoxelData> voxelData(new VoxelData(100,100,100,nullptr));
+    QSharedPointer<VoxelData> voxelData = VoxelData::create(100, 100, 100);
 	DataSet* dataset = new DataSet(voxelData);
 	Voxel* data = dataset->originalData()->getData();
 	for(size_t i = 0; i < 100*100*100; i++){
@@ -103,11 +98,11 @@ QList<Slice*> DataSet::getSlices()
 }
 
 QDBusObjectPath DataSetAdaptor::originalData () {
-    return voxie::scripting::ScriptingContainerBase::getPath(object->originalData());
+    return voxie::scripting::ScriptingContainerBase::getPath(object->originalData().data());
 }
 
 QDBusObjectPath DataSetAdaptor::filteredData () {
-    return voxie::scripting::ScriptingContainerBase::getPath(object->filteredData());
+    return voxie::scripting::ScriptingContainerBase::getPath(object->filteredData().data());
 }
 
 QString DataSetAdaptor::displayName () {

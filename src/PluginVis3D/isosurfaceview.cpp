@@ -69,8 +69,6 @@ IsosurfaceView::IsosurfaceView(voxie::data::DataSet *voxelData, QWidget *parent)
 
     qRegisterMetaType<QSharedPointer<voxie::data::Surface>>();
 
-    connect(this, &IsosurfaceView::generationDone, this, &IsosurfaceView::updateSurface);
-
     connect(this->voxelData, &DataSet::sliceCreated, this, [this](Slice* slice){ this->addSlice(slice, true); });
     for (auto slice : this->voxelData->getSlices()) {
         addSlice(slice, false);
@@ -177,8 +175,7 @@ QString IsosurfaceView::initialize() {
     return "";
 }
 
-void IsosurfaceView::regenerate()
-{
+void IsosurfaceView::regenerate() {
     if(this->voxelData == nullptr)
         return;
     if (generating) {
@@ -186,48 +183,51 @@ void IsosurfaceView::regenerate()
         return;
     }
 
-    auto operation = QSharedPointer<voxie::io::Operation>::create();
+    QSharedPointer<SurfaceExtractor> extractor;
+    if (!this->useMarchingCubes) {
+        extractor.reset(new Cuberille(), [](QObject* obj) { obj->deleteLater(); });
+    } else {
+        extractor.reset(new MarchingCubes(), [](QObject* obj) { obj->deleteLater(); });
+    }
 
-    SharpThread *thread = new SharpThread([this, operation]() -> void { this->generateModel(operation); }, this);
+    QSharedPointer<voxie::io::Operation> operation(new voxie::io::Operation(), [](QObject* obj) { obj->deleteLater(); });
+
+    // This object will be moved to the newly created thread and will be deleted
+    // on this thread once the operation is finished
+    auto extractionOperation = new IsosurfaceExtractionOperation(operation, this->voxelData->filteredData(), extractor, this->threshold, this->inverted);
+
+    SharpThread *thread = new SharpThread([extractionOperation]() -> void {
+            extractionOperation->generateModel();
+            delete extractionOperation;
+        });
+
+    extractionOperation->moveToThread(thread);
 
     this->progressBar->setValue(0);
+
+    connect(extractionOperation, &IsosurfaceExtractionOperation::generationDone, this, &IsosurfaceView::updateSurface);
 
     connect(thread, &QThread::finished, thread, &QObject::deleteLater);
     connect(thread, &QThread::finished, this->progressBar, &QWidget::hide);
     connect(thread, &QThread::started, this->progressBar, &QWidget::show);
     connect(operation.data(), &voxie::io::Operation::progressChanged, this, &IsosurfaceView::progressChanged);
 
+    // When the isosurface gets destroyed, cancel the operation
+    // The thread might continue in the background until it actually processes
+    // the cancellation, but this result (if any) will be ignored
+    connect(this, &QObject::destroyed, operation.data(), &voxie::io::Operation::cancel);
+
     this->generating = true;
     thread->start();
 }
 
-void IsosurfaceView::generateModel(const QSharedPointer<voxie::io::Operation>& operation) {
-    qDebug() << "Regenrating surface...";
-
-    QScopedPointer<SurfaceExtractor> extractor;
-    if (!this->useMarchingCubes) {
-        extractor.reset(new Cuberille());
-    } else {
-        extractor.reset(new MarchingCubes());
-    }
-
-    QElapsedTimer timer;
-    timer.start();
-
-    auto surface = extractor->extract(operation.data(), this->voxelData->filteredData(), this->threshold, this->inverted);
-
-    auto timeMS = timer.elapsed();
-
-    qDebug() << "Generated surface in" << timeMS << "ms: Vertices:" << surface->vertices().size() << "/ Triangles:" << surface->triangles().size();
-
-    emit generationDone(surface);
-}
-
 void IsosurfaceView::updateSurface(const QSharedPointer<voxie::data::Surface>& surface) {
     this->generating = false;
-    this->surface = surface;
-    this->uploadData();
-    this->update();
+    if (surface) {
+        this->surface = surface;
+        this->uploadData();
+        this->update();
+    }
     if (generationRequested) {
         generationRequested = false;
         regenerate();
@@ -518,6 +518,31 @@ void IsosurfaceView::mouseMoveEvent(QMouseEvent *event)
 void IsosurfaceView::wheelEvent(QWheelEvent *event)
 {
     view3d->wheelEvent(event, size());
+}
+
+IsosurfaceExtractionOperation::IsosurfaceExtractionOperation(const QSharedPointer<voxie::io::Operation>& operation, const QSharedPointer<voxie::data::VoxelData>& data, const QSharedPointer<SurfaceExtractor>& extractor, float threshold, bool inverted) : operation(operation), data(data), extractor(extractor), threshold(threshold), inverted(inverted) {
+}
+IsosurfaceExtractionOperation::~IsosurfaceExtractionOperation() {
+}
+
+void IsosurfaceExtractionOperation::generateModel() {
+    qDebug() << "Regenerating surface...";
+
+    QElapsedTimer timer;
+    timer.start();
+
+    try {
+        auto surface = extractor->extract(operation, this->data, this->threshold, this->inverted);
+        
+        auto timeMS = timer.elapsed();
+        
+        qDebug() << "Generated surface in" << timeMS << "ms: Vertices:" << surface->vertices().size() << "/ Triangles:" << surface->triangles().size();
+        
+        emit generationDone(surface);
+    } catch (voxie::io::OperationCancelledException) {
+        qDebug() << "Generation cancelled";
+        emit generationDone(QSharedPointer<Surface>());
+    }
 }
 
 // Local Variables:

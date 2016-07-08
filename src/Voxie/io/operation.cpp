@@ -12,6 +12,7 @@ OperationCancelledException::~OperationCancelledException() {
 Operation::Operation(QObject* parent) : QObject(parent) {
 }
 Operation::~Operation() {
+    //qDebug() << "~Operation()";
 }
 
 void Operation::cancel() {

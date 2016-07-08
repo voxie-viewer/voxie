@@ -62,9 +62,9 @@ public:
 
 protected:
     // throws ScriptingException
-    virtual voxie::data::VoxelData* loadImpl(const QString &fileName) = 0;
+    virtual QSharedPointer<voxie::data::VoxelData> loadImpl(const QString &fileName) = 0;
 
-    voxie::data::DataSet* registerVoxelData(voxie::data::VoxelData* data, const QString &fileName);
+    voxie::data::DataSet* registerVoxelData(const QSharedPointer<voxie::data::VoxelData>& data, const QString &fileName);
 
 signals:
     void dataLoaded(data::DataSet* dataSet);

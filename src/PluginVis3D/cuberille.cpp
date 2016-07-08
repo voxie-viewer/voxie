@@ -137,7 +137,10 @@ static void genCube(const voxie::scripting::IntVector3 &position, int sides, Sur
     }
 }
 
-QSharedPointer<Surface> Cuberille::extract(voxie::io::Operation* operation, voxie::data::VoxelData* data, float threshold, bool invert) {
+QSharedPointer<Surface> Cuberille::extract(const QSharedPointer<voxie::io::Operation>& operation_, const QSharedPointer<voxie::data::VoxelData>& data_, float threshold, bool invert) {
+    auto operation = operation_.data();
+    auto data = data_.data();
+
     auto dim = data->getDimensions();
 
     auto upper = dim;

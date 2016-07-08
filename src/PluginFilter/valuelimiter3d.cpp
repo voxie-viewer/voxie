@@ -22,15 +22,15 @@ ValueLimiter3D::~ValueLimiter3D()
     }
 }
 
-voxie::data::VoxelData*
-ValueLimiter3D::getSourceVolume(voxie::data::VoxelData *input)
+QSharedPointer<voxie::data::VoxelData>
+ValueLimiter3D::getSourceVolume(const QSharedPointer<voxie::data::VoxelData>& input)
 {
     // filter works inplace
     return input;
 }
 
 void
-ValueLimiter3D::applyTo(voxie::data::VoxelData* input, voxie::data::VoxelData* output)
+ValueLimiter3D::applyTo(const QSharedPointer<voxie::data::VoxelData>& input, const QSharedPointer<voxie::data::VoxelData>& output)
 {
     Q_UNUSED(input);
     for(size_t z = 0; z < output->getDimensions().z; z++){

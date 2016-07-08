@@ -10,6 +10,8 @@
 #include <QtCore/QMetaProperty>
 #include <QtCore/QMutexLocker>
 #include <QtCore/QRegExp>
+#include <QtCore/QThread>
+#include <QtCore/QCoreApplication>
 
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>
@@ -31,6 +33,9 @@ static QMap<QDBusObjectPath, QWeakPointer<ScriptingContainer>> references;
 
 ScriptingContainerBase::ScriptingContainerBase(QObject* obj, const QString& type, bool singleton, bool exportScriptable) : exportScriptable_(exportScriptable)
 {
+    if (QThread::currentThread() != QCoreApplication::instance()->thread())
+        qCritical() << "Warning: Trying to create object" << obj << "on thread " << QThread::currentThread();
+
   if (singleton) {
     path = QString ("/de/uni_stuttgart/Voxie%1%2").arg (type == "" ? "" : "/").arg (type);
   } else {
@@ -68,6 +73,8 @@ ScriptingContainerBase::ScriptingContainerBase(QObject* obj, const QString& type
 
 ScriptingContainerBase::~ScriptingContainerBase()
 {
+    if (QThread::currentThread() != QCoreApplication::instance()->thread())
+        qCritical() << "Warning: Trying to destroy object on thread " << QThread::currentThread();
 }
 
 void ScriptingContainerBase::checkOptions (const QMap<QString, QVariant>& options, const QSet<QString>& allowed) {

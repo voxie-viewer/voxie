@@ -96,7 +96,7 @@ DataSetView::DataSetView(voxie::data::DataSet *dataSet, QWidget *parent) :
         splitLayout->addWidget(this->chainWidget);
         connect(this->chainWidget->getFilterChain(), &FilterChain3D::filterListChanged, this, &DataSetView::applyFilters);
         connect(this->chainWidget->getFilterChain(), &FilterChain3D::filterChanged, this, &DataSetView::applyFilters);
-        connect(this->dataSet->originalData(), &VoxelData::changed, this, &DataSetView::applyFilters);
+        connect(this->dataSet->originalData().data(), &VoxelData::changed, this, &DataSetView::applyFilters);
 	}
 	this->setLayout(splitLayout);
     if (this->dataSet->getFileInfo().fileName().compare("") == 0) {

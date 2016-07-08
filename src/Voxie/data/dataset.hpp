@@ -11,7 +11,6 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QObject>
 #include <QtCore/QPair>
-#include <QtCore/QScopedPointer>
 #include <QtCore/QtGlobal>
 #include <QtCore/QTime>
 #include <QtCore/QVariant>
@@ -34,12 +33,12 @@ class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptingContain
     Q_OBJECT
 
     private:
-        VoxelData* originalDataSet = nullptr;
-        VoxelData* filteredDataSet = nullptr;
+        QSharedPointer<VoxelData> originalDataSet;
+        QSharedPointer<VoxelData> filteredDataSet;
         QFileInfo fileInfo;
 
     public:
-        explicit DataSet(QScopedPointer<VoxelData>& data, QObject *parent = nullptr);
+        explicit DataSet(const QSharedPointer<VoxelData>& data, QObject *parent = nullptr);
         ~DataSet();
 
 
@@ -82,8 +81,8 @@ class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptingContain
         // throws ScriptingException
         static DataSet* getTestDataSet();
 
-        VoxelData* originalData() const { return originalDataSet; }
-        VoxelData* filteredData() const { return filteredDataSet ? filteredDataSet : originalDataSet; }
+        const QSharedPointer<VoxelData>& originalData() const { return originalDataSet; }
+        const QSharedPointer<VoxelData>& filteredData() const { return filteredDataSet ? filteredDataSet : originalDataSet; }
 
         QVector3D origin() const;
         QVector3D size() const;

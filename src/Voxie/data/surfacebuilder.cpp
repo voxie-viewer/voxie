@@ -16,7 +16,7 @@ void SurfaceBuilder::clear() {
 }
 
 QSharedPointer<Surface> SurfaceBuilder::createSurfaceClearBuilder() {
-    QSharedPointer<Surface> surface(new Surface(std::move(vertices_), std::move(triangles_)));
+    QSharedPointer<Surface> surface(new Surface(std::move(vertices_), std::move(triangles_)), [](QObject* obj) { obj->deleteLater(); });
     clear();
     return surface;
 }

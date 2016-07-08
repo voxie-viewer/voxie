@@ -9,9 +9,9 @@ Filter3D::Filter3D(QObject *parent) :
     connect(this->mask, &Selection3DMask::changed, this, &Filter3D::triggerFilterChanged);
 }
 
-VoxelData* Filter3D::applyTo(VoxelData* input)
+QSharedPointer<VoxelData> Filter3D::applyTo(const QSharedPointer<VoxelData>& input)
 {
-    VoxelData* source = this->getSourceVolume(input);
+    QSharedPointer<VoxelData> source = this->getSourceVolume(input);
     this->applyTo(source, input);
     input->invalidate();
     return input;

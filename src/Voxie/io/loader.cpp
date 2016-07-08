@@ -52,9 +52,8 @@ voxie::data::DataSet* Loader::load(const QString &fileName) {
     return registerVoxelData(loadImpl(fileName), fileName);
 }
 
-voxie::data::DataSet* Loader::registerVoxelData(voxie::data::VoxelData* data, const QString &fileName) {
-    QScopedPointer<voxie::data::VoxelData> dataPtr(data);
-    voxie::data::DataSet* dataSet = new voxie::data::DataSet(dataPtr);
+voxie::data::DataSet* Loader::registerVoxelData(const QSharedPointer<voxie::data::VoxelData>& data, const QString &fileName) {
+    voxie::data::DataSet* dataSet = new voxie::data::DataSet(data);
     dataSet->setFileInfo(QFileInfo(fileName));
     dataSet->setObjectName(data->objectName());
     emit dataLoaded(dataSet);

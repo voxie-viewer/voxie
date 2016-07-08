@@ -25,9 +25,11 @@ namespace io {
 }
 }
 
+class SurfaceExtractor;
+
 class IsosurfaceView : public voxie::visualization::OpenGLDrawWidget {
     Q_OBJECT
-    voxie::data::DataSet *voxelData;
+    voxie::data::DataSet* voxelData;
 
 private:
     bool generating = false;
@@ -53,8 +55,6 @@ private:
     QTimer highlightTimer;
 
     void genCube(const QVector3D &pos, int sides, voxie::data::SurfaceBuilder* sb);
-
-    void generateModel(const QSharedPointer<voxie::io::Operation>& operation);
 
     void uploadData();
 
@@ -99,7 +99,24 @@ public:
 
 signals:
     void progressChanged(float x);
+};
 
+class IsosurfaceExtractionOperation : public QObject {
+    Q_OBJECT
+
+    QSharedPointer<voxie::io::Operation> operation;
+    QSharedPointer<voxie::data::VoxelData> data;
+    QSharedPointer<SurfaceExtractor> extractor;
+    float threshold;
+    bool inverted;
+
+public:
+    IsosurfaceExtractionOperation(const QSharedPointer<voxie::io::Operation>& operation, const QSharedPointer<voxie::data::VoxelData>& data, const QSharedPointer<SurfaceExtractor>& extractor, float threshold, bool inverted);
+    ~IsosurfaceExtractionOperation();
+
+    void generateModel();
+
+signals:
     void generationDone(const QSharedPointer<voxie::data::Surface>& surface);
 };
 

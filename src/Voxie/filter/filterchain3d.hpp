@@ -21,7 +21,7 @@ class VOXIECORESHARED_EXPORT FilterChain3D:
 
 private:
     QVector<voxie::filter::Filter3D*> filters;
-    voxie::data::VoxelData* outputVolume;
+    QSharedPointer<voxie::data::VoxelData> outputVolume;
     bool signalOnChange = true;
 
 public:
@@ -92,7 +92,7 @@ public:
      * @return VoxelData after all filter of chain applied
      */
     Q_INVOKABLE
-    voxie::data::VoxelData* getOutputVolume();
+    QSharedPointer<voxie::data::VoxelData> getOutputVolume();
 
     Q_INVOKABLE
     void toXML(QString fileName);

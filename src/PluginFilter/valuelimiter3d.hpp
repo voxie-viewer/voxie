@@ -14,9 +14,9 @@ public:
 
     ~ValueLimiter3D();
 
-    virtual voxie::data::VoxelData* getSourceVolume(voxie::data::VoxelData* input) override;
+    virtual QSharedPointer<voxie::data::VoxelData> getSourceVolume(const QSharedPointer<voxie::data::VoxelData>& input) override;
 
-    virtual void applyTo(voxie::data::VoxelData* input, voxie::data::VoxelData* output) override;
+    virtual void applyTo(const QSharedPointer<voxie::data::VoxelData>& input, const QSharedPointer<voxie::data::VoxelData>& output) override;
 
     virtual bool hasSettingsDialog() override {
         return true;

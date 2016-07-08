@@ -36,7 +36,7 @@ void FilterChain3D::applyTo(voxie::data::DataSet* dataSet)
         QMessageBox(QMessageBox::Critical, "Voxie: Error while applying filters", QString("Error while applying filters: %1").arg(e.message()), QMessageBox::Ok, voxieRoot().mainWindow()).exec();
         return;
     }
-    voxie::data::VoxelData* volume = dataSet->filteredData();
+    QSharedPointer<voxie::data::VoxelData> volume = dataSet->filteredData();
     for(int x=0; x < this->filters.length(); x++)
 	{
         activeFilter = this->filters.at(x);
@@ -102,7 +102,7 @@ Filter3D* FilterChain3D::getFilter(int pos)
     return this->filters.at(pos);
 }
 
-VoxelData* FilterChain3D::getOutputVolume()
+QSharedPointer<VoxelData> FilterChain3D::getOutputVolume()
 {
 	return this->outputVolume;
 }

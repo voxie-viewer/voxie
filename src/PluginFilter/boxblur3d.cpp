@@ -21,7 +21,7 @@ BoxBlur3D::BoxBlur3D(QObject *parent) :
 #define IGNORENAN0(a) (IGNORENAN((a),0) )
 
 void
-BoxBlur3D::applyTo(voxie::data::VoxelData *input, voxie::data::VoxelData *output)
+BoxBlur3D::applyTo(const QSharedPointer<voxie::data::VoxelData>& input, const QSharedPointer<voxie::data::VoxelData>& output)
 {
     if (input != output) {
         qCritical() << "BoxBlur3D::applyTo: input != output";

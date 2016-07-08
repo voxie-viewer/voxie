@@ -571,7 +571,10 @@ MarchingCubes::MarchingCubes(QObject* parent) : SurfaceExtractor(parent) {
 MarchingCubes::~MarchingCubes() {
 }
 
-QSharedPointer<Surface> MarchingCubes::extract(voxie::io::Operation* operation, voxie::data::VoxelData* data, float threshold, bool invert) {
+QSharedPointer<Surface> MarchingCubes::extract(const QSharedPointer<voxie::io::Operation>& operation_, const QSharedPointer<voxie::data::VoxelData>& data_, float threshold, bool invert) {
+    auto operation = operation_.data();
+    auto data = data_.data();
+
     voxie::scripting::IntVector3 dim = data->getDimensions();
 
     QVector3D spacing = data->getSpacing();

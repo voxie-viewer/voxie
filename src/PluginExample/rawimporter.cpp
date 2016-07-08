@@ -41,7 +41,7 @@ static bool isPowerOfThree(size_t nL)
 	return n==1 || n==3 || n==9;
 }
 
-voxie::data::VoxelData* RAWImporter::loadImpl(const QString &fileName)
+QSharedPointer<voxie::data::VoxelData> RAWImporter::loadImpl(const QString &fileName)
 {
 	QFile file(fileName);
 
@@ -68,7 +68,7 @@ voxie::data::VoxelData* RAWImporter::loadImpl(const QString &fileName)
         throw ScriptingException("de.uni_stuttgart.Voxie.RAWImporter.Error", "Data set dimensions are too large for double");
 	}
 
-	QScopedPointer<VoxelData> data(new VoxelData(size, size, size, nullptr));
+	auto data = VoxelData::create(size, size, size);
 	if(file.open(QFile::ReadOnly) == false)
 	{
         throw ScriptingException("de.uni_stuttgart.Voxie.RAWImporter.Error", "Failed to open file");
@@ -83,7 +83,7 @@ voxie::data::VoxelData* RAWImporter::loadImpl(const QString &fileName)
 
 	data->setObjectName(QFileInfo(file.fileName()).fileName());
 
-    return data.take();
+    return data;
 }
 
 // Local Variables:

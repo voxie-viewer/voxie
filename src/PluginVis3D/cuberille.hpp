@@ -9,7 +9,7 @@ public:
     Cuberille(QObject* parent = nullptr);
     ~Cuberille();
 
-    virtual QSharedPointer<voxie::data::Surface> extract(voxie::io::Operation* operation, voxie::data::VoxelData* data, float threshold, bool invert);
+    virtual QSharedPointer<voxie::data::Surface> extract(const QSharedPointer<voxie::io::Operation>& operation, const QSharedPointer<voxie::data::VoxelData>& data, float threshold, bool invert);
 };
 
 // Local Variables:

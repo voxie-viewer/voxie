@@ -50,6 +50,10 @@ class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptingConta
     Q_OBJECT
 
     private:
+        // This will be set after the constructor has finished and can be used
+        // by member methods to get a shared pointer
+        QWeakPointer<VoxelData> thisPointerWeak;
+
         SharedMemory dataSH;
         size_t size;
         voxie::scripting::IntVector3 dimensions;
@@ -70,9 +74,12 @@ class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptingConta
                    z < dimensions.z;
         }
 
+        // throws ScriptingException
+        VoxelData(size_t width, size_t height, size_t depth);
+
     public:
         // throws ScriptingException
-        VoxelData(size_t width, size_t height, size_t depth, QObject *parent);
+        static QSharedPointer<VoxelData> create(size_t width, size_t height, size_t depth);
         ~VoxelData();
 
         /**
@@ -269,10 +276,10 @@ class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptingConta
          * @return a copy of the origin data set.
          * @throw ScriptingException
          */
-        VoxelData* clone() const;
+        QSharedPointer<VoxelData> clone() const;
 
         // throws ScriptingException
-        VoxelData* reducedSize(uint xStepsize = 2, uint yStepsize = 2, uint zStepsize = 2) const;
+        QSharedPointer<VoxelData> reducedSize(uint xStepsize = 2, uint yStepsize = 2, uint zStepsize = 2) const;
 
         cl::Image3D &getCLImage();
 
