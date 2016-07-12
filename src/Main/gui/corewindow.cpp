@@ -185,16 +185,6 @@ void CoreWindow::insertPlugin(VoxiePlugin *plugin)
             }
         });
     }
-
-    for(Loader *loader : plugin->loaders())
-    {
-        if(this->loaders[loader->filter().filterString()] != nullptr)
-        {
-            qWarning() << "A loader with filter" << loader->filter().filterString() << "was already registered. Overwriting.";
-        }
-        //qDebug() << "Register loader:" << loader->filter().filterString();
-        this->loaders[loader->filter().filterString()] = loader;
-    }
 }
 
 void CoreWindow::addVisualizer(Visualizer *visualizer)
@@ -580,8 +570,16 @@ void CoreWindow::populateScriptsMenu()
             if (script.endsWith("~"))
                 continue;
             QString scriptFile = scriptDirectory + "/" + script;
+
             if (QFileInfo (scriptFile).isExecutable ())
                 continue;
+
+            QString baseName = scriptFile;
+            if (baseName.endsWith(".exe"))
+                baseName = scriptFile.left(scriptFile.length() - 4);
+            if (QFile::exists (baseName + ".conf"))
+                continue;
+            
             QAction *action = this->scriptsMenu->addAction(QIcon(":/icons/script-attribute-j.png"), script);
             connect(action, &QAction::triggered, [scriptFile]() -> void
                     {
@@ -598,8 +596,16 @@ void CoreWindow::populateScriptsMenu()
             if (script.endsWith("~"))
                 continue;
             QString scriptFile = scriptDirectory + "/" + script;
+
             if (!QFileInfo (scriptFile).isExecutable ())
                 continue;
+
+            QString baseName = scriptFile;
+            if (baseName.endsWith(".exe"))
+                baseName = scriptFile.left(scriptFile.length() - 4);
+            if (QFile::exists (baseName + ".conf"))
+                continue;
+
             QAction *action = this->scriptsMenu->addAction(QIcon(":/icons/script-attribute-e.png"), script);
             connect(action, &QAction::triggered, [this, scriptFile]() -> void {
                     startScript(scriptFile);
@@ -628,8 +634,16 @@ void CoreWindow::populateScriptsMenu()
                     if (script.endsWith("~"))
                         continue;
                     QString scriptFile = scriptDirectory + "/" + script;
+
                     if (QFileInfo (scriptFile).isExecutable ())
                         continue;
+
+                    QString baseName = scriptFile;
+                    if (baseName.endsWith(".exe"))
+                        baseName = scriptFile.left(scriptFile.length() - 4);
+                    if (QFile::exists (baseName + ".conf"))
+                        continue;
+
                     QAction *action = this->scriptsMenu->addAction(QIcon(":/icons/script-attribute-p.png"), script);
                     connect(action, &QAction::triggered, [this, scriptFile]() -> void {
                             Root::instance()->settings()->beginGroup("scripting");
@@ -657,13 +671,13 @@ void CoreWindow::populateScriptsMenu()
     }
 }
 
-void CoreWindow::startScript(const QString& scriptFile, const QString* executable) {
+QProcess* CoreWindow::startScript(const QString& scriptFile, const QString* executable, const QStringList& arguments) {
     currentScriptExecId++;
     quint64 id = currentScriptExecId;
 
     if (!QDBusConnection::sessionBus().isConnected()) {
         QMessageBox(QMessageBox::Critical, this->windowTitle(), QString("Cannot run external script because DBus is not available"), QMessageBox::Ok, this).exec();
-        return;
+        return nullptr;
     }
 
     QFileInfo fileInfo(scriptFile);
@@ -673,6 +687,8 @@ void CoreWindow::startScript(const QString& scriptFile, const QString* executabl
         args.append(scriptFile);
     //args.append("--voxie-bus-address=" + ...);
     args.append("--voxie-bus-name=" + QDBusConnection::sessionBus().baseService());
+    for (const auto& arg : arguments)
+        args << arg;
     QProcess *process = new QProcess();
     process->setProcessChannelMode(QProcess::MergedChannels);
     if (executable)
@@ -680,11 +696,26 @@ void CoreWindow::startScript(const QString& scriptFile, const QString* executabl
     else
         process->setProgram(scriptFile);
     process->setArguments(args);
+    auto isStarted = QSharedPointer<bool>::create();
     connect<void(QProcess::*)(int), std::function<void(int)>>(process, &QProcess::finished, this, std::function<void(int)>([process, id](int exitCode) -> void
         {
             Root::instance()->log(QString("Script %1 finished with exit code %2").arg(id).arg(exitCode));
             process->deleteLater();
         }));
+    /*
+    connect(process, &QProcess::errorOccurred, this, [process, id](QProcess::ProcessError error) { 
+            Root::instance()->log(QString("Error occurred for script %1: %2").arg(id).arg(error));
+            process->deleteLater();
+        });
+    */
+    connect(process, &QProcess::started, this, [isStarted]() { *isStarted = true; });
+    connect(process, &QProcess::stateChanged, this, [process, id, isStarted](QProcess::ProcessState newState) { 
+            //Root::instance()->log(QString("State change occurred for script %1: %2").arg(id).arg(newState));
+            if (newState == QProcess::NotRunning && !*isStarted) {
+                Root::instance()->log(QString("Error occurred for script %1: %2").arg(id).arg(process->error()));
+                process->deleteLater();
+            }
+        });
     auto buffer = QSharedPointer<QString>::create();
     connect(process, &QProcess::readyRead, this, [process, id, buffer]() -> void {
             int pos = 0;
@@ -720,25 +751,57 @@ void CoreWindow::startScript(const QString& scriptFile, const QString* executabl
     //qDebug() << "started";
     
     Root::instance()->log(QString("Started execution of %1 with ID %2").arg(scriptFile).arg(id));
+
+    return process;
 }
 
-void CoreWindow::loadFile()
-{
+void CoreWindow::loadFile() {
+    const auto& loaders = Root::instance()->getLoaders();
+
     QStringList filters;
-    for(QString nameFilter : this->loaders.keys())
-    {
-        filters.append(nameFilter);
+
+    QString supportedFilter;
+    supportedFilter += "All supported files (";
+    int i = 0;
+    for (auto loader : *loaders) {
+        for (auto pattern : loader->filter().patterns()){
+            if (i != 0)
+                supportedFilter += " ";
+            supportedFilter += pattern;
+            i++;
+        }
+    }
+    supportedFilter += ")";
+    filters << supportedFilter;
+
+    QMap<QString, voxie::io::Loader*> map;
+    for (auto loader : *loaders) {
+        const QString& filterString = loader->filter().filterString();
+        if (map.contains(filterString)) {
+            qWarning() << "Got multiple loaders with filter string" << filterString;
+        } else {
+            filters << filterString;
+            map[filterString] = loader.data();
+        }
     }
 
     QFileDialog dialog(this, "Select file to load");
     dialog.setNameFilters(filters);
+    dialog.setOption(QFileDialog::DontUseNativeDialog, true);
     if(dialog.exec() != QDialog::Accepted)
-    {
+        return;
+
+    if (dialog.selectedNameFilter() == supportedFilter) {
+        try {
+            Root::instance()->openFile(dialog.selectedFiles().first());
+        } catch (voxie::scripting::ScriptingException& e) {
+            errorMessage(e.message());
+        }
         return;
     }
-    Loader *loader = this->loaders[dialog.selectedNameFilter()];
-    if(loader == nullptr)
-    {
+    
+    auto loader = map[dialog.selectedNameFilter()];
+    if(loader == nullptr) {
         QMessageBox(
             QMessageBox::Critical,
             this->windowTitle(),

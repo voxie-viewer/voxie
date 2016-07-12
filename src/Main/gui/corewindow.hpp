@@ -6,6 +6,7 @@
 #include <Voxie/ivoxie.hpp>
 
 #include <QtCore/QMap>
+#include <QtCore/QProcess>
 
 #include <QtDBus/QDBusAbstractAdaptor>
 #include <QtDBus/QDBusAbstractInterface>
@@ -71,8 +72,6 @@ private:
     QVBoxLayout *sidePanel;
 
     QMap<plugin::VisualizerType, QMenu*> visualizerMenus;
-
-    QMap<QString, io::Loader*> loaders;
 
     QList<VisualizerContainer*> visualizers;
 
@@ -141,10 +140,11 @@ private:
      */
     void populateScriptsMenu();
 
-    void startScript(const QString& scriptFile, const QString* executable = nullptr);
 public:
     explicit CoreWindow(QWidget *parent = 0);
     ~CoreWindow();
+
+    QProcess* startScript(const QString& scriptFile, const QString* executable = nullptr, const QStringList& arguments = QStringList());
 
     void insertPlugin(plugin::VoxiePlugin *plugin);
 

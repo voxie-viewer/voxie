@@ -11,6 +11,10 @@ parser.add_argument('--voxie-bus-address')
 parser.add_argument('--voxie-bus-name')
 parser.add_argument('--voxie-slice-object')
 
+parser.add_argument('--voxie-action')
+parser.add_argument('--voxie-operation')
+parser.add_argument('--voxie-load-filename')
+
 emptyOptions = dbus.Dictionary(signature='sv')
 
 class Voxie:
@@ -59,6 +63,11 @@ class Voxie:
 
     def getPlugin(self, name):
         return Plugin (self, self.dbus.GetPluginByName(name))
+
+    def claimExternalOperation(self, client, path):
+        exop_dbus = dbus.Interface (self.voxie.bus.get_object(self.voxie.bus_name, path), 'de.uni_stuttgart.Voxie.ExternalOperation')
+        exop_dbus.ClaimOperation(client.path)
+        return ExternalOperation (client, path)
 
 class DataSet:
     def __init__(self, voxie, path):
@@ -201,6 +210,25 @@ class Buffer:
         return self
     def __exit__(self, type, value, traceback):
         self.mmap.close()
+        return False
+
+class ExternalOperation:
+    def __init__(self, client, path):
+        self.voxie = client.voxie
+        self.client = client
+        self.path = path
+        self.dbus = dbus.Interface (self.voxie.bus.get_object(self.voxie.bus_name, self.path), 'de.uni_stuttgart.Voxie.ExternalOperation')
+    def interface(self, name):
+        return dbus.Interface (self.voxie.bus.get_object(self.voxie.bus_name, self.path), 'de.uni_stuttgart.Voxie.ExternalOperation' + name)
+    def __enter__(self):
+        return self
+    def __exit__(self, type, value, traceback):
+        try:
+            if type is not None:
+                self.dbus.FinishError(type.__name__, str(value))
+                return True
+        finally:
+            self.client.dbus.DecRefCount(self.path)
         return False
 
 class Quaternion:

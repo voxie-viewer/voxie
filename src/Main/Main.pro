@@ -41,7 +41,8 @@ HEADERS += \
     gui/about/informationtab.hpp \
     gui/about/thirdpartytab.hpp \
     metatyperegistration.hpp \
-    scriptwrapper.hpp
+    scriptwrapper.hpp \
+    script/externaloperation.hpp
 
 SOURCES += \
     dbusproxies.cpp \
@@ -67,7 +68,8 @@ SOURCES += \
     gui/about/informationtab.cpp \
     gui/about/thirdpartytab.cpp \
     metatyperegistration.cpp \
-    scriptwrapper.cpp
+    scriptwrapper.cpp \
+    script/externaloperation.cpp
 
 RESOURCES += \
     icons.qrc \

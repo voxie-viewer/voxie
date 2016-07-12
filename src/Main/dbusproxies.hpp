@@ -109,6 +109,72 @@ Q_SIGNALS: // SIGNALS
 };
 
 /*
+ * Proxy class for interface de.uni_stuttgart.Voxie.ExternalOperation
+ */
+class DeUni_stuttgartVoxieExternalOperationInterface: public QDBusAbstractInterface
+{
+    Q_OBJECT
+public:
+    static inline const char *staticInterfaceName()
+    { return "de.uni_stuttgart.Voxie.ExternalOperation"; }
+
+public:
+    DeUni_stuttgartVoxieExternalOperationInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
+
+    ~DeUni_stuttgartVoxieExternalOperationInterface();
+
+public Q_SLOTS: // METHODS
+    inline QDBusPendingReply<> ClaimOperation(const QDBusObjectPath &client)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(client);
+        return asyncCallWithArgumentList(QLatin1String("ClaimOperation"), argumentList);
+    }
+
+    inline QDBusPendingReply<> FinishError(const QString &name, const QString &message)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(name) << QVariant::fromValue(message);
+        return asyncCallWithArgumentList(QLatin1String("FinishError"), argumentList);
+    }
+
+    inline QDBusPendingReply<> SetProgress(double progress)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(progress);
+        return asyncCallWithArgumentList(QLatin1String("SetProgress"), argumentList);
+    }
+
+Q_SIGNALS: // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.ExternalOperationLoad
+ */
+class DeUni_stuttgartVoxieExternalOperationLoadInterface: public QDBusAbstractInterface
+{
+    Q_OBJECT
+public:
+    static inline const char *staticInterfaceName()
+    { return "de.uni_stuttgart.Voxie.ExternalOperationLoad"; }
+
+public:
+    DeUni_stuttgartVoxieExternalOperationLoadInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
+
+    ~DeUni_stuttgartVoxieExternalOperationLoadInterface();
+
+public Q_SLOTS: // METHODS
+    inline QDBusPendingReply<> Finish(const QDBusObjectPath &data)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(data);
+        return asyncCallWithArgumentList(QLatin1String("Finish"), argumentList);
+    }
+
+Q_SIGNALS: // SIGNALS
+};
+
+/*
  * Proxy class for interface de.uni_stuttgart.Voxie.Gui
  */
 class DeUni_stuttgartVoxieGuiInterface: public QDBusAbstractInterface
@@ -626,6 +692,8 @@ namespace de {
     namespace Voxie {
       typedef ::DeUni_stuttgartVoxieClientInterface Client;
       typedef ::DeUni_stuttgartVoxieDataSetInterface DataSet;
+      typedef ::DeUni_stuttgartVoxieExternalOperationInterface ExternalOperation;
+      typedef ::DeUni_stuttgartVoxieExternalOperationLoadInterface ExternalOperationLoad;
       typedef ::DeUni_stuttgartVoxieGuiInterface Gui;
       typedef ::DeUni_stuttgartVoxieImageInterface Image;
       typedef ::DeUni_stuttgartVoxieImporterInterface Importer;

@@ -38,6 +38,32 @@ DeUni_stuttgartVoxieDataSetInterface::~DeUni_stuttgartVoxieDataSetInterface()
 }
 
 /*
+ * Implementation of interface class DeUni_stuttgartVoxieExternalOperationInterface
+ */
+
+DeUni_stuttgartVoxieExternalOperationInterface::DeUni_stuttgartVoxieExternalOperationInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection, parent)
+{
+}
+
+DeUni_stuttgartVoxieExternalOperationInterface::~DeUni_stuttgartVoxieExternalOperationInterface()
+{
+}
+
+/*
+ * Implementation of interface class DeUni_stuttgartVoxieExternalOperationLoadInterface
+ */
+
+DeUni_stuttgartVoxieExternalOperationLoadInterface::DeUni_stuttgartVoxieExternalOperationLoadInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection, parent)
+{
+}
+
+DeUni_stuttgartVoxieExternalOperationLoadInterface::~DeUni_stuttgartVoxieExternalOperationLoadInterface()
+{
+}
+
+/*
  * Implementation of interface class DeUni_stuttgartVoxieGuiInterface
  */
 

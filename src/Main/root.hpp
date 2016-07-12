@@ -63,6 +63,8 @@ private:
     bool disableOpenGL_;
     bool disableOpenCL_;
 
+    QList<io::Loader*> pluginLoaders;
+
     explicit Root(QObject *parent = 0);
 
     ~Root();
@@ -159,6 +161,8 @@ public:
     static QVector<QString> getBufferedMessages();
 
     ActiveVisualizerProvider* activeVisualizerProvider() const override { return &mainWindow()->activeVisualizerProvider; }
+
+    QSharedPointer<QList<QSharedPointer<io::Loader>>> getLoaders();
 
 public:
     /**

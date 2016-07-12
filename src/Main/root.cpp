@@ -10,6 +10,8 @@
 
 #include <Main/gui/preferences/openclpreferences.hpp>
 
+#include <Main/script/externaloperation.hpp>
+
 #include <Voxie/data/image.hpp>
 
 #include <Voxie/opencl/clinstance.hpp>
@@ -114,6 +116,14 @@ Root::Root(QObject *parent) :
         });
 
     this->jsEngine.collectGarbage();
+
+    // This is a fake ExternalOperationLoad object to make sure that
+    // scripts/getDBusInterfaces.py will pick up the methods in
+    // ExternalOperation and ExternalOperationLoad
+    auto fakeExternalOperation = QSharedPointer<ExternalOperationLoad>::create();
+    registerObject(fakeExternalOperation);
+    // Make sure that the object stays until the Root object is destroyed
+    connect(this, &QObject::destroyed, [fakeExternalOperation] () { });
 }
 
 Root::~Root()
@@ -376,6 +386,9 @@ void Root::loadPlugins(QString pluginDirectory)
           for(Importer *importer : plugin->importers())
               connect(importer, &Importer::dataLoaded, this, &Root::registerDataSet);
 
+          for (auto loader : plugin->loaders())
+              pluginLoaders.push_back(loader);
+
           this->mainWindow()->insertPlugin(plugin);
       } else {
           qDebug() << "Failed to load plugin '"+ lib + "':" << loader->errorString();
@@ -383,6 +396,110 @@ void Root::loadPlugins(QString pluginDirectory)
       }
 	}
 }
+
+namespace {
+    class ScriptLoader : public voxie::io::Loader {
+        QString executable;
+
+    public:
+        explicit ScriptLoader(Filter filter, QObject *parent, const QString& executable) : voxie::io::Loader(filter, parent), executable(executable) {
+        }
+        virtual ~ScriptLoader() {
+        }
+
+    protected:
+        // throws ScriptingException
+        QSharedPointer<voxie::data::VoxelData> loadImpl(const QString &fileName) override {
+            auto exOp = QSharedPointer<ExternalOperationLoad>(new ExternalOperationLoad(), [](QObject* obj) { obj->deleteLater(); });
+            registerObject(exOp);
+            auto initialRef = QSharedPointer<QSharedPointer<ExternalOperation> >::create();
+            *initialRef = exOp;
+            exOp->initialReference = initialRef;
+
+            QStringList args;
+            args << "--voxie-action=Load";
+            args << "--voxie-operation=" + exOp->getPath().path();
+            args << "--voxie-load-filename=" + fileName;
+            QProcess* process = Root::instance()->mainWindow()->startScript(executable, nullptr, args);
+
+            // TODO: do loading asynchronously without creating another event loop here
+            auto loop = QSharedPointer<QEventLoop>::create();
+            auto exitWithoutClaim = QSharedPointer<bool>::create();
+            *exitWithoutClaim = false;
+            connect(process, &QObject::destroyed, this, [initialRef, exitWithoutClaim] () {
+                    if (*initialRef)
+                        *exitWithoutClaim = true;
+                    initialRef->reset();
+                });
+            connect(exOp.data(), &QObject::destroyed, this, [loop] () {
+                    loop->exit();
+                });
+
+            auto result = QSharedPointer<QSharedPointer<voxie::data::VoxelData>>::create();
+            auto error = QSharedPointer<QSharedPointer<ScriptingException>>::create();
+            connect(exOp.data(), &ExternalOperationLoad::finished, this, [result, loop] (const QSharedPointer<voxie::data::VoxelData>& data) {
+                    *result = data;
+                    loop->exit();
+                });
+            connect(exOp.data(), &ExternalOperation::error, this, [error, loop] (const ScriptingException& err) {
+                    *error = QSharedPointer<ScriptingException>::create(err);
+                    loop->exit();
+                });
+
+            exOp.reset();
+            loop->exec();
+
+            //if (*initialRef)
+            if (*exitWithoutClaim)
+                throw ScriptingException("de.uni_stuttgart.Voxie.LoadScriptErrorNoClaim", "Script failed to claim the loading operation");
+
+            if (*error) {
+                //throw *error;
+                throw ScriptingException("de.uni_stuttgart.Voxie.LoadScriptError", (*error)->name() + ": " + (*error)->message());
+            }
+
+            if (*result)
+                return *result;
+
+            // Script called ClaimOperation() but neither Finished() nor SetError()
+            throw ScriptingException("de.uni_stuttgart.Voxie.Error", "Script failed to produce a VoxelData object");
+        }
+    };
+}
+
+QSharedPointer<QList<QSharedPointer<io::Loader>>> Root::getLoaders() {
+    auto result = QSharedPointer<QList<QSharedPointer<io::Loader>>>::create();
+
+    for (auto loader : pluginLoaders)
+        result->push_back(QSharedPointer<io::Loader>(loader, [](io::Loader*){}));
+
+    for (auto scriptDirectory : Root::instance()->directoryManager()->scriptPath()) {
+        QDir scriptDir = QDir(scriptDirectory);
+        QStringList configs = scriptDir.entryList(QStringList("*.conf"), QDir::Files | QDir::Readable);
+        for (QString config : configs) {
+            QString configFile = scriptDirectory + "/" + config;
+            if (QFileInfo (configFile).isExecutable ())
+                continue;
+            QSettings conf(configFile, QSettings::IniFormat);
+            if (conf.value("Voxie/Type") != "Loader")
+                continue;
+            //qDebug() << configFile;
+            QString description = conf.value("Voxie/Description", "").toString();
+            QString patterns = conf.value("Voxie/Patterns", "").toString();
+            QStringList patternList = patterns.split(" ", QString::SkipEmptyParts);
+            voxie::io::Loader::Filter filter(description, patternList);
+            QString executable = configFile.mid(0, configFile.length() - 5);
+            QSharedPointer<io::Loader> loader(new ScriptLoader(filter, this, executable), [](QObject* obj) { obj->deleteLater(); });
+            connect(loader.data(), &Loader::dataLoaded, this, &Root::registerDataSet);
+            result->push_back(loader);
+        }
+    }
+
+    qSort(result->begin(), result->end(), [] (const QSharedPointer<io::Loader>& l1, const QSharedPointer<io::Loader>& l2) { return l1->filter().filterString() < l2->filter().filterString(); });
+
+    return result;
+}
+
 
 
 bool
@@ -550,11 +667,10 @@ bool Root::exec(const QString& code, const QString& codeToPrint)
 }
 
 DataSet* Root::openFile(const QString& file) {
-    for (voxie::plugin::VoxiePlugin* plugin : plugins()) {
-        for (voxie::io::Loader* loader : plugin->loaders()) {
-            if (loader->filter().matches(file)) {
-                return loader->load(file);
-            }
+    const auto& loaders = Root::instance()->getLoaders();
+    for (const auto& loader : *loaders) {
+        if (loader->filter().matches(file)) {
+            return loader->load(file);
         }
     }
     throw ScriptingException("de.uni_stuttgart.Voxie.NoLoaderFound", "No loader found for file " + file);
