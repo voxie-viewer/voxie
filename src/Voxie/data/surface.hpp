@@ -25,16 +25,16 @@ class VOXIECORESHARED_EXPORT Surface : public QObject {
     static const IndexType invalidIndex = -1;
 
  private:
-    QVector<QVector3D> vertices_;
-    QVector<Triangle> triangles_;
+    std::vector<QVector3D> vertices_;
+    std::vector<Triangle> triangles_;
 
-    Surface(const QVector<QVector3D>&& vertices, const QVector<Triangle>&& triangles);
+    Surface(const std::vector<QVector3D>&& vertices, const std::vector<Triangle>&& triangles);
 
  public:
     ~Surface();
 
-    const QVector<QVector3D>& vertices() const { return vertices_; }
-    const QVector<Triangle>& triangles() const { return triangles_; }
+    const std::vector<QVector3D>& vertices() const { return vertices_; }
+    const std::vector<Triangle>& triangles() const { return triangles_; }
 };
 
 } }

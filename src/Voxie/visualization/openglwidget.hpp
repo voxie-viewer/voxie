@@ -64,12 +64,12 @@ public:
 
     class VOXIECORESHARED_EXPORT PrimitiveBuffer {
     public:
-        QVector<GLfloat> vertices;
-        QVector<GLfloat> colors;
+        std::vector<GLfloat> vertices;
+        std::vector<GLfloat> colors;
         GLenum mode;
 
-        static void push(QVector<GLfloat>& array, const QVector3D& data);
-        static void push(QVector<GLfloat>& array, const QVector4D& data);
+        static void push(std::vector<GLfloat>& array, const QVector3D& data);
+        static void push(std::vector<GLfloat>& array, const QVector4D& data);
 
         // Adds two triangles
         void addQuad(const QVector4D& color,
@@ -87,7 +87,7 @@ public:
      * (3 values per vertex), the colors from the colors vector (4 values per
      * vertex, including alpha value).
      */
-    void draw(GLenum mode, const QVector<GLfloat>& vertices, const QVector<GLfloat>& colors, const QMatrix4x4& modelViewProjectionMatrix);
+    void draw(GLenum mode, const std::vector<GLfloat>& vertices, const std::vector<GLfloat>& colors, const QMatrix4x4& modelViewProjectionMatrix);
 
     void draw(const PrimitiveBuffer& buffer, const QMatrix4x4& modelViewProjectionMatrix);
 };

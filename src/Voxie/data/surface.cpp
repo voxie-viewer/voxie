@@ -2,7 +2,7 @@
 
 using namespace voxie::data;
 
-Surface::Surface(const QVector<QVector3D>&& vertices, const QVector<Triangle>&& triangles) : vertices_(vertices), triangles_(triangles) {
+Surface::Surface(const std::vector<QVector3D>&& vertices, const std::vector<Triangle>&& triangles) : vertices_(vertices), triangles_(triangles) {
 }
 Surface::~Surface() {
 }

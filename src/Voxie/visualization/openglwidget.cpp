@@ -189,13 +189,13 @@ QString OpenGLDrawWidget::initialize() {
     return "";
 }
 
-void OpenGLDrawWidget::PrimitiveBuffer::push(QVector<GLfloat>& array, const QVector3D& data) {
+void OpenGLDrawWidget::PrimitiveBuffer::push(std::vector<GLfloat>& array, const QVector3D& data) {
     array.push_back(data.x());
     array.push_back(data.y());
     array.push_back(data.z());
 }
 
-void OpenGLDrawWidget::PrimitiveBuffer::push(QVector<GLfloat>& array, const QVector4D& data) {
+void OpenGLDrawWidget::PrimitiveBuffer::push(std::vector<GLfloat>& array, const QVector4D& data) {
     array.push_back(data.x());
     array.push_back(data.y());
     array.push_back(data.z());
@@ -247,7 +247,7 @@ void OpenGLDrawWidget::PrimitiveBuffer::clear() {
     colors.clear();
 }
 
-void OpenGLDrawWidget::draw(GLenum mode, const QVector<GLfloat>& vertices, const QVector<GLfloat>& colors, const QMatrix4x4& modelViewProjectionMatrix) {
+void OpenGLDrawWidget::draw(GLenum mode, const std::vector<GLfloat>& vertices, const std::vector<GLfloat>& colors, const QMatrix4x4& modelViewProjectionMatrix) {
     // Create new vao to make sure it is valid for the current context
     QOpenGLVertexArrayObject vao;
     if (!vao.create()) {

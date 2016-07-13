@@ -41,8 +41,8 @@ class VOXIECORESHARED_EXPORT SurfaceBuilder : public QObject {
         }
     };
 
-    QVector<QVector3D> vertices_;
-    QVector<Triangle> triangles_;
+    std::vector<QVector3D> vertices_;
+    std::vector<Triangle> triangles_;
     //QMap<Vec3Wrapper, IndexType> indices_;
 
  public:

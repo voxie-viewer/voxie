@@ -274,10 +274,10 @@ void IsosurfaceView::uploadData() {
         }
     };
 
-    QVector<GLfloat> vertices;
-    QVector<GLfloat> colors;
+    std::vector<GLfloat> vertices;
+    std::vector<GLfloat> colors;
 
-    for (int i = 0; i < surface->triangles().size(); i++) {
+    for (size_t i = 0; i < surface->triangles().size(); i++) {
         const auto& triangle = surface->triangles()[i];
         QVector3D a = surface->vertices()[triangle[0]];
         QVector3D b = surface->vertices()[triangle[1]];
