@@ -1,5 +1,7 @@
 #include "view3d.hpp"
 
+#include <Voxie/scripting/scriptingcontainer.hpp>
+
 #include <Voxie/spnav/spacenavvisualizer.hpp>
 
 #include <QtCore/QSharedPointer>
@@ -163,7 +165,7 @@ void View3D::moveZoom(float value) {
 void View3D::registerSpaceNavVisualizer(voxie::spnav::SpaceNavVisualizer* sn) {
     int interval = 20;
 
-    auto zoomButton = QSharedPointer<int>::create();
+    auto zoomButton = createQSharedPointer<int>();
     *zoomButton = -1;
 
     auto zoomTimer = new QTimer(sn);

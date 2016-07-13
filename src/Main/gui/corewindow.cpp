@@ -696,7 +696,7 @@ QProcess* CoreWindow::startScript(const QString& scriptFile, const QString* exec
     else
         process->setProgram(scriptFile);
     process->setArguments(args);
-    auto isStarted = QSharedPointer<bool>::create();
+    auto isStarted = createQSharedPointer<bool>();
     connect<void(QProcess::*)(int), std::function<void(int)>>(process, &QProcess::finished, this, std::function<void(int)>([process, id](int exitCode) -> void
         {
             Root::instance()->log(QString("Script %1 finished with exit code %2").arg(id).arg(exitCode));
@@ -716,7 +716,7 @@ QProcess* CoreWindow::startScript(const QString& scriptFile, const QString* exec
                 process->deleteLater();
             }
         });
-    auto buffer = QSharedPointer<QString>::create();
+    auto buffer = createQSharedPointer<QString>();
     connect(process, &QProcess::readyRead, this, [process, id, buffer]() -> void {
             int pos = 0;
             QString data = QString(process->readAll());

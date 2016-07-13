@@ -7,6 +7,7 @@
 #include <QtGui/QMatrix4x4>
 
 #include <Voxie/scripting/scriptingexception.hpp>
+#include <Voxie/scripting/scriptingcontainer.hpp>
 
 #include <QtCore/QDebug>
 #include <QtCore/QTimer>
@@ -211,7 +212,7 @@ void videoStatusCallback(void* userdata,
 }
 
 OsvrDisplay::OsvrDisplay(QOpenGLContext* context, QGLWidget* shareWidget, QObject* parent) : QObject(parent), context(context) {
-    osvrContext = QSharedPointer<osvr::clientkit::ClientContext>::create("de.uni_stuttgart.Voxie");
+    osvrContext = createQSharedPointer<osvr::clientkit::ClientContext>("de.uni_stuttgart.Voxie");
 
     osvr::clientkit::Interface hdkVideoStatus = osvrContext->getInterface("/com_osvr_Multiserver/OSVRHackerDevKit0/semantic/status/videoStatus");
 

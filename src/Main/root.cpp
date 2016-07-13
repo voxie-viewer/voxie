@@ -120,7 +120,7 @@ Root::Root(QObject *parent) :
     // This is a fake ExternalOperationLoad object to make sure that
     // scripts/getDBusInterfaces.py will pick up the methods in
     // ExternalOperation and ExternalOperationLoad
-    auto fakeExternalOperation = QSharedPointer<ExternalOperationLoad>::create();
+    auto fakeExternalOperation = createQSharedPointer<ExternalOperationLoad>();
     registerObject(fakeExternalOperation);
     // Make sure that the object stays until the Root object is destroyed
     connect(this, &QObject::destroyed, [fakeExternalOperation] () { });
@@ -412,7 +412,7 @@ namespace {
         QSharedPointer<voxie::data::VoxelData> loadImpl(const QString &fileName) override {
             auto exOp = QSharedPointer<ExternalOperationLoad>(new ExternalOperationLoad(), [](QObject* obj) { obj->deleteLater(); });
             registerObject(exOp);
-            auto initialRef = QSharedPointer<QSharedPointer<ExternalOperation> >::create();
+            auto initialRef = createQSharedPointer<QSharedPointer<ExternalOperation> >();
             *initialRef = exOp;
             exOp->initialReference = initialRef;
 
@@ -423,8 +423,8 @@ namespace {
             QProcess* process = Root::instance()->mainWindow()->startScript(executable, nullptr, args);
 
             // TODO: do loading asynchronously without creating another event loop here
-            auto loop = QSharedPointer<QEventLoop>::create();
-            auto exitWithoutClaim = QSharedPointer<bool>::create();
+            auto loop = createQSharedPointer<QEventLoop>();
+            auto exitWithoutClaim = createQSharedPointer<bool>();
             *exitWithoutClaim = false;
             connect(process, &QObject::destroyed, this, [initialRef, exitWithoutClaim] () {
                     if (*initialRef)
@@ -435,14 +435,14 @@ namespace {
                     loop->exit();
                 });
 
-            auto result = QSharedPointer<QSharedPointer<voxie::data::VoxelData>>::create();
-            auto error = QSharedPointer<QSharedPointer<ScriptingException>>::create();
+            auto result = createQSharedPointer<QSharedPointer<voxie::data::VoxelData>>();
+            auto error = createQSharedPointer<QSharedPointer<ScriptingException>>();
             connect(exOp.data(), &ExternalOperationLoad::finished, this, [result, loop] (const QSharedPointer<voxie::data::VoxelData>& data) {
                     *result = data;
                     loop->exit();
                 });
             connect(exOp.data(), &ExternalOperation::error, this, [error, loop] (const ScriptingException& err) {
-                    *error = QSharedPointer<ScriptingException>::create(err);
+                    *error = createQSharedPointer<ScriptingException>(err);
                     loop->exit();
                 });
 
@@ -468,7 +468,7 @@ namespace {
 }
 
 QSharedPointer<QList<QSharedPointer<io::Loader>>> Root::getLoaders() {
-    auto result = QSharedPointer<QList<QSharedPointer<io::Loader>>>::create();
+    auto result = createQSharedPointer<QList<QSharedPointer<io::Loader>>>();
 
     for (auto loader : pluginLoaders)
         result->push_back(QSharedPointer<io::Loader>(loader, [](io::Loader*){}));

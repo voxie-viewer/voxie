@@ -13,6 +13,14 @@
 
 #include <QtWidgets/QWidget>
 
+template <typename T, typename... U>
+static inline QSharedPointer<T> createQSharedPointer(U&&... par) {
+    // QSharedPointer<T>::create() is broken: If the constructor throws an
+    // exception, it will call the objects destructor.
+    // https://bugreports.qt.io/browse/QTBUG-49824
+    return QSharedPointer<T>(new T(std::forward<U>(par)...));
+}
+
 namespace voxie
 {
 namespace scripting
