@@ -47,8 +47,8 @@ for i in "$VOXIE_BUILD_DIR"/Plugin*/; do
     export VOXIE_PLUGIN_PATH="${VOXIE_PLUGIN_PATH+$VOXIE_PLUGIN_PATH:}${i%/}"
 done
 
-# Add all subdirectories of $VOXIE_BUILD_DIR starting with Script to VOXIE_SCRIPT_PATH
-for i in "$VOXIE_BUILD_DIR"/Script*/; do
+# Add all subdirectories of $VOXIE_BUILD_DIR starting with Script or Ext to VOXIE_SCRIPT_PATH
+for i in "$VOXIE_BUILD_DIR"/Script*/ "$VOXIE_BUILD_DIR"/Ext*/; do
     export VOXIE_SCRIPT_PATH="${VOXIE_SCRIPT_PATH+$VOXIE_SCRIPT_PATH:}${i%/}"
 done
 

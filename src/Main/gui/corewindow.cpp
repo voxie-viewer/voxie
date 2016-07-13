@@ -699,7 +699,7 @@ QProcess* CoreWindow::startScript(const QString& scriptFile, const QString* exec
     auto isStarted = createQSharedPointer<bool>();
     connect<void(QProcess::*)(int), std::function<void(int)>>(process, &QProcess::finished, this, std::function<void(int)>([process, id](int exitCode) -> void
         {
-            Root::instance()->log(QString("Script %1 finished with exit code %2").arg(id).arg(exitCode));
+            Root::instance()->log(QString("Script %1 finished with exit status %2 / exit code %3").arg(id).arg(process->exitStatus()).arg(exitCode));
             process->deleteLater();
         }));
     /*

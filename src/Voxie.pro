@@ -13,4 +13,5 @@ SUBDIRS += \
 	PluginHDF5 \
 	PluginExample \
         ScriptGetAverage \
+        ExtLoadVgi \
 	extra

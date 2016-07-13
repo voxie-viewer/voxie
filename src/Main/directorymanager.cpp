@@ -63,6 +63,9 @@ DirectoryManager::DirectoryManager(QObject* parent) : QObject(parent) {
         for (QString dir : voxieDir.entryList(QStringList("Script*"), QDir::Dirs | QDir::NoDotAndDotDot | QDir::Readable)) {
             scriptPath_.push_back(voxieDir.absoluteFilePath(dir + suffix));
         }
+        for (QString dir : voxieDir.entryList(QStringList("Ext*"), QDir::Dirs | QDir::NoDotAndDotDot | QDir::Readable)) {
+            scriptPath_.push_back(voxieDir.absoluteFilePath(dir + suffix));
+        }
 
         voxieDir.cdUp();
         scriptPath_.push_back(voxieDir.absoluteFilePath("scripts"));
