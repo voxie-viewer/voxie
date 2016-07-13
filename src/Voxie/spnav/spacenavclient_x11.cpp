@@ -74,6 +74,10 @@ class SpaceNavClient::PrivateX11 : public QWidget, QAbstractNativeEventFilter, p
         auto reply = xcb_get_property_reply(connection, cookie, nullptr);
         if (!reply)
             return 0;
+        if (xcb_get_property_value_length(reply) < (int) sizeof (xcb_window_t)) {
+            free(reply);
+            return 0;
+        }
         auto win = *(xcb_window_t*)xcb_get_property_value(reply);
         free(reply);
 
