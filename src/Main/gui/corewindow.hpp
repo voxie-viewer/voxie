@@ -36,6 +36,8 @@ namespace io
 namespace gui
 {
 
+class ObjectTree;
+
 class GuiDBusObject;
 
 class CoreWindow;
@@ -64,12 +66,15 @@ class CoreWindow :
 private:
     QMdiArea *mdiArea;
     QMenu *importerMenu;
-    QMenu *sectionMenu;
+    //QMenu *sectionMenu;
     QMenu *windowMenu;
     QMenu *scriptsMenu;
     QMenu *pluginsMenu;
 
     QVBoxLayout *sidePanel;
+
+    ObjectTree* objectTree;
+    QList<QPointer<QWidget>> visibleSections;
 
     QMap<plugin::VisualizerType, QMenu*> visualizerMenus;
 
@@ -161,7 +166,7 @@ public:
      * @param widget
      * @param closeable If true, the user can close the section.
      */
-    QWidget *addSection(QWidget *widget, bool closeable = false);
+    QWidget *addSection(QWidget *widget, bool closeable = false, voxie::data::DataObject* obj = nullptr);
 };
 
 class GuiDBusObject : public voxie::scripting::ScriptableObject, public QDBusContext

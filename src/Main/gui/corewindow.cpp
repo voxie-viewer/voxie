@@ -48,6 +48,7 @@
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QSplitter>
 
 using namespace voxie::io;
 using namespace voxie::gui;
@@ -117,6 +118,25 @@ CoreWindow::CoreWindow(voxie::Root* root, QWidget *parent) :
     this->initWidgets(root);
 
     connect(root, &Root::dataObjectAdded, this, &CoreWindow::addDataObject);
+    connect(objectTree, &ObjectTree::objectSelected, this, [this] (voxie::data::DataObject* obj) {
+            //qDebug() << "Change sidepanel visibility to" << obj;
+
+            for (auto section : visibleSections) {
+                if (!section)
+                    continue;
+                if (section->property("dockWidget").value<QWidget*>())
+                    section->property("dockWidget").value<QWidget*>()->setVisible(false);
+            }
+            visibleSections.clear();
+
+            if (obj) {
+                for (auto section : obj->propertySections()) {
+                    visibleSections << section;
+                    if (section->property("dockWidget").value<QWidget*>())
+                        section->property("dockWidget").value<QWidget*>()->setVisible(true);
+                }
+            }
+        });
 }
 CoreWindow::~CoreWindow() {
     isBeginDestroyed = true;
@@ -220,14 +240,6 @@ void CoreWindow::addVisualizer(Visualizer *visualizer)
           emit activeVisualizerChanged (visualizer);
         }
         this->mdiArea->setActiveSubWindow(container->window);
-        for(VisualizerContainer *vc : this->visualizers)
-        {
-            bool vis = (vc == container);
-            for(QWidget *section : vc->visualizer->dynamicSections())
-            {
-                section->property("dockWidget").value<QWidget*>()->setVisible(vis);
-            }
-        }
     });
     connect(container, &QObject::destroyed, this, [=]() {
         if (isBeginDestroyed)
@@ -248,8 +260,7 @@ void CoreWindow::addVisualizer(Visualizer *visualizer)
     emit activeVisualizerChanged (visualizer);
 }
 
-QWidget *CoreWindow::addSection(QWidget *section, bool closeable)
-{
+QWidget *CoreWindow::addSection(QWidget *section, bool closeable, voxie::data::DataObject* obj) {
     if(section == nullptr)
     {
         return nullptr;
@@ -323,6 +334,8 @@ QWidget *CoreWindow::addSection(QWidget *section, bool closeable)
     dockWidget->setLayout(layout);
     dockWidget->setWindowTitle(title);
     connect(section, &QObject::destroyed, dockWidget, &QAction::deleteLater);
+    if (obj)
+        connect(section, &QObject::destroyed, obj, &QAction::deleteLater);
 
     /*
     QFlags<QDockWidget::DockWidgetFeature> features =
@@ -337,6 +350,7 @@ QWidget *CoreWindow::addSection(QWidget *section, bool closeable)
     */
 
 
+    /*
     QAction *sectionEntry = this->sectionMenu->addAction(dockWidget->windowTitle());
     sectionEntry->setCheckable(true);
     sectionEntry->setChecked(true);
@@ -344,13 +358,15 @@ QWidget *CoreWindow::addSection(QWidget *section, bool closeable)
     {
         dockWidget->setVisible(sectionEntry->isChecked());
     });
-
-    connect(dockWidget, &QObject::destroyed, sectionEntry, &QAction::deleteLater);
-
     dockWidget->setProperty("menuEntry", QVariant::fromValue(sectionEntry));
+    connect(dockWidget, &QObject::destroyed, sectionEntry, &QAction::deleteLater);
+    */
+
     dockWidget->setProperty("section", QVariant::fromValue(section));
 
     this->sidePanel->addWidget(dockWidget);
+
+    dockWidget->setVisible(!obj || this->objectTree->selectedObject() == obj);
 
     section->setProperty("dockWidget", QVariant::fromValue(dockWidget));
 
@@ -372,7 +388,7 @@ void CoreWindow::initMenu()
     {
         connect(scriptsMenu, &QMenu::aboutToShow, this, &CoreWindow::populateScriptsMenu);
     }
-    this->sectionMenu = menu->addMenu("Se&ctions");
+    //this->sectionMenu = menu->addMenu("Se&ctions");
     this->windowMenu = menu->addMenu("&Window");
     QMenu *helpMenu = menu->addMenu("&Help");
 
@@ -501,19 +517,29 @@ void CoreWindow::initStatusBar()
 
 void CoreWindow::initWidgets(voxie::Root* root)
 {
-    QWidget *container = new QWidget();
+    //auto container = new QWidget();
+    auto container = new QSplitter(Qt::Horizontal);
     {
+        /*
         QHBoxLayout *layout = new QHBoxLayout();
         layout->setMargin(0);
         layout->setSpacing(0);
+        */
         {
             this->mdiArea = new QMdiArea(this);
             this->mdiArea->setTabsClosable(true);
-            layout->addWidget(this->mdiArea);
+            //layout->addWidget(this->mdiArea);
+            container->addWidget(this->mdiArea);
+            container->setCollapsible(0, false);
 
-            VScrollArea *scroll = new VScrollArea();
-            scroll->setMinimumWidth(300);
-            scroll->setMaximumWidth(400);
+            //auto scroll = new VScrollArea();
+            auto scroll = new QScrollArea();
+            scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+            //scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            scroll->setWidgetResizable(true);
+            scroll->setMinimumWidth(350);
+            scroll->setMaximumWidth(800);
             {
                 QWidget *boxC = new QWidget();
                 QVBoxLayout *box = new QVBoxLayout(boxC);
@@ -522,15 +548,16 @@ void CoreWindow::initWidgets(voxie::Root* root)
                 {
                     this->sidePanel = new QVBoxLayout();
                     this->sidePanel->setMargin(3);
-                    this->sidePanel->addWidget(new ObjectTree(root));
+                    this->sidePanel->addWidget(objectTree = new ObjectTree(root));
                     box->addLayout(this->sidePanel);
                     box->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
                 }
                 scroll->setWidget(boxC);
             }
-            layout->addWidget(scroll);
+            //layout->addWidget(scroll);
+            container->addWidget(scroll);
         }
-        container->setLayout(layout);
+        //container->setLayout(layout);
     }
     this->setCentralWidget(container);
 }
@@ -760,13 +787,11 @@ void CoreWindow::addDataObject(voxie::data::DataObject* obj) {
     auto hasDataSection = createQSharedPointer<bool>(false);
 
     connect(obj, &DataObject::propertySectionAdded, this, [this, hasDataSection, obj] (QWidget* section) {
-            connect(section, &QObject::destroyed, obj, &QObject::deleteLater);
-            addSection(section, !*hasDataSection);
+            addSection(section, !*hasDataSection, obj);
             *hasDataSection = true;
         });
     for (auto section : obj->propertySections()) {
-        connect(section, &QObject::destroyed, obj, &QObject::deleteLater);
-        addSection(section, !*hasDataSection);
+        addSection(section, !*hasDataSection, obj);
         *hasDataSection = true;
     }
 }

@@ -54,10 +54,21 @@ ObjectTree::ObjectTree(voxie::Root* root, QWidget* parent) : QTreeWidget(parent)
                 return;
             }
             auto obj = selectedObject();
-            emit objectSelected(obj);
+            emitObjectSelected(obj);
         });
 }
 ObjectTree::~ObjectTree() {
+}
+
+void ObjectTree::emitObjectSelected(voxie::data::DataObject* obj) {
+    if (!obj && !haveOldSelectedObject)
+        return;
+    if (obj && haveOldSelectedObject && obj == oldSelectedObject)
+        return;
+
+    oldSelectedObject = obj;
+    haveOldSelectedObject = obj != nullptr;
+    emit objectSelected(obj);
 }
 
 void ObjectTree::addObject(voxie::data::DataObject* obj) {
@@ -165,7 +176,7 @@ void ObjectTree::select(voxie::data::DataObject* obj) {
     setCurrentItem(items[0], 0, QItemSelectionModel::Current);
     suppressSelectionChanged = false;
 
-    emit objectSelected(obj);
+    emitObjectSelected(obj);
 }
 
 // Local Variables:

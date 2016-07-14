@@ -1,3 +1,7 @@
+#pragma once
+
+#include <QtCore/QPointer>
+
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QTreeWidget>
 
@@ -16,10 +20,13 @@ class ObjectTree : public QTreeWidget {
     QMap<voxie::data::DataObject*, QList<QTreeWidgetItem*>> map;
 
     bool suppressSelectionChanged;
+    QPointer<voxie::data::DataObject> oldSelectedObject;
+    bool haveOldSelectedObject = false;
 
     void addObject(voxie::data::DataObject* obj);
     void setupItem(voxie::data::DataObject* obj, QTreeWidgetItem* item);
     void cleanupItem(QTreeWidgetItem* item);
+    void emitObjectSelected(voxie::data::DataObject* obj);
 
 public:
     explicit ObjectTree(Root* root, QWidget* parent = nullptr);
