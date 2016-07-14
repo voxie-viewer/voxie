@@ -266,7 +266,7 @@ QScriptValue ScriptWrapper::toScriptValue(const QVariant& value) {
         const auto& val = value.value<QDBusObjectPath>();
         if (val.path() == "/")
             return engine->nullValue();
-        voxie::scripting::ScriptingContainerBase* obj = voxie::scripting::ScriptingContainerBase::lookupWeakObject(val);
+        voxie::scripting::ScriptableObject* obj = voxie::scripting::ScriptableObject::lookupWeakObject(val);
         if (!obj) {
             // Should not happen because this path was just returned by some
             // function and there wasn't any opportunity yet to destroy the
@@ -353,33 +353,32 @@ void ScriptWrapper::addPropertyWrapper(const QScriptValue& obj, const QMetaObjec
             QScriptValue pathStr = context->thisObject().data().property("dbus_path");
             if (!pathStr.isValid())
                 return context->throwError(QString("Error while getting this object: Expected a voxie object"));
-            auto obj = voxie::scripting::ScriptingContainerBase::lookupWeakObject(QDBusObjectPath(pathStr.toString()));
+            QObject* obj = voxie::scripting::ScriptableObject::lookupWeakObject(QDBusObjectPath(pathStr.toString()));
             if (!obj)
                 return context->throwError(QString("Could not find this object, object probably destroyed"));
-            auto qobj = obj->scriptingContainerGetQObject();
             if (parentType) {
-                if (qobj->metaObject() != parentType)
-                    return context->throwError(QString("Invalid type for this object (parent), expected %1, got %2").arg(type->className()).arg(qobj->metaObject()->className()));
+                if (obj->metaObject() != parentType)
+                    return context->throwError(QString("Invalid type for this object (parent), expected %1, got %2").arg(type->className()).arg(obj->metaObject()->className()));
                 bool found = false;
-                for (auto child : qobj->findChildren<QDBusAbstractAdaptor*>(QString(), Qt::FindDirectChildrenOnly)) {
+                for (auto child : obj->findChildren<QDBusAbstractAdaptor*>(QString(), Qt::FindDirectChildrenOnly)) {
                     const QMetaObject* adptrMetaObject = child->metaObject();
                     if (objectChildId == adptrMetaObject->className()) {
                         if (found)
                             return context->throwError(QString("Got multiple children with ID %1").arg(objectChildId));
-                        qobj = child;
+                        obj = child;
                         found = true;
                     }
                 }
                 if (!found)
                     return context->throwError(QString("Did not find child with ID %1").arg(objectChildId));
             }
-            if (qobj->metaObject() != type)
-                return context->throwError(QString("Invalid type for this object, expected %1, got %2").arg(type->className()).arg(qobj->metaObject()->className()));
+            if (obj->metaObject() != type)
+                return context->throwError(QString("Invalid type for this object, expected %1, got %2").arg(type->className()).arg(obj->metaObject()->className()));
 
             if (context->argumentCount() == 0) {
                 if (!property.isReadable())
                     return context->throwError(QString("Property %1 is not readable").arg(property.name()));
-                QVariant value = property.read(qobj);
+                QVariant value = property.read(obj);
                 return toScriptValue(value);
             } else if (context->argumentCount() == 1) {
                 if (!property.isWritable())
@@ -387,7 +386,7 @@ void ScriptWrapper::addPropertyWrapper(const QScriptValue& obj, const QMetaObjec
                 QVariant variant;
                 if (!::fromScriptValue(variant, context, property.userType(), context->argument(0), QString ("value for property %1").arg(QString(property.name()))))
                     return engine->nullValue();
-                if (!property.write(qobj, variant))
+                if (!property.write(obj, variant))
                     return context->throwError(QString("Error while setting %1 property").arg(property.name()));
                 return toScriptValue(42);
                 return toScriptValue(variant);
@@ -424,28 +423,27 @@ void ScriptWrapper::addMethodWrapper(const QScriptValue& obj, const QMetaObject*
             QScriptValue pathStr = context->thisObject().data().property("dbus_path");
             if (!pathStr.isValid())
                 return context->throwError(QString("Error while getting this object: Expected a voxie object"));
-            auto obj = voxie::scripting::ScriptingContainerBase::lookupWeakObject(QDBusObjectPath(pathStr.toString()));
+            QObject* obj = voxie::scripting::ScriptableObject::lookupWeakObject(QDBusObjectPath(pathStr.toString()));
             if (!obj)
                 return context->throwError(QString("Could not find this object, object probably destroyed"));
-            auto qobj = obj->scriptingContainerGetQObject();
             if (parentType) {
-                if (qobj->metaObject() != parentType)
-                    return context->throwError(QString("Invalid type for this object (parent), expected %1, got %2").arg(type->className()).arg(qobj->metaObject()->className()));
+                if (obj->metaObject() != parentType)
+                    return context->throwError(QString("Invalid type for this object (parent), expected %1, got %2").arg(type->className()).arg(obj->metaObject()->className()));
                 bool found = false;
-                for (auto child : qobj->findChildren<QDBusAbstractAdaptor*>(QString(), Qt::FindDirectChildrenOnly)) {
+                for (auto child : obj->findChildren<QDBusAbstractAdaptor*>(QString(), Qt::FindDirectChildrenOnly)) {
                     const QMetaObject* adptrMetaObject = child->metaObject();
                     if (objectChildId == adptrMetaObject->className()) {
                         if (found)
                             return context->throwError(QString("Got multiple children with ID %1").arg(objectChildId));
-                        qobj = child;
+                        obj = child;
                         found = true;
                     }
                 }
                 if (!found)
                     return context->throwError(QString("Did not find child with ID %1").arg(objectChildId));
             }
-            if (qobj->metaObject() != type)
-                return context->throwError(QString("Invalid type for this object, expected %1, got %2").arg(type->className()).arg(qobj->metaObject()->className()));
+            if (obj->metaObject() != type)
+                return context->throwError(QString("Invalid type for this object, expected %1, got %2").arg(type->className()).arg(obj->metaObject()->className()));
 
             if (context->argumentCount() != method.parameterCount()
                 && (context->argumentCount() + 1 != method.parameterCount() || !lastArgOptional)) {
@@ -477,7 +475,7 @@ void ScriptWrapper::addMethodWrapper(const QScriptValue& obj, const QMetaObject*
             bool ret;
             QScriptValue error;
             voxie::scripting::ScriptingException::executeWithHandler([&] {
-                    ret = method.invoke(qobj, Qt::DirectConnection,
+                    ret = method.invoke(obj, Qt::DirectConnection,
                                         retArg,
                                         //Q_RETURN_ARG(int, i),
                                         params[0], params[1], params[2],
@@ -507,9 +505,8 @@ void ScriptWrapper::addMethodWrapper(const QScriptValue& obj, const QMetaObject*
 
 
 // The obj->exportScriptable() value and the set of QDBusAbstractAdaptor children must be the same for every object with the same metaObject
-QScriptValue ScriptWrapper::getWrapperPrototype(voxie::scripting::ScriptingContainerBase* obj) {
-    QObject* qobj = obj->scriptingContainerGetQObject();
-    const QMetaObject* metaObject = qobj->metaObject();
+QScriptValue ScriptWrapper::getWrapperPrototype(voxie::scripting::ScriptableObject* obj) {
+    const QMetaObject* metaObject = obj->metaObject();
 
     QMutexLocker locker(&prototypeMutex); // Keep locked until function returns
     if (prototypes.contains(metaObject))
@@ -558,7 +555,7 @@ QScriptValue ScriptWrapper::getWrapperPrototype(voxie::scripting::ScriptingConta
     }
 
     QSet<QString> seenChildren;
-    for (auto child : qobj->findChildren<QDBusAbstractAdaptor*>(QString(), Qt::FindDirectChildrenOnly)) {
+    for (auto child : obj->findChildren<QDBusAbstractAdaptor*>(QString(), Qt::FindDirectChildrenOnly)) {
         const QMetaObject* adptrMetaObject = child->metaObject();
         QString objectChildId = adptrMetaObject->className();
         if (seenChildren.contains(objectChildId)) {
@@ -602,11 +599,10 @@ QScriptValue ScriptWrapper::getWrapperPrototype(voxie::scripting::ScriptingConta
     return proto;
 }
 
-QScriptValue ScriptWrapper::getWrapper(voxie::scripting::ScriptingContainerBase* obj) {
-    auto qobj = obj->scriptingContainerGetQObject();
+QScriptValue ScriptWrapper::getWrapper(voxie::scripting::ScriptableObject* obj) {
     QMutexLocker locker(&objectMutex); // Keep locked until function returns
-    if (objects.contains(qobj))
-        return objects[qobj];
+    if (objects.contains(obj))
+        return objects[obj];
 
     QScriptValue proto = getWrapperPrototype(obj);
 
@@ -617,11 +613,11 @@ QScriptValue ScriptWrapper::getWrapper(voxie::scripting::ScriptingContainerBase*
     retobj.setPrototype(proto);
     retobj.setData(data);
 
-    QObject::connect(qobj, &QObject::destroyed, this, [this, qobj]() {
+    QObject::connect(obj, &QObject::destroyed, this, [this, obj]() {
             QMutexLocker lock(&objectMutex);
-            objects.remove(qobj);
+            objects.remove(obj);
         });
-    objects[qobj] = retobj;
+    objects[obj] = retobj;
     return retobj;
 }
 

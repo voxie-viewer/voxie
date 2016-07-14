@@ -12,7 +12,7 @@ namespace plugin
 
 class VoxiePlugin;
 
-class VOXIECORESHARED_EXPORT PluginMember : public voxie::scripting::ScriptingContainer {
+class VOXIECORESHARED_EXPORT PluginMember : public voxie::scripting::ScriptableObject {
     Q_OBJECT
 
     friend class VoxiePlugin;

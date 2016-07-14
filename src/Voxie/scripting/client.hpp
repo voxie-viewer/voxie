@@ -15,13 +15,13 @@ namespace voxie
 namespace scripting
 {
 
-class VOXIECORESHARED_EXPORT Client : public ScriptingContainer, public QDBusContext {
+class VOXIECORESHARED_EXPORT Client : public ScriptableObject, public QDBusContext {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.Client")
 
     struct Reference {
         quint64 refCount;
-        QSharedPointer<ScriptingContainer> target;
+        QSharedPointer<ScriptableObject> target;
     };
 
 	QMap<QObject*, Reference> references;
@@ -33,7 +33,7 @@ public:
 	virtual ~Client();
 
     Q_SCRIPTABLE bool DecRefCount (QDBusObjectPath o);
-    void IncRefCount (const QSharedPointer<ScriptingContainer>& obj);
+    void IncRefCount (const QSharedPointer<ScriptableObject>& obj);
     Q_SCRIPTABLE void IncRefCount (QDBusObjectPath o);
 
     // Should only be used for debugging purposes

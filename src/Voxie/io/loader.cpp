@@ -62,11 +62,11 @@ voxie::data::DataSet* Loader::registerVoxelData(const QSharedPointer<voxie::data
 
 QDBusObjectPath LoaderAdaptor::Load(const QString &fileName, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
-        return voxie::scripting::ScriptingContainerBase::getPath(object->load(fileName));
+        voxie::scripting::ScriptableObject::checkOptions(options);
+        return voxie::scripting::ScriptableObject::getPath(object->load(fileName));
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(object);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 

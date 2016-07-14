@@ -27,8 +27,8 @@ public:
     ScriptWrapper(QScriptEngine* engine);
     virtual ~ScriptWrapper();
 
-    QScriptValue getWrapperPrototype(voxie::scripting::ScriptingContainerBase* obj);
-    QScriptValue getWrapper(voxie::scripting::ScriptingContainerBase* obj);
+    QScriptValue getWrapperPrototype(voxie::scripting::ScriptableObject* obj);
+    QScriptValue getWrapper(voxie::scripting::ScriptableObject* obj);
 
     static void addScriptFunction (QScriptValue obj, const QString& name, const QScriptValue::PropertyFlags& flags, const std::function<QScriptValue(QScriptContext*, QScriptEngine*)>& fun);
     static QVariant fromScriptValue(const QScriptValue& value);

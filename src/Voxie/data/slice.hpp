@@ -23,7 +23,7 @@ namespace data {
  * The plane is placed inside the DataSet's coordinatesystem.
  * It is used to extract SliceImages from the voxel dataset.
  */
-class VOXIECORESHARED_EXPORT Slice : public voxie::scripting::ScriptingContainer
+class VOXIECORESHARED_EXPORT Slice : public voxie::scripting::ScriptableObject
 {
     Q_OBJECT
 public:

@@ -14,7 +14,7 @@
 
 using namespace voxie::scripting;
 
-Client::Client(QObject* parent, const QString& uniqueConnectionName) : ScriptingContainer ("Client", parent, false, true), uniqueConnectionName_ (uniqueConnectionName) {
+Client::Client(QObject* parent, const QString& uniqueConnectionName) : ScriptableObject ("Client", parent, false, true), uniqueConnectionName_ (uniqueConnectionName) {
     if (uniqueConnectionName != "") {
         QDBusServiceWatcher* watcher = new QDBusServiceWatcher (uniqueConnectionName, QDBusConnection::sessionBus(), QDBusServiceWatcher::WatchForUnregistration, this);
         connect(watcher, &QDBusServiceWatcher::serviceUnregistered, [=]() {
@@ -30,7 +30,7 @@ Client::~Client() {
 
 bool Client::DecRefCount (QDBusObjectPath o) {
     try {
-        QSharedPointer<ScriptingContainer> obj = ScriptingContainer::lookupObject(o);
+        QSharedPointer<ScriptableObject> obj = ScriptableObject::lookupObject(o);
         if (!obj)
             return false;
 
@@ -50,7 +50,7 @@ bool Client::DecRefCount (QDBusObjectPath o) {
 
 void Client::IncRefCount (QDBusObjectPath o) {
     try {
-        QSharedPointer<ScriptingContainer> obj = ScriptingContainer::lookupObject(o);
+        QSharedPointer<ScriptableObject> obj = ScriptableObject::lookupObject(o);
         if (!obj)
             throw ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Object " + o.path() + " not found");
         IncRefCount (obj);
@@ -59,7 +59,7 @@ void Client::IncRefCount (QDBusObjectPath o) {
     }
 }
 
-void Client::IncRefCount (const QSharedPointer<ScriptingContainer>& obj) {
+void Client::IncRefCount (const QSharedPointer<ScriptableObject>& obj) {
     QMap<QObject*, Reference>::iterator it = references.find (obj.data());
     if (it == references.end ()) {
         Reference ref;

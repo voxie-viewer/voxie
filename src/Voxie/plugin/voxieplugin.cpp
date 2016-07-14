@@ -9,7 +9,7 @@ using namespace voxie::scripting;
 template<typename T>
 static inline void registerChildren(VoxiePlugin *plugin, const QVector<T*> &children, const QString &type)
 {
-	QObject *container = new ScriptingContainer(plugin);
+	QObject *container = new QObject(plugin);
 	container->setObjectName(type);
 	for(QObject *child : children) {
         if (child->objectName() == "")
@@ -55,7 +55,7 @@ template <typename T> void VoxiePlugin::addObjects (const QString& typeShort, co
 }
 
 VoxiePlugin::VoxiePlugin(QObject *plugin, QObject *parent) :
-	ScriptingContainer("Plugin", parent),
+	ScriptableObject("Plugin", parent),
 	plugin(plugin),
 	pluginName("unknown"),
 	allVisualizers(),
@@ -180,7 +180,7 @@ QVector<QDBusObjectPath> VoxiePluginAdaptor::ListMembers (const QString& type) {
 
         QVector<QDBusObjectPath> objects;
         for (PluginMember* object : allObjects[type])
-            objects.push_back (voxie::scripting::ScriptingContainerBase::getPath(object));
+            objects.push_back (voxie::scripting::ScriptableObject::getPath(object));
         return objects;
     } catch (ScriptingException& e) {
         e.handle(object);
@@ -190,10 +190,10 @@ QVector<QDBusObjectPath> VoxiePluginAdaptor::ListMembers (const QString& type) {
 
 QDBusObjectPath VoxiePluginAdaptor::GetMemberByName (const QString& type, const QString& name) {
     try {
-        return voxie::scripting::ScriptingContainerBase::getPath (object->getMemberByName(type, name));
+        return voxie::scripting::ScriptableObject::getPath (object->getMemberByName(type, name));
     } catch (ScriptingException& e) {
         e.handle(object);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 

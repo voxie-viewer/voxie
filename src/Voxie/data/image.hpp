@@ -11,7 +11,7 @@
 
 namespace voxie { namespace data {
 
-class VOXIECORESHARED_EXPORT Image : public voxie::scripting::ScriptingContainer, public QDBusContext {
+class VOXIECORESHARED_EXPORT Image : public voxie::scripting::ScriptableObject, public QDBusContext {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.Image")
 

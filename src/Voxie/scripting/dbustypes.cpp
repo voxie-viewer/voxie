@@ -225,7 +225,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, T* &value) {
   if (s.path() == "/") {
     value = nullptr;
   } else {
-    value = qobject_cast<T*>(voxie::scripting::ScriptingContainerBase::lookupWeakQObject(s.path));
+    value = qobject_cast<T*>(voxie::scripting::ScriptableObject::lookupWeakObject(s.path));
   }
   return argument;
 }

@@ -60,7 +60,7 @@ voxie::visualization::Visualizer* ActiveVisualizerProviderImpl::activeVisualizer
     return win->getActiveVisualizer(); 
 }
 
-GuiDBusObject::GuiDBusObject (CoreWindow* window) : ScriptingContainer ("Gui", window, true, true), window (window) {
+GuiDBusObject::GuiDBusObject (CoreWindow* window) : ScriptableObject("Gui", window, true, true), window (window) {
   // https://bugreports.qt.io/browse/QTBUG-48008
   // https://randomguy3.wordpress.com/2010/09/07/the-magic-of-qtdbus-and-the-propertychanged-signal/
   connect (window, &CoreWindow::activeVisualizerChanged, [=](visualization::Visualizer* visualizer) {
@@ -74,7 +74,7 @@ GuiDBusObject::GuiDBusObject (CoreWindow* window) : ScriptingContainer ("Gui", w
                                                        "PropertiesChanged");
       signal << "de.uni_stuttgart.Voxie.Gui";
       QVariantMap changedProps;
-      changedProps.insert("ActiveVisualizer", qVariantFromValue(voxie::scripting::ScriptingContainerBase::getPath(visualizer)));
+      changedProps.insert("ActiveVisualizer", qVariantFromValue(voxie::scripting::ScriptableObject::getPath(visualizer)));
       signal << changedProps;
       signal << QStringList();
       QDBusConnection::sessionBus().send(signal);
@@ -85,12 +85,12 @@ GuiDBusObject::~GuiDBusObject () {
 
 QDBusObjectPath GuiDBusObject::getActiveVisualizer()
 {
-  return voxie::scripting::ScriptingContainerBase::getPath(window->getActiveVisualizer());
+  return voxie::scripting::ScriptableObject::getPath(window->getActiveVisualizer());
 }
 
 void GuiDBusObject::RaiseWindow(const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
         window->activateWindow();
         window->raise();
     } catch (voxie::scripting::ScriptingException& e) {

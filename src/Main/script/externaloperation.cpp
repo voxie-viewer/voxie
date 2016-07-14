@@ -10,7 +10,7 @@
 using namespace voxie::scripting;
 using namespace voxie::data;
 
-ExternalOperation::ExternalOperation() : ScriptingContainer("ExternalOperation", nullptr) {
+ExternalOperation::ExternalOperation() : ScriptableObject("ExternalOperation", nullptr) {
     new ExternalOperationAdaptor(this);
 }
 
@@ -40,8 +40,8 @@ void ExternalOperationAdaptor::ClaimOperation(const QDBusObjectPath& client) {
     try {
         //qDebug() << "ExternalOperation::ClaimOperation" << client.path();
 
-        //voxie::scripting::ScriptingContainerBase::checkOptions(options);
-        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(client));
+        //voxie::scripting::ScriptableObject::checkOptions(options);
+        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptableObject::lookupWeakObject(client));
         if (!clientPtr) {
             throw ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find client object");
         }
@@ -114,7 +114,7 @@ void ExternalOperationLoadAdaptor::Finish(const QDBusObjectPath& data) {
 
         //qDebug() << "ExternalOperation::Finish" << data.path();
 
-        QSharedPointer<voxie::scripting::ScriptingContainer> obj = voxie::scripting::ScriptingContainer::lookupObject(data);
+        QSharedPointer<voxie::scripting::ScriptableObject> obj = voxie::scripting::ScriptableObject::lookupObject(data);
         if (!obj)
             throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Object " + data.path() + " not found");
         auto voxelData = qSharedPointerCast<VoxelData> (obj);

@@ -28,7 +28,7 @@ namespace voxie { namespace data {
 class VoxelData;
 class Slice;
 
-class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptingContainer, public QDBusContext
+class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptableObject, public QDBusContext
 {
     Q_OBJECT
 

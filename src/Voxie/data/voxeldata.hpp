@@ -45,7 +45,7 @@ namespace voxie { namespace data {
  * values.
  * @brief The VoxelData class
  */
-class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptingContainer, public QDBusContext
+class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptableObject, public QDBusContext
 {
     Q_OBJECT
 

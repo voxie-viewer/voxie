@@ -75,7 +75,7 @@ public:
 };
 
 VoxelData::VoxelData(size_t width, size_t height, size_t depth) :
-    voxie::scripting::ScriptingContainer("VoxelData"),
+    voxie::scripting::ScriptableObject("VoxelData"),
 	//data(nullptr),
     dataSH(width*height*depth*sizeof(Voxel)),
     size(width * height * depth),
@@ -93,7 +93,7 @@ VoxelData::VoxelData(size_t width, size_t height, size_t depth) :
 QSharedPointer<VoxelData> VoxelData::create(size_t width, size_t height, size_t depth) {
     QSharedPointer<VoxelData> data(new VoxelData(width, height, depth), [](QObject* obj) { obj->deleteLater(); });
     data->thisPointerWeak = data;
-    ScriptingContainer::registerObject(data);
+    registerObject(data);
     return data;
 }
 
@@ -392,7 +392,7 @@ voxie::scripting::IntVector3 VoxelDataAdaptor::size() {
 
 void VoxelDataAdaptor::UpdateFromBuffer(const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
         emit object->changed();
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(object);
@@ -418,7 +418,7 @@ voxie::scripting::Array3Info VoxelDataAdaptor::GetDataWritable () {
 
 void VoxelDataAdaptor::ExtractSlice (const QVector3D& origin, const QQuaternion& rotation, const voxie::scripting::IntVector2& outputSize, const QVector2D& pixelSize, QDBusObjectPath outputImage, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options, "Interpolation");
+        voxie::scripting::ScriptableObject::checkOptions(options, "Interpolation");
 
         InterpolationMethod interpolation = linear;
         auto interpolationVal = options.find ("Interpolation");
@@ -431,7 +431,7 @@ void VoxelDataAdaptor::ExtractSlice (const QVector3D& origin, const QQuaternion&
                 throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.InvalidOptionValue", "Invalid value for 'Interpolation' option");
         }
 
-        QSharedPointer<voxie::scripting::ScriptingContainer> obj = voxie::scripting::ScriptingContainer::lookupObject(outputImage);
+        auto obj = voxie::scripting::ScriptableObject::lookupObject(outputImage);
         if (!obj)
             throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Object " + outputImage.path() + " not found");
         auto image = qSharedPointerCast<Image> (obj);

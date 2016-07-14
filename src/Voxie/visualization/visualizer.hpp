@@ -25,7 +25,7 @@ namespace visualization
 /**
  * @brief A visualizer that can show any kind of voxel data.
  */
-class VOXIECORESHARED_EXPORT Visualizer : public voxie::scripting::ScriptingContainer {
+class VOXIECORESHARED_EXPORT Visualizer : public voxie::scripting::ScriptableObject {
     Q_OBJECT
 private:
     QVector<QWidget*> sections;

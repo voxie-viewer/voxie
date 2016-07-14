@@ -18,7 +18,7 @@ namespace scripting {
 class ScriptingException;
 
 class ExternalOperationAdaptor;
-class ExternalOperation : public voxie::scripting::ScriptingContainer, public QDBusContext {
+class ExternalOperation : public voxie::scripting::ScriptableObject, public QDBusContext {
     Q_OBJECT
 
     friend class ExternalOperationAdaptor;

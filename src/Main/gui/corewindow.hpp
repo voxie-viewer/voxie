@@ -162,7 +162,7 @@ public:
     QWidget *addSection(QWidget *widget, bool closeable = false);
 };
 
-class GuiDBusObject : public voxie::scripting::ScriptingContainer, public QDBusContext
+class GuiDBusObject : public voxie::scripting::ScriptableObject, public QDBusContext
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.Gui")

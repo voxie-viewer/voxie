@@ -20,21 +20,18 @@ using namespace voxie::scripting;
 
 static QRegExp invalidChars("[^A-Za-z0-9_]+", Qt::CaseSensitive);
 
-ScriptingContainerBase::ScriptingContainerBase() :
-	connections()
-{
-}
-
 // TODO: move fields into a new class?
 static QMutex mutex;
 static QMap<QString, uint64_t> currentId;
-static QMap<QDBusObjectPath, ScriptingContainerBase*> weakReferences;
-static QMap<QDBusObjectPath, QWeakPointer<ScriptingContainer>> references;
+static QMap<QDBusObjectPath, ScriptableObject*> weakReferences;
+static QMap<QDBusObjectPath, QWeakPointer<ScriptableObject>> references;
 
-ScriptingContainerBase::ScriptingContainerBase(QObject* obj, const QString& type, bool singleton, bool exportScriptable) : exportScriptable_(exportScriptable)
+ScriptableObject::ScriptableObject(const QString& type, QObject *parent, bool singleton, bool exportScriptable) :
+    QObject(parent),
+    exportScriptable_(exportScriptable)
 {
     if (QThread::currentThread() != QCoreApplication::instance()->thread())
-        qCritical() << "Warning: Trying to create object" << obj << "on thread " << QThread::currentThread();
+        qCritical() << "Warning: Trying to create object" << this << "on thread " << QThread::currentThread();
 
   if (singleton) {
     path = QString ("/de/uni_stuttgart/Voxie%1%2").arg (type == "" ? "" : "/").arg (type);
@@ -48,8 +45,7 @@ ScriptingContainerBase::ScriptingContainerBase(QObject* obj, const QString& type
   }
   QDBusConnection::sessionBus().registerObject(
 		path,
-		//scriptingContainerGetQObject(),
-		obj,
+		this,
         exportScriptable ?
         (
          QDBusConnection::ExportAdaptors
@@ -63,7 +59,7 @@ ScriptingContainerBase::ScriptingContainerBase(QObject* obj, const QString& type
 
   {
     QMutexLocker lock (&mutex);
-    QObject::connect(obj, &QObject::destroyed, [=]() {
+    QObject::connect(this, &QObject::destroyed, [=]() {
             QMutexLocker lock (&mutex);
             weakReferences.remove (QDBusObjectPath(path));
         });
@@ -71,13 +67,13 @@ ScriptingContainerBase::ScriptingContainerBase(QObject* obj, const QString& type
   }
 }
 
-ScriptingContainerBase::~ScriptingContainerBase()
+ScriptableObject::~ScriptableObject()
 {
     if (QThread::currentThread() != QCoreApplication::instance()->thread())
         qCritical() << "Warning: Trying to destroy object on thread " << QThread::currentThread();
 }
 
-void ScriptingContainerBase::checkOptions (const QMap<QString, QVariant>& options, const QSet<QString>& allowed) {
+void ScriptableObject::checkOptions (const QMap<QString, QVariant>& options, const QSet<QString>& allowed) {
     QSet<QString> optional;
     if (options.contains("Optional")) {
         auto value = options["Optional"];
@@ -92,32 +88,26 @@ void ScriptingContainerBase::checkOptions (const QMap<QString, QVariant>& option
     }
 }
 
-Q_NORETURN void ScriptingContainerBase::throwMissingOption(const QString& name) {
+Q_NORETURN void ScriptableObject::throwMissingOption(const QString& name) {
     throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.MissingOptionValue", "No value given for '" + name + "' option");
 }
-Q_NORETURN void ScriptingContainerBase::throwInvalidOption(const QString& name, const QString& expected, const QString& actual) {
+Q_NORETURN void ScriptableObject::throwInvalidOption(const QString& name, const QString& expected, const QString& actual) {
     throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.InvalidOptionValue", "Invalid type for '" + name + "' option: got " + actual + ", expected " + expected);
 }
 
-QDBusObjectPath ScriptingContainerBase::getPath() const {
+QDBusObjectPath ScriptableObject::getPath() const {
     return QDBusObjectPath (path);
 }
 
-ScriptingContainerBase* ScriptingContainerBase::lookupWeakObject(const QDBusObjectPath& path) {
+ScriptableObject* ScriptableObject::lookupWeakObject(const QDBusObjectPath& path) {
     QMutexLocker lock (&mutex);
     auto it = weakReferences.find (path);
     if (it == weakReferences.end ())
         return nullptr;
     return *it;
 }
-QObject* ScriptingContainerBase::lookupWeakQObject(const QDBusObjectPath& path) {
-    auto obj = lookupWeakObject(path);
-    if (!obj)
-        return nullptr;
-    return obj->scriptingContainerGetQObject();
-}
 
-void ScriptingContainer::registerObject(const QSharedPointer<ScriptingContainer>& obj) {
+void ScriptableObject::registerObject(const QSharedPointer<ScriptableObject>& obj) {
     QMutexLocker lock (&mutex);
     QDBusObjectPath path = obj->getPath();
     connect(obj.data(), &QObject::destroyed, [=]() {
@@ -126,50 +116,12 @@ void ScriptingContainer::registerObject(const QSharedPointer<ScriptingContainer>
         });
     references.insert (path, obj.toWeakRef());
 }
-QSharedPointer<ScriptingContainer> ScriptingContainer::lookupObject(const QDBusObjectPath& path) {
+QSharedPointer<ScriptableObject> ScriptableObject::lookupObject(const QDBusObjectPath& path) {
     QMutexLocker lock (&mutex);
     auto it = references.find (path);
     if (it == references.end ())
-        return QSharedPointer<ScriptingContainer>();
+        return QSharedPointer<ScriptableObject>();
     return it->toStrongRef();
-}
-
-ScriptingContainer::ScriptingContainer(QObject *parent) :
-	QObject(parent)
-{
-}
-
-ScriptingContainer::ScriptingContainer(const QString& type, QObject *parent, bool singleton, bool exportScriptable) :
-	QObject(parent), ScriptingContainerBase(this, type, singleton, exportScriptable)
-{
-}
-
-ScriptingContainer::~ScriptingContainer()
-{
-}
-
-QObject* ScriptingContainer::scriptingContainerGetQObject()
-{
-  return this;
-}
-
-WidgetScriptingContainer::WidgetScriptingContainer(QWidget *parent) :
-	QWidget(parent)
-{
-}
-
-WidgetScriptingContainer::WidgetScriptingContainer(const QString& type, QWidget *parent, bool singleton) :
-	QWidget(parent), ScriptingContainerBase(this, type, singleton, false)
-{
-}
-
-WidgetScriptingContainer::~WidgetScriptingContainer()
-{
-}
-
-QObject* WidgetScriptingContainer::scriptingContainerGetQObject()
-{
-  return this;
 }
 
 // Local Variables:

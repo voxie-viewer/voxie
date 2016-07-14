@@ -16,7 +16,7 @@ using namespace voxie::data;
 using namespace voxie::data::internal;
 
 DataSet::DataSet(const QSharedPointer<VoxelData>& data, QObject *parent) :
-    voxie::scripting::ScriptingContainer("DataSet", parent) {
+    voxie::scripting::ScriptableObject("DataSet", parent) {
     new DataSetAdaptor(this);
 
     originalDataSet = data;
@@ -98,11 +98,11 @@ QList<Slice*> DataSet::getSlices()
 }
 
 QDBusObjectPath DataSetAdaptor::originalData () {
-    return voxie::scripting::ScriptingContainerBase::getPath(object->originalData().data());
+    return voxie::scripting::ScriptableObject::getPath(object->originalData().data());
 }
 
 QDBusObjectPath DataSetAdaptor::filteredData () {
-    return voxie::scripting::ScriptingContainerBase::getPath(object->filteredData().data());
+    return voxie::scripting::ScriptableObject::getPath(object->filteredData().data());
 }
 
 QString DataSetAdaptor::displayName () {
@@ -111,11 +111,11 @@ QString DataSetAdaptor::displayName () {
 
 QDBusObjectPath DataSetAdaptor::CreateSlice(const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
-        return voxie::scripting::ScriptingContainerBase::getPath(object->createSlice());
+        voxie::scripting::ScriptableObject::checkOptions(options);
+        return voxie::scripting::ScriptableObject::getPath(object->createSlice());
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(object);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 
@@ -123,7 +123,7 @@ QList<QDBusObjectPath> DataSetAdaptor::ListSlices () {
     QList<QDBusObjectPath> paths;
 
     for (Slice* slice : object->getSlices ()) {
-        paths.append (voxie::scripting::ScriptingContainerBase::getPath (slice));
+        paths.append (voxie::scripting::ScriptableObject::getPath (slice));
     }
 
     return paths;

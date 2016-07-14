@@ -34,7 +34,7 @@ class DirectoryManager;
  * @brief The voxie root object.
  */
 class Root :
-        public scripting::ScriptingContainer,
+        public QObject,
         public IVoxie
 {
     Q_OBJECT
@@ -200,7 +200,7 @@ signals:
     void logEmitted(const QString &text);
 };
 
-class VoxieInstance : public scripting::ScriptingContainer, public QDBusContext {
+class VoxieInstance : public scripting::ScriptableObject, public QDBusContext {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.Voxie")
 

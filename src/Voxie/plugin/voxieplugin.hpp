@@ -15,7 +15,7 @@ namespace plugin
 {
 
 class VOXIECORESHARED_EXPORT VoxiePlugin :
-        public voxie::scripting::ScriptingContainer,
+        public voxie::scripting::ScriptableObject,
         public QDBusContext
 {
     Q_OBJECT

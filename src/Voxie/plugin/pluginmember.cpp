@@ -5,14 +5,14 @@
 using namespace voxie::plugin;
 using namespace voxie::plugin::internal;
 
-PluginMember::PluginMember (const QString& typeShort, QObject* parent) : ScriptingContainer ("PluginMember/" + typeShort, parent), plugin_ (nullptr) {
+PluginMember::PluginMember (const QString& typeShort, QObject* parent) : ScriptableObject("PluginMember/" + typeShort, parent), plugin_ (nullptr) {
     new PluginMemberAdaptor (this);
 }
 PluginMember::~PluginMember () {
 }
 
 QDBusObjectPath PluginMemberAdaptor::plugin() {
-    return voxie::scripting::ScriptingContainerBase::getPath(object->plugin());
+    return voxie::scripting::ScriptableObject::getPath(object->plugin());
 }
 
 // Local Variables:

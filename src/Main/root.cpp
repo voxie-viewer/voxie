@@ -59,7 +59,7 @@ Root *Root::instance()
 }
 
 Root::Root(QObject *parent) :
-	scripting::ScriptingContainer(parent),
+	QObject(parent),
 	coreWindow(nullptr),
 	jsEngine(),
     scriptWrapper(&jsEngine),
@@ -77,10 +77,10 @@ Root::Root(QObject *parent) :
 
 	this->coreWindow = new CoreWindow();
 
-	this->pluginContainer = new ScriptingContainer(this);
+	this->pluginContainer = new QObject(this);
 	this->pluginContainer->setObjectName("plugins");
 
-	this->dataSetContainer = new ScriptingContainer(this);
+	this->dataSetContainer = new QObject(this);
 	this->dataSetContainer->setObjectName("dataSets");
 
 	QScriptValue globalObject = this->jsEngine.globalObject();
@@ -121,7 +121,7 @@ Root::Root(QObject *parent) :
     // scripts/getDBusInterfaces.py will pick up the methods in
     // ExternalOperation and ExternalOperationLoad
     auto fakeExternalOperation = createQSharedPointer<ExternalOperationLoad>();
-    registerObject(fakeExternalOperation);
+    ScriptableObject::registerObject(fakeExternalOperation);
     // Make sure that the object stays until the Root object is destroyed
     connect(this, &QObject::destroyed, [fakeExternalOperation] () { });
 }
@@ -712,20 +712,20 @@ void runTests()
     qDebug() << "---- tests done ----";
 }
 
-VoxieInstance::VoxieInstance (Root* root) : ScriptingContainer ("", root, true, true), root (root) {
+VoxieInstance::VoxieInstance(Root* root) : ScriptableObject("", root, true, true), root (root) {
 }
-VoxieInstance::~VoxieInstance () {
+VoxieInstance::~VoxieInstance() {
 }
 
 QDBusObjectPath VoxieInstance::gui () {
-    return voxie::scripting::ScriptingContainerBase::getPath(root->mainWindow()->getGuiDBusObject());
+    return voxie::scripting::ScriptableObject::getPath(root->mainWindow()->getGuiDBusObject());
 }
 
 QList<QDBusObjectPath> VoxieInstance::ListPlugins () {
   QList<QDBusObjectPath> paths;
 
   for (VoxiePlugin* plugin : root->plugins ()) {
-    paths.append (voxie::scripting::ScriptingContainerBase::getPath (plugin));
+    paths.append (voxie::scripting::ScriptableObject::getPath (plugin));
   }
 
   return paths;
@@ -733,10 +733,10 @@ QList<QDBusObjectPath> VoxieInstance::ListPlugins () {
 
 QDBusObjectPath VoxieInstance::GetPluginByName (const QString& name) {
     try {
-        return voxie::scripting::ScriptingContainerBase::getPath (root->getPluginByName(name));
+        return voxie::scripting::ScriptableObject::getPath (root->getPluginByName(name));
     } catch (ScriptingException& e) {
         e.handle(this);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 
@@ -752,7 +752,7 @@ QList<QDBusObjectPath> VoxieInstance::ListDataSets () {
   QList<QDBusObjectPath> paths;
 
   for (DataSet* dataSet : root->dataSets ()) {
-    paths.append (voxie::scripting::ScriptingContainerBase::getPath (dataSet));
+    paths.append (voxie::scripting::ScriptableObject::getPath (dataSet));
   }
 
   return paths;
@@ -760,35 +760,35 @@ QList<QDBusObjectPath> VoxieInstance::ListDataSets () {
 
 QDBusObjectPath VoxieInstance::CreateClient (const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
         QString name = "";
         if (calledFromDBus()) {
             name = message().service();
         }
         Client* client = new Client (root, name);
-        return voxie::scripting::ScriptingContainerBase::getPath (client);
+        return voxie::scripting::ScriptableObject::getPath (client);
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(this);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 
 QDBusObjectPath VoxieInstance::CreateIndependentClient (const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
         Client* client = new Client (root, "");
-        return voxie::scripting::ScriptingContainerBase::getPath (client);
+        return voxie::scripting::ScriptableObject::getPath (client);
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(this);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 
 
 bool VoxieInstance::DestroyClient (const QDBusObjectPath& client, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
-        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(client));
+        voxie::scripting::ScriptableObject::checkOptions(options);
+        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptableObject::lookupWeakObject(client));
         if (!clientPtr) {
             return false;
         }
@@ -802,26 +802,26 @@ bool VoxieInstance::DestroyClient (const QDBusObjectPath& client, const QMap<QSt
 
 QDBusObjectPath VoxieInstance::CreateImage (const QDBusObjectPath& client, const voxie::scripting::IntVector2& size, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
-        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(client));
+        voxie::scripting::ScriptableObject::checkOptions(options);
+        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptableObject::lookupWeakObject(client));
         if (!clientPtr) {
             throw ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find client object");
         }
 
         QSharedPointer<Image> image(new Image(size.x, size.y), [](QObject* obj) { obj->deleteLater(); });
-        ScriptingContainer::registerObject(image);
+        ScriptableObject::registerObject(image);
         clientPtr->IncRefCount(image);
-        return voxie::scripting::ScriptingContainerBase::getPath(image.data());
+        return voxie::scripting::ScriptableObject::getPath(image.data());
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(this);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 
 QDBusObjectPath VoxieInstance::CreateVoxelData (const QDBusObjectPath& client, const voxie::scripting::IntVector3& size, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options, "Origin", "Spacing");
-        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(client));
+        voxie::scripting::ScriptableObject::checkOptions(options, "Origin", "Spacing");
+        Client* clientPtr = qobject_cast<Client*> (voxie::scripting::ScriptableObject::lookupWeakObject(client));
         if (!clientPtr) {
             throw ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find client object");
         }
@@ -838,18 +838,18 @@ QDBusObjectPath VoxieInstance::CreateVoxelData (const QDBusObjectPath& client, c
         data->setFirstVoxelPos(origin);
         data->setSpacing(spacing);
         clientPtr->IncRefCount(data);
-        return voxie::scripting::ScriptingContainerBase::getPath(data.data());
+        return voxie::scripting::ScriptableObject::getPath(data.data());
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(this);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 
 QDBusObjectPath VoxieInstance::CreateDataSet (const QString& name, const QDBusObjectPath& data, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
 
-        QSharedPointer<voxie::scripting::ScriptingContainer> obj = voxie::scripting::ScriptingContainer::lookupObject(data);
+        auto obj = voxie::scripting::ScriptableObject::lookupObject(data);
         if (!obj)
             throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Object " + data.path() + " not found");
         auto voxelData = qSharedPointerCast<VoxelData> (obj);
@@ -859,16 +859,16 @@ QDBusObjectPath VoxieInstance::CreateDataSet (const QString& name, const QDBusOb
         auto dataSet = new DataSet(voxelData);
         dataSet->setObjectName(name);
         root->registerDataSet(dataSet);
-        return voxie::scripting::ScriptingContainerBase::getPath(dataSet);
+        return voxie::scripting::ScriptableObject::getPath(dataSet);
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(this);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 
 void VoxieInstance::Quit (const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
         root->quit ();
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(this);
@@ -877,7 +877,7 @@ void VoxieInstance::Quit (const QMap<QString, QVariant>& options) {
 
 QDBusVariant VoxieInstance::ExecuteQScriptCode (const QString& code, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
         QScriptValue result = root->scriptEngine().evaluate(code);
         //if(result.isError()) { // isError() only returns whether the object is an instance of the Error class, not whether there was an exception
         if(root->scriptEngine().hasUncaughtException()) {
@@ -907,11 +907,11 @@ QDBusVariant VoxieInstance::ExecuteQScriptCode (const QString& code, const QMap<
 
 QDBusObjectPath VoxieInstance::OpenFile (const QString& file, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
-        return voxie::scripting::ScriptingContainerBase::getPath(root->openFile(file));
+        voxie::scripting::ScriptableObject::checkOptions(options);
+        return voxie::scripting::ScriptableObject::getPath(root->openFile(file));
     } catch (ScriptingException& e) {
         e.handle(this);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 

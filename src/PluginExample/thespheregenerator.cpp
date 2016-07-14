@@ -69,12 +69,12 @@ voxie::data::DataSet* TheSphereGenerator::genSphere(int size) {
 
 QDBusObjectPath TheSphereGeneratorAdaptor::GenerateSphere(int size, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
 
-        return voxie::scripting::ScriptingContainerBase::getPath(object->genSphere(size));
+        return voxie::scripting::ScriptableObject::getPath(object->genSphere(size));
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(object);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 

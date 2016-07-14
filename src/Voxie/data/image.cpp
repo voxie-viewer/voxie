@@ -3,7 +3,7 @@
 using namespace voxie::data;
 using namespace voxie::scripting;
 
-Image::Image(quint64 width, quint64 height) : ScriptingContainer ("Image", nullptr, false, true), image_ (width, height, true) {
+Image::Image(quint64 width, quint64 height) : ScriptableObject ("Image", nullptr, false, true), image_ (width, height, true) {
 }
 Image::~Image() {
 }

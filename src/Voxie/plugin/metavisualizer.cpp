@@ -46,28 +46,28 @@ visualization::Visualizer *MetaVisualizer::create(const QVector<data::DataSet*> 
 
 QDBusObjectPath MetaVisualizerAdaptor::Create(const QVector<QDBusObjectPath>& dataSets, const QVector<QDBusObjectPath>& slices, const QMap<QString, QVariant>& options) {
     try {
-        voxie::scripting::ScriptingContainerBase::checkOptions(options);
+        voxie::scripting::ScriptableObject::checkOptions(options);
         QVector<data::DataSet*> dataSetObjects;
         QVector<data::Slice*> sliceObjects;
 
         for (const QDBusObjectPath& path : dataSets) {
-            data::DataSet* obj = qobject_cast<data::DataSet*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(path));
+            data::DataSet* obj = qobject_cast<data::DataSet*> (voxie::scripting::ScriptableObject::lookupWeakObject(path));
             if (!obj)
                 throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find DataSet object");
             dataSetObjects.push_back (obj);
         }
         for (const QDBusObjectPath& path : slices) {
-            data::Slice* obj = qobject_cast<data::Slice*> (voxie::scripting::ScriptingContainerBase::lookupWeakQObject(path));
+            data::Slice* obj = qobject_cast<data::Slice*> (voxie::scripting::ScriptableObject::lookupWeakObject(path));
             if (!obj)
                 throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.ObjectNotFound", "Cannot find Slice object");
             sliceObjects.push_back (obj);
         }
 
         visualization::Visualizer* visualizer = object->create(dataSetObjects, sliceObjects);
-        return voxie::scripting::ScriptingContainerBase::getPath(visualizer);
+        return voxie::scripting::ScriptableObject::getPath(visualizer);
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(object);
-        return voxie::scripting::ScriptingContainerBase::getPath(nullptr);
+        return voxie::scripting::ScriptableObject::getPath(nullptr);
     }
 }
 

@@ -4,7 +4,7 @@ using namespace voxie::visualization;
 using namespace voxie::visualization::internal;
 
 Visualizer::Visualizer(QObject *parent) :
-    ScriptingContainer("Visualizer", parent),
+    ScriptableObject("Visualizer", parent),
     sections()
 {
 
@@ -43,12 +43,12 @@ SliceDataVisualizer::~SliceDataVisualizer()
 
 QDBusObjectPath VolumeDataVisualizerAdaptor::dataSet()
 {
-  return voxie::scripting::ScriptingContainerBase::getPath(object->dataSet());
+  return voxie::scripting::ScriptableObject::getPath(object->dataSet());
 }
 
 QDBusObjectPath SliceDataVisualizerAdaptor::slice()
 {
-  return voxie::scripting::ScriptingContainerBase::getPath(object->slice());
+  return voxie::scripting::ScriptableObject::getPath(object->slice());
 }
 
 // Local Variables:

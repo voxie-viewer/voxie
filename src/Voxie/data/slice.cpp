@@ -14,7 +14,7 @@ using namespace voxie::data;
 using namespace voxie::data::internal;
 int sliceCount = 0;
 
-Slice::Slice(DataSet* parent) : voxie::scripting::ScriptingContainer("Slice", parent), dataset(parent)
+Slice::Slice(DataSet* parent) : voxie::scripting::ScriptableObject("Slice", parent), dataset(parent)
 {
     new SliceAdaptor (this);
 
@@ -214,7 +214,7 @@ Slice::saveSliceImage(QString file, QSize imageSize, QRectF sliceArea, bool inte
 
 QDBusObjectPath/* voxie::data::DataSet* */ SliceAdaptor::dataSet()
 {
-  return voxie::scripting::ScriptingContainerBase::getPath(object->getDataset());
+  return voxie::scripting::ScriptableObject::getPath(object->getDataset());
 }
 
 voxie::scripting::Plane SliceAdaptor::plane() {
