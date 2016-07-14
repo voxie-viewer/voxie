@@ -75,7 +75,7 @@ Root::Root(QObject *parent) :
             QTextStream(stderr) << "[" << now.toString(Qt::ISODate) << "] " << msg << endl << flush;
         });
 
-	this->coreWindow = new CoreWindow();
+	this->coreWindow = new CoreWindow(this);
 
 	this->pluginContainer = new QObject(this);
 	this->pluginContainer->setObjectName("plugins");
@@ -381,10 +381,14 @@ void Root::loadPlugins(QString pluginDirectory)
 
           VoxiePlugin *plugin = new VoxiePlugin(loader->instance(), this->pluginContainer);
 
-          for(Loader *loader : plugin->loaders())
+          for(Loader *loader : plugin->loaders()) {
               connect(loader, &Loader::dataLoaded, this, &Root::registerDataSet);
-          for(Importer *importer : plugin->importers())
+              connect(loader, &Loader::dataLoaded, this, &Root::registerDataObject);
+          }
+          for(Importer *importer : plugin->importers()) {
               connect(importer, &Importer::dataLoaded, this, &Root::registerDataSet);
+              connect(importer, &Importer::dataLoaded, this, &Root::registerDataObject);
+          }
 
           for (auto loader : plugin->loaders())
               pluginLoaders.push_back(loader);
@@ -575,6 +579,15 @@ void Root::registerDataSet(DataSet *dataSet)
 void Root::registerSlice(Slice *slice)
 {
 	this->mainWindow()->openSlice(slice);
+}
+
+void Root::registerDataObject(voxie::data::DataObject* obj) {
+    connect(obj, &QObject::destroyed, this, [this, obj] () {
+            dataObjects_.removeOne(obj);
+            emit dataObjectRemoved(obj);
+        });
+    dataObjects_ << obj;
+    emit dataObjectAdded(obj);
 }
 
 QVector<DataSet*> Root::dataSets() const
@@ -857,8 +870,9 @@ QDBusObjectPath VoxieInstance::CreateDataSet (const QString& name, const QDBusOb
             throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.InvalidObjectType", "Object " + data.path() + " is not a voxel data object");
 
         auto dataSet = new DataSet(voxelData);
-        dataSet->setObjectName(name);
+        dataSet->setDisplayName(name);
         root->registerDataSet(dataSet);
+        root->registerDataObject(dataSet);
         return voxie::scripting::ScriptableObject::getPath(dataSet);
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(this);

@@ -2,12 +2,11 @@
 
 #include <Voxie/voxiecore_global.hpp>
 
+#include <Voxie/data/dataobject.hpp>
 #include <Voxie/data/dataset.hpp>
 #include <Voxie/data/interpolationmethod.hpp>
 #include <Voxie/data/plane.hpp>
 #include <Voxie/data/sliceimage.hpp>
-
-#include <Voxie/scripting/scriptingcontainer.hpp>
 
 #include <QtCore/QObject>
 #include <QtCore/QRectF>
@@ -23,8 +22,7 @@ namespace data {
  * The plane is placed inside the DataSet's coordinatesystem.
  * It is used to extract SliceImages from the voxel dataset.
  */
-class VOXIECORESHARED_EXPORT Slice : public voxie::scripting::ScriptableObject
-{
+class VOXIECORESHARED_EXPORT Slice : public DataObject {
     Q_OBJECT
 public:
     explicit Slice(DataSet* parent);

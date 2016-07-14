@@ -16,7 +16,7 @@ using namespace voxie::data;
 using namespace voxie::data::internal;
 
 DataSet::DataSet(const QSharedPointer<VoxelData>& data, QObject *parent) :
-    voxie::scripting::ScriptableObject("DataSet", parent) {
+    DataObject("DataSet", parent) {
     new DataSetAdaptor(this);
 
     originalDataSet = data;
@@ -51,18 +51,10 @@ Slice* DataSet::createSlice()
 {
 	auto slice = new Slice(this);
 	voxie::voxieRoot().registerSlice(slice);
+    addChildObject(slice);
+	voxie::voxieRoot().registerDataObject(slice);
     emit sliceCreated(slice);
     return slice;
-}
-
-QString DataSet::createSlice(QString sliceName)
-{
-    auto slice = new Slice(this);
-    if(!sliceName.isEmpty())
-        slice->setObjectName(sliceName);
-    voxie::voxieRoot().registerSlice(slice);
-    emit sliceCreated(slice);
-    return slice->objectName();
 }
 
 QVector3D DataSet::origin() const {
@@ -106,7 +98,7 @@ QDBusObjectPath DataSetAdaptor::filteredData () {
 }
 
 QString DataSetAdaptor::displayName () {
-    return object->objectName();
+    return object->displayName();
 }
 
 QDBusObjectPath DataSetAdaptor::CreateSlice(const QMap<QString, QVariant>& options) {

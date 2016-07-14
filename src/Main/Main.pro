@@ -34,6 +34,7 @@ HEADERS += \
     gui/pluginmanagerwindow.hpp \
     gui/datasetview.hpp \
     gui/scriptlineedit.hpp \
+    gui/objecttree.hpp \
     gui/preferenceswindow.hpp \
     gui/preferences/scriptpreferences.hpp \
     gui/aboutdialogwindow.hpp \
@@ -55,6 +56,7 @@ SOURCES += \
     gui/sliceview.cpp \
     gui/planeview.cpp \
     gui/dataselectiondialog.cpp \
+    gui/objecttree.cpp \
     gui/preferenceswindow.cpp \
     gui/preferences/scriptpreferences.cpp \
     gui/scriptlineedit.cpp \

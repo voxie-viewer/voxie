@@ -23,6 +23,8 @@ using namespace voxie::data;
 using namespace voxie::opencl;
 
 XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) : VolumeDataVisualizer (parent), dataSet_ (dataSet) {
+    this->setDisplayName(dataSet->displayName() + " - XRay");
+
     view = new XRayView(this);
 
     connect(this->dataSet_, &QObject::destroyed, this, [this]() -> void {
@@ -47,8 +49,7 @@ XRayView::XRayView(XRayVisualizer* visualizer) :
     // TODO: handle case when a filter gets added later and the filtered dataset
     // cannot be uploaded to the GPU?
 
-    this->setObjectName(dataSet()->objectName() + "_xray");
-    this->setWindowTitle(dataSet()->objectName() + " - XRay");
+    this->setWindowTitle(dataSet()->displayName() + " - XRay");
     this->kernel = CLInstance::getDefaultInstance()->getKernel("voxie3d::x-ray-3d", "render");
 
     sidePanel = new QWidget();

@@ -2,9 +2,8 @@
 
 #include <Voxie/voxiecore_global.hpp>
 
+#include <Voxie/data/dataobject.hpp>
 #include <Voxie/data/slice.hpp>
-
-#include <Voxie/scripting/scriptingcontainer.hpp>
 
 #include <QtCore/QVector>
 
@@ -25,7 +24,7 @@ namespace visualization
 /**
  * @brief A visualizer that can show any kind of voxel data.
  */
-class VOXIECORESHARED_EXPORT Visualizer : public voxie::scripting::ScriptableObject {
+class VOXIECORESHARED_EXPORT Visualizer : public voxie::data::DataObject {
     Q_OBJECT
 private:
     QVector<QWidget*> sections;

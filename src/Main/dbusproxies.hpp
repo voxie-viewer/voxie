@@ -65,6 +65,29 @@ Q_SIGNALS: // SIGNALS
 };
 
 /*
+ * Proxy class for interface de.uni_stuttgart.Voxie.DataObject
+ */
+class DeUni_stuttgartVoxieDataObjectInterface: public QDBusAbstractInterface
+{
+    Q_OBJECT
+public:
+    static inline const char *staticInterfaceName()
+    { return "de.uni_stuttgart.Voxie.DataObject"; }
+
+public:
+    DeUni_stuttgartVoxieDataObjectInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
+
+    ~DeUni_stuttgartVoxieDataObjectInterface();
+
+    Q_PROPERTY(QString DisplayName READ displayName)
+    inline QString displayName() const
+    { return qvariant_cast< QString >(property("DisplayName")); }
+
+public Q_SLOTS: // METHODS
+Q_SIGNALS: // SIGNALS
+};
+
+/*
  * Proxy class for interface de.uni_stuttgart.Voxie.DataSet
  */
 class DeUni_stuttgartVoxieDataSetInterface: public QDBusAbstractInterface
@@ -691,6 +714,7 @@ namespace de {
   namespace uni_stuttgart {
     namespace Voxie {
       typedef ::DeUni_stuttgartVoxieClientInterface Client;
+      typedef ::DeUni_stuttgartVoxieDataObjectInterface DataObject;
       typedef ::DeUni_stuttgartVoxieDataSetInterface DataSet;
       typedef ::DeUni_stuttgartVoxieExternalOperationInterface ExternalOperation;
       typedef ::DeUni_stuttgartVoxieExternalOperationLoadInterface ExternalOperationLoad;

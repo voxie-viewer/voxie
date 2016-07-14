@@ -30,12 +30,12 @@ IsosurfaceVisualizer::IsosurfaceVisualizer(DataSet *data, QWidget *parent) :
 {
     bool autoRegenerate = false;
 
-	this->setObjectName(data->objectName() + "_isosurface");
+    this->setDisplayName(data->displayName() + " - Isosurface");
 
     {
         this->view = new IsosurfaceView(data);
         this->view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        this->view->setWindowTitle(data->objectName() + " - Isosurface");
+        this->view->setWindowTitle(data->displayName() + " - Isosurface");
         this->view->setMinimumSize(400, 300);
     }
 

@@ -14,13 +14,13 @@ using namespace voxie::data;
 using namespace voxie::data::internal;
 int sliceCount = 0;
 
-Slice::Slice(DataSet* parent) : voxie::scripting::ScriptableObject("Slice", parent), dataset(parent)
+Slice::Slice(DataSet* parent) : DataObject("Slice", parent), dataset(parent)
 {
     new SliceAdaptor (this);
 
     Q_ASSERT(parent != nullptr); this->setParent(parent);
 
-    this->setObjectName(QString("Slice") + QString::number(sliceCount));
+    this->setDisplayName(QString("Slice") + QString::number(sliceCount));
     sliceCount++;
 
     this->cuttingPlane.origin = parent->volumeCenter();
@@ -229,7 +229,7 @@ void SliceAdaptor::setPlane(const voxie::scripting::Plane& plane) {
 }
 
 QString SliceAdaptor::displayName () {
-    return object->objectName();
+    return object->displayName();
 }
 
 // Local Variables:

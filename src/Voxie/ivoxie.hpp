@@ -14,6 +14,7 @@ namespace data
 {
     class DataSet;
     class Slice;
+    class DataObject;
 }
 namespace plugin
 {
@@ -48,6 +49,8 @@ public:
     virtual void registerDataSet(voxie::data::DataSet *dataSet) = 0;
 
     virtual void registerSlice(voxie::data::Slice *slice) = 0;
+
+    virtual void registerDataObject(voxie::data::DataObject *obj) = 0;
 
 
     /**

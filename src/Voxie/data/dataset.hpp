@@ -2,7 +2,7 @@
 
 #include <Voxie/voxiecore_global.hpp>
 
-#include <Voxie/scripting/scriptingcontainer.hpp>
+#include <Voxie/data/dataobject.hpp>
 
 #include <functional>
 
@@ -28,7 +28,7 @@ namespace voxie { namespace data {
 class VoxelData;
 class Slice;
 
-class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptableObject, public QDBusContext
+class VOXIECORESHARED_EXPORT DataSet : public DataObject, public QDBusContext
 {
     Q_OBJECT
 
@@ -71,12 +71,6 @@ class VOXIECORESHARED_EXPORT DataSet : public voxie::scripting::ScriptableObject
          */
         Slice* createSlice();
 
-        /**
-         * @brief creates a new slice and registers it with voxie::root
-         * @param sliceName wanted name of the slice.
-         * @return Name of the slice child object
-         */
-        Q_INVOKABLE QString createSlice(QString sliceName);
     public:
         // throws ScriptingException
         static DataSet* getTestDataSet();

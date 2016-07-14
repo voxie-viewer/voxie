@@ -34,12 +34,21 @@ visualization::Visualizer *MetaVisualizer::create(const QVector<data::DataSet*> 
     if (!visualizer)
         throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Error creating visualizer");
 
+    if (visualizer->displayName() == "")
+        visualizer->setDisplayName(visualizer->metaObject()->className());
+
     for(DataSet *dataSet : dataSets)
         connect(dataSet, &QObject::destroyed, visualizer, &QObject::deleteLater);
     for(Slice *slice : slices)
         connect(slice, &QObject::destroyed, visualizer, &QObject::deleteLater);
 
     voxieRoot().registerVisualizer(visualizer);
+
+    for (auto parent : dataSets)
+        parent->addChildObject(visualizer);
+    for (auto parent : slices)
+        parent->addChildObject(visualizer);
+	voxie::voxieRoot().registerDataObject(visualizer);
 
     return visualizer;
 }

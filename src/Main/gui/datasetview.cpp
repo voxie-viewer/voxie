@@ -99,11 +99,7 @@ DataSetView::DataSetView(voxie::data::DataSet *dataSet, QWidget *parent) :
         connect(this->dataSet->originalData().data(), &VoxelData::changed, this, &DataSetView::applyFilters);
 	}
 	this->setLayout(splitLayout);
-    if (this->dataSet->getFileInfo().fileName().compare("") == 0) {
-        this->setWindowTitle(this->dataSet->objectName());
-    } else {
-        this->setWindowTitle(this->dataSet->getFileInfo().fileName());
-    }
+    this->setWindowTitle(this->dataSet->displayName());
 
 	QMetaObject::Connection conni = connect(this->dataSet, &QObject::destroyed, [this]() -> void
 	{

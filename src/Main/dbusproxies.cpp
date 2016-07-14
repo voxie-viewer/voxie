@@ -25,6 +25,19 @@ DeUni_stuttgartVoxieClientInterface::~DeUni_stuttgartVoxieClientInterface()
 }
 
 /*
+ * Implementation of interface class DeUni_stuttgartVoxieDataObjectInterface
+ */
+
+DeUni_stuttgartVoxieDataObjectInterface::DeUni_stuttgartVoxieDataObjectInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection, parent)
+{
+}
+
+DeUni_stuttgartVoxieDataObjectInterface::~DeUni_stuttgartVoxieDataObjectInterface()
+{
+}
+
+/*
  * Implementation of interface class DeUni_stuttgartVoxieDataSetInterface
  */
 

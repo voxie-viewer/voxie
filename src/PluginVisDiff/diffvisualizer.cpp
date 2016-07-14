@@ -45,7 +45,8 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
 
     this->view = new QWidget();
 
-    this->view->setWindowTitle("DiffViewVisualizer - " + slices.at(0)->objectName() + " | " + slices.at(1)->objectName());
+    this->view->setWindowTitle("DiffViewVisualizer - " + slices.at(0)->displayName() + " | " + slices.at(1)->displayName());
+    this->setDisplayName("DiffViewVisualizer - " + slices.at(0)->displayName() + " | " + slices.at(1)->displayName());
 
     this->view->setMinimumSize(300,200);
 
@@ -85,7 +86,7 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
     _filterChain2DWidget = new FilterChain2DWidget(view);
     QString name = _filterChain2DWidget->windowTitle();
     name.append(" - ");
-    name.append(this->slices().at(0)->objectName() + " | " + this->slices().at(1)->objectName());
+    name.append(this->slices().at(0)->displayName() + " | " + this->slices().at(1)->displayName());
     _filterChain2DWidget->setWindowTitle(name);
 
     this->dynamicSections().append(this->_filterChain2DWidget);
@@ -106,7 +107,7 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
     this->_colorizerWidget = new DiffImageColorizerWidget(view);
     name = this->_colorizerWidget->windowTitle();
     name.append(" - ");
-    name.append(this->slices().at(0)->objectName() + " | " + this->slices().at(1)->objectName());
+    name.append(this->slices().at(0)->displayName() + " | " + this->slices().at(1)->displayName());
     _colorizerWidget->setWindowTitle(name);
     this->dynamicSections().append(_colorizerWidget);
 
@@ -121,7 +122,7 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
     _histogramWidget = new HistogramWidget(view);
     name = this->_histogramWidget->windowTitle();
     name.append(" - ");
-    name.append(this->slices().at(0)->objectName() + " | " + this->slices().at(1)->objectName());
+    name.append(this->slices().at(0)->displayName() + " | " + this->slices().at(1)->displayName());
     this->_histogramWidget->setWindowTitle(name);
     this->dynamicSections().append(this->_histogramWidget);
 

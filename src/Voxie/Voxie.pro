@@ -16,6 +16,7 @@ DEFINES += VOXIECORE_LIBRARY
 
 SOURCES += \
     data/colorizer.cpp \
+    data/dataobject.cpp \
     data/dataset.cpp \
     data/floatbuffer.cpp \
     data/floatimage.cpp \
@@ -71,6 +72,7 @@ SOURCES += \
 
 HEADERS += \
     data/colorizer.hpp \
+    data/dataobject.hpp \
     data/dataset.hpp \
     data/floatbuffer.hpp \
     data/floatimage.hpp \

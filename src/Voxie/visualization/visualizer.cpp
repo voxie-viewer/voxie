@@ -4,7 +4,7 @@ using namespace voxie::visualization;
 using namespace voxie::visualization::internal;
 
 Visualizer::Visualizer(QObject *parent) :
-    ScriptableObject("Visualizer", parent),
+    voxie::data::DataObject("Visualizer", parent),
     sections()
 {
 

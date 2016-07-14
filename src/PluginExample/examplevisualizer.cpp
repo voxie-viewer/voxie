@@ -9,6 +9,7 @@
 using namespace voxie::visualization;
 
 ExampleVisualizer::ExampleVisualizer() {
+    this->setDisplayName("Sweet Curves");
     view = new ExampleView();
     this->dynamicSections().append(view->form);
 }

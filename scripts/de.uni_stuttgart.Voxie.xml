@@ -14,6 +14,9 @@
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMap_QDBusObjectPath_quint64" />
     </method>
   </interface>
+  <interface name="de.uni_stuttgart.Voxie.DataObject">
+    <property access="read" name="DisplayName" type="s" />
+  </interface>
   <interface name="de.uni_stuttgart.Voxie.DataSet">
     <property access="read" name="OriginalData" type="o" />
     <property access="read" name="FilteredData" type="o" />

@@ -110,7 +110,7 @@ private:
     /**
      * @brief Initializes the central widget.
      */
-    void initWidgets();
+    void initWidgets(Root* root);
 
     /**
      * @brief Shows the file dialog
@@ -140,8 +140,10 @@ private:
      */
     void populateScriptsMenu();
 
+    void addDataObject(voxie::data::DataObject* obj);
+
 public:
-    explicit CoreWindow(QWidget *parent = 0);
+    explicit CoreWindow(Root* root, QWidget *parent = 0);
     ~CoreWindow();
 
     QProcess* startScript(const QString& scriptFile, const QString* executable = nullptr, const QStringList& arguments = QStringList());

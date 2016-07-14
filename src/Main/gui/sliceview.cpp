@@ -33,11 +33,11 @@ SliceView::SliceView(Slice *slice, QWidget *parent) :
     slice(slice)
 {
     connect(this->slice, &Slice::planeChanged, this, &SliceView::sliceChanged);
-    connect(slice, &QObject::objectNameChanged, this, [=]()
-        {this->setWindowTitle(this->slice->getDataset()->objectName() + " - " + this->slice->objectName());});
-    connect(slice->getDataset(), &QObject::objectNameChanged, this, [=]()
-        {this->setWindowTitle(this->slice->getDataset()->objectName() + " - " + this->slice->objectName());});
-    this->setWindowTitle(this->slice->getDataset()->objectName() + " - " + this->slice->objectName());
+    connect(slice, &DataObject::displayNameChanged, this, [=]()
+        {this->setWindowTitle(this->slice->getDataset()->displayName() + " - " + this->slice->displayName());});
+    connect(slice->getDataset(), &DataObject::displayNameChanged, this, [=]()
+        {this->setWindowTitle(this->slice->getDataset()->displayName() + " - " + this->slice->displayName());});
+    this->setWindowTitle(this->slice->getDataset()->displayName() + " - " + this->slice->displayName());
 
     QMetaObject::Connection conni = connect(this->slice, &QObject::destroyed, [this]() -> void
     {

@@ -65,6 +65,8 @@ private:
 
     QList<io::Loader*> pluginLoaders;
 
+    QList<voxie::data::DataObject*> dataObjects_;
+
     explicit Root(QObject *parent = 0);
 
     ~Root();
@@ -131,6 +133,8 @@ public:
      */
     void registerSlice(voxie::data::Slice *slice);
 
+    void registerDataObject(voxie::data::DataObject* obj) override;
+
     /**
      * @brief Gets the global script engine.
      * @return
@@ -163,6 +167,8 @@ public:
     ActiveVisualizerProvider* activeVisualizerProvider() const override { return &mainWindow()->activeVisualizerProvider; }
 
     QSharedPointer<QList<QSharedPointer<io::Loader>>> getLoaders();
+
+    const QList<voxie::data::DataObject*>& dataObjects() const { return dataObjects_; }
 
 public:
     /**
@@ -198,6 +204,9 @@ public:
 
 signals:
     void logEmitted(const QString &text);
+
+    void dataObjectAdded(voxie::data::DataObject* obj);
+    void dataObjectRemoved(voxie::data::DataObject* obj);
 };
 
 class VoxieInstance : public scripting::ScriptableObject, public QDBusContext {

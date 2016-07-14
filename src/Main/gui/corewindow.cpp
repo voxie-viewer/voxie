@@ -8,6 +8,7 @@
 #include <Main/gui/buttonlabel.hpp>
 #include <Main/gui/dataselectiondialog.hpp>
 #include <Main/gui/datasetview.hpp>
+#include <Main/gui/objecttree.hpp>
 #include <Main/gui/pluginmanagerwindow.hpp>
 #include <Main/gui/preferenceswindow.hpp>
 #include <Main/gui/scriptconsole.hpp>
@@ -102,7 +103,7 @@ qulonglong GuiDBusObject::GetMainWindowID() {
     return window->winId();
 }
 
-CoreWindow::CoreWindow(QWidget *parent) :
+CoreWindow::CoreWindow(voxie::Root* root, QWidget *parent) :
     QMainWindow(parent),
     visualizers(),
     activeVisualizer(nullptr),
@@ -113,7 +114,9 @@ CoreWindow::CoreWindow(QWidget *parent) :
     this->guiDBusObject = new GuiDBusObject (this);
     this->initMenu();
     this->initStatusBar();
-    this->initWidgets();
+    this->initWidgets(root);
+
+    connect(root, &Root::dataObjectAdded, this, &CoreWindow::addDataObject);
 }
 CoreWindow::~CoreWindow() {
     isBeginDestroyed = true;
@@ -238,10 +241,7 @@ void CoreWindow::addVisualizer(Visualizer *visualizer)
 
     QVector<QWidget*> sections = visualizer->dynamicSections();
     for(QWidget *section : sections)
-    {
-        QWidget *dock = this->addSection(section, false);
-        connect(container, &QObject::destroyed, dock, &QObject::deleteLater);
-    }
+        visualizer->addPropertySection(section);
     visualizer->mainView()->setFocus();
 
     this->activeVisualizer = visualizer;
@@ -499,7 +499,7 @@ void CoreWindow::initStatusBar()
     this->setStatusBar(statusBar);
 }
 
-void CoreWindow::initWidgets()
+void CoreWindow::initWidgets(voxie::Root* root)
 {
     QWidget *container = new QWidget();
     {
@@ -522,6 +522,7 @@ void CoreWindow::initWidgets()
                 {
                     this->sidePanel = new QVBoxLayout();
                     this->sidePanel->setMargin(3);
+                    this->sidePanel->addWidget(new ObjectTree(root));
                     box->addLayout(this->sidePanel);
                     box->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
                 }
@@ -546,12 +547,12 @@ void CoreWindow::errorMessage(QString msg)
 
 void CoreWindow::openDataSet(DataSet *dataSet)
 {
-    this->addSection(new DataSetView(dataSet), true);
+    dataSet->addPropertySection(new DataSetView(dataSet));
 }
 
 void CoreWindow::openSlice(voxie::data::Slice *slice)
 {
-    this->addSection(new SliceView(slice), true);
+    slice->addPropertySection(new SliceView(slice));
 }
 
 void CoreWindow::populateScriptsMenu()
@@ -753,6 +754,21 @@ QProcess* CoreWindow::startScript(const QString& scriptFile, const QString* exec
     Root::instance()->log(QString("Started execution of %1 with ID %2").arg(scriptFile).arg(id));
 
     return process;
+}
+
+void CoreWindow::addDataObject(voxie::data::DataObject* obj) {
+    auto hasDataSection = createQSharedPointer<bool>(false);
+
+    connect(obj, &DataObject::propertySectionAdded, this, [this, hasDataSection, obj] (QWidget* section) {
+            connect(section, &QObject::destroyed, obj, &QObject::deleteLater);
+            addSection(section, !*hasDataSection);
+            *hasDataSection = true;
+        });
+    for (auto section : obj->propertySections()) {
+        connect(section, &QObject::destroyed, obj, &QObject::deleteLater);
+        addSection(section, !*hasDataSection);
+        *hasDataSection = true;
+    }
 }
 
 void CoreWindow::loadFile() {

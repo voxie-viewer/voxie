@@ -93,7 +93,7 @@ DataSelectionDialog::DataSelectionDialog(
 	for(DataSet *dataSet : ::voxie::Root::instance()->dataSets())
 	{
 		QTreeWidgetItem *item = new QTreeWidgetItem(this->treeView);
-		item->setText(0, dataSet->objectName());
+		item->setText(0, dataSet->displayName());
 		item->setData(0, Qt::UserRole, QVariant::fromValue(dataSet));
 
 		// Include slices only when necessary
@@ -103,7 +103,7 @@ DataSelectionDialog::DataSelectionDialog(
 			{
 
 				QTreeWidgetItem *sliceItem = new QTreeWidgetItem(item);
-				sliceItem->setText(0, slice->objectName());
+				sliceItem->setText(0, slice->displayName());
 				sliceItem->setData(0, Qt::UserRole, QVariant::fromValue(slice));
 			}
 		}
