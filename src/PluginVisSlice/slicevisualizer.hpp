@@ -36,6 +36,8 @@ class SliceVisualizer : public voxie::visualization::SliceDataVisualizer
 private: // magic numbers
 	int RESIZE_TIMER_TIMEOUT = 100;
 private:
+    QWidget* view;
+
 	//sidebar widgets
 	ImagePaintWidget* _imageDisplayingWidget;
 	voxie::visualization::FilterChain2DWidget *_filterChain2DWidget;
@@ -94,6 +96,10 @@ private:
 public:
 	explicit SliceVisualizer(QVector<voxie::data::Slice*> slices, QWidget *parent = 0);
 	//~SliceVisualizer();
+
+    QWidget* mainView() override {
+        return view;
+    }
 
 	/**
 	 * Notifies the widget that draws the canvas that it needs to redraw the draw stack.

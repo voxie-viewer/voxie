@@ -40,27 +40,29 @@ SliceVisualizer::SliceVisualizer(QVector<Slice*> slices, QWidget *parent) :
 
     resetPlaneArea();
 
-	this->setWindowTitle("SliceVisualizer - " + this->slice()->objectName());
+    this->view = new QWidget();
 
-	this->setMinimumSize(300,200);
+	this->view->setWindowTitle("SliceVisualizer - " + this->slice()->objectName());
+
+	this->view->setMinimumSize(300,200);
 
 	this->_imageDisplayingWidget = new ImagePaintWidget(this); // has dependencies in tools
-    this->setFocusProxy(this->_imageDisplayingWidget); // <- receives all keyboard events
+    this->view->setFocusProxy(this->_imageDisplayingWidget); // <- receives all keyboard events
 	QSizePolicy pol(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	pol.setHorizontalStretch(0);
 	pol.setVerticalStretch(0);
 	this->_imageDisplayingWidget->setSizePolicy(pol);
 
-	this->_tools.append(new SliceAdjustmentTool(this,this));
-	this->_tools.append(new ToolZoom(this, this));
-	this->_tools.append(new ValueViewerTool(this, this));
-	this->_tools.append(this->selectionTool = new ToolSelection(this,this));
-	this->_tools.append(new ToolExport(this, this));
+	this->_tools.append(new SliceAdjustmentTool(view,this));
+	this->_tools.append(new ToolZoom(view, this));
+	this->_tools.append(new ValueViewerTool(view, this));
+	this->_tools.append(this->selectionTool = new ToolSelection(view,this));
+	this->_tools.append(new ToolExport(view, this));
 
 	if(_tools.size() <= 0) {
 		qDebug() << "NO TOOL FOUND IN SLICEVISUALIZER, WE DIE NOW";
 	} else {
-		toolBar = new QWidget(this);
+		toolBar = new QWidget(view);
 		QHBoxLayout* l = new QHBoxLayout();
 		toolBar->setLayout(l);
 		l->setAlignment(Qt::AlignLeft);
@@ -76,7 +78,7 @@ SliceVisualizer::SliceVisualizer(QVector<Slice*> slices, QWidget *parent) :
 	}
 
 	//*********FilterChain2D***********
-	_filterChain2DWidget = new FilterChain2DWidget(this);
+	_filterChain2DWidget = new FilterChain2DWidget(view);
 	QString name = _filterChain2DWidget->windowTitle();
 	name.append(" - ");
     name.append(this->slice()->objectName());
@@ -96,7 +98,7 @@ SliceVisualizer::SliceVisualizer(QVector<Slice*> slices, QWidget *parent) :
 	connect(this->_slice, &Slice::planeChanged, this->_filterChain2DWidget->getFilterChain(), &FilterChain2D::onPlaneChanged, Qt::DirectConnection);
 
 	//*** COLORIZER ****
-	this->_colorizerWidget = new SliceImageColorizerWidget(this);
+	this->_colorizerWidget = new SliceImageColorizerWidget(view);
 	name = this->_colorizerWidget->windowTitle();
 	name.append(" - ");
 	name.append(this->slice()->objectName());
@@ -112,7 +114,7 @@ SliceVisualizer::SliceVisualizer(QVector<Slice*> slices, QWidget *parent) :
 
 
 	//**** HISTOGRAMWIDGET ***
-	_histogramWidget = new HistogramWidget(this);
+	_histogramWidget = new HistogramWidget(view);
 	name = this->_histogramWidget->windowTitle();
 	name.append(" - ");
     name.append(this->slice()->objectName());
@@ -126,9 +128,9 @@ SliceVisualizer::SliceVisualizer(QVector<Slice*> slices, QWidget *parent) :
 
 	//*****   ****
 
-	hobox = new QVBoxLayout(this);
+	hobox = new QVBoxLayout(view);
 	hobox->setSpacing(0);
-	this->setLayout(hobox);
+	this->view->setLayout(hobox);
 
 	hobox->addWidget(_imageDisplayingWidget);
 	hobox->addWidget(toolBar);
@@ -155,7 +157,7 @@ SliceVisualizer::SliceVisualizer(QVector<Slice*> slices, QWidget *parent) :
 		this->switchToolTo(this->currentTool());
 	}
 
-	this->show();
+	this->view->show();
 
 	_imageDisplayingWidget->setFocus();
 	_imageDisplayingWidget->show();

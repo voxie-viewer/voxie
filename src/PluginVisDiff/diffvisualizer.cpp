@@ -43,28 +43,30 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
     qRegisterMetaType<QVector<voxie::data::SliceImage>>();
     qRegisterMetaType<DiffSliceImage>();
 
-    this->setWindowTitle("DiffViewVisualizer - " + slices.at(0)->objectName() + " | " + slices.at(1)->objectName());
+    this->view = new QWidget();
 
-    this->setMinimumSize(300,200);
+    this->view->setWindowTitle("DiffViewVisualizer - " + slices.at(0)->objectName() + " | " + slices.at(1)->objectName());
+
+    this->view->setMinimumSize(300,200);
 
     this->_imageDisplayingWidget = new ImagePaintWidget(this); // has dependencies in tools
-    this->setFocusProxy(this->_imageDisplayingWidget); // <- receives all keyboard events
+    this->view->setFocusProxy(this->_imageDisplayingWidget); // <- receives all keyboard events
     QSizePolicy pol(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     pol.setHorizontalStretch(0);
     pol.setVerticalStretch(0);
     this->_imageDisplayingWidget->setSizePolicy(pol);
 
-    this->_tools.append(new SliceAdjustmentTool(this,this));
-    this->_tools.append(new ToolZoom(this, this));
-    this->_tools.append(new ValueViewerTool(this, this));
-    this->_tools.append(this->selectionTool = new ToolSelection(this,this));
-    this->_tools.append(new ToolExport(this, this));
+    this->_tools.append(new SliceAdjustmentTool(view,this));
+    this->_tools.append(new ToolZoom(view, this));
+    this->_tools.append(new ValueViewerTool(view, this));
+    this->_tools.append(this->selectionTool = new ToolSelection(view,this));
+    this->_tools.append(new ToolExport(view, this));
 
 
     if(_tools.size() <= 0) {
         qDebug() << "Wrong toolbox!";
     } else {
-        toolBar = new QWidget(this);
+        toolBar = new QWidget(view);
         QHBoxLayout* l = new QHBoxLayout();
         toolBar->setLayout(l);
         l->setAlignment(Qt::AlignLeft);
@@ -80,7 +82,7 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
     }
 
     //*********FilterChain2D***********
-    _filterChain2DWidget = new FilterChain2DWidget(this);
+    _filterChain2DWidget = new FilterChain2DWidget(view);
     QString name = _filterChain2DWidget->windowTitle();
     name.append(" - ");
     name.append(this->slices().at(0)->objectName() + " | " + this->slices().at(1)->objectName());
@@ -101,7 +103,7 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
     connect(this->_slices.at(1), &Slice::planeChanged, this->_filterChain2DWidget->getFilterChain(), &FilterChain2D::onPlaneChanged, Qt::DirectConnection);
 
     //*** COLORIZER ****
-    this->_colorizerWidget = new DiffImageColorizerWidget(this);
+    this->_colorizerWidget = new DiffImageColorizerWidget(view);
     name = this->_colorizerWidget->windowTitle();
     name.append(" - ");
     name.append(this->slices().at(0)->objectName() + " | " + this->slices().at(1)->objectName());
@@ -116,7 +118,7 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
     });
 
     //**** HISTOGRAMWIDGET ***
-    _histogramWidget = new HistogramWidget(this);
+    _histogramWidget = new HistogramWidget(view);
     name = this->_histogramWidget->windowTitle();
     name.append(" - ");
     name.append(this->slices().at(0)->objectName() + " | " + this->slices().at(1)->objectName());
@@ -130,9 +132,9 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
 
 
     //*****   ****
-    hobox = new QVBoxLayout(this);
+    hobox = new QVBoxLayout(view);
     hobox->setSpacing(0);
-    this->setLayout(hobox);
+    this->view->setLayout(hobox);
 
     hobox->addWidget(_imageDisplayingWidget);
     hobox->addWidget(toolBar);
@@ -163,7 +165,7 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
         this->switchToolTo(this->currentTool());
     }
 
-    this->show();
+    this->view->show();
 
     _imageDisplayingWidget->setFocus();
     _imageDisplayingWidget->show();

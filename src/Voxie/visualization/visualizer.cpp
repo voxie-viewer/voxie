@@ -3,8 +3,8 @@
 using namespace voxie::visualization;
 using namespace voxie::visualization::internal;
 
-Visualizer::Visualizer(QWidget *parent) :
-    WidgetScriptingContainer("Visualizer", parent),
+Visualizer::Visualizer(QObject *parent) :
+    ScriptingContainer("Visualizer", parent),
     sections()
 {
 
@@ -21,7 +21,7 @@ QVector<QWidget*> &Visualizer::dynamicSections()
     return this->sections;
 }
 
-VolumeDataVisualizer::VolumeDataVisualizer(QWidget *parent)
+VolumeDataVisualizer::VolumeDataVisualizer(QObject *parent)
     : Visualizer(parent)
 {
     new VolumeDataVisualizerAdaptor (this);
@@ -31,7 +31,7 @@ VolumeDataVisualizer::~VolumeDataVisualizer()
 {
 }
 
-SliceDataVisualizer::SliceDataVisualizer(QWidget *parent)
+SliceDataVisualizer::SliceDataVisualizer(QObject *parent)
     : VolumeDataVisualizer(parent)
 {
     new SliceDataVisualizerAdaptor (this);

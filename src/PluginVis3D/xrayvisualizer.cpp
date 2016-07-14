@@ -22,9 +22,21 @@
 using namespace voxie::data;
 using namespace voxie::opencl;
 
-XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
-    VolumeDataVisualizer(parent),
-    dataSet_(dataSet),
+XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) : VolumeDataVisualizer (parent), dataSet_ (dataSet) {
+    view = new XRayView(this);
+
+    connect(this->dataSet_, &QObject::destroyed, this, [this]() -> void {
+        this->dataSet_ = nullptr;
+    });
+
+    this->dynamicSections().append(view->sidePanel);
+
+    auto sn = new voxie::spnav::SpaceNavVisualizer(this);
+    view->view3d->registerSpaceNavVisualizer(sn);
+}
+
+XRayView::XRayView(XRayVisualizer* visualizer) :
+    visualizer(visualizer),
     //view3d(new voxie::visualization::View3D(this, this->dataSet()->diagonalSize()))
     view3d(new voxie::visualization::View3D(this, true, 2))
 {
@@ -35,19 +47,11 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
     // TODO: handle case when a filter gets added later and the filtered dataset
     // cannot be uploaded to the GPU?
 
-    this->setObjectName(dataSet->objectName() + "_xray");
-    this->setWindowTitle(dataSet->objectName() + " - XRay");
-    QMetaObject::Connection conni = connect(this->dataSet_, &QObject::destroyed, [this]() -> void
-    {
-        this->dataSet_ = nullptr;
-    });
-    connect(this, &QObject::destroyed, [=]() -> void
-    {
-        this->disconnect(conni);
-    });
+    this->setObjectName(dataSet()->objectName() + "_xray");
+    this->setWindowTitle(dataSet()->objectName() + " - XRay");
     this->kernel = CLInstance::getDefaultInstance()->getKernel("voxie3d::x-ray-3d", "render");
 
-    QWidget *sidePanel = new QWidget();
+    sidePanel = new QWidget();
     {
         sidePanel->setWindowTitle("X-Ray Settings");
         QFormLayout *layout = new QFormLayout();
@@ -60,10 +64,10 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
                 qualities->addWidget(this->radioQ3 = new QRadioButton("256"));
                 this->radioQ1->setChecked(true);
 
-                connect(this->radioQ0, &QRadioButton::toggled, this, &XRayVisualizer::updateButton);
-                connect(this->radioQ1, &QRadioButton::toggled, this, &XRayVisualizer::updateButton);
-                connect(this->radioQ2, &QRadioButton::toggled, this, &XRayVisualizer::updateButton);
-                connect(this->radioQ3, &QRadioButton::toggled, this, &XRayVisualizer::updateButton);
+                connect(this->radioQ0, &QRadioButton::toggled, this, &XRayView::updateButton);
+                connect(this->radioQ1, &QRadioButton::toggled, this, &XRayView::updateButton);
+                connect(this->radioQ2, &QRadioButton::toggled, this, &XRayView::updateButton);
+                connect(this->radioQ3, &QRadioButton::toggled, this, &XRayView::updateButton);
             }
             layout->addRow(new QLabel("Render Quality"), qualities);
 
@@ -75,32 +79,29 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) :
             this->minSlider->setMaximum(1000);
             this->minSlider->setValue(0);
             this->minSlider->setOrientation(Qt::Horizontal);
-            connect(this->minSlider, &QSlider::valueChanged, this, &XRayVisualizer::updateSlider);
+            connect(this->minSlider, &QSlider::valueChanged, this, &XRayView::updateSlider);
 
             this->maxSlider->setMinimum(0);
             this->maxSlider->setMaximum(1000);
             this->maxSlider->setValue(1000);
             this->maxSlider->setOrientation(Qt::Horizontal);
-            connect(this->maxSlider, &QSlider::valueChanged, this, &XRayVisualizer::updateSlider);
+            connect(this->maxSlider, &QSlider::valueChanged, this, &XRayView::updateSlider);
 
             this->scaleSlider->setMinimum(0);
             this->scaleSlider->setMaximum(3000);
             this->scaleSlider->setValue(1000);
             this->scaleSlider->setOrientation(Qt::Horizontal);
-            connect(this->scaleSlider, &QSlider::valueChanged, this, &XRayVisualizer::updateSlider);
+            connect(this->scaleSlider, &QSlider::valueChanged, this, &XRayView::updateSlider);
         }
         sidePanel->setLayout(layout);
     }
-    this->dynamicSections().append(sidePanel);
+
     this->setMinimumSize(300,200);
 
     connect(view3d, &voxie::visualization::View3D::changed, this, [this] { this->update(); });
-
-    auto sn = new voxie::spnav::SpaceNavVisualizer(this);
-    view3d->registerSpaceNavVisualizer(sn);
 }
 
-void XRayVisualizer::paintEvent(QPaintEvent *event)
+void XRayView::paintEvent(QPaintEvent *event)
 {
     (void)event;
     QPainter painter(this);
@@ -203,7 +204,7 @@ void XRayVisualizer::paintEvent(QPaintEvent *event)
 }
 
 
-void XRayVisualizer::resizeEvent(QResizeEvent *event)
+void XRayView::resizeEvent(QResizeEvent *event)
 {
     if(event->size() == event->oldSize())
         return; // If this happens, something weird has happend
@@ -225,19 +226,19 @@ void XRayVisualizer::resizeEvent(QResizeEvent *event)
 
     this->update();
 }
-void XRayVisualizer::mousePressEvent(QMouseEvent *event)
+void XRayView::mousePressEvent(QMouseEvent *event)
 {
     view3d->mousePressEvent(mouseLast, event, size());
     this->mouseLast = event->pos();
 }
 
-void XRayVisualizer::mouseMoveEvent(QMouseEvent *event)
+void XRayView::mouseMoveEvent(QMouseEvent *event)
 {
     view3d->mouseMoveEvent(mouseLast, event, size());
     this->mouseLast = event->pos();
 }
 
-void XRayVisualizer::wheelEvent(QWheelEvent *event)
+void XRayView::wheelEvent(QWheelEvent *event)
 {
     view3d->wheelEvent(event, size());
 }

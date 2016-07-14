@@ -31,17 +31,13 @@ IsosurfaceVisualizer::IsosurfaceVisualizer(DataSet *data, QWidget *parent) :
     bool autoRegenerate = false;
 
 	this->setObjectName(data->objectName() + "_isosurface");
-	this->setWindowTitle(data->objectName() + " - Isosurface");
-	this->setMinimumSize(400, 300);
 
-    QVBoxLayout *layout = new QVBoxLayout();
-    layout->setMargin(0);
     {
         this->view = new IsosurfaceView(data);
         this->view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        layout->addWidget(this->view);
+        this->view->setWindowTitle(data->objectName() + " - Isosurface");
+        this->view->setMinimumSize(400, 300);
     }
-    this->setLayout(layout);
 
 
     QFormLayout *controlLayout;
@@ -140,10 +136,10 @@ IsosurfaceVisualizer::IsosurfaceVisualizer(DataSet *data, QWidget *parent) :
                 const char* str = "\n#f1s\n";
                 qint64 len = strlen(str);
                 if (file.write(str, len) != len) {
-                    QMessageBox(QMessageBox::Critical, "OSVR", QString("Error while writing to %1").arg(file.fileName()), QMessageBox::Ok, this).exec();
+                    QMessageBox(QMessageBox::Critical, "OSVR", QString("Error while writing to %1").arg(file.fileName()), QMessageBox::Ok, view).exec();
                 }
             } else {
-                QMessageBox(QMessageBox::Critical, "OSVR", QString("Failed to open %1").arg(file.fileName()), QMessageBox::Ok, this).exec();
+                QMessageBox(QMessageBox::Critical, "OSVR", QString("Failed to open %1").arg(file.fileName()), QMessageBox::Ok, view).exec();
             }
         });
 #endif
@@ -310,7 +306,7 @@ void IsosurfaceVisualizer::saveAs() {
 
         typedef std::function<void (const Surface* surface, const QString& filename)> funType;
 
-        voxie::io::SaveFileDialog dialog(this->window(), tr("Save current surface"), QString());
+        voxie::io::SaveFileDialog dialog(view->window(), tr("Save current surface"), QString());
 
         funType savePly = saveToPLY;
         dialog.addFilter("Stanford PLY", QStringList() << "ply", &savePly);
@@ -339,7 +335,7 @@ void IsosurfaceVisualizer::saveAs() {
 
         (*((funType*) data)) (surface.data(), filename);
     } catch (voxie::scripting::ScriptingException& e) {
-        QMessageBox(QMessageBox::Critical, "Error while writing STL file", QString("Error while writing STL file: %1").arg(e.message()), QMessageBox::Ok, this).exec();
+        QMessageBox(QMessageBox::Critical, "Error while writing STL file", QString("Error while writing STL file: %1").arg(e.message()), QMessageBox::Ok, view).exec();
         return;
     }
 }

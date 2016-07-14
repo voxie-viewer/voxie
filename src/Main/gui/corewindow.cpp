@@ -242,7 +242,7 @@ void CoreWindow::addVisualizer(Visualizer *visualizer)
         QWidget *dock = this->addSection(section, false);
         connect(container, &QObject::destroyed, dock, &QObject::deleteLater);
     }
-    visualizer->setFocus();
+    visualizer->mainView()->setFocus();
 
     this->activeVisualizer = visualizer;
     emit activeVisualizerChanged (visualizer);

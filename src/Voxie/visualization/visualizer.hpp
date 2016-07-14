@@ -25,14 +25,12 @@ namespace visualization
 /**
  * @brief A visualizer that can show any kind of voxel data.
  */
-class VOXIECORESHARED_EXPORT Visualizer :
-        public voxie::scripting::WidgetScriptingContainer
-{
+class VOXIECORESHARED_EXPORT Visualizer : public voxie::scripting::ScriptingContainer {
     Q_OBJECT
 private:
     QVector<QWidget*> sections;
 public:
-    explicit Visualizer(QWidget *parent = 0);
+    explicit Visualizer(QObject *parent = 0);
     virtual ~Visualizer();
 
     /**
@@ -41,16 +39,14 @@ public:
      */
     QVector<QWidget*> &dynamicSections();
 
-signals:
-
-public slots:
+    virtual QWidget* mainView() = 0;
 };
 
 class VOXIECORESHARED_EXPORT VolumeDataVisualizer : public Visualizer
 {
     Q_OBJECT
 public:
-    explicit VolumeDataVisualizer(QWidget *parent = 0);
+    explicit VolumeDataVisualizer(QObject *parent = 0);
     virtual ~VolumeDataVisualizer();
     Q_PROPERTY (voxie::data::DataSet* dataSet READ dataSet)
     virtual voxie::data::DataSet* dataSet() = 0;
@@ -60,7 +56,7 @@ class VOXIECORESHARED_EXPORT SliceDataVisualizer : public VolumeDataVisualizer
 {
     Q_OBJECT
 public:
-    explicit SliceDataVisualizer(QWidget *parent = 0);
+    explicit SliceDataVisualizer(QObject *parent = 0);
     virtual ~SliceDataVisualizer();
     Q_PROPERTY (voxie::data::Slice* slice READ slice)
     virtual voxie::data::Slice* slice() = 0;

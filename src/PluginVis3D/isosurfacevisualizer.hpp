@@ -39,6 +39,10 @@ public:
     static void saveToPLY(const voxie::data::Surface* surface, const QString& filename);
     static void saveToFTR(const voxie::data::Surface* surface, const QString& filename);
 
+    QWidget* mainView() override {
+        return view;
+    }
+
 private slots:
     void refresh3D();
 

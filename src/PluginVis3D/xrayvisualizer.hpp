@@ -13,22 +13,28 @@
 #include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSlider>
 
-class XRayVisualizer :
-        public voxie::visualization::VolumeDataVisualizer
-{
+class XRayVisualizer;
+
+class XRayView : public QWidget {
     Q_OBJECT
+
+    friend class XRayVisualizer;
+
 private:
-    voxie::data::DataSet *dataSet_;
+    XRayVisualizer* visualizer;
+
     QImage image;
     cl::Kernel kernel;
     cl::Image2D clImage;
     QPoint mouseLast;
     voxie::visualization::View3D* view3d;
-private:
+
+    QWidget *sidePanel;
     QRadioButton *radioQ0, *radioQ1, *radioQ2, *radioQ3;
     QSlider *minSlider, *maxSlider, *scaleSlider;
+
 public:
-    explicit XRayVisualizer(voxie::data::DataSet *dataSet, QWidget *parent = 0);
+    explicit XRayView(XRayVisualizer* visualizer);
 
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void mouseMoveEvent(QMouseEvent *event) override;
@@ -36,19 +42,34 @@ public:
     virtual void paintEvent(QPaintEvent *event) override;
     virtual void resizeEvent(QResizeEvent *event) override;
 
-	virtual voxie::data::DataSet* dataSet() final {
-		return this->dataSet_;
-	}
-
 private:
     void updateButton(bool stub) { (void)stub; this->update(); }
     void updateSlider(int stub) { (void)stub; this->update(); }
 
-signals:
-
-public slots:
-
+    inline voxie::data::DataSet* dataSet();
 };
+
+class XRayVisualizer : public voxie::visualization::VolumeDataVisualizer {
+    Q_OBJECT
+private:
+    voxie::data::DataSet *dataSet_;
+    XRayView* view;
+
+public:
+    explicit XRayVisualizer(voxie::data::DataSet *dataSet, QWidget *parent = 0);
+
+	virtual voxie::data::DataSet* dataSet() final {
+		return this->dataSet_;
+	}
+
+    QWidget* mainView() override {
+        return view;
+    }
+};
+
+inline voxie::data::DataSet* XRayView::dataSet() {
+    return this->visualizer->dataSet();
+}
 
 // Local Variables:
 // mode: c++

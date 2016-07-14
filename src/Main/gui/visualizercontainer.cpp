@@ -15,7 +15,8 @@ VisualizerContainer::VisualizerContainer(QMdiArea *container, voxie::visualizati
     container(container),
     window(nullptr)
 {
-    this->setWindowTitle(this->visualizer->windowTitle());
+    visualizer->setParent(this);
+    this->setWindowTitle(this->visualizer->mainView()->windowTitle());
     this->setWindowIcon(icon);
     {
         QVBoxLayout *layout = new QVBoxLayout();
@@ -29,7 +30,7 @@ VisualizerContainer::VisualizerContainer(QMdiArea *container, voxie::visualizati
             connect(popOutAction, &QAction::triggered, this, &VisualizerContainer::switchPopState);
 
             layout->addWidget(bar);
-            layout->addWidget(visualizer);
+            layout->addWidget(visualizer->mainView());
         }
         this->setLayout(layout);
     }

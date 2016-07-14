@@ -8,8 +8,15 @@
 
 using namespace voxie::visualization;
 
-ExampleVisualizer::ExampleVisualizer(QWidget *parent) :
-    Visualizer(parent),
+ExampleVisualizer::ExampleVisualizer() {
+    view = new ExampleView();
+    this->dynamicSections().append(view->form);
+}
+ExampleVisualizer::~ExampleVisualizer() {
+}
+
+ExampleView::ExampleView(QWidget *parent) :
+    QWidget(parent),
     f()
 {
     this->setWindowTitle("Sweet Curves");
@@ -47,19 +54,18 @@ ExampleVisualizer::ExampleVisualizer(QWidget *parent) :
         }
         layout->addRow(name, func);
 
-        QWidget *form = new QWidget();
+        form = new QWidget();
         form->setLayout(layout);
         form->setWindowTitle("Function Information");
-        this->dynamicSections().append(form);
     }
 }
 
-ExampleVisualizer::~ExampleVisualizer()
+ExampleView::~ExampleView()
 {
 
 }
 
-void ExampleVisualizer::paintEvent(QPaintEvent *event)
+void ExampleView::paintEvent(QPaintEvent *event)
 {
 	Q_UNUSED(event);
 

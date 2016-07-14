@@ -35,6 +35,8 @@ class DiffVisualizer : public voxie::visualization::Visualizer
 private: // magic numbers
     int RESIZE_TIMER_TIMEOUT = 100;
 private:
+    QWidget* view;
+
     //sidebar widgets
     ImagePaintWidget* _imageDisplayingWidget;
     voxie::visualization::FilterChain2DWidget *_filterChain2DWidget;
@@ -98,6 +100,10 @@ private:
 public:
     explicit DiffVisualizer(QVector<voxie::data::Slice*> slices, QWidget *parent = 0);
     //~DiffVisualizer();
+
+    QWidget* mainView() override {
+        return view;
+    }
 
     /**
      * Notifies the widget that draws the canvas that it neds to redraw the draw stack.

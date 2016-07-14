@@ -6,22 +6,33 @@
 
 #include <QtGui/QPaintEvent>
 
-class ExampleVisualizer : public voxie::visualization::Visualizer
-{
+class ExampleView : public QWidget {
 	Q_OBJECT
 private:
 	QVector<QWidget*> sections;
 	float (*f)(float);
 public:
-	explicit ExampleVisualizer(QWidget *parent = 0);
-	~ExampleVisualizer();
+	explicit ExampleView(QWidget *parent = 0);
+	~ExampleView();
+
+    QWidget *form;
 
 protected:
 	virtual void paintEvent(QPaintEvent *event) override;
+};
 
-signals:
+class ExampleVisualizer : public voxie::visualization::Visualizer {
+	Q_OBJECT
 
-public slots:
+    ExampleView* view;
+
+public:
+    ExampleVisualizer();
+	~ExampleVisualizer();
+
+    QWidget* mainView() override {
+        return view;
+    }
 };
 
 // Local Variables:
