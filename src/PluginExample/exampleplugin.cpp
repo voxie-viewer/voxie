@@ -47,7 +47,7 @@ QVector<QAction*> ExamplePlugin::uiCommands()
 QVector<voxie::plugin::MetaVisualizer*> ExamplePlugin::visualizers()
 {
 	QVector<voxie::plugin::MetaVisualizer*> list;
-	list.append(new ExampleMetaVisualizer());
+	list.append(ExampleMetaVisualizer::instance());
 	return list;
 }
 

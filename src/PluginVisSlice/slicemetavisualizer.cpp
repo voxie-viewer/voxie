@@ -17,6 +17,11 @@ SliceMetaVisualizer::~SliceMetaVisualizer()
 
 }
 
+SliceMetaVisualizer* SliceMetaVisualizer::instance() {
+    static auto inst = new SliceMetaVisualizer();
+    return inst;
+}
+
 Visualizer *SliceMetaVisualizer::createVisualizer(const QVector<DataSet*> &dataSets, const QVector<Slice*> &slices)
 {
 	(void)dataSets;

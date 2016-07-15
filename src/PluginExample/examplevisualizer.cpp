@@ -1,5 +1,7 @@
 #include "examplevisualizer.hpp"
 
+#include <PluginExample/examplemetavisualizer.hpp>
+
 #include <QtGui/QPainter>
 #include <QtGui/QPaintEvent>
 
@@ -14,6 +16,10 @@ ExampleVisualizer::ExampleVisualizer() {
     this->dynamicSections().append(view->form);
 }
 ExampleVisualizer::~ExampleVisualizer() {
+}
+
+voxie::plugin::MetaVisualizer* ExampleVisualizer::type() const {
+    return ExampleMetaVisualizer::instance();
 }
 
 ExampleView::ExampleView(QWidget *parent) :

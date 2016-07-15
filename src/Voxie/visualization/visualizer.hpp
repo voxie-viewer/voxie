@@ -14,8 +14,11 @@
 namespace voxie
 {
 // Forward declarations
-namespace data{
+namespace data {
 class DataSet;
+}
+namespace plugin {
+class MetaVisualizer;
 }
 
 namespace visualization
@@ -31,6 +34,10 @@ private:
 public:
     explicit Visualizer(QObject *parent = 0);
     virtual ~Visualizer();
+
+    virtual voxie::plugin::MetaVisualizer* type() const = 0;
+
+    QIcon icon() const override;
 
     /**
      * @brief Returns a set of dynamic sections that will be shown/hidden depending on the visualizer state.

@@ -9,6 +9,8 @@ class IsosurfaceMetaVisualizer :
 public:
     explicit IsosurfaceMetaVisualizer(QWidget *parent = 0);
 
+    static IsosurfaceMetaVisualizer* instance();
+
     virtual voxie::plugin::VisualizerType type() const
     {
         return voxie::plugin::vt3D;

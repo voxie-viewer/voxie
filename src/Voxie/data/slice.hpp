@@ -27,6 +27,8 @@ class VOXIECORESHARED_EXPORT Slice : public DataObject {
 public:
     explicit Slice(DataSet* parent);
 
+    QIcon icon() const override;
+
     Q_PROPERTY (voxie::data::Plane Plane READ getCuttingPlane WRITE setPlane)
     /**
      * @return this Slice's Plane (a copy of it).

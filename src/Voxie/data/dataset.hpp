@@ -41,6 +41,8 @@ class VOXIECORESHARED_EXPORT DataSet : public DataObject, public QDBusContext
         explicit DataSet(const QSharedPointer<VoxelData>& data, QObject *parent = nullptr);
         ~DataSet();
 
+        QIcon icon() const override;
+
 
         inline QFileInfo getFileInfo()
         {

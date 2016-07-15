@@ -6,6 +6,8 @@
 #include <Voxie/opencl/clutil.hpp>
 #include <Voxie/scripting/scriptingexception.hpp>
 
+#include <PluginVis3D/xraymetavisualizer.hpp>
+
 #include <QtGui/QPainter>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QResizeEvent>
@@ -35,6 +37,10 @@ XRayVisualizer::XRayVisualizer(DataSet *dataSet, QWidget *parent) : VolumeDataVi
 
     auto sn = new voxie::spnav::SpaceNavVisualizer(this);
     view->view3d->registerSpaceNavVisualizer(sn);
+}
+
+voxie::plugin::MetaVisualizer* XRayVisualizer::type() const {
+    return XRayMetaVisualizer::instance();
 }
 
 XRayView::XRayView(XRayVisualizer* visualizer) :

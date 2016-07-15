@@ -101,6 +101,8 @@ public:
     explicit DiffVisualizer(QVector<voxie::data::Slice*> slices, QWidget *parent = 0);
     //~DiffVisualizer();
 
+    voxie::plugin::MetaVisualizer* type() const override;
+
     QWidget* mainView() override {
         return view;
     }

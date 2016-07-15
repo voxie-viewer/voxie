@@ -17,6 +17,11 @@ DiffMetaVisualizer::~DiffMetaVisualizer()
 
 }
 
+DiffMetaVisualizer* DiffMetaVisualizer::instance() {
+    static auto inst = new DiffMetaVisualizer();
+    return inst;
+}
+
 Visualizer *DiffMetaVisualizer::createVisualizer(const QVector<DataSet*> &dataSets, const QVector<Slice*> &slices)
 {
     (void)dataSets;

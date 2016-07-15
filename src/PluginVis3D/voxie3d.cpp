@@ -34,8 +34,8 @@ QObject* Voxie3D::create(const QString& name, const QString &spec)
 QVector<MetaVisualizer*> Voxie3D::visualizers()
 {
 	QVector<MetaVisualizer*> visualizers;
-	visualizers.append(new IsosurfaceMetaVisualizer());
-    visualizers.append(new XRayMetaVisualizer());
+	visualizers.append(IsosurfaceMetaVisualizer::instance());
+    visualizers.append(XRayMetaVisualizer::instance());
 	return visualizers;
 }
 

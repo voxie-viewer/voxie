@@ -29,7 +29,7 @@ QVector<QAction*> SliceView::uiCommands()
 QVector<voxie::plugin::MetaVisualizer*> SliceView::visualizers()
 {
 	QVector<voxie::plugin::MetaVisualizer*> list;
-	list.append(new SliceMetaVisualizer());
+	list.append(SliceMetaVisualizer::instance());
 	return list;
 }
 

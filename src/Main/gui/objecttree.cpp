@@ -122,8 +122,8 @@ void ObjectTree::addObject(voxie::data::DataObject* obj) {
 }
 
 void ObjectTree::setupItem(voxie::data::DataObject* obj, QTreeWidgetItem* item) {
-    QString name = obj->displayName();
-    item->setText(0, name);
+    item->setText(0, obj->displayName());
+    item->setIcon(0, obj->icon());
     item->setData(0, Qt::UserRole, QVariant::fromValue(obj));
 }
 

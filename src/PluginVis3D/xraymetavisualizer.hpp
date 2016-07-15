@@ -9,6 +9,8 @@ class XRayMetaVisualizer :
 public:
     explicit XRayMetaVisualizer(QObject *parent = 0);
 
+    static XRayMetaVisualizer* instance();
+
     virtual voxie::plugin::VisualizerType type() const
     {
         return voxie::plugin::vt3D;

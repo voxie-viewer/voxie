@@ -12,6 +12,8 @@
 #include <QtCore/QThreadPool>
 #include <QtCore/QUuid>
 
+#include <QtGui/QIcon>
+
 using namespace voxie::data;
 using namespace voxie::data::internal;
 
@@ -31,6 +33,10 @@ DataSet::~DataSet()
 {
   //delete[] this->data;
 	// slices delete themselves
+}
+
+QIcon DataSet::icon() const {
+    return QIcon(":/icons-voxie/voxel-data-32.png");
 }
 
 void DataSet::resetData()

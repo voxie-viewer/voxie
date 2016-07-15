@@ -10,6 +10,8 @@ public:
 	explicit ExampleMetaVisualizer(QObject *parent = 0);
 	~ExampleMetaVisualizer();
 
+    static ExampleMetaVisualizer* instance();
+
 	virtual voxie::plugin::VisualizerType type() const override
 	{
 		return voxie::plugin::vtMiscellaneous;

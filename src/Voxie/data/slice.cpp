@@ -10,6 +10,8 @@
 
 #include <QtGui/QMatrix4x4>
 
+#include <QtGui/QIcon>
+
 using namespace voxie::data;
 using namespace voxie::data::internal;
 int sliceCount = 0;
@@ -24,6 +26,10 @@ Slice::Slice(DataSet* parent) : DataObject("Slice", parent), dataset(parent)
     sliceCount++;
 
     this->cuttingPlane.origin = parent->volumeCenter();
+}
+
+QIcon Slice::icon() const {
+    return QIcon(":/icons/layer.png");
 }
 
 

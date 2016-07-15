@@ -17,6 +17,11 @@ ExampleMetaVisualizer::~ExampleMetaVisualizer()
 
 }
 
+ExampleMetaVisualizer* ExampleMetaVisualizer::instance() {
+    static auto inst = new ExampleMetaVisualizer();
+    return inst;
+}
+
 Visualizer *ExampleMetaVisualizer::createVisualizer(const QVector<DataSet*> &dataSets, const QVector<Slice*> &slices)
 {
 	(void)dataSets;

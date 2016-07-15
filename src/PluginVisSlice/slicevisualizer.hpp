@@ -97,6 +97,8 @@ public:
 	explicit SliceVisualizer(QVector<voxie::data::Slice*> slices, QWidget *parent = 0);
 	//~SliceVisualizer();
 
+    voxie::plugin::MetaVisualizer* type() const override;
+
     QWidget* mainView() override {
         return view;
     }

@@ -15,6 +15,8 @@ public:
     explicit SliceMetaVisualizer(QObject *parent = 0);
     ~SliceMetaVisualizer();
 
+    static SliceMetaVisualizer* instance();
+
     virtual voxie::plugin::VisualizerType type() const override
     {
         return voxie::plugin::vt2D;

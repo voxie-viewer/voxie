@@ -1,5 +1,6 @@
 #include "diffvisualizer.hpp"
 
+#include <PluginVisDiff/diffmetavisualizer.hpp>
 #include <PluginVisDiff/imagepaintwidget.hpp>
 #include <PluginVisDiff/toolexport.hpp>
 #include <PluginVisDiff/toolselection.hpp>
@@ -171,6 +172,10 @@ DiffVisualizer::DiffVisualizer(QVector<Slice*> slices, QWidget *parent) :
     _imageDisplayingWidget->setFocus();
     _imageDisplayingWidget->show();
     toolBar->show();
+}
+
+voxie::plugin::MetaVisualizer* DiffVisualizer::type() const {
+    return DiffMetaVisualizer::instance();
 }
 
 void DiffVisualizer::switchToolTo(Visualizer2DTool* tool) {

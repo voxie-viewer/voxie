@@ -10,7 +10,8 @@
 
 VisualizerContainer::VisualizerContainer(QMdiArea *container, voxie::visualization::Visualizer *visualizer) :
     QWidget(nullptr),
-    icon(":/icons/application-blue.png"),
+    //icon(":/icons/application-blue.png"),
+    icon(visualizer->icon()),
     visualizer(visualizer),
     container(container),
     window(nullptr)

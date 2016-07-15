@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons-voxie/voxel-data-16.png</file>
+        <file>icons-voxie/voxel-data-32.png</file>
+    </qresource>
+</RCC>

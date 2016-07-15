@@ -1,5 +1,7 @@
 #include "dataobject.hpp"
 
+#include <QtGui/QIcon>
+
 #include <QtWidgets/QWidget>
 
 using namespace voxie::data;
@@ -10,6 +12,10 @@ DataObject::DataObject(const QString& type, QObject *parent) : ScriptableObject(
     new DataObjectAdaptor(this);
 }
 DataObject::~DataObject() {
+}
+
+QIcon DataObject::icon() const {
+    return QIcon();
 }
 
 void DataObject::addChildObject(DataObject* obj) {

@@ -29,7 +29,7 @@ QVector<QAction*> DiffView::uiCommands()
 QVector<voxie::plugin::MetaVisualizer*> DiffView::visualizers()
 {
     QVector<voxie::plugin::MetaVisualizer*> list;
-    list.append(new DiffMetaVisualizer());
+    list.append(DiffMetaVisualizer::instance());
     return list;
 }
 

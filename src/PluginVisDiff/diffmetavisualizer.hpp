@@ -14,6 +14,8 @@ public:
     explicit DiffMetaVisualizer(QObject *parent = 0);
     ~DiffMetaVisualizer();
 
+    static DiffMetaVisualizer* instance();
+
     virtual voxie::plugin::VisualizerType type() const override
     {
         return voxie::plugin::vt2D;

@@ -31,6 +31,8 @@ class IsosurfaceVisualizer :
 public:
     explicit IsosurfaceVisualizer(voxie::data::DataSet *voxelData, QWidget *parent = 0);
 
+    voxie::plugin::MetaVisualizer* type() const override;
+
 	virtual voxie::data::DataSet* dataSet() final {
 		return this->voxelData_;
 	}

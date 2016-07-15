@@ -30,6 +30,8 @@ class VOXIECORESHARED_EXPORT DataObject : public voxie::scripting::ScriptableObj
     const QString& displayName() const { return displayName_; }
     void setDisplayName(const QString& name) { displayName_ = name; emit displayNameChanged(name); }
 
+    virtual QIcon icon() const;
+
     QList<QWidget*> propertySections() const { return propertySections_; }
     void addPropertySection(QWidget* section);
 

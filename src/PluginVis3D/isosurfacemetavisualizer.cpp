@@ -7,6 +7,11 @@ IsosurfaceMetaVisualizer::IsosurfaceMetaVisualizer(QWidget *parent) :
 {
 }
 
+IsosurfaceMetaVisualizer* IsosurfaceMetaVisualizer::instance() {
+    static auto inst = new IsosurfaceMetaVisualizer();
+    return inst;
+}
+
 voxie::visualization::Visualizer *IsosurfaceMetaVisualizer::createVisualizer(
 		const QVector<voxie::data::DataSet*> &dataSets,
 		const QVector<voxie::data::Slice*> &slices)

@@ -117,6 +117,8 @@ CoreWindow::CoreWindow(voxie::Root* root, QWidget *parent) :
     this->initStatusBar();
     this->initWidgets(root);
 
+    this->setWindowIcon(QIcon(":/icons-voxie/voxel-data-32.png"));
+
     connect(root, &Root::dataObjectAdded, this, &CoreWindow::addDataObject);
     connect(objectTree, &ObjectTree::objectSelected, this, [this] (voxie::data::DataObject* obj) {
             //qDebug() << "Change sidepanel visibility to" << obj;
@@ -227,7 +229,7 @@ void CoreWindow::addVisualizer(Visualizer *visualizer)
         this->visualizers.removeAll(container);
     });
 
-    QAction *windowEntry = this->windowMenu->addAction(container->windowTitle());
+    QAction *windowEntry = this->windowMenu->addAction(visualizer->icon(), container->windowTitle());
     connect(windowEntry, &QAction::triggered, container, &VisualizerContainer::activate);
     connect(container, &QWidget::destroyed, windowEntry, &QAction::deleteLater);
     connect(visualizer, &QWidget::destroyed, container, &VisualizerContainer::closeWindow);

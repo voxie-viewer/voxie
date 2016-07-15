@@ -10,6 +10,11 @@ XRayMetaVisualizer::XRayMetaVisualizer(QObject *parent) :
 }
 
 
+XRayMetaVisualizer* XRayMetaVisualizer::instance() {
+    static auto inst = new XRayMetaVisualizer();
+    return inst;
+}
+
 voxie::visualization::Visualizer *XRayMetaVisualizer::createVisualizer(
         const QVector<voxie::data::DataSet*> &dataSets,
         const QVector<voxie::data::Slice*> &slices)

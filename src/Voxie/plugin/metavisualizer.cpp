@@ -6,6 +6,8 @@
 
 #include <QtDBus/QDBusConnection>
 
+#include <QtGui/QIcon>
+
 using namespace voxie;
 using namespace voxie::plugin;
 using namespace voxie::plugin::internal;

@@ -75,4 +75,5 @@ SOURCES += \
 
 RESOURCES += \
     icons.qrc \
+    icons-voxie.qrc \
     cl_kernels.qrc

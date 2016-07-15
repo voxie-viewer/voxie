@@ -8,6 +8,8 @@
 
 #include <Voxie/io/savefiledialog.hpp>
 
+#include <PluginVis3D/isosurfacemetavisualizer.hpp>
+
 #include <QtOpenGL/QGLFormat>
 
 #include <QtWidgets/QFormLayout>
@@ -150,6 +152,10 @@ IsosurfaceVisualizer::IsosurfaceVisualizer(DataSet *data, QWidget *parent) :
 
     auto sn = new voxie::spnav::SpaceNavVisualizer(this);
     view->getView3D()->registerSpaceNavVisualizer(sn);
+}
+
+voxie::plugin::MetaVisualizer* IsosurfaceVisualizer::type() const {
+    return IsosurfaceMetaVisualizer::instance();
 }
 
 void IsosurfaceVisualizer::refresh3D()

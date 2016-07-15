@@ -58,6 +58,8 @@ private:
 public:
     explicit XRayVisualizer(voxie::data::DataSet *dataSet, QWidget *parent = 0);
 
+    voxie::plugin::MetaVisualizer* type() const override;
+
 	virtual voxie::data::DataSet* dataSet() final {
 		return this->dataSet_;
 	}

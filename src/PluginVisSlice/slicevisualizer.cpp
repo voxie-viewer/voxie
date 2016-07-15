@@ -1,5 +1,6 @@
 #include "slicevisualizer.hpp"
 
+#include <PluginVisSlice/slicemetavisualizer.hpp>
 #include <PluginVisSlice/imagepaintwidget.hpp>
 #include <PluginVisSlice/toolexport.hpp>
 #include <PluginVisSlice/toolselection.hpp>
@@ -163,6 +164,10 @@ SliceVisualizer::SliceVisualizer(QVector<Slice*> slices, QWidget *parent) :
 	_imageDisplayingWidget->setFocus();
 	_imageDisplayingWidget->show();
 	toolBar->show();
+}
+
+voxie::plugin::MetaVisualizer* SliceVisualizer::type() const {
+    return SliceMetaVisualizer::instance();
 }
 
 void SliceVisualizer::switchToolTo(Visualizer2DTool* tool) {

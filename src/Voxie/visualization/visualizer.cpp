@@ -1,5 +1,9 @@
 #include "visualizer.hpp"
 
+#include <Voxie/plugin/metavisualizer.hpp>
+
+#include <QtGui/QIcon>
+
 using namespace voxie::visualization;
 using namespace voxie::visualization::internal;
 
@@ -13,6 +17,16 @@ Visualizer::Visualizer(QObject *parent) :
 Visualizer::~Visualizer()
 {
 
+}
+
+QIcon Visualizer::icon() const {
+    switch (type()->type()) {
+    case voxie::plugin::vt2D: return QIcon(":/icons/layers.png");
+    case voxie::plugin::vt3D: return QIcon(":/icons/spectacle-3d.png");
+    case voxie::plugin::vtAnalytic: return QIcon(":/icons/flask.png");
+    case voxie::plugin::vtMiscellaneous: return QIcon(":/icons/equalizer.png");
+    default: return QIcon();
+    }
 }
 
 
