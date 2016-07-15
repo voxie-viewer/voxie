@@ -139,6 +139,105 @@ CoreWindow::CoreWindow(voxie::Root* root, QWidget *parent) :
                 }
             }
         });
+    connect(objectTree, &ObjectTree::objectActivated, this, [this] (DataObject* obj) {
+            auto vis = qobject_cast<Visualizer*>(obj);
+            if (vis) {
+                auto parent = qobject_cast<VisualizerContainer*>(vis->mainView()->parent());
+                if (!parent)
+                    qWarning() << "Visualizer main view does not have a VisualizerContainer parent" << vis->mainView();
+                else
+                    parent->activate();
+            }
+        });
+    objectTree->setContextMenuPolicy(Qt::CustomContextMenu);
+    auto currentObject = createQSharedPointer<QPointer<DataObject>>(nullptr);
+    auto contextMenuDataset = new QMenu(this);
+    connect (contextMenuDataset->addAction("Create slice"), &QAction::triggered, this, [this, currentObject] {
+            auto dataSet = qobject_cast<DataSet*>(*currentObject);
+            if (!dataSet) {
+                qWarning() << "Failed to cast object to DataSet*";
+                return;
+            }
+            dataSet->createSlice();
+        });
+    connect (contextMenuDataset->addAction("Create isosurface visualizer"), &QAction::triggered, this, [this, currentObject] {
+            auto dataSet = qobject_cast<DataSet*>(*currentObject);
+            if (!dataSet) {
+                qWarning() << "Failed to cast object to DataSet*";
+                return;
+            }
+            try {
+                auto isoVisualizer = qobject_cast<MetaVisualizer*>(voxie::Root::instance()->getPluginByName("Voxie3D")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "IsosurfaceMetaVisualizer"));
+                if (!isoVisualizer)
+                    throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Failed to cast isosurface visualizer factory");
+                QVector<data::DataSet*> dataSets;
+                QVector<data::Slice*> slices;
+                dataSets << dataSet;
+                isoVisualizer->create(dataSets, slices);
+            } catch (voxie::scripting::ScriptingException& e) {
+                QMessageBox(QMessageBox::Critical, this->windowTitle(), QString("Failed to create isosurface visualizer: %1").arg(e.message()), QMessageBox::Ok, this).exec();
+            }
+        });
+    contextMenuDataset->addSeparator();
+    connect (contextMenuDataset->addAction("Close"), &QAction::triggered, this, [this, currentObject] {
+            if (*currentObject)
+                (*currentObject)->deleteLater();
+        });
+    auto contextMenuSlice = new QMenu(this);
+    connect (contextMenuSlice->addAction("Create slice visualizer"), &QAction::triggered, this, [this, currentObject] {
+            auto slice = qobject_cast<Slice*>(*currentObject);
+            if (!slice) {
+                qWarning() << "Failed to cast object to DataSet*";
+                return;
+            }
+            try {
+                auto isoVisualizer = qobject_cast<MetaVisualizer*>(voxie::Root::instance()->getPluginByName("SliceView")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "SliceMetaVisualizer"));
+                if (!isoVisualizer)
+                    throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Failed to cast slice visualizer factory");
+                QVector<data::DataSet*> dataSets;
+                QVector<data::Slice*> slices;
+                slices << slice;
+                isoVisualizer->create(dataSets, slices);
+            } catch (voxie::scripting::ScriptingException& e) {
+                QMessageBox(QMessageBox::Critical, this->windowTitle(), QString("Failed to create slice visualizer: %1").arg(e.message()), QMessageBox::Ok, this).exec();
+            }
+        });
+    contextMenuSlice->addSeparator();
+    connect (contextMenuSlice->addAction("Close"), &QAction::triggered, this, [this, currentObject] {
+            if (*currentObject)
+                (*currentObject)->deleteLater();
+        });
+    auto contextMenuVisualizer = new QMenu(this);
+    connect (contextMenuVisualizer->addAction("Raise"), &QAction::triggered, this, [this, currentObject] {
+            auto visualizer = qobject_cast<Visualizer*>(*currentObject);
+            if (!visualizer) {
+                qWarning() << "Failed to cast object to DataSet*";
+                return;
+            }
+            auto parent = qobject_cast<VisualizerContainer*>(visualizer->mainView()->parent());
+            if (!parent)
+                qWarning() << "Visualizer main view does not have a VisualizerContainer parent" << visualizer->mainView();
+            else
+                parent->activate();
+        });
+    contextMenuVisualizer->addSeparator();
+    connect (contextMenuVisualizer->addAction("Close"), &QAction::triggered, this, [this, currentObject] {
+            if (*currentObject)
+                (*currentObject)->deleteLater();
+        });
+    connect(objectTree, &QWidget::customContextMenuRequested, this, [this, currentObject, contextMenuDataset, contextMenuSlice, contextMenuVisualizer] (const QPoint& pos) {
+            auto obj = objectTree->getObjectForItem(objectTree->itemAt(pos));
+            if (!obj)
+                return;
+            *currentObject = obj;
+            auto globalPos = objectTree->viewport()->mapToGlobal(pos);
+            if (qobject_cast<DataSet*>(obj))
+                contextMenuDataset->popup(globalPos);
+            if (qobject_cast<Slice*>(obj))
+                contextMenuSlice->popup(globalPos);
+            if (qobject_cast<Visualizer*>(obj))
+                contextMenuVisualizer->popup(globalPos);
+        });
 }
 CoreWindow::~CoreWindow() {
     isBeginDestroyed = true;

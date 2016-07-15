@@ -32,12 +32,17 @@ public:
     explicit ObjectTree(Root* root, QWidget* parent = nullptr);
     ~ObjectTree() override;
 
+    voxie::data::DataObject* getObjectForItem(QTreeWidgetItem *item);
     voxie::data::DataObject* selectedObject();
 
     void select(voxie::data::DataObject* obj);
 
+protected:
+    void keyPressEvent(QKeyEvent* event) override;
+
 signals:
     void objectSelected(voxie::data::DataObject* obj);
+    void objectActivated(voxie::data::DataObject* obj);
 };
 
 } }

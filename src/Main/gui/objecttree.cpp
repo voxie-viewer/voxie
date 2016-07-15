@@ -4,6 +4,8 @@
 
 #include <QtCore/QDebug>
 
+#include <QtGui/QKeyEvent>
+
 using namespace voxie::gui;
 
 ObjectTree::ObjectTree(voxie::Root* root, QWidget* parent) : QTreeWidget(parent) {
@@ -55,6 +57,18 @@ ObjectTree::ObjectTree(voxie::Root* root, QWidget* parent) : QTreeWidget(parent)
             }
             auto obj = selectedObject();
             emitObjectSelected(obj);
+        });
+
+    connect(this, &QTreeWidget::itemDoubleClicked, this, [this] (QTreeWidgetItem *item, int column) {
+            Q_UNUSED(column);
+            auto obj = getObjectForItem(item);
+            if (!obj) {
+                qWarning() << "Could not find object for item" << item;
+                return;
+            }
+            //qDebug() << "Double click on" << obj;
+
+            emit objectActivated(obj);
         });
 }
 ObjectTree::~ObjectTree() {
@@ -147,14 +161,17 @@ void ObjectTree::cleanupItem(QTreeWidgetItem* item) {
     delete item;
 }
 
-voxie::data::DataObject* ObjectTree::selectedObject() {
-    auto citem = currentItem();
-    if (!citem)
+voxie::data::DataObject* ObjectTree::getObjectForItem(QTreeWidgetItem *item) {
+    if (!item)
         return nullptr;
-    auto obj = citem->data(0, Qt::UserRole).value<voxie::data::DataObject*>();
+    auto obj = item->data(0, Qt::UserRole).value<voxie::data::DataObject*>();
     if (!obj)
         return nullptr;
     return obj;
+}
+
+voxie::data::DataObject* ObjectTree::selectedObject() {
+    return getObjectForItem(currentItem());
 }
 
 void ObjectTree::select(voxie::data::DataObject* obj) {
@@ -177,6 +194,26 @@ void ObjectTree::select(voxie::data::DataObject* obj) {
     suppressSelectionChanged = false;
 
     emitObjectSelected(obj);
+}
+
+void ObjectTree::keyPressEvent(QKeyEvent* event) {
+    //qDebug() << event->key();
+
+    if (event->key() == Qt::Key_Delete) {
+        auto obj = selectedObject();
+        if (obj) {
+            obj->deleteLater();
+            return;
+        }
+    } else if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        auto obj = selectedObject();
+        if (obj) {
+            emit objectActivated(obj);
+            return;
+        }
+    }
+
+    QTreeWidget::keyPressEvent(event);
 }
 
 // Local Variables:
