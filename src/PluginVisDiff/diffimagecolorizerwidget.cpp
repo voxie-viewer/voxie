@@ -125,7 +125,7 @@ void DiffImageColorizerWidget::doColorizer(voxie::data::FloatImage image)
         connect(worker, &ColorizerWorker::imageColorized, this, &DiffImageColorizerWidget::imageColorized);
         //connect(worker, &ColorizerWorker::imageColorized, worker, &ColorizerWorker::deleteLater);
         worker->setAutoDelete(true);
-        connect(worker, &ColorizerWorker::imageColorized, [=]() -> void {
+        connect(worker, &ColorizerWorker::imageColorized, this, [=]() -> void {
             if(requestColorizer) {
                 //qDebug() << "Rendering slice finished but rendering was requested, rendering again";
                 requestColorizer = false;

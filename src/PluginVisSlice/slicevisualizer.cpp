@@ -227,7 +227,7 @@ void SliceVisualizer::runSliceImageGeneratorWorker() {
 	_imageWorkerRunning = true;
 	connect(worker, &ImageGeneratorWorker::imageGenerated, this, &SliceVisualizer::onSliceImageGenerated);
 	worker->setAutoDelete(true);
-	connect(worker, &ImageGeneratorWorker::imageGenerated, [=]() -> void {
+	connect(worker, &ImageGeneratorWorker::imageGenerated, this, [=]() -> void {
 		_imageWorkerRunning = false;
 		runSliceImageGeneratorWorker(); // run next item in queue if existant
 	});
