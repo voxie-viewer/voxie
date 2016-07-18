@@ -57,13 +57,13 @@ namespace {
     };
 }
 
-// Return a vertex at (x-1/2, y-1/2, zBase+z-1/2)
+// Return a vertex at (x, y, zBase+z)
 static Surface::IndexType addVertex(SurfaceBuilder* sb, VertexCache& cache, VoxelData* data, size_t x, size_t y, size_t z, size_t zBase) {
     Surface::IndexType& cacheItem = cache.get(x, y, z);
     if (cacheItem != Surface::invalidIndex)
         return cacheItem;
 
-    QVector3D pos(x - 0.5f, y - 0.5f, zBase + z - 0.5f);
+    QVector3D pos(x, y, zBase + z);
     pos = data->getFirstVoxelPosition() + data->getSpacing() * pos;
     return cacheItem = sb->addVertex(pos);
 }
