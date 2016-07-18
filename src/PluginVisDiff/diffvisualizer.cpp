@@ -223,7 +223,7 @@ void DiffVisualizer::doGenerateSliceImage(
     if(_imageQueueWorker != nullptr) {
         delete _imageQueueWorker;
     }
-    _imageQueueWorker = new ImageGeneratorWorker(slices, sliceAreaFirst, sliceAreaSecond, imageSize, interpolation);
+    _imageQueueWorker = new ImageGeneratorWorker(slices.at(0)->getDataset()->filteredData(), slices.at(1)->getDataset()->filteredData(), slices.at(0)->getCuttingPlane(), slices.at(1)->getCuttingPlane(), sliceAreaFirst, sliceAreaSecond, imageSize, interpolation);
     if(!_imageWorkerRunning) {
         runSliceImageGeneratorWorker();
     }

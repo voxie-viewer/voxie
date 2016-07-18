@@ -22,7 +22,8 @@ public:
 	 * @param imageSize the targeted image size of the output image
 	 * @param interpolation method to be used to achieve the target size
 	 */
-	ImageGeneratorWorker(voxie::data::Slice* slice,
+	ImageGeneratorWorker(const QSharedPointer<voxie::data::VoxelData>& data,
+                         const voxie::data::Plane& plane,
 						 const QRectF &sliceArea,
 						 const QSize &imageSize,
 						 voxie::data::InterpolationMethod interpolation);
@@ -39,7 +40,8 @@ signals:
     void imageGenerated(voxie::data::SliceImage si);
 
 private:
-	voxie::data::Slice* slice;
+    QSharedPointer<voxie::data::VoxelData> data;
+	voxie::data::Plane plane;
 	QRectF sliceArea;
 	QSize imageSize;
 	voxie::data::InterpolationMethod interpolation;

@@ -17,7 +17,7 @@ public:
     void run() override;
 
 signals:
-    void histogramCalculated(QVector<int> histoData);
+    void histogramCalculated(QSharedPointer<QVector<int>> histoData);
 
 private:
     voxie::data::FloatImage sourceImage;

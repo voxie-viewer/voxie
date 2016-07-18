@@ -212,7 +212,7 @@ void SliceVisualizer::doGenerateSliceImage(
 	if(_imageQueueWorker != nullptr) {
 		delete _imageQueueWorker;
 	}
-	_imageQueueWorker = new ImageGeneratorWorker(slice, sliceArea, imageSize, interpolation);
+	_imageQueueWorker = new ImageGeneratorWorker(slice->getDataset()->filteredData(), slice->getCuttingPlane(), sliceArea, imageSize, interpolation);
 	if(!_imageWorkerRunning) {
 		runSliceImageGeneratorWorker();
 	}

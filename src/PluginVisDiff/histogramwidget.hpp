@@ -39,7 +39,7 @@ public:
 
     //public methods
 public:
-    void setHistogramData(QVector<int>);
+    void setHistogramData(const QVector<int>&);
 
     //private methods
 private:
@@ -124,7 +124,7 @@ protected slots:
      * @param histoData new calculated data
      * A new calculated histogram gets stored and drawed
      */
-    void histogramCalculated(QVector<int> histoData);
+    void histogramCalculated(QSharedPointer<QVector<int>> histoData);
 
 };
 

@@ -295,10 +295,11 @@ void HistogramWidget::calculateHistogram(FloatImage image)
     HistogramWorker* worker = new HistogramWorker(image, histogram);
     connect(worker, &HistogramWorker::histogramCalculated, this, &HistogramWidget::histogramCalculated);
     worker->setAutoDelete(true);
+    worker->moveToThread(nullptr);
     QThreadPool::globalInstance()->start(worker);
 }
 
-void HistogramWidget::setHistogramData(QVector<int> histoData)
+void HistogramWidget::setHistogramData(const QVector<int>& histoData)
 {
     this->histoData = histoData;
 }
@@ -380,9 +381,9 @@ void HistogramWidget::resizeEvent(QResizeEvent *ev)
     emit this->histogramSettingsChanged();
 }
 
-void HistogramWidget::histogramCalculated(QVector<int> histoData)
+void HistogramWidget::histogramCalculated(QSharedPointer<QVector<int>> histoData)
 {
-    this->setHistogramData(histoData);
+    this->setHistogramData(*histoData);
     this->update();
 }
 

@@ -7,12 +7,14 @@ using namespace voxie::data;
 //volatile int ImageGeneratorWorker::started = 0;
 //volatile int ImageGeneratorWorker::finished = 0;
 
-ImageGeneratorWorker::ImageGeneratorWorker(voxie::data::Slice* slice,
+ImageGeneratorWorker::ImageGeneratorWorker(const QSharedPointer<VoxelData>& data,
+                                           const voxie::data::Plane& plane,
 										   const QRectF &sliceArea,
 								           const QSize &imageSize,
 								           InterpolationMethod interpolation) :
     QObject(),
-    slice(slice),
+    data(data),
+    plane(plane),
 	sliceArea(sliceArea),
 	imageSize(imageSize),
     interpolation(interpolation)
@@ -25,7 +27,7 @@ ImageGeneratorWorker::~ImageGeneratorWorker()
 
 void ImageGeneratorWorker::run() {
     //qDebug() << "started:" << ++ImageGeneratorWorker::started;
-    SliceImage result = slice->generateImage(sliceArea, imageSize, interpolation);
+    SliceImage result = Slice::generateImage(data.data(), plane, sliceArea, imageSize, interpolation);
     //deprecated//SliceImage* result = SliceImageGenerator::instance().generateImage(&slice, sliceArea, imageSize, interpolation);
     //qDebug() << "finished:" << ++ImageGeneratorWorker::finished;
     emit imageGenerated(result);

@@ -182,6 +182,8 @@ public:
     Q_INVOKABLE
     SliceImage generateImage(const QRectF& sliceArea, const QSize& imageSize, InterpolationMethod interpolation = linear) const;
 
+    static SliceImage generateImage(VoxelData* data, const Plane& plane, const QRectF& sliceArea, const QSize& imageSize, InterpolationMethod interpolation = linear);
+
     // throws ScriptingException
     static SliceImage generateTestImage(int width = 200, int height = 200);
 

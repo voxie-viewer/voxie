@@ -20,8 +20,7 @@ class VOXIECORESHARED_EXPORT Histogram : public QObject
 
     //private attributes
 private:
-    QVector<int> histogram;
-    float upperBound, lowerBound;
+   float upperBound, lowerBound;
     int resolution;
 
     //public constructor
@@ -79,14 +78,6 @@ public:
     void setResolution(int resolution);
 
     /**
-     * @brief getData
-     * get data from histogram
-     * @return the vector with containing data
-     */
-    Q_INVOKABLE
-    QVector<int> getData();
-
-    /**
      * @brief calculateHistogram
      * Counts pixelvalues in a specific range (limited with upper/lowerBound)
      * and stores it in the QVector.
@@ -97,7 +88,9 @@ public:
      * @param img pixelvalues of this FloatImage are counted
      */
     Q_INVOKABLE
-    void calculateHistogram(data::FloatImage img);
+    QSharedPointer<QVector<int>> calculateHistogram(data::FloatImage img);
+
+    Histogram* clone(QObject* parent = 0) const;
 
 signals:
     /**

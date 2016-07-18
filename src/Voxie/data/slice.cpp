@@ -167,15 +167,26 @@ Slice::generateImage(
         const QSize &imageSize,
         InterpolationMethod interpolation) const
 {
-    SliceImageContext imgContext = {this->getCuttingPlane(), sliceArea, this->getDataset()->filteredData()->getSpacing()};
+    return generateImage(this->getDataset()->filteredData().data(), this->getCuttingPlane(), sliceArea, imageSize, interpolation);
+}
+
+SliceImage
+Slice::generateImage(
+        VoxelData* data,
+        const Plane& plane,
+        const QRectF &sliceArea,
+        const QSize &imageSize,
+        InterpolationMethod interpolation)
+{
+    SliceImageContext imgContext = {plane, sliceArea, data->getSpacing()};
     SliceImage img((size_t) imageSize.width(), (size_t) imageSize.height(), imgContext, false);
 
-    QVector3D origin = this->origin();
-    origin += this->xAxis() * sliceArea.x();
-    origin += this->yAxis() * sliceArea.y();
+    QVector3D origin = plane.origin;
+    origin += plane.tangent() * sliceArea.x();
+    origin += plane.cotangent() * sliceArea.y();
 
     try {
-        this->dataset->filteredData()->extractSlice(origin, this->rotation(), imageSize, sliceArea.width() / imageSize.width(), sliceArea.height() / imageSize.height(), interpolation, img);
+        data->extractSlice(origin, plane.rotation, imageSize, sliceArea.width() / imageSize.width(), sliceArea.height() / imageSize.height(), interpolation, img);
     } catch (voxie::scripting::ScriptingException& e) {
         qWarning() << "Extracting slice failed";
     }
