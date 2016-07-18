@@ -494,6 +494,7 @@ QSharedPointer<QList<QSharedPointer<io::Loader>>> Root::getLoaders() {
             voxie::io::Loader::Filter filter(description, patternList);
             QString executable = configFile.mid(0, configFile.length() - 5);
             QSharedPointer<io::Loader> loader(new ScriptLoader(filter, this, executable), [](QObject* obj) { obj->deleteLater(); });
+            connect(loader.data(), &Loader::dataLoaded, this, &Root::registerDataObject);
             connect(loader.data(), &Loader::dataLoaded, this, &Root::registerDataSet);
             result->push_back(loader);
         }
