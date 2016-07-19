@@ -401,8 +401,8 @@ void CoreWindow::initWidgets(voxie::Root* root)
             container->addWidget(this->mdiArea);
             container->setCollapsible(0, false);
 
-            auto scroll = new SidePanel(root, this);
-            container->addWidget(scroll);
+            sidePanel = new SidePanel(root, this);
+            container->addWidget(sidePanel);
         }
         //container->setLayout(layout);
     }

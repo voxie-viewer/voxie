@@ -2,6 +2,8 @@
 
 #include <Voxie/data/voxeldata.hpp>
 
+#include <Voxie/io/operation.hpp>
+
 #include <Voxie/scripting/client.hpp>
 #include <Voxie/scripting/scriptingexception.hpp>
 
@@ -9,9 +11,15 @@
 
 using namespace voxie::scripting;
 using namespace voxie::data;
+using namespace voxie::io;
 
-ExternalOperation::ExternalOperation() : ScriptableObject("ExternalOperation", nullptr) {
-    new ExternalOperationAdaptor(this);
+ExternalOperation::ExternalOperation(const QSharedPointer<voxie::io::Operation>& operation) : ScriptableObject("ExternalOperation", nullptr), operation(operation) {
+    auto adapter = new ExternalOperationAdaptor(this);
+
+    if (!operation)
+        qCritical() << "ExternalOperation::ExternalOperation: operation is null";
+
+    connect(operation.data(), &Operation::cancelled, adapter, &ExternalOperationAdaptor::Cancelled);
 }
 
 ExternalOperation::~ExternalOperation() {
@@ -34,6 +42,10 @@ void ExternalOperation::checkClient() {
     if (client->uniqueConnectionName() != message().service()) {
         qWarning() << "ExternalOperationAdaptor::checkClient(): connection mismatch, expected" << client->uniqueConnectionName() << "got" << message().service() << "for" << this;
     }
+}
+
+bool ExternalOperationAdaptor::isCancelled() {
+    return object->operation->isCancelled();
 }
 
 void ExternalOperationAdaptor::ClaimOperation(const QDBusObjectPath& client) {
@@ -73,7 +85,7 @@ void ExternalOperationAdaptor::SetProgress(double progress) {
         object->checkClient();
 
         //qDebug() << "ExternalOperation::SetProgress" << progress;
-        Q_UNUSED(progress); // TODO
+        object->operation->updateProgress(progress);
     } catch (voxie::scripting::ScriptingException& e) {
         e.handle(object);
         return;
@@ -96,7 +108,7 @@ void ExternalOperationAdaptor::FinishError(const QString& name, const QString& m
     }
 }
 
-ExternalOperationLoad::ExternalOperationLoad() {
+ExternalOperationLoad::ExternalOperationLoad(const QSharedPointer<voxie::io::Operation>& operation) : ExternalOperation(operation) {
     new ExternalOperationLoadAdaptor(this);
 }
 

@@ -146,6 +146,10 @@ public:
 
     ~DeUni_stuttgartVoxieExternalOperationInterface();
 
+    Q_PROPERTY(bool IsCancelled READ isCancelled)
+    inline bool isCancelled() const
+    { return qvariant_cast< bool >(property("IsCancelled")); }
+
 public Q_SLOTS: // METHODS
     inline QDBusPendingReply<> ClaimOperation(const QDBusObjectPath &client)
     {
@@ -169,6 +173,7 @@ public Q_SLOTS: // METHODS
     }
 
 Q_SIGNALS: // SIGNALS
+    void Cancelled();
 };
 
 /*

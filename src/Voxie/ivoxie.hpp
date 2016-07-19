@@ -16,6 +16,10 @@ namespace data
     class Slice;
     class DataObject;
 }
+namespace io
+{
+    class Operation;
+}
 namespace plugin
 {
     class VoxiePlugin;
@@ -71,6 +75,8 @@ public:
     virtual ActiveVisualizerProvider* activeVisualizerProvider() const = 0;
 
     virtual QWidget* mainWindow() const = 0;
+
+    virtual void addProgressBar(voxie::io::Operation* operation) = 0;
 };
 
 void VOXIECORESHARED_EXPORT setVoxieRoot(IVoxie *voxie);

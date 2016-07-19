@@ -58,6 +58,12 @@ static inline QSharedPointer<T> createQSharedPointer(U&&... par) {
 
 typedef float Voxel;
 
+class OperationCancelledException : public QException {
+ public:
+    OperationCancelledException() {}
+    virtual ~OperationCancelledException() {}
+};
+
 struct Error : public QException {
     QString msg;
     Error(const QString& msg) : msg(msg) {
@@ -765,12 +771,23 @@ int main(int argc, char *argv[]) {
             if (!rawFile.seek(vol->skipHeader))
                 error("Could not seek in raw file");
 
+            bool isCancelled = false;
+            QObject::connect(&op.exop, &de::uni_stuttgart::Voxie::ExternalOperation::Cancelled, [&isCancelled] {
+                    //qDebug() << "CANCELLED";
+                    isCancelled = true;
+                });
+            isCancelled = op.exop.isCancelled(); // This is necessary to avoid a race condition when the operation is cancelled before the handler is registered
+
             QVector<quint8> buffer(vol->size[0] * vol->size[1] * (vol->bitsPerElement / 8));
             auto converter = DataConverter::create(vol->dataType, vol->bitsPerElement);
             //qDebug() << vol->size[0] << vol->size[1] << vol->size[2];
             //qDebug() << resSize[0] << resSize[1] << resSize[2];
             //qDebug() << strides[0] << strides[1] << strides[2];
             for (size_t z = 0; z < (quint64) vol->size[2]; z++) {
+                app.processEvents(); // check for Cancelled signal
+                if (isCancelled)
+                    throw OperationCancelledException();
+
                 qint64 pos = 0;
                 while (pos < buffer.size()) {
                     qint64 res = rawFile.read((char*) (buffer.data() + pos), buffer.size() - pos);
@@ -781,10 +798,13 @@ int main(int argc, char *argv[]) {
                     pos += res;
                 }
                 converter->convert(buffer, (Voxel*) ((char*)data + offset + strides[2] * z), vol->size[0], vol->size[1], strides[0], strides[1], scale, offsetValue);
+                op.exop.SetProgress(1.0 * (z + 1) / vol->size[2]);
             }
 
             op.exop_l.Finish(QDBusObjectPath(voxelData.path()));
             return 0;
+        } catch (OperationCancelledException&) {
+            HANDLEDBUSPENDINGREPLY(op.exop.FinishError("de.uni_stuttgart.Voxie.OperationCancelled", "The operation has been cancelled"));
         } catch (Error& error) {
             HANDLEDBUSPENDINGREPLY(op.exop.FinishError("de.uni_stuttgart.Voxie.ExtLoadVgi.Error", error.msg));
         }

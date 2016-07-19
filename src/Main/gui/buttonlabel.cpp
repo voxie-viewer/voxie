@@ -31,7 +31,7 @@ void ButtonLabel::enterEvent(QEvent*)
 
 void ButtonLabel::leaveEvent(QEvent*)
 {
-    //this->setStyleSheet("QLabel { }");
+    this->setStyleSheet("QLabel { }");
 }
 
 

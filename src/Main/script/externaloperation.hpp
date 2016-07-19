@@ -14,6 +14,9 @@ namespace voxie {
 namespace data {
 class VoxelData;
 }
+namespace io {
+class Operation;
+}
 namespace scripting {
 class ScriptingException;
 
@@ -25,13 +28,15 @@ class ExternalOperation : public voxie::scripting::ScriptableObject, public QDBu
 
     QPointer<voxie::scripting::Client> client = nullptr;
 
+    QSharedPointer<voxie::io::Operation> operation;
+
 protected:
     bool isFinished = false;
 
     void checkClient();
 
 public:
-    ExternalOperation();
+    explicit ExternalOperation(const QSharedPointer<voxie::io::Operation>& operation);
     ~ExternalOperation() override;
 
     QWeakPointer<QSharedPointer<ExternalOperation>> initialReference;
@@ -49,6 +54,9 @@ public:
     ExternalOperationAdaptor(ExternalOperation* object);
     ~ExternalOperationAdaptor() override;
 
+    Q_PROPERTY (bool IsCancelled READ isCancelled)
+    bool isCancelled();
+
 public slots:
     // Must be called before doing anything else with the object
     // After the operation is finished, client.DecRefCount(operation) has to
@@ -60,6 +68,9 @@ public slots:
     void SetProgress(double progress);
 
     void FinishError(const QString& name, const QString& message);
+
+signals:
+    void Cancelled();
 };
 
 class ExternalOperationLoadAdaptor;
@@ -69,7 +80,7 @@ class ExternalOperationLoad : public ExternalOperation {
     friend class ExternalOperationLoadAdaptor;
 
 public:
-    ExternalOperationLoad();
+    explicit ExternalOperationLoad(const QSharedPointer<voxie::io::Operation>& operation);
     ~ExternalOperationLoad() override;
 
 signals:

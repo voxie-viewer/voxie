@@ -31,6 +31,9 @@
     </method>
   </interface>
   <interface name="de.uni_stuttgart.Voxie.ExternalOperation">
+    <property access="read" name="IsCancelled" type="b" />
+    <signal name="Cancelled">
+    </signal>
     <method name="ClaimOperation">
       <arg direction="in" name="client" type="o" />
     </method>

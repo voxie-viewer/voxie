@@ -17,13 +17,15 @@ class VOXIECORESHARED_EXPORT OperationCancelledException : public voxie::scripti
 class VOXIECORESHARED_EXPORT Operation : public QObject {
     Q_OBJECT
 
-    QAtomicInt cancelled;
+    QAtomicInt cancelledVal;
 
     QMutex progressMutex;
     bool progressUpdating = false;
     bool progressPending = false;
     float progressPendingValue;
     void emitProgressChanged();
+
+    QString description_;
 
 public:
     Operation(QObject* parent = nullptr);
@@ -37,15 +39,20 @@ public slots:
 
 public:
     // thread-safe
-    bool isCancelled() { return cancelled.load() != 0; }
+    bool isCancelled() { return cancelledVal.load() != 0; }
     // thread-safe
     void throwIfCancelled() {
         if (isCancelled())
             throw OperationCancelledException();
     }
 
+    void setDescription(const QString& desc);
+    const QString& description();
+
 signals:
     void progressChanged(float progress);
+    void descriptionChanged(const QString& description);
+    void cancelled();
 };
 
 } }

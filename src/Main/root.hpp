@@ -170,6 +170,8 @@ public:
 
     const QList<voxie::data::DataObject*>& dataObjects() const { return dataObjects_; }
 
+    void addProgressBar(voxie::io::Operation* operation) override;
+
 public:
     /**
      * @brief Quits voxie.

@@ -1,6 +1,7 @@
 #include "operation.hpp"
 
 #include <QtCore/QDebug>
+#include <QtCore/QThread>
 
 using namespace voxie::io;
 
@@ -10,13 +11,22 @@ OperationCancelledException::~OperationCancelledException() {
 }
 
 Operation::Operation(QObject* parent) : QObject(parent) {
+    cancelledVal.store(0);
 }
 Operation::~Operation() {
     //qDebug() << "~Operation()";
 }
 
 void Operation::cancel() {
-    cancelled.store(1);
+    if (QThread::currentThread() != thread())
+        qCritical() << "Operation::cancel() called from wrong thread" << QThread::currentThread();
+
+    if (isCancelled())
+        return;
+
+    cancelledVal.store(1);
+
+    emit cancelled();
 }
 
 template <typename T>
@@ -70,6 +80,23 @@ void Operation::emitProgressChanged() {
         enqueueOnThread(this, [this] { emitProgressChanged(); });
     else
         progressUpdating = false;
+}
+
+void Operation::setDescription(const QString& desc) {
+    if (thread() != QThread::currentThread()) {
+        qCritical() << "Operation::setDescription() call from incorrect thread";
+        return;
+    }
+
+    description_ = desc;
+    emit descriptionChanged(description_);
+}
+const QString& Operation::description() {
+    if (thread() != QThread::currentThread()) {
+        qCritical() << "Operation::description() call from incorrect thread";
+    }
+
+    return description_;
 }
 
 // Local Variables:

@@ -5,6 +5,8 @@
 #include <PluginVis3D/cuberille.hpp>
 #include <PluginVis3D/marchingcubes.hpp>
 
+#include <Voxie/ivoxie.hpp>
+
 #include <Voxie/data/voxeldata.hpp>
 #include <Voxie/data/surfacebuilder.hpp>
 #include <Voxie/data/slice.hpp>
@@ -192,6 +194,8 @@ void IsosurfaceView::regenerate() {
 
     QSharedPointer<voxie::io::Operation> operation(new voxie::io::Operation(), [](QObject* obj) { obj->deleteLater(); });
 
+    operation->setDescription("Regenerate isosurface");
+
     // This object will be moved to the newly created thread and will be deleted
     // on this thread once the operation is finished
     auto extractionOperation = new IsosurfaceExtractionOperation(operation, this->voxelData->filteredData(), extractor, this->threshold, this->inverted);
@@ -216,6 +220,8 @@ void IsosurfaceView::regenerate() {
     // The thread might continue in the background until it actually processes
     // the cancellation, but this result (if any) will be ignored
     connect(this, &QObject::destroyed, operation.data(), &voxie::io::Operation::cancel);
+
+    voxie::voxieRoot().addProgressBar(operation.data());
 
     this->generating = true;
     thread->start();

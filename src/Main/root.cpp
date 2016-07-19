@@ -16,6 +16,8 @@
 
 #include <Voxie/data/image.hpp>
 
+#include <Voxie/io/operation.hpp>
+
 #include <Voxie/opencl/clinstance.hpp>
 #include <Voxie/opencl/clutil.hpp>
 
@@ -122,7 +124,7 @@ Root::Root(QObject *parent) :
     // This is a fake ExternalOperationLoad object to make sure that
     // scripts/getDBusInterfaces.py will pick up the methods in
     // ExternalOperation and ExternalOperationLoad
-    auto fakeExternalOperation = createQSharedPointer<ExternalOperationLoad>();
+    auto fakeExternalOperation = createQSharedPointer<ExternalOperationLoad>(createQSharedPointer<Operation>());
     ScriptableObject::registerObject(fakeExternalOperation);
     // Make sure that the object stays until the Root object is destroyed
     connect(this, &QObject::destroyed, [fakeExternalOperation] () { });
@@ -416,7 +418,11 @@ namespace {
     protected:
         // throws ScriptingException
         QSharedPointer<voxie::data::VoxelData> loadImpl(const QString &fileName) override {
-            auto exOp = QSharedPointer<ExternalOperationLoad>(new ExternalOperationLoad(), [](QObject* obj) { obj->deleteLater(); });
+            auto op = QSharedPointer<Operation>(new Operation(), [](QObject* obj) { obj->deleteLater(); });
+            op->setDescription("Load " + fileName);
+            Root::instance()->addProgressBar(op.data());
+
+            auto exOp = QSharedPointer<ExternalOperationLoad>(new ExternalOperationLoad(op), [](QObject* obj) { obj->deleteLater(); });
             registerObject(exOp);
             auto initialRef = createQSharedPointer<QSharedPointer<ExternalOperation> >();
             *initialRef = exOp;
@@ -459,8 +465,15 @@ namespace {
             if (*exitWithoutClaim)
                 throw ScriptingException("de.uni_stuttgart.Voxie.LoadScriptErrorNoClaim", "Script failed to claim the loading operation");
 
+            if (op->isCancelled())
+                throw OperationCancelledException();
+
             if (*error) {
                 //throw *error;
+                /*
+                if ((*error)->name() == "de.uni_stuttgart.Voxie.OperationCancelled")
+                    throw OperationCancelledException();
+                */
                 throw ScriptingException("de.uni_stuttgart.Voxie.LoadScriptError", (*error)->name() + ": " + (*error)->message());
             }
 
@@ -505,6 +518,10 @@ QSharedPointer<QList<QSharedPointer<io::Loader>>> Root::getLoaders() {
     qSort(result->begin(), result->end(), [] (const QSharedPointer<io::Loader>& l1, const QSharedPointer<io::Loader>& l2) { return l1->filter().filterString() < l2->filter().filterString(); });
 
     return result;
+}
+
+void Root::addProgressBar(voxie::io::Operation* operation) {
+    mainWindow()->sidePanel->addProgressBar(operation);
 }
 
 

@@ -5,6 +5,8 @@
 #include <Main/gui/objecttree.hpp>
 #include <Main/gui/buttonlabel.hpp>
 
+#include <Voxie/io/operation.hpp>
+
 #include <Voxie/plugin/voxieplugin.hpp>
 
 #include <Voxie/scripting/scriptingexception.hpp>
@@ -15,19 +17,40 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QScrollArea>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QProgressBar>
+#include <QtWidgets/QPushButton>
 
 using namespace voxie::data;
 using namespace voxie::gui;
+using namespace voxie::io;
 
 SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent) : QWidget(parent) {
     this->setMinimumWidth(350);
     this->setMaximumWidth(800);
 
-    QVBoxLayout *layout = new QVBoxLayout();
+    auto layout = new QVBoxLayout();
     layout->setMargin(0);
+    this->setLayout(layout);
+
+    auto splitter = new QSplitter(Qt::Vertical);
+    layout->addWidget(splitter);
+
+    splitter->addWidget(objectTree = new ObjectTree(root));
+    splitter->setCollapsible(0, false);
+    objectTree->setMinimumHeight(100);
+    //objectTree->setMaximumHeight(500);
+
+    auto bottomWidget = new QWidget();
+    splitter->addWidget(bottomWidget);
+    splitter->setCollapsible(1, false);
+    bottomLayout = new QVBoxLayout();
+    bottomLayout->setMargin(0);
+    bottomWidget->setLayout(bottomLayout);
 
     //auto scroll = new VScrollArea();
     auto scroll = new QScrollArea();
+    bottomLayout->addWidget(scroll);
     scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     //scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -40,19 +63,18 @@ SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent
         {
             this->sections = new QVBoxLayout();
             this->sections->setMargin(3);
-            this->sections->addWidget(objectTree = new ObjectTree(root));
+            //this->sections->addWidget(objectTree = new ObjectTree(root));
             box->addLayout(this->sections);
             box->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
         }
         scroll->setWidget(boxC);
     }
-    layout->addWidget(scroll);
 
-    this->setLayout(layout);
+    splitter->setSizes({1000, 3000});
 
     connect(root, &voxie::Root::dataObjectAdded, this, &SidePanel::addDataObject);
     connect(objectTree, &ObjectTree::objectSelected, this, [this] (voxie::data::DataObject* obj) {
-            //qDebug() << "Change sidepanel visibility to" << obj;
+            //qDebug() << "Change sidepanel visibility to" << obj << visibleSections.size();
 
             for (auto section : visibleSections) {
                 if (!section)
@@ -290,13 +312,65 @@ QWidget* SidePanel::addSection(QWidget *section, bool closeable, voxie::data::Da
 
     dockWidget->setProperty("section", QVariant::fromValue(section));
 
-    this->sections->addWidget(dockWidget);
-
-    dockWidget->setVisible(!obj || this->objectTree->selectedObject() == obj);
-
     section->setProperty("dockWidget", QVariant::fromValue(dockWidget));
 
+    this->sections->addWidget(dockWidget);
+
+    bool visible = !obj || this->objectTree->selectedObject() == obj;
+    dockWidget->setVisible(visible);
+    if (visible)
+        visibleSections << section;
+
     return dockWidget;
+}
+
+void SidePanel::addProgressBar(Operation* operation) {
+    if (QThread::currentThread() != qApp->thread()) {
+        qCritical() << "SidePanel::addProgressBar called from outside main thread";
+        return;
+    }
+    if (QThread::currentThread() != operation->thread()) {
+        qCritical() << "Operation does not belong to main thread";
+        return;
+    }
+
+    auto widget = new QWidget();
+    auto layout = new QVBoxLayout();
+    layout->setMargin(0);
+    widget->setLayout(layout);
+
+    //connect(operation, &QObject::destroyed, widget, &QObject::deleteLater);
+    connect(operation, &QObject::destroyed, widget, [widget] { delete widget; });
+
+    bottomLayout->addWidget(widget);
+
+    auto hbox = new QWidget();
+    auto hboxLayout = new QHBoxLayout();
+    hboxLayout->setMargin(0);
+    hbox->setLayout(hboxLayout);
+    layout->addWidget(hbox);
+
+    auto label = new QLabel(operation->description());
+    hboxLayout->addWidget(label);
+    connect(operation, &Operation::descriptionChanged, label, &QLabel::setText);
+
+    auto cancelButton = new ButtonLabel();
+    //auto cancelButton = new QPushButton();
+    //cancelButton->setText("X");
+    cancelButton->setPixmap(QPixmap(":/icons/cross-button.png"));
+    //button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    hboxLayout->addWidget(cancelButton);
+    connect(cancelButton, &ButtonLabel::clicked, operation, &Operation::cancel);
+
+    auto bar = new QProgressBar();
+    layout->addWidget(bar);
+
+    bar->setMinimum(0);
+    bar->setMaximum(1000000);
+    connect(operation, &Operation::progressChanged, bar, [bar] (float value) {
+            //qDebug() << value;
+            bar->setValue((int) (value * 1000000 + 0.5));
+        });
 }
 
 // Local Variables:
