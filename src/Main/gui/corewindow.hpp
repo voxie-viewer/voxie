@@ -37,10 +37,10 @@ namespace gui
 {
 
 class ObjectTree;
+class CoreWindow;
+class SidePanel;
 
 class GuiDBusObject;
-
-class CoreWindow;
 
 class ActiveVisualizerProviderImpl : public ActiveVisualizerProvider {
     Q_OBJECT
@@ -71,10 +71,7 @@ private:
     QMenu *scriptsMenu;
     QMenu *pluginsMenu;
 
-    QVBoxLayout *sidePanel;
-
-    ObjectTree* objectTree;
-    QList<QPointer<QWidget>> visibleSections;
+    SidePanel* sidePanel;
 
     QMap<plugin::VisualizerType, QMenu*> visualizerMenus;
 
@@ -145,8 +142,6 @@ private:
      */
     void populateScriptsMenu();
 
-    void addDataObject(voxie::data::DataObject* obj);
-
 public:
     explicit CoreWindow(Root* root, QWidget *parent = 0);
     ~CoreWindow();
@@ -160,13 +155,6 @@ public:
      * @param widget
      */
     void addVisualizer(visualization::Visualizer *visualizer);
-
-    /**
-     * @brief Adds a section to the window.
-     * @param widget
-     * @param closeable If true, the user can close the section.
-     */
-    QWidget *addSection(QWidget *widget, bool closeable = false, voxie::data::DataObject* obj = nullptr);
 };
 
 class GuiDBusObject : public voxie::scripting::ScriptableObject, public QDBusContext

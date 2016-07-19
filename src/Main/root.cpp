@@ -8,6 +8,8 @@
 #include <Main/metatyperegistration.hpp>
 #include <Main/scriptwrapper.hpp>
 
+#include <Main/gui/sidepanel.hpp>
+
 #include <Main/gui/preferences/openclpreferences.hpp>
 
 #include <Main/script/externaloperation.hpp>
@@ -568,7 +570,7 @@ void Root::registerVisualizer(Visualizer *visualizer)
 
 void Root::registerSection(QWidget *section, bool closeable)
 {
-	this->mainWindow()->addSection(section, closeable);
+	this->mainWindow()->sidePanel->addSection(section, closeable);
 }
 
 void Root::registerDataSet(DataSet *dataSet)

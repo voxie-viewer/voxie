@@ -25,6 +25,7 @@ HEADERS += \
     gui/scriptconsole.hpp \
     root.hpp \
     gui/sliceview.hpp \
+    gui/sidepanel.hpp \
     gui/planeview.hpp \
     gui/dataselectiondialog.hpp \
     gui/buttonlabel.hpp \
@@ -54,6 +55,7 @@ SOURCES += \
     main.cpp \
     gui/datasetview.cpp \
     gui/sliceview.cpp \
+    gui/sidepanel.cpp \
     gui/planeview.cpp \
     gui/dataselectiondialog.cpp \
     gui/objecttree.cpp \
