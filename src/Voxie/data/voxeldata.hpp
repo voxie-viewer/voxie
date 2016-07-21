@@ -79,6 +79,7 @@ class VOXIECORESHARED_EXPORT VoxelData : public voxie::scripting::ScriptableObje
 
     public:
         // throws ScriptingException
+        // Can also be called from non-main thread (object will be created on main thread)
         static QSharedPointer<VoxelData> create(size_t width, size_t height, size_t depth);
         ~VoxelData();
 

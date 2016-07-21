@@ -9,7 +9,7 @@ class RAWImporter :
 public:
     explicit RAWImporter(QObject *parent = 0);
 
-    virtual QSharedPointer<voxie::data::VoxelData> loadImpl(const QString &fileName) override;
+    virtual QSharedPointer<voxie::data::VoxelData> load(const QSharedPointer<voxie::io::Operation>& op, const QString &fileName) override;
 
 signals:
 

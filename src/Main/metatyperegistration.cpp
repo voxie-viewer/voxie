@@ -6,6 +6,8 @@
 
 #include <Voxie/visualization/visualizer.hpp>
 
+#include <Voxie/scripting/scriptingexception.hpp>
+
 #include <QtCore/QObject>
 
 void MetatypeRegistration::registerMetatypes()

@@ -24,6 +24,8 @@ HEADERS += \
     gui/corewindow.hpp \
     gui/scriptconsole.hpp \
     root.hpp \
+    io/load.hpp \
+    io/loaderadaptor.hpp \
     gui/sliceview.hpp \
     gui/sidepanel.hpp \
     gui/planeview.hpp \
@@ -53,6 +55,8 @@ SOURCES += \
     gui/scriptconsole.cpp \
     root.cpp \
     main.cpp \
+    io/load.cpp \
+    io/loaderadaptor.cpp \
     gui/datasetview.cpp \
     gui/sliceview.cpp \
     gui/sidepanel.cpp \

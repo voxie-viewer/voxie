@@ -4,6 +4,8 @@
 
 #include <Voxie/scripting/scriptingexception.hpp>
 
+#include <Voxie/io/operation.hpp>
+
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 
@@ -36,7 +38,7 @@ static QVector3D toQVector (Math::DiagMatrix3<double> vec) {
     return QVector3D(vec.m11(), vec.m22(), vec.m33());
 }
 
-QSharedPointer<voxie::data::VoxelData> HDFLoader::loadImpl(const QString &fileName) {
+QSharedPointer<voxie::data::VoxelData> HDFLoader::load(const QSharedPointer<voxie::io::Operation>& op, const QString &fileName) {
     // check if file exists
     QFile qFile(fileName);
     if (!qFile.exists()) {
@@ -57,7 +59,10 @@ QSharedPointer<voxie::data::VoxelData> HDFLoader::loadImpl(const QString &fileNa
             (ptrdiff_t) (size.x() * size.y() * sizeof (float))
         };
         Math::ArrayView<float, 3> view(voxelData->getData(), shape, stridesBytes);
-        loadAndTransformTo<float /*should be float even if half or integer type is used for volume data*/>(*volume, view);
+        loadAndTransformTo<float /*should be float even if half or integer type is used for volume data*/>(*volume, view, [op] (size_t pos, size_t count) {
+                op->throwIfCancelled();
+                op->updateProgress(1.0 * pos / count); 
+            });
 
         // read meta data
         if (volume->GridOrigin)

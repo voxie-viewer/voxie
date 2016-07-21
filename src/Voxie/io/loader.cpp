@@ -1,12 +1,12 @@
 #include "loader.hpp"
 
-#include <Voxie/data/dataset.hpp>
+#include <Voxie/ivoxie.hpp>
+
 #include <Voxie/data/voxeldata.hpp>
 
 #include <Voxie/scripting/scriptingexception.hpp>
 
 using namespace voxie::io;
-using namespace voxie::io::internal;
 
 Loader::Filter::Filter (const QString& description, const QStringList& patterns) : description_ (description), patterns_ (patterns) {
     filterString_ = this->description() + " (" + this->patterns().join(" ") + ")";
@@ -40,7 +40,7 @@ bool Loader::Filter::matches (const QString& filename) const {
 Loader::Loader(Filter filter, QObject *parent) :
     voxie::plugin::PluginMember("Loader", parent), filter_ (filter)
 {
-    new LoaderAdaptor (this);
+    voxieRoot().createLoaderAdaptor(this);
 }
 
 Loader::~Loader()
@@ -48,26 +48,16 @@ Loader::~Loader()
 
 }
 
-voxie::data::DataSet* Loader::load(const QString &fileName) {
-    return registerVoxelData(loadImpl(fileName), fileName);
-}
-
-voxie::data::DataSet* Loader::registerVoxelData(const QSharedPointer<voxie::data::VoxelData>& data, const QString &fileName) {
-    voxie::data::DataSet* dataSet = new voxie::data::DataSet(data);
-    dataSet->setFileInfo(QFileInfo(fileName));
-    dataSet->setDisplayName(dataSet->getFileInfo().fileName());
-    emit dataLoaded(dataSet);
-    return dataSet;
-}
-
-QDBusObjectPath LoaderAdaptor::Load(const QString &fileName, const QMap<QString, QVariant>& options) {
-    try {
-        voxie::scripting::ScriptableObject::checkOptions(options);
-        return voxie::scripting::ScriptableObject::getPath(object->load(fileName));
-    } catch (voxie::scripting::ScriptingException& e) {
-        e.handle(object);
-        return voxie::scripting::ScriptableObject::getPath(nullptr);
+void Loader::setSelf(const QSharedPointer<Loader>& ptr) {
+    if (ptr.data() != this) {
+        qCritical() << "Loader::setSelf called with incorrect object";
+        return;
     }
+    if (self) {
+        qCritical() << "Loader::setSelf called with multiple times";
+        return;
+    }
+    self = ptr;
 }
 
 

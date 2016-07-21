@@ -1,13 +1,18 @@
 #include "scriptingexception.hpp"
 
 #include <QtCore/QThreadStorage>
+#include <QtCore/QSharedPointer>
 
 using namespace voxie::scripting;
 
 static QThreadStorage<std::function<void(ScriptingException)>*> handler;
 
+Q_DECLARE_METATYPE(QSharedPointer<voxie::scripting::ScriptingException>);
+
 ScriptingException::ScriptingException(const QString& name, const QString& message, const QString& additional) : name_ (name), message_ (message), additional_ (additional) {
     what_ = "ScriptingException: " + this->name() + ": " + this->message();
+
+    qRegisterMetaType<QSharedPointer<ScriptingException>>();
 }
 
 ScriptingException::~ScriptingException() {

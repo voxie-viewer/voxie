@@ -13,9 +13,12 @@
 namespace voxie
 {
 // Forward declarations
-namespace data{
-class DataSet;
+class Root;
+namespace data {
 class VoxelData;
+}
+namespace io {
+class Operation;
 }
 
 namespace io
@@ -51,44 +54,22 @@ public:
 private:
     Filter filter_;
 
+    QWeakPointer<Loader> self;
+
 public:
     explicit Loader(Filter filter, QObject *parent = 0);
     virtual ~Loader();
 
     Q_INVOKABLE const Filter& filter() { return filter_; }
 
+    const QWeakPointer<Loader>& getSelf() { return self; }
+    void setSelf(const QSharedPointer<Loader>& ptr);
+
     // throws ScriptingException
-    voxie::data::DataSet* load(const QString &fileName);
-
-protected:
-    // throws ScriptingException
-    virtual QSharedPointer<voxie::data::VoxelData> loadImpl(const QString &fileName) = 0;
-
-    voxie::data::DataSet* registerVoxelData(const QSharedPointer<voxie::data::VoxelData>& data, const QString &fileName);
-
-signals:
-    void dataLoaded(data::DataSet* dataSet);
+    virtual QSharedPointer<voxie::data::VoxelData> load(const QSharedPointer<Operation>& op, const QString &fileName) = 0;
 };
 
-namespace internal {
-class LoaderAdaptor : public QDBusAbstractAdaptor
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.Loader")
-
-    Loader* object;
-
-public:
-    LoaderAdaptor (Loader* object) : QDBusAbstractAdaptor (object), object (object) {}
-    virtual ~LoaderAdaptor () {}
-
-    Q_PROPERTY (QVariantMap Filter READ filter)
-    QVariantMap filter() { return object->filter(); }
-
-public slots:
-    QDBusObjectPath Load(const QString &fileName, const QMap<QString, QVariant>& options);
-};
-}
+// LoaderAdaptor is in Main/io/loaderadaptor.hpp
 
 }
 }

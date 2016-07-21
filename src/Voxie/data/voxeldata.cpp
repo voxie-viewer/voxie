@@ -10,6 +10,7 @@
 #include <QtCore/QRunnable>
 #include <QtCore/QThreadPool>
 #include <QtCore/QUuid>
+#include <QtCore/QCoreApplication>
 
 using namespace voxie::data;
 using namespace voxie::data::internal;
@@ -74,10 +75,17 @@ public:
     }
 };
 
+static size_t calcSizeBytes(size_t width, size_t height, size_t depth) {
+    size_t size = width * height * depth * sizeof(Voxel);
+    if (size / width / height / depth != sizeof(Voxel))
+        throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.OutOfMemory", "Overflow while calculating size");
+    return size;
+}
+
 VoxelData::VoxelData(size_t width, size_t height, size_t depth) :
     voxie::scripting::ScriptableObject("VoxelData"),
 	//data(nullptr),
-    dataSH(width*height*depth*sizeof(Voxel)),
+    dataSH(calcSizeBytes(width, height, depth)),
     size(width * height * depth),
 	dimensions(width, height, depth),
     dimensionsMetric(width, height, depth),
@@ -86,14 +94,37 @@ VoxelData::VoxelData(size_t width, size_t height, size_t depth) :
 {
     new VoxelDataAdaptor(this);
 
+    qRegisterMetaType<QSharedPointer<VoxelData>>();
+
 	//this->data = new Voxel[width*height*depth];
     connect(this, &VoxelData::changed, this, &VoxelData::invalidate);
 }
 
 QSharedPointer<VoxelData> VoxelData::create(size_t width, size_t height, size_t depth) {
-    QSharedPointer<VoxelData> data(new VoxelData(width, height, depth), [](QObject* obj) { obj->deleteLater(); });
-    data->thisPointerWeak = data;
-    registerObject(data);
+    QSharedPointer<VoxelData> data;
+    QSharedPointer<voxie::scripting::ScriptingException> error;
+
+    auto main = QCoreApplication::instance();
+
+    {
+        QObject obj;
+        connect(&obj, &QObject::destroyed, main, [&data, &error, width, height, depth] {
+                try {
+                    data = QSharedPointer<VoxelData>(new VoxelData(width, height, depth), [](QObject* obj) { obj->deleteLater(); });
+                    data->thisPointerWeak = data;
+                    registerObject(data);
+                } catch (voxie::scripting::ScriptingException& e) {
+                    error = createQSharedPointer<voxie::scripting::ScriptingException>(e);
+                }
+            }, QThread::currentThread() == main->thread() ? Qt::DirectConnection : Qt::BlockingQueuedConnection);
+    } // this will destroy obj and trigger the lambda function on the main thread
+
+    if (error)
+        throw *error;
+
+    if (!data)
+        qCritical() << "VoxelData::create(): main thread failed to create object:" << main->thread() << QThread::currentThread();
+
     return data;
 }
 

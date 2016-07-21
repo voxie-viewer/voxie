@@ -4,6 +4,8 @@
 
 #include <Voxie/scripting/scriptingexception.hpp>
 
+#include <Voxie/io/operation.hpp>
+
 #include <cmath>
 #include <cstdlib>
 
@@ -41,7 +43,7 @@ static bool isPowerOfThree(size_t nL)
 	return n==1 || n==3 || n==9;
 }
 
-QSharedPointer<voxie::data::VoxelData> RAWImporter::loadImpl(const QString &fileName)
+QSharedPointer<voxie::data::VoxelData> RAWImporter::load(const QSharedPointer<voxie::io::Operation>& op, const QString &fileName)
 {
 	QFile file(fileName);
 
@@ -74,10 +76,12 @@ QSharedPointer<voxie::data::VoxelData> RAWImporter::loadImpl(const QString &file
         throw ScriptingException("de.uni_stuttgart.Voxie.RAWImporter.Error", "Failed to open file");
 	}
 
+    op->throwIfCancelled();
 	if(static_cast<size_t>(file.read(reinterpret_cast<char*>(data->getData()), fileSize)) != fileSize)
 	{
         throw ScriptingException("de.uni_stuttgart.Voxie.RAWImporter.Error", "Failed to read whole file");
 	}
+    op->updateProgress(1.0);
 
 	file.close();
 

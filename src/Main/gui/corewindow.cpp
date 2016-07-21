@@ -16,6 +16,8 @@
 #include <Main/gui/vscrollarea.hpp>
 #include <Main/gui/sidepanel.hpp>
 
+#include <Main/io/load.hpp>
+
 #include <Voxie/plugin/voxieplugin.hpp>
 
 #include <Voxie/scripting/scriptingexception.hpp>
@@ -631,7 +633,7 @@ QProcess* CoreWindow::startScript(const QString& scriptFile, const QString* exec
 }
 
 void CoreWindow::loadFile() {
-    const auto& loaders = Root::instance()->getLoaders();
+    const auto& loaders = Load::getLoaders(Root::instance());
 
     QStringList filters;
 
@@ -649,14 +651,14 @@ void CoreWindow::loadFile() {
     supportedFilter += ")";
     filters << supportedFilter;
 
-    QMap<QString, voxie::io::Loader*> map;
+    QMap<QString, QSharedPointer<voxie::io::Loader>> map;
     for (auto loader : *loaders) {
         const QString& filterString = loader->filter().filterString();
         if (map.contains(filterString)) {
             qWarning() << "Got multiple loaders with filter string" << filterString;
         } else {
             filters << filterString;
-            map[filterString] = loader.data();
+            map[filterString] = loader;
         }
     }
 
@@ -668,7 +670,7 @@ void CoreWindow::loadFile() {
 
     if (dialog.selectedNameFilter() == supportedFilter) {
         try {
-            Root::instance()->openFile(dialog.selectedFiles().first());
+            Load::openFile(Root::instance(), dialog.selectedFiles().first());
         } catch (voxie::scripting::ScriptingException& e) {
             errorMessage(e.message());
         }
@@ -676,7 +678,7 @@ void CoreWindow::loadFile() {
     }
     
     auto loader = map[dialog.selectedNameFilter()];
-    if(loader == nullptr) {
+    if(!loader) {
         QMessageBox(
             QMessageBox::Critical,
             this->windowTitle(),
@@ -685,11 +687,10 @@ void CoreWindow::loadFile() {
             this).exec();
         return;
     }
-    try {
-        loader->load(dialog.selectedFiles().first());
-    } catch (voxie::scripting::ScriptingException& e) {
-        errorMessage(e.message());
-    }
+    auto op = Load::openFile(Root::instance(), loader, dialog.selectedFiles().first());
+    connect(op, &LoadOperation::loadAborted, this, [this] (QSharedPointer<voxie::scripting::ScriptingException> e) {
+            errorMessage(e->message());
+        });
 }
 
 // Local Variables:

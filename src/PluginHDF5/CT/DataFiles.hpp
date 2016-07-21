@@ -170,8 +170,8 @@ Math::Vector3<size_t> getSize (const VolumeGen<T, true>& self) {
   }
   return s2;
 }
-template <typename BufferType, typename T>
-void loadAndTransformTo (const VolumeGen<T, true>& self, const Math::ArrayView<T, 3>& view) {
+template <typename BufferType, typename T, typename Callback>
+void loadAndTransformTo (const VolumeGen<T, true>& self, const Math::ArrayView<T, 3>& view, Callback callback) {
   static const bool assertions = false;
 
   std::vector<int32_t> swapDim13;
@@ -215,6 +215,7 @@ void loadAndTransformTo (const VolumeGen<T, true>& self, const Math::ArrayView<T
     BufferType scalingFactor = self.VolumeScalingFactor ? *self.VolumeScalingFactor : 1;
 
     for (std::size_t firstSlice = 0; firstSlice < sizeX; firstSlice += slices) {
+      callback(firstSlice, sizeX);
       std::size_t slicesCur = slices;
       if (firstSlice + slices > sizeX) {
         slicesCur = sizeX - firstSlice;
@@ -239,9 +240,15 @@ void loadAndTransformTo (const VolumeGen<T, true>& self, const Math::ArrayView<T
               transformedView (firstSlice + x, y, z) = bufferView (x, y, z);
       }
     }
+    callback(sizeX, sizeX);
   }
   //QDateTime end = QDateTime::currentDateTimeUtc ();
   //qDebug() << (end.toMSecsSinceEpoch() - start.toMSecsSinceEpoch());
+}
+static void callbackDoNothing(UNUSED size_t pos, UNUSED size_t count) {}
+template <typename BufferType, typename T>
+void loadAndTransformTo (const VolumeGen<T, true>& self, const Math::ArrayView<T, 3>& view) {
+  loadAndTransformTo<BufferType, T>(self, view, callbackDoNothing);
 }
 
 #endif // !CT_DATAFILES_HPP

@@ -19,6 +19,7 @@ namespace data
 namespace io
 {
     class Operation;
+    class Loader;
 }
 namespace plugin
 {
@@ -77,6 +78,8 @@ public:
     virtual QWidget* mainWindow() const = 0;
 
     virtual void addProgressBar(voxie::io::Operation* operation) = 0;
+
+    virtual QObject* createLoaderAdaptor(voxie::io::Loader* loader) = 0;
 };
 
 void VOXIECORESHARED_EXPORT setVoxieRoot(IVoxie *voxie);

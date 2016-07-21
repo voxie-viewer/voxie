@@ -63,7 +63,7 @@ private:
     bool disableOpenGL_;
     bool disableOpenCL_;
 
-    QList<io::Loader*> pluginLoaders;
+    QList<QSharedPointer<voxie::io::Loader>> pluginLoaders;
 
     QList<voxie::data::DataObject*> dataObjects_;
 
@@ -166,11 +166,13 @@ public:
 
     ActiveVisualizerProvider* activeVisualizerProvider() const override { return &mainWindow()->activeVisualizerProvider; }
 
-    QSharedPointer<QList<QSharedPointer<io::Loader>>> getLoaders();
-
     const QList<voxie::data::DataObject*>& dataObjects() const { return dataObjects_; }
 
     void addProgressBar(voxie::io::Operation* operation) override;
+
+    QObject* createLoaderAdaptor(voxie::io::Loader* loader) override;
+
+    const QList<QSharedPointer<voxie::io::Loader>>& getPluginLoaders() { return pluginLoaders; }
 
 public:
     /**
@@ -197,9 +199,6 @@ public:
      * @return True on success.
      */
     bool exec(const QString& code, const QString& codeToPrint);
-
-    // throws ScriptingException
-    voxie::data::DataSet* openFile(const QString& file);
 
     // throws ScriptingException
     voxie::plugin::VoxiePlugin* getPluginByName (const QString& name);
@@ -244,6 +243,7 @@ public:
 
     Q_SCRIPTABLE QDBusVariant ExecuteQScriptCode (const QString& code, const QMap<QString, QVariant>& options);
 
+    static QDBusObjectPath OpenFileImpl (Root* root, QDBusContext* context, const QString& interface_, const QString& member, const QString& file, const QSharedPointer<voxie::io::Loader>& loader, const QMap<QString, QVariant>& options);
     Q_SCRIPTABLE QDBusObjectPath OpenFile (const QString& file, const QMap<QString, QVariant>& options);
 };
 

@@ -13,7 +13,7 @@ public:
     explicit HDFLoader(QObject *parent = 0);
     ~HDFLoader();
 
-    virtual QSharedPointer<voxie::data::VoxelData> loadImpl(const QString &fileName) override;
+    virtual QSharedPointer<voxie::data::VoxelData> load(const QSharedPointer<voxie::io::Operation>& op, const QString &fileName) override;
 };
 
 // Local Variables:
