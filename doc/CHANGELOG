@@ -2,7 +2,7 @@ Major changes from version 0.1 to 0.2:
 
 - Improve 3D view navigation
 - Allow saving isosurfaces
-- Add experimental support for showing isosurfaces with OSVR
+- Add experimental support for showing isosurfaces with OSVR (not in binary packages)
 - Add support for 3D input devices under Linux
 - Allow loaders to be written as external programs
 - Add support for loading VGI files

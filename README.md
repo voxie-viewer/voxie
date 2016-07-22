@@ -65,13 +65,10 @@ Downloading binaries for Linux or Windows
 You can also download a binary version of Voxie for Linux or Windows (64-bit)
 from <https://github.com/voxie-viewer/voxie/releases>.
 
-The Linux binaries in `voxie-...-lin64.tar.gz1` require Qt5, the OpenCL ICD and
+The Linux binaries in `voxie-...-lin64.tar.gz` require Qt5, the OpenCL ICD and
 DBus to be available. To install Qt5 and the OpenCL ICD under Ubuntu, type:
 
     sudo apt-get install libqt5script5 libqt5opengl5 libqt5x11extras5 ocl-icd-libopencl1
-
-The Windows binaries in `voxie-...-win64-noqt.zip` require Qt5 64-bit for
-VS2013 to be available in %PATH%, all other libraries are bundled.
 
 The Windows binaries in `voxie-...-win64.zip` have all required libraries
 bundled.
