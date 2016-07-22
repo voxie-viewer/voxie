@@ -42,7 +42,7 @@ InformationTab::setupElements(QGridLayout* layout)
     lbl_documentation = new QLabel("Dokumentation: ");
 
     lbl_name_val    = new QLabel("Voxie");
-    lbl_version_val = new QLabel("Version 0.1 rev " + QString(GIT_VERSION) + " built with QT " + QString(QT_VERSION_STR));
+    lbl_version_val = new QLabel("Version 0.2 rev " + QString(GIT_VERSION) + " built with QT " + QString(QT_VERSION_STR));
     lbl_author_val  = new QLabel("Andreas Korge, Patrick Karner, Hans Martin Berner, Daniel Topp, Tim Borner, Felix Queißner, David Hägele, Steffen Kieß");
     lbl_homepage_val    = new QLabel;
     lbl_homepage_val->setTextInteractionFlags(Qt::LinksAccessibleByKeyboard | Qt::LinksAccessibleByMouse);
