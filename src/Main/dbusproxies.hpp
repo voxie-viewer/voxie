@@ -417,19 +417,19 @@ Q_SIGNALS: // SIGNALS
 };
 
 /*
- * Proxy class for interface de.uni_stuttgart.Voxie.Plugins.ExamplePlugin.TheSphereGenerator
+ * Proxy class for interface de.uni_stuttgart.Voxie.Plugins.Example.TheSphereGenerator
  */
-class DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface: public QDBusAbstractInterface
+class DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface: public QDBusAbstractInterface
 {
     Q_OBJECT
 public:
     static inline const char *staticInterfaceName()
-    { return "de.uni_stuttgart.Voxie.Plugins.ExamplePlugin.TheSphereGenerator"; }
+    { return "de.uni_stuttgart.Voxie.Plugins.Example.TheSphereGenerator"; }
 
 public:
-    DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
+    DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
 
-    ~DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface();
+    ~DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface();
 
 public Q_SLOTS: // METHODS
     inline QDBusPendingReply<QDBusObjectPath> GenerateSphere(int size, const QVariantMap &options)
@@ -730,8 +730,8 @@ namespace de {
       typedef ::DeUni_stuttgartVoxiePluginInterface Plugin;
       typedef ::DeUni_stuttgartVoxiePluginMemberInterface PluginMember;
       namespace Plugins {
-        namespace ExamplePlugin {
-          typedef ::DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface TheSphereGenerator;
+        namespace Example {
+          typedef ::DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface TheSphereGenerator;
         }
       }
       typedef ::DeUni_stuttgartVoxieSliceInterface Slice;

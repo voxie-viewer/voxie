@@ -155,15 +155,15 @@ DeUni_stuttgartVoxiePluginMemberInterface::~DeUni_stuttgartVoxiePluginMemberInte
 }
 
 /*
- * Implementation of interface class DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface
+ * Implementation of interface class DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface
  */
 
-DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface::DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent)
+DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface::DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent)
     : QDBusAbstractInterface(service, path, staticInterfaceName(), connection, parent)
 {
 }
 
-DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface::~DeUni_stuttgartVoxiePluginsExamplePluginTheSphereGeneratorInterface()
+DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface::~DeUni_stuttgartVoxiePluginsExampleTheSphereGeneratorInterface()
 {
 }
 

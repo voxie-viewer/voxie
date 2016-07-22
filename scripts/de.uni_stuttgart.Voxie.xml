@@ -117,7 +117,7 @@
     <property access="read" name="Type" type="s" />
     <property access="read" name="Name" type="s" />
   </interface>
-  <interface name="de.uni_stuttgart.Voxie.Plugins.ExamplePlugin.TheSphereGenerator">
+  <interface name="de.uni_stuttgart.Voxie.Plugins.Example.TheSphereGenerator">
     <method name="GenerateSphere">
       <arg direction="out" type="o" />
       <arg direction="in" name="size" type="i" />

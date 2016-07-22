@@ -20,7 +20,7 @@ namespace internal {
 class TheSphereGeneratorAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.Plugins.ExamplePlugin.TheSphereGenerator")
+    Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.Plugins.Example.TheSphereGenerator")
 
     TheSphereGenerator* object;
 
