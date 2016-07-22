@@ -104,8 +104,12 @@ SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent
         });
     objectTree->setContextMenuPolicy(Qt::CustomContextMenu);
     auto currentObject = createQSharedPointer<QPointer<DataObject>>(nullptr);
+    auto contextMenuBackground = new QMenu(mainWindow);
+    connect (contextMenuBackground->addAction(QIcon(":/icons/blue-folder-horizontal-open.png"), "&Open..."), &QAction::triggered, this, [this] {
+            emit this->openFile();
+        });
     auto contextMenuDataset = new QMenu(mainWindow);
-    connect (contextMenuDataset->addAction("Create slice"), &QAction::triggered, this, [this, currentObject] {
+    connect (contextMenuDataset->addAction(QIcon(":/icons/layer.png"), "Create &slice"), &QAction::triggered, this, [this, currentObject] {
             auto dataSet = qobject_cast<DataSet*>(*currentObject);
             if (!dataSet) {
                 qWarning() << "Failed to cast object to DataSet*";
@@ -113,7 +117,7 @@ SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent
             }
             dataSet->createSlice();
         });
-    connect (contextMenuDataset->addAction("Create isosurface visualizer"), &QAction::triggered, this, [this, currentObject, mainWindow] {
+    connect (contextMenuDataset->addAction(QIcon(":/icons/spectacle-3d.png"), "Create &isosurface visualizer"), &QAction::triggered, this, [this, currentObject, mainWindow] {
             auto dataSet = qobject_cast<DataSet*>(*currentObject);
             if (!dataSet) {
                 qWarning() << "Failed to cast object to DataSet*";
@@ -132,12 +136,12 @@ SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent
             }
         });
     contextMenuDataset->addSeparator();
-    connect (contextMenuDataset->addAction("Close"), &QAction::triggered, this, [this, currentObject] {
+    connect (contextMenuDataset->addAction(QIcon(":/icons/cross.png"), "&Close"), &QAction::triggered, this, [this, currentObject] {
             if (*currentObject)
                 (*currentObject)->deleteLater();
         });
     auto contextMenuSlice = new QMenu(mainWindow);
-    connect (contextMenuSlice->addAction("Create slice visualizer"), &QAction::triggered, this, [this, currentObject, mainWindow] {
+    connect (contextMenuSlice->addAction(QIcon(":/icons/layers.png"), "Create &slice visualizer"), &QAction::triggered, this, [this, currentObject, mainWindow] {
             auto slice = qobject_cast<Slice*>(*currentObject);
             if (!slice) {
                 qWarning() << "Failed to cast object to DataSet*";
@@ -156,12 +160,12 @@ SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent
             }
         });
     contextMenuSlice->addSeparator();
-    connect (contextMenuSlice->addAction("Close"), &QAction::triggered, this, [this, currentObject] {
+    connect (contextMenuSlice->addAction(QIcon(":/icons/cross.png"), "&Close"), &QAction::triggered, this, [this, currentObject] {
             if (*currentObject)
                 (*currentObject)->deleteLater();
         });
     auto contextMenuVisualizer = new QMenu(mainWindow);
-    connect (contextMenuVisualizer->addAction("Raise"), &QAction::triggered, this, [this, currentObject] {
+    connect (contextMenuVisualizer->addAction(QIcon(":/icons/arrow-090.png"), "&Raise"), &QAction::triggered, this, [this, currentObject] {
             auto visualizer = qobject_cast<voxie::visualization::Visualizer*>(*currentObject);
             if (!visualizer) {
                 qWarning() << "Failed to cast object to DataSet*";
@@ -174,16 +178,19 @@ SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent
                 parent->activate();
         });
     contextMenuVisualizer->addSeparator();
-    connect (contextMenuVisualizer->addAction("Close"), &QAction::triggered, this, [this, currentObject] {
+    connect (contextMenuVisualizer->addAction(QIcon(":/icons/cross.png"), "&Close"), &QAction::triggered, this, [this, currentObject] {
             if (*currentObject)
                 (*currentObject)->deleteLater();
         });
-    connect(objectTree, &QWidget::customContextMenuRequested, this, [this, currentObject, contextMenuDataset, contextMenuSlice, contextMenuVisualizer] (const QPoint& pos) {
+    connect(objectTree, &QWidget::customContextMenuRequested, this, [this, contextMenuBackground, currentObject, contextMenuDataset, contextMenuSlice, contextMenuVisualizer] (const QPoint& pos) {
             auto obj = objectTree->getObjectForItem(objectTree->itemAt(pos));
-            if (!obj)
-                return;
-            *currentObject = obj;
             auto globalPos = objectTree->viewport()->mapToGlobal(pos);
+            if (!obj) {
+                *currentObject = nullptr;
+                contextMenuBackground->popup(globalPos);
+                return;
+            }
+            *currentObject = obj;
             if (qobject_cast<DataSet*>(obj))
                 contextMenuDataset->popup(globalPos);
             if (qobject_cast<Slice*>(obj))

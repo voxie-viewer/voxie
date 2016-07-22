@@ -38,6 +38,9 @@ public:
     QWidget* addSection(QWidget *widget, bool closeable = false, voxie::data::DataObject* obj = nullptr);
 
     void addProgressBar(voxie::io::Operation* operation);
+
+signals:
+    void openFile();
 };
 
 } }

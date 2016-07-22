@@ -388,6 +388,8 @@ void CoreWindow::initStatusBar()
 
 void CoreWindow::initWidgets(voxie::Root* root)
 {
+    bool sidePanelLeft = true;
+
     //auto container = new QWidget();
     auto container = new QSplitter(Qt::Horizontal);
     {
@@ -400,11 +402,19 @@ void CoreWindow::initWidgets(voxie::Root* root)
             this->mdiArea = new QMdiArea(this);
             this->mdiArea->setTabsClosable(true);
             //layout->addWidget(this->mdiArea);
-            container->addWidget(this->mdiArea);
-            container->setCollapsible(0, false);
 
             sidePanel = new SidePanel(root, this);
-            container->addWidget(sidePanel);
+            connect(sidePanel, &SidePanel::openFile, this, &CoreWindow::loadFile);
+
+            if (sidePanelLeft) {
+                container->addWidget(sidePanel);
+                container->addWidget(this->mdiArea);
+                container->setCollapsible(1, false);
+            } else {
+                container->addWidget(this->mdiArea);
+                container->setCollapsible(0, false);
+                container->addWidget(sidePanel);
+            }
         }
         //container->setLayout(layout);
     }
