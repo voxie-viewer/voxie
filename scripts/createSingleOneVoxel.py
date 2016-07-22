@@ -20,6 +20,6 @@ with instance.createClient() as client:
 
         dataSet = instance.createDataSet('TestData', data)
 
-    slicePlugin = instance.getPlugin('Voxie3D')
+    slicePlugin = instance.getPlugin('Vis3D')
     visualizerFactory = slicePlugin.getMemberDBus('de.uni_stuttgart.Voxie.VisualizerFactory', 'IsosurfaceMetaVisualizer')
     visualizerFactory.Create([dataSet.path], dbus.Array(signature='o'), voxie.emptyOptions)

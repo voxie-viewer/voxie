@@ -124,7 +124,7 @@ SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent
                 return;
             }
             try {
-                auto isoVisualizer = qobject_cast<voxie::plugin::MetaVisualizer*>(voxie::Root::instance()->getPluginByName("Voxie3D")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "IsosurfaceMetaVisualizer"));
+                auto isoVisualizer = qobject_cast<voxie::plugin::MetaVisualizer*>(voxie::Root::instance()->getPluginByName("Vis3D")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "IsosurfaceMetaVisualizer"));
                 if (!isoVisualizer)
                     throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Failed to cast isosurface visualizer factory");
                 QVector<data::DataSet*> dataSets;
@@ -148,7 +148,7 @@ SidePanel::SidePanel(voxie::Root* root, QMainWindow* mainWindow, QWidget *parent
                 return;
             }
             try {
-                auto isoVisualizer = qobject_cast<voxie::plugin::MetaVisualizer*>(voxie::Root::instance()->getPluginByName("SliceView")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "SliceMetaVisualizer"));
+                auto isoVisualizer = qobject_cast<voxie::plugin::MetaVisualizer*>(voxie::Root::instance()->getPluginByName("VisSlice")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "SliceMetaVisualizer"));
                 if (!isoVisualizer)
                     throw voxie::scripting::ScriptingException("de.uni_stuttgart.Voxie.Error", "Failed to cast slice visualizer factory");
                 QVector<data::DataSet*> dataSets;

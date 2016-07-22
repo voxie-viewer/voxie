@@ -32,6 +32,6 @@ with instance.createClient() as client:
 
     slice = dataSet.createSlice()
 
-    slicePlugin = instance.getPlugin('SliceView')
+    slicePlugin = instance.getPlugin('VisSlice')
     visualizerFactory = slicePlugin.getMemberDBus('de.uni_stuttgart.Voxie.VisualizerFactory', 'SliceMetaVisualizer')
     visualizerFactory.Create(dbus.Array(signature='o'), [slice.path], voxie.emptyOptions)

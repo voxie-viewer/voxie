@@ -223,7 +223,7 @@ int Root::startVoxie(QApplication &app, QCommandLineParser& parser)
                         for (const QString& arg : parser.positionalArguments()) {
                             QDBusObjectPath isoVisualizer ("/");
                             if (parser.isSet("iso")) {
-                                QDBusObjectPath plugin = HANDLEDBUSPENDINGREPLY(iface.GetPluginByName("Voxie3D"));
+                                QDBusObjectPath plugin = HANDLEDBUSPENDINGREPLY(iface.GetPluginByName("Vis3D"));
                                 de::uni_stuttgart::Voxie::Plugin pluginIface("de.uni_stuttgart.Voxie", plugin.path(), QDBusConnection::sessionBus());
                                 pluginIface.setTimeout (INT_MAX);
                                 isoVisualizer = HANDLEDBUSPENDINGREPLY(pluginIface.GetMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "IsosurfaceMetaVisualizer"));
@@ -234,7 +234,7 @@ int Root::startVoxie(QApplication &app, QCommandLineParser& parser)
                             }
                             QDBusObjectPath sliceVisualizer ("/");
                             if (parser.isSet("slice")) {
-                                QDBusObjectPath plugin = HANDLEDBUSPENDINGREPLY(iface.GetPluginByName("SliceView"));
+                                QDBusObjectPath plugin = HANDLEDBUSPENDINGREPLY(iface.GetPluginByName("VisSlice"));
                                 de::uni_stuttgart::Voxie::Plugin pluginIface("de.uni_stuttgart.Voxie", plugin.path(), QDBusConnection::sessionBus());
                                 pluginIface.setTimeout (INT_MAX);
                                 sliceVisualizer = HANDLEDBUSPENDINGREPLY(pluginIface.GetMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "SliceMetaVisualizer"));
@@ -307,7 +307,7 @@ int Root::startVoxie(QApplication &app, QCommandLineParser& parser)
         MetaVisualizer* isoVisualizer = nullptr;
         if (parser.isSet("iso")) {
             try {
-                isoVisualizer = qobject_cast<MetaVisualizer*>(::root->getPluginByName("Voxie3D")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "IsosurfaceMetaVisualizer"));
+                isoVisualizer = qobject_cast<MetaVisualizer*>(::root->getPluginByName("Vis3D")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "IsosurfaceMetaVisualizer"));
                 if (!isoVisualizer)
                     qCritical("Failed to cast isosurface visualizer factory");
             } catch (ScriptingException& e) {
@@ -317,7 +317,7 @@ int Root::startVoxie(QApplication &app, QCommandLineParser& parser)
         MetaVisualizer* sliceVisualizer = nullptr;
         if (parser.isSet("slice")) {
             try {
-                sliceVisualizer = qobject_cast<MetaVisualizer*>(::root->getPluginByName("SliceView")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "SliceMetaVisualizer"));
+                sliceVisualizer = qobject_cast<MetaVisualizer*>(::root->getPluginByName("VisSlice")->getMemberByName("de.uni_stuttgart.Voxie.VisualizerFactory", "SliceMetaVisualizer"));
                 if (!sliceVisualizer)
                     qCritical("Failed to cast slice visualizer factory");
             } catch (ScriptingException& e) {
@@ -382,13 +382,26 @@ void Root::loadPlugins(QString pluginDirectory)
 
       lib = entry;
 
+      QString name = lib;
+#if defined(Q_OS_WIN)
+      if (name.startsWith("VoxiePlugin"))
+          name = name.mid(strlen("VoxiePlugin"));
+      if (name.endsWith(".dll"))
+          name = name.left(name.length() - strlen(".dll"));
+#else
+      if (name.startsWith("libVoxiePlugin"))
+          name = name.mid(strlen("libVoxiePlugin"));
+      if (name.endsWith(".so"))
+          name = name.left(name.length() - strlen(".so"));
+#endif
+
       lib = pluginDir.absolutePath() + "/" + lib;
       loader = new QPluginLoader(lib, this);
 
       if(loader->load()) {
           //qDebug() << loader->instance();
 
-          VoxiePlugin *plugin = new VoxiePlugin(loader->instance(), this->pluginContainer);
+          VoxiePlugin *plugin = new VoxiePlugin(loader->instance(), this->pluginContainer, name);
 
           for(Importer *importer : plugin->importers()) {
               connect(importer, &Importer::dataLoaded, this, &Root::registerDataSet);
@@ -658,7 +671,7 @@ QDBusObjectPath VoxieInstance::GetPluginByName (const QString& name) {
 }
 
 QStringList VoxieInstance::ListPluginMemberTypes () {
-    VoxiePlugin plugin (nullptr);
+    VoxiePlugin plugin (nullptr, nullptr, "");
     QStringList types;
     for (QString type : plugin.getAllObjects().keys ())
         types.push_back (type);

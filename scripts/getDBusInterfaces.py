@@ -17,12 +17,12 @@ args = voxie.parser.parse_args()
 
 instance = voxie.Voxie(args)
 
-ds = voxie.DataSet (instance, instance.getPlugin ('ExamplePlugin').getMemberDBus ('de.uni_stuttgart.Voxie.Importer', 'TheSphereGenerator').GenerateSphere (10, voxie.emptyOptions))
+ds = voxie.DataSet (instance, instance.getPlugin ('Example').getMemberDBus ('de.uni_stuttgart.Voxie.Importer', 'TheSphereGenerator').GenerateSphere (10, voxie.emptyOptions))
 slice = ds.createSlice ()
 client = instance.createClient()
 image = instance.createImage(client, (10, 10))
-vis3d = instance, instance.getPlugin ('Voxie3D').getMemberDBus ('de.uni_stuttgart.Voxie.VisualizerFactory', 'IsosurfaceMetaVisualizer').Create ([ds.path], dbus.Array(signature='o'), voxie.emptyOptions)
-vis2d = instance, instance.getPlugin ('SliceView').getMemberDBus ('de.uni_stuttgart.Voxie.VisualizerFactory', 'SliceMetaVisualizer').Create (dbus.Array(signature='o'), [slice.path], voxie.emptyOptions)
+vis3d = instance, instance.getPlugin ('Vis3D').getMemberDBus ('de.uni_stuttgart.Voxie.VisualizerFactory', 'IsosurfaceMetaVisualizer').Create ([ds.path], dbus.Array(signature='o'), voxie.emptyOptions)
+vis2d = instance, instance.getPlugin ('VisSlice').getMemberDBus ('de.uni_stuttgart.Voxie.VisualizerFactory', 'SliceMetaVisualizer').Create (dbus.Array(signature='o'), [slice.path], voxie.emptyOptions)
 
 interfacesList = []
 

@@ -37,7 +37,7 @@ private:
     QMap<QString, QMap<QString, voxie::plugin::PluginMember*>> allObjectsByName;
     template <typename T> void addObjects (const QString& name, const QVector<T*>& objects);
 public:
-    explicit VoxiePlugin(QObject *plugin, QObject *parent = 0);
+    explicit VoxiePlugin(QObject *plugin, QObject *parent, const QString& name);
     virtual ~VoxiePlugin();
 
     QString name() const { return this->pluginName; }

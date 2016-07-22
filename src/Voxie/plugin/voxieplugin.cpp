@@ -54,7 +54,7 @@ template <typename T> void VoxiePlugin::addObjects (const QString& typeShort, co
     }
 }
 
-VoxiePlugin::VoxiePlugin(QObject *plugin, QObject *parent) :
+VoxiePlugin::VoxiePlugin(QObject *plugin, QObject *parent, const QString& name) :
 	ScriptableObject("Plugin", parent),
 	plugin(plugin),
 	pluginName("unknown"),
@@ -68,14 +68,7 @@ VoxiePlugin::VoxiePlugin(QObject *plugin, QObject *parent) :
 {
     new VoxiePluginAdaptor (this);
 
-	if(plugin != nullptr)
-	{
-		this->pluginName = plugin->objectName();
-		if(this->pluginName.length() == 0)
-		{
-			this->pluginName = plugin->metaObject()->className();
-		}
-	}
+    this->pluginName = name;
 
 	// Register in script interface
 	this->setObjectName(this->pluginName);

@@ -9,12 +9,12 @@ describe(voxie.Gui)
 
 voxie.Gui.RaiseWindow()
 
-var examplePlugin = voxie.GetPluginByName('ExamplePlugin')
-var examplePlugin2 = voxie.GetPluginByName('ExamplePlugin')
+var examplePlugin = voxie.GetPluginByName('Example')
+var examplePlugin2 = voxie.GetPluginByName('Example')
 assertEqual (examplePlugin, examplePlugin2)
 var sphereImporter = examplePlugin.GetMemberByName('de.uni_stuttgart.Voxie.Importer', 'TheSphereGenerator')
 
-var hdfPlugin = voxie.GetPluginByName('HDFIO')
+var hdfPlugin = voxie.GetPluginByName('HDF5')
 var hdfLoader = hdfPlugin.GetMemberByName('de.uni_stuttgart.Voxie.Loader', 'HDFLoader')
 var loaders = hdfPlugin.ListMembers('de.uni_stuttgart.Voxie.Loader')
 assertEqual (loaders.length, 1)
@@ -24,7 +24,7 @@ assertEqual (hdfLoader.Filter.Patterns.length, 2)
 assertEqual (hdfLoader.Filter.Patterns[0], '*.h5')
 assertEqual (hdfLoader.Filter.Patterns[1], '*.hdf5')
 
-var slicePlugin = voxie.GetPluginByName('SliceView')
+var slicePlugin = voxie.GetPluginByName('VisSlice')
 var visualizerFactory = slicePlugin.GetMemberByName('de.uni_stuttgart.Voxie.VisualizerFactory', 'SliceMetaVisualizer')
 
 assertEqual (slicePlugin.ListMembers, examplePlugin.ListMembers)
