@@ -1,10 +1,10 @@
-#include "diffview.hpp"
+#include "visdiffplugin.hpp"
 
 #include <PluginVisDiff/diffmetavisualizer.hpp>
 
 #include <QtWidgets/QMessageBox>
 
-DiffView::DiffView(QObject *parent) :
+VisDiffPlugin::VisDiffPlugin(QObject *parent) :
     QGenericPlugin(parent)
 {
 
@@ -12,30 +12,26 @@ DiffView::DiffView(QObject *parent) :
 
 
 
-QObject *DiffView::create(const QString & key, const QString & specification)
+QObject *VisDiffPlugin::create(const QString & key, const QString & specification)
 {
     (void)key;
     (void)specification;
     return nullptr;
 }
 
-QVector<QAction*> DiffView::uiCommands()
+QVector<QAction*> VisDiffPlugin::uiCommands()
 {
     QVector<QAction*> actions;
 
     return actions;
 }
 
-QVector<voxie::plugin::MetaVisualizer*> DiffView::visualizers()
+QVector<voxie::plugin::MetaVisualizer*> VisDiffPlugin::visualizers()
 {
     QVector<voxie::plugin::MetaVisualizer*> list;
     list.append(DiffMetaVisualizer::instance());
     return list;
 }
-
-#if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(DiffView, DiffView)
-#endif // QT_VERSION < 0x050000
 
 // Local Variables:
 // mode: c++

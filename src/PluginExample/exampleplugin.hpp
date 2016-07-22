@@ -20,9 +20,8 @@ class ExamplePlugin :
     Q_INTERFACES(voxie::plugin::IImporterPlugin)
     Q_INTERFACES(voxie::plugin::ILoaderPlugin)
     Q_INTERFACES(voxie::plugin::IPreferencesPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "ExamplePlugin.json")
-#endif // QT_VERSION >= 0x050000
+
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "Example.json")
 
 public:
     ExamplePlugin(QObject *parent = 0);

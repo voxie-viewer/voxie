@@ -3,7 +3,7 @@
 #include <Voxie/plugin/metavisualizer.hpp>
 
 /**
- * @brief The SliceMetaVisualizer class provides information about the SliceView plugin.
+ * @brief The SliceMetaVisualizer class provides information about the VisSlice plugin.
  * @author Hans Martin Berner
  */
 

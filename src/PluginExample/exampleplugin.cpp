@@ -65,10 +65,6 @@ QVector<voxie::io::Loader*> ExamplePlugin::loaders()
 	return list;
 }
 
-#if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(ExamplePlugin, ExamplePlugin)
-#endif // QT_VERSION < 0x050000
-
 // Local Variables:
 // mode: c++
 // tab-width: 4

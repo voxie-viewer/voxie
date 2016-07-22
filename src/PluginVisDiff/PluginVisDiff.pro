@@ -3,7 +3,7 @@ QT += dbus
 
 include($$PWD/../Plugin.pri)
 
-SOURCES += diffview.cpp \
+SOURCES += visdiffplugin.cpp \
     diffmetavisualizer.cpp \
     diffvisualizer.cpp \
     colorizerworker.cpp \
@@ -20,7 +20,7 @@ SOURCES += diffview.cpp \
     toolexport.cpp \
     histogramworker.cpp
 
-HEADERS += diffview.hpp \
+HEADERS += visdiffplugin.hpp \
     diffmetavisualizer.hpp \
     diffvisualizer.hpp \
     colorizerworker.hpp \

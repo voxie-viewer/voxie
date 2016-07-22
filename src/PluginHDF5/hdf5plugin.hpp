@@ -4,7 +4,7 @@
 
 #include <QtGui/QGenericPlugin>
 
-class HDFIO : public QGenericPlugin,
+class HDF5Plugin : public QGenericPlugin,
         public voxie::plugin::ILoaderPlugin,
         public voxie::plugin::IVoxelExportPlugin,
         public voxie::plugin::ISliceExportPlugin
@@ -13,12 +13,12 @@ class HDFIO : public QGenericPlugin,
     Q_INTERFACES(voxie::plugin::ILoaderPlugin)
     Q_INTERFACES(voxie::plugin::IVoxelExportPlugin)
     Q_INTERFACES(voxie::plugin::ISliceExportPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "HDF-IO.json")
-#endif // QT_VERSION >= 0x050000
+
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "HDF5.json")
+
 
 public:
-    HDFIO(QObject *parent = 0);
+    HDF5Plugin(QObject *parent = 0);
 
     virtual QObject *	create ( const QString & key, const QString & specification ) override;
 

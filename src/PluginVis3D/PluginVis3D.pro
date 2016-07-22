@@ -4,11 +4,11 @@ QT += dbus
 include($$PWD/../Plugin.pri)
 
 RESOURCES += \
-    Voxie3D.qrc
+    PluginVis3D.qrc
 
 win32:LIBS += -lopengl32
 
-SOURCES += voxie3d.cpp \
+SOURCES += vis3dplugin.cpp \
     cuberille.cpp \
     isosurfacemetavisualizer.cpp \
     isosurfacevisualizer.cpp \
@@ -18,7 +18,7 @@ SOURCES += voxie3d.cpp \
     xrayvisualizer.cpp \
     xraymetavisualizer.cpp
 
-HEADERS += voxie3d.hpp \
+HEADERS += vis3dplugin.hpp \
     cuberille.hpp \
     isosurfacemetavisualizer.hpp \
     isosurfacevisualizer.hpp \

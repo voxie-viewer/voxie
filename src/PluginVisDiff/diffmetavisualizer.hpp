@@ -3,7 +3,7 @@
 #include <Voxie/plugin/metavisualizer.hpp>
 
 /**
- * @brief The DiffMetaVisualizer class provides information about the DiffView plugin.
+ * @brief The DiffMetaVisualizer class provides information about the VisDiffPlugin plugin.
  * @author Tim Borner
  */
 class DiffMetaVisualizer :

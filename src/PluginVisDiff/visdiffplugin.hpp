@@ -10,7 +10,7 @@
  * @brief The SliceView class specifies the plugin properties and initializes its classes.
  * @author Tim Borner
  */
-class DiffView :
+class VisDiffPlugin :
         public QGenericPlugin,
         public voxie::plugin::IUICommandPlugin,
         public voxie::plugin::IVisualizerPlugin
@@ -18,12 +18,11 @@ class DiffView :
     Q_OBJECT
     Q_INTERFACES(voxie::plugin::IUICommandPlugin)
     Q_INTERFACES(voxie::plugin::IVisualizerPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "DiffView.json")
-#endif // QT_VERSION >= 0x050000
+
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "VisDiff.json")
 
 public:
-    DiffView(QObject *parent = 0);
+    VisDiffPlugin(QObject *parent = 0);
 
     virtual QObject *create ( const QString & key, const QString & specification ) override;
 

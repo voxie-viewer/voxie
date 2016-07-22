@@ -4,18 +4,17 @@
 
 #include <QtGui/QGenericPlugin>
 
-class Voxie3D :
+class Vis3DPlugin :
         public QGenericPlugin,
         public voxie::plugin::IVisualizerPlugin
 {
     Q_OBJECT
     Q_INTERFACES(voxie::plugin::IVisualizerPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "Voxie3D.json")
-#endif // QT_VERSION >= 0x050000
+
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "Vis3D.json")
 
 public:
-    Voxie3D(QObject *parent = 0);
+    Vis3DPlugin(QObject *parent = 0);
 
     virtual QObject* create(const QString& name, const QString &spec) override;
 

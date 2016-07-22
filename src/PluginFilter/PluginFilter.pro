@@ -4,14 +4,14 @@ QT += dbus
 include($$PWD/../Plugin.pri)
 
 SOURCES += \
-    voxiefilters.cpp \
+    filterplugin.cpp \
     gaussfilter2d.cpp \
     normalizefilter2d.cpp \
     boxblur3d.cpp \
     valuelimiter3d.cpp
 
 HEADERS += \
-    voxiefilters.hpp \
+    filterplugin.hpp \
     gaussfilter2d.hpp \
     normalizefilter2d.hpp \
     boxblur3d.hpp \

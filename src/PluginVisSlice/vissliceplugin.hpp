@@ -7,10 +7,10 @@
 #include <QtGui/QGenericPlugin>
 
 /**
- * @brief The SliceView class specifies the plugin properties and initializes its classes.
+ * @brief The VisSlicePlugin class specifies the plugin properties and initializes its classes.
  */
 
-class SliceView :
+class VisSlicePlugin :
         public QGenericPlugin,
         public voxie::plugin::IUICommandPlugin,
         public voxie::plugin::IVisualizerPlugin
@@ -18,12 +18,11 @@ class SliceView :
     Q_OBJECT
     Q_INTERFACES(voxie::plugin::IUICommandPlugin)
     Q_INTERFACES(voxie::plugin::IVisualizerPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "SliceView.json")
-#endif // QT_VERSION >= 0x050000
+
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "VisSlice.json")
 
 public:
-    SliceView(QObject *parent = 0);
+    VisSlicePlugin(QObject *parent = 0);
 
     virtual QObject *create ( const QString & key, const QString & specification ) override;
 

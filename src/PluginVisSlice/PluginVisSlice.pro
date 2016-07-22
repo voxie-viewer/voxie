@@ -11,7 +11,7 @@ HEADERS += \
     makehandbutton.hpp \
     sliceimagecolorizerwidget.hpp \
     slicemetavisualizer.hpp \
-    sliceview.hpp \
+    vissliceplugin.hpp \
     slicevisualizer.hpp \
     toolsliceadjustment.hpp \
     toolvalueviewer.hpp \
@@ -30,7 +30,7 @@ SOURCES += \
     imagepaintwidget.cpp \
     sliceimagecolorizerwidget.cpp \
     slicemetavisualizer.cpp \
-    sliceview.cpp \
+    vissliceplugin.cpp \
     slicevisualizer.cpp \
     toolsliceadjustment.cpp \
     toolvalueviewer.cpp \

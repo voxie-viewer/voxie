@@ -1,4 +1,4 @@
-#include "hdfio.hpp"
+#include "hdf5plugin.hpp"
 
 #include <PluginHDF5/hdfexporter.hpp>
 #include <PluginHDF5/hdfloader.hpp>
@@ -7,42 +7,38 @@
 using namespace voxie::io;
 using namespace voxie::plugin;
 
-HDFIO::HDFIO(QObject *parent) :
+HDF5Plugin::HDF5Plugin(QObject *parent) :
 	QGenericPlugin(parent)
 {
 }
 
-QObject* HDFIO::create ( const QString & key, const QString & specification )
+QObject* HDF5Plugin::create ( const QString & key, const QString & specification )
 {
 	(void)key;
 	(void)specification;
 	return nullptr;
 }
 
-QVector<Loader*> HDFIO::loaders()
+QVector<Loader*> HDF5Plugin::loaders()
 {
 	QVector<voxie::io::Loader*> list;
 	list.append(new HDFLoader());
 	return list;
 }
 
-QVector<VoxelExporter*> HDFIO::voxelExporters()
+QVector<VoxelExporter*> HDF5Plugin::voxelExporters()
 {
 	QVector<voxie::io::VoxelExporter*> list;
 	list.append(new HDFExporter());
 	return list;
 }
 
-QVector<SliceExporter*> HDFIO::sliceExporters()
+QVector<SliceExporter*> HDF5Plugin::sliceExporters()
 {
 	QVector<voxie::io::SliceExporter*> list;
 	list.append(new HDFSliceExporter());
 	return list;
 }
-
-#if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(HDF-IO, HDFIO)
-#endif // QT_VERSION < 0x050000
 
 // Local Variables:
 // mode: c++

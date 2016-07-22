@@ -6,7 +6,7 @@
 
 #include <QtGui/QGenericPlugin>
 
-class VoxieFilters :
+class FilterPlugin :
         public QGenericPlugin,
         public voxie::plugin::IFilter2DPlugin,
         public voxie::plugin::IFilter3DPlugin
@@ -15,12 +15,10 @@ class VoxieFilters :
     Q_INTERFACES(voxie::plugin::IFilter2DPlugin)
     Q_INTERFACES(voxie::plugin::IFilter3DPlugin)
 
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "VoxieFilters.json")
-#endif // QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "Filter.json")
 
 public:
-    VoxieFilters(QObject *parent = 0);
+    FilterPlugin(QObject *parent = 0);
 
     virtual QObject *create ( const QString & key, const QString & specification ) override;
 

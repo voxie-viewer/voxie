@@ -58,14 +58,14 @@ DEFINES += NO_BOOST_FILESYSTEM_PATH # Avoid dependency on BoostFilesystem
 DISTFILES += \
     localconfig.pri
 
-SOURCES += hdfio.cpp \
+SOURCES += hdf5plugin.cpp \
     hdfloader.cpp \
     hdfexporter.cpp \
     hdfsliceexporter.cpp \
     Core/Assert.cpp Core/CheckedCast.cpp Core/Exception.cpp Core/HasMemberCalled.cpp Core/Memory.cpp Core/NumericException.cpp Core/Reflection.cpp Core/Type.cpp CT/DataFiles.cpp HDF5/AtomicType.cpp HDF5/AtomicTypes.cpp HDF5/Attribute.cpp HDF5/BaseTypes.cpp HDF5/ComplexConversion.cpp HDF5/CompoundType.cpp HDF5/DataSet.cpp HDF5/DataSpace.cpp HDF5/DataType.cpp HDF5/DataTypes.cpp HDF5/DelayedArray.cpp HDF5/File.cpp HDF5/Group.cpp HDF5/HDF5_Array.cpp HDF5/HDF5_Exception.cpp HDF5/HDF5_Type.cpp HDF5/HDF5_Vector3.cpp HDF5/IdComponent.cpp HDF5/Matlab.cpp HDF5/MatlabDiagMatrix3.cpp HDF5/MatlabVector2.cpp HDF5/MatlabVector3.cpp HDF5/Object.cpp HDF5/OpaqueType.cpp HDF5/PropList.cpp HDF5/PropLists.cpp HDF5/ReferenceType.cpp HDF5/Serialization.cpp HDF5/SerializationKey.cpp HDF5/StdVectorSerialization.cpp HDF5/Util.cpp Math/Abs.cpp Math/Array.cpp Math/DiagMatrix3.cpp Math/Float.cpp Math/Math.cpp Math/Vector2.cpp Math/Vector3.cpp \
     Core/StrError.c
 
-HEADERS += hdfio.hpp \
+HEADERS += hdf5plugin.hpp \
     hdfloader.hpp \
     hdfexporter.hpp \
     hdfsliceexporter.hpp \
