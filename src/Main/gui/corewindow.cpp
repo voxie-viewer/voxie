@@ -678,26 +678,22 @@ void CoreWindow::loadFile() {
     if(dialog.exec() != QDialog::Accepted)
         return;
 
+    LoadOperation* op;
     if (dialog.selectedNameFilter() == supportedFilter) {
-        try {
-            Load::openFile(Root::instance(), dialog.selectedFiles().first());
-        } catch (voxie::scripting::ScriptingException& e) {
-            errorMessage(e.message());
+        op = Load::openFile(Root::instance(), dialog.selectedFiles().first());
+    } else {
+        auto loader = map[dialog.selectedNameFilter()];
+        if(!loader) {
+            QMessageBox(
+                        QMessageBox::Critical,
+                        this->windowTitle(),
+                        "Somehow the selected file type disappeared inbetween the time the dialog was opened.",
+                        QMessageBox::Ok,
+                        this).exec();
+            return;
         }
-        return;
+        op = Load::openFile(Root::instance(), loader, dialog.selectedFiles().first());
     }
-    
-    auto loader = map[dialog.selectedNameFilter()];
-    if(!loader) {
-        QMessageBox(
-            QMessageBox::Critical,
-            this->windowTitle(),
-            "Somehow the selected file type disappeared inbetween the time the dialog was opened.",
-            QMessageBox::Ok,
-            this).exec();
-        return;
-    }
-    auto op = Load::openFile(Root::instance(), loader, dialog.selectedFiles().first());
     connect(op, &LoadOperation::loadAborted, this, [this] (QSharedPointer<voxie::scripting::ScriptingException> e) {
             errorMessage(e->message());
         });
