@@ -138,8 +138,18 @@ QSharedPointer<QList<QSharedPointer<Loader>>> Load::getLoaders(voxie::Root* root
     return result;
 }
 
+template <typename T>
+static void enqueueOnThread(QObject* obj, T&& fun) {
+   QObject srcObj;
+   QObject::connect(&srcObj, &QObject::destroyed, obj, std::move(fun), Qt::QueuedConnection);
+}
+
 LoadOperation* Load::openFile(voxie::Root* root, const QSharedPointer<voxie::io::Loader>& loader, const QString& file) {
-    QSharedPointer<voxie::io::LoadOperation> operation(new voxie::io::LoadOperation(), [](QObject* obj) { obj->deleteLater(); });
+    //QSharedPointer<voxie::io::LoadOperation> operation(new voxie::io::LoadOperation(), [](QObject* obj) { obj->deleteLater(); });
+    // Hack to workaround https://bugreports.qt.io/browse/QTBUG-54891 by
+    // enqueuing the call to deleteLater()
+    QSharedPointer<voxie::io::LoadOperation> operation(new voxie::io::LoadOperation(), [](QObject* obj) { enqueueOnThread(obj, [obj] { obj->deleteLater(); }); });
+
     operation->setDescription("Load " + file);
     root->addProgressBar(operation.data());
 
@@ -168,11 +178,6 @@ LoadOperation* Load::openFile(voxie::Root* root, const QSharedPointer<voxie::io:
     QObject::connect(worker, &LoadWorker::loadAborted, operation.data(), [operation, file] (QSharedPointer<voxie::scripting::ScriptingException> error) {
             emit operation->loadAborted(error);
         });
-
-    // Hack to workaround https://bugreports.qt.io/browse/QTBUG-54891 by
-    // keeping another QSharedPointer<> instance around whose destructor will
-    // be called from the thread destructor
-    QObject::connect(thread, &QObject::destroyed, [operation] {});
 
     thread->start();
     
