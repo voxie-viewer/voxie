@@ -394,7 +394,7 @@ SliceAdjustmentTool::draw()
 
 void rotateSlice(voxie::data::Slice* slice, const QVector3D& rotationAxis, float rotationAngle)
 {
-    if(isnan(rotationAngle)){
+    if(std::isnan(rotationAngle)){
         return;
     }
     QQuaternion currentRotation = slice->rotation();

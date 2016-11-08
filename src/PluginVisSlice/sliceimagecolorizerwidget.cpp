@@ -229,7 +229,7 @@ void SliceImageColorizerWidget::removeMapping(float in)
 void SliceImageColorizerWidget::addMapping(float in, QRgb out)
 {
     //qDebug() << "addMapping";
-    if(isnan(in)){
+    if(std::isnan(in)){
         colorizerInstance.setNanColor(out);
     } else {
         colorizerInstance.putMapping(in, out);

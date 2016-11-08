@@ -16,7 +16,7 @@ BoxBlur3D::BoxBlur3D(QObject *parent) :
 
 
 /* returns a if a not nan, else returns default */
-#define IGNORENAN(a, _default) ( isnan((a)) ? (_default):(a) )
+#define IGNORENAN(a, _default) ( std::isnan((a)) ? (_default):(a) )
 /* returns a if a not nan, else returns 0 */
 #define IGNORENAN0(a) (IGNORENAN((a),0) )
 

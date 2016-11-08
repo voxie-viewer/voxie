@@ -53,7 +53,7 @@ void GaussFilter2D::applyTo(voxie::data::FloatImage input, voxie::data::FloatIma
     for (size_t x=0; x<input.getWidth(); x++) {
         for (size_t y=0; y<input.getHeight(); y++) {
             float value = 0;
-            if ( isnan(input.getPixel(x, y)) ) { //NaN
+            if ( std::isnan(input.getPixel(x, y)) ) { //NaN
                 output.setPixel(x,y, NAN);
                 continue;
             }
@@ -64,7 +64,7 @@ void GaussFilter2D::applyTo(voxie::data::FloatImage input, voxie::data::FloatIma
                     long long yPos = y + j - kernelSize/2;
                     if (xPos >= 0 && xPos < (long long)input.getWidth() && yPos >= 0 && yPos < (long long)input.getHeight()) {
                         float pixelVal = input.getPixel(xPos, yPos);
-                        if (!isnan(pixelVal)) { //checking NAN
+                        if (!std::isnan(pixelVal)) { //checking NAN
                             value += this->gaussKernel[(int)(i+j*this->kernelSize)] * pixelVal;
                         } else {
                             scaling -= 1.0;

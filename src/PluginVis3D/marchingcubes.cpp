@@ -624,7 +624,7 @@ QSharedPointer<Surface> MarchingCubes::extract(const QSharedPointer<voxie::io::O
                     if(invert)
                         cell.val[i] = -(cell.val[i] - threshold) + threshold;
                     /*
-                    if(isnan(cell.val[i]))
+                    if(std::isnan(cell.val[i]))
                         cell.val[i] = 0;
                     */
                 }
