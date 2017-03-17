@@ -10,6 +10,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--voxie-bus-address')
 parser.add_argument('--voxie-bus-name')
 parser.add_argument('--voxie-slice-object')
+parser.add_argument('--voxie-dataset-object')
 
 parser.add_argument('--voxie-action')
 parser.add_argument('--voxie-operation')
@@ -36,6 +37,18 @@ class Voxie:
         self.path_gui = self.dbus_properties.Get('de.uni_stuttgart.Voxie.Voxie', 'Gui')
         self.dbus_gui = dbus.Interface (self.bus.get_object(self.bus_name, self.path_gui), 'de.uni_stuttgart.Voxie.Gui')
         self.dbus_gui_properties = dbus.Interface (self.bus.get_object(self.bus_name, self.path_gui), 'org.freedesktop.DBus.Properties')
+
+    def getDataSet(self, args = None):
+        if args is not None and args.voxie_dataset_object is not None:
+            objectName = args.voxie_dataset_object
+        else:
+            vis_path = self.dbus_gui_properties.Get('de.uni_stuttgart.Voxie.Gui', 'ActiveVisualizer')
+            if vis_path == '/':
+                raise Exception('No active visualizer')
+            vis = self.bus.get_object(self.bus_name, vis_path)
+            vis_properties = dbus.Interface (vis, 'org.freedesktop.DBus.Properties')
+            objectName = vis_properties.Get('de.uni_stuttgart.Voxie.VolumeDataVisualizer', 'DataSet')
+        return DataSet (self, objectName)
 
     def getSlice(self, args = None):
         if args is not None and args.voxie_slice_object is not None:
