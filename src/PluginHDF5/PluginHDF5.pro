@@ -20,6 +20,7 @@ win32 {
 
 CONFIG += link_pkgconfig
 
+DEFINES += OMPI_SKIP_MPICXX # Needed to prevent unnecessary dependency when libhdf5-openmpi is used
 HAVE_HDF5 =
 !isEmpty(HDF5_PATH) {
     INCLUDEPATH += $$HDF5_PATH/include
