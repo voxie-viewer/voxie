@@ -82,7 +82,7 @@ void OpenGLWidget::initializeGL() {
     if (!checkOpenGLStatus())
         FAIL("OpenGL error during initialization");
 
-    initialized = true;
+    initialized_ = true;
 
 #undef FAIL
 }
@@ -93,27 +93,28 @@ void OpenGLWidget::resizeGL(int w, int h) {
 
 	this->fHeight = std::max<float>(this->fHeight, 1);
 
-    if (!initialized)
+    if (!initialized())
         return;
 
 	glViewport(0, 0, w, h);
 }
 
 void OpenGLWidget::paintGL() {
-    if (!initialized)
+    if (!initialized())
         return;
 
     paint();
 }
 
 void OpenGLWidget::paintEvent(QPaintEvent *event) {
-    if (initialized) {
+    if (initialized()) {
         checkOpenGLStatus();
         QGLWidget::paintEvent(event);
         checkOpenGLStatus();
         return;
     }
 
+    //return;
     QPainter painter;
     painter.begin(this);
     painter.drawText(QRect(QPoint(0, 0), this->size()), Qt::AlignCenter, "Error initializing OpenGL:\n" + initError);

@@ -22,7 +22,7 @@ class VOXIECORESHARED_EXPORT OpenGLWidget : public QGLWidget, protected QOpenGLF
 private:
     float fWidth, fHeight;
 
-    bool initialized = false;
+    bool initialized_ = false;
     QString initError;
 
 public:
@@ -30,6 +30,8 @@ public:
 
     float width() const { return fWidth; }
     float height() const { return fHeight; }
+
+    bool initialized() const { return initialized_; }
 
 protected:
     virtual void initializeGL() override;

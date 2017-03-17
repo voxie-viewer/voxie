@@ -259,6 +259,9 @@ void IsosurfaceView::uploadData() {
     // TODO: Use indexed mode?
     // TODO: Do normal / light calculation in shader?
 
+    if (!initialized())
+        return;
+
     vertexCount = 0;
 
     this->makeCurrent();
