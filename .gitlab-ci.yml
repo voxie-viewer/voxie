@@ -6,7 +6,7 @@ build-manual:
   stage: build-manual
 
   tags:
-    - linux
+    - ubuntu-16.04
 
   artifacts:
     paths:
@@ -14,11 +14,28 @@ build-manual:
 
   script: "tools/create-manual.sh"
 
-build-linux:
+build-linux-1404:
   stage: build
 
   tags:
-    - linux
+    - ubuntu-14.04
+
+  artifacts:
+    paths:
+      - voxie*.tar.gz
+
+  script: "tools/create-release.sh"
+
+  variables:
+    VOXIEBUILD_PATH_HDF5: "/home/src/hdf5-1.10.0-patch1-linux-centos7-x86_64-gcc485-shared"
+    # http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/bin/linux-centos7-x86_64-gcc485/hdf5-1.10.0-patch1-linux-centos7-x86_64-gcc485-shared.tar.gz
+    VOXIEBUILD_URL_HDF5: "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.bz2"
+
+build-linux-1604:
+  stage: build
+
+  tags:
+    - ubuntu-16.04
 
   artifacts:
     paths:
