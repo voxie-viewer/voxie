@@ -3,8 +3,24 @@ Set-StrictMode -Version 2.0
 
 function CheckErrorCode {
   if (-Not $?) {
-    throw "Command execution failed"
+    throw "Command execution failed: " + $args
   }
+}
+
+function RMrf {
+  ForEach ($arg in $args) {
+    if (Test-Path $arg) {
+      rmdir -recurse -force $arg
+      CheckErrorCode
+    }
+  }
+}
+
+function External {
+  $args2 = $($args | % {$_})
+  $par = $args2[1..($args2.Length-1)]
+  &$args2[0] $par
+  CheckErrorCode ($args2 -join ' ')
 }
 
 # Hack to execute code with .NET 4
@@ -47,7 +63,14 @@ function Invoke-CLR4PowerShellCommand {
     }
 }
 
+$global_args = $args
 function CheckEnvVar ([string]$name) {
+  ForEach ($arg in $global_args) {
+    $arg = ($arg -as [string])
+    if ($arg.StartsWith($name + "=")) {
+      [Environment]::SetEnvironmentVariable("VOXIEBUILD_" + $name, $arg.Substring(($name + "=").Length))
+    }
+  }
   $val = [Environment]::GetEnvironmentVariable("VOXIEBUILD_" + $name)
   if (($val -eq $null) -or ($val -eq "")) {
     throw "Environment variable " + $name + " not found"
@@ -75,11 +98,76 @@ function SetVsCmd {
 }
 
 
-echo "Checking environment variables..."
+$URL_BASE = $env:VOXIEBUILD_URL_BASE
+ForEach ($arg in $args) {
+  $arg = ($arg -as [string])
+  if ($arg.StartsWith("URL_BASE=")) {
+    $URL_BASE=$arg.Substring("URL_BASE=".Length)
+  }
+}
 
-# CMake path
-# http://www.cmake.org/files/v2.8/cmake-2.8.12.2-win32-x86.exe
-CheckEnvVar PATH_CMAKE
+function GetUrl {
+  $file = $args[0]
+  $url = [IO.File]::ReadAllText("tools/build-dep/$file.url").Trim()
+  return $url
+}
+
+$files = @(
+  "ICSharpCode.SharpZipLib.dll",
+  "7za920.zip",
+  "lessmsi-v1.6.1.zip",
+  "boost_1_61_0.zip",
+  "hdf5-1.10.0-patch1-win64-vs2015-shared.zip",
+  "cmake-2.8.12.2-win32-x86.zip",
+  "expat-2.1.0.tar.gz",
+  "dbus-1.8.2.tar.gz"
+)
+
+$URL_EXPAT_SRC = GetUrl("expat-2.1.0.tar.gz")
+$URL_DBUS_SRC = GetUrl("dbus-1.8.2.tar.gz")
+$URL_HDF5 = GetUrl("hdf5-1.10.0-patch1.tar.bz2")
+$URL_QT = GetUrl("qt-everywhere-opensource-src-5.6.0.tar.gz")
+
+echo "Checking build dependencies..."
+$algorithm = [Security.Cryptography.HashAlgorithm]::Create("SHA512")
+ForEach ($file in $files) {
+  #echo $file
+  $expSum = [IO.File]::ReadAllText("tools/build-dep/$file.sha512sum").Split(" ")[0]
+  if ($expSum.Length -ne 128) {
+    throw "Checksum in tools/build-dep/$file.sha512sum has length $($expSum.Length)"
+  }
+  if (Test-Path "tools/build-dep/$file") {
+    $fileBytes = [IO.File]::ReadAllBytes("tools/build-dep/$file")
+    $bytes = $algorithm.ComputeHash($fileBytes)
+    $sum = -Join ($bytes | ForEach {"{0:x2}" -f $_})
+    if ($sum -ne $expSum) {
+      throw "Checksum for existing file tools/build-dep/$file does not match: Expected $expSum, got $sum"
+    }
+  } else {
+    if ( $URL_BASE -eq "" -or $URL_BASE -eq $null ) {
+      throw "URL_BASE not set and file $file not found"
+    }
+    Write-Host "Getting $file..." -NoNewLine
+    if ( $URL_BASE -eq "origin" ) {
+      $url = [IO.File]::ReadAllText("tools/build-dep/$file.url").Trim()
+    } else {
+      $url = "$URL_BASE/$file"
+    }
+    (New-Object System.Net.WebClient).DownloadFile($url, "tools/build-dep/$file.new")
+    Write-Host " done"
+    $fileBytes = [IO.File]::ReadAllBytes("tools/build-dep/$file.new")
+    $bytes = $algorithm.ComputeHash($fileBytes)
+    $sum = -Join ($bytes | ForEach {"{0:x2}" -f $_})
+    if ($sum -ne $expSum) {
+      throw "Checksum for downloaded file tools/build-dep/$file does not match: Expected $expSum, got $sum"
+    }
+    [IO.File]::Move("tools/build-dep/$file.new", "tools/build-dep/$file")
+  }
+}
+echo "Done checking build dependencies."
+
+
+echo "Checking environment variables..."
 
 # Visual Studio
 # https://www.visualstudio.com/downloads/download-visual-studio-vs (Visual Studio Community 2015 with Update 2)
@@ -88,62 +176,45 @@ CheckEnvVar PATH_VISUAL_STUDIO
 # Qt
 # http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2015_64-5.6.0.exe
 CheckEnvVar PATH_QT
-CheckEnvVar URL_QT
 CheckEnvVar URL_QT_COPY
 
-# HDF5
-# http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/bin/windows/extra/hdf5-1.10.0-patch1-win64-vs2015-shared.zip
-CheckEnvVar PATH_HDF5
-CheckEnvVar URL_HDF5
-
-# Boost include directory (or source directory)
-# https://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.zip/download
-CheckEnvVar PATH_BOOST_INCLUDE
-
-# Expat source directory
-# http://sourceforge.net/projects/expat/files/expat/2.1.0/expat-2.1.0.tar.gz/download
-CheckEnvVar PATH_EXPAT_SRC
-CheckEnvVar URL_EXPAT_SRC
-
-# DBus source directory
-# http://cgit.freedesktop.org/dbus/dbus/snapshot/dbus-1.8.2.zip
-CheckEnvVar PATH_DBUS_SRC
-CheckEnvVar URL_DBUS_SRC
-
+CheckEnvVar USE_GIT
 
 echo "Cleaning up build directory..."
 
-if (Test-Path build) {
-  rmdir -recurse build
-  CheckErrorCode
-}
+RMrf build
 
 rm voxie*.zip
 
 echo "Checking git config..."
 
-$AutoCrlf = (git config core.autocrlf) | Out-String
-CheckErrorCode
-
-#echo $AutoCrlf
-if ($AutoCrlf.Trim() -ne "false") {
-  throw "core.autocrlf is not set to false"
+if ($env:VOXIEBUILD_USE_GIT -ne "0") {
+  $AutoCrlf = (External git config core.autocrlf) | Out-String
+  if ($AutoCrlf -eq $null) {
+    $AutoCrlf = ""
+  }
+  
+  #echo $AutoCrlf
+  if ($AutoCrlf.Trim() -ne "false") {
+    throw "core.autocrlf is not set to false"
+  }
+  
+  #$TARGET_NAME = "voxie"
+  $REV = git describe --always
+  CheckErrorCode
+  $REV = $REV.Trim()
+  if ($REV.StartsWith("voxie-")) {
+      $REV = $REV.Substring(6);
+  }
+  $TARGET_NAME = "voxie-" + $REV
+} else {
+  $TARGET_NAME = "voxie"
 }
-
-#$TARGET_NAME = "voxie"
-$REV = git describe --always
-CheckErrorCode
-$REV = $REV.Trim()
-if ($REV.StartsWith("voxie-")) {
-    $REV = $REV.Substring(6);
-}
-$TARGET_NAME = "voxie-" + $REV
 $TARGET = "build/release/install/" + $TARGET_NAME
 
 New-Item -type directory $TARGET | Out-Null
 $SrcDir = [System.IO.Path]::GetFullPath(".")
 
-$CMAKE = $env:VOXIEBUILD_PATH_CMAKE + "/bin/cmake"
 $QMAKE = $env:VOXIEBUILD_PATH_QT + "/bin/qmake"
 
 
@@ -168,11 +239,30 @@ $OPENCL_ICD_LOADER_COMMIT = $OPENCL_ICD_LOADER_COMMIT.SubString(0, 40)
 
 SetVsCmd
 
+echo "Unpacking 7z..."
+New-Item -type directory build/dep | Out-Null
+[System.Reflection.Assembly]::LoadFile($SrcDir + "/tools/build-dep/ICSharpCode.SharpZipLib.dll") | Out-Null
+(New-Object ICSharpCode.SharpZipLib.Zip.FastZip).ExtractZip("tools/build-dep/7za920.zip", "build/dep", "7za.exe")
+#New-Item -type directory build/dep/7z | Out-Null
+#External build/dep/7za -obuild/dep/7z x "tools/build-dep/7z1604-extra.7z" | Out-Null
+
+echo "Unpacking boost..."
+External build/dep/7za -obuild/dep x "tools/build-dep/boost_1_61_0.zip" boost_1_61_0/boost | Out-Null
+$BOOST_INCLUDE = $SrcDir + "/build/dep/boost_1_61_0"
+
+echo "Unpacking lessmsi..."
+External build/dep/7za -obuild/dep/lessmsi x "tools/build-dep/lessmsi-v1.6.1.zip" | Out-Null
+
+echo "Unpacking HDF5..."
+External build/dep/7za -obuild/dep x "tools/build-dep/hdf5-1.10.0-patch1-win64-vs2015-shared.zip" | Out-Null
+External build/dep/lessmsi/lessmsi x "build\dep\hdf5\HDF5-1.10.0-win64.msi" "build\dep\hdf5\"
+$PATH_HDF5 = "$SrcDir/build/dep/hdf5/SourceDir/HDF_Group/HDF5/1.10.0"
+
 # Voxie
 echo "Building Voxie..."
 # New-Item -type directory build | Out-Null
 cd build
-& $QMAKE "BOOST_PATH=$env:VOXIEBUILD_PATH_BOOST_INCLUDE" "HDF5_PATH=$env:VOXIEBUILD_PATH_HDF5" ../src
+& $QMAKE "BOOST_PATH=$BOOST_INCLUDE" "HDF5_PATH=$PATH_HDF5" ../src
 CheckErrorCode
 & $MAKE $MAKE_ARGS
 CheckErrorCode
@@ -192,10 +282,17 @@ Copy-Item src/Ext*/*.conf $TARGET/scripts
 cp scripts/Example*.js $TARGET/scripts
 cp scripts/de.uni_stuttgart.Voxie.xml $TARGET
 
+# CMake (needed for building Expat and DBus)
+echo "Unpacking CMake..."
+External build/dep/7za -obuild/dep x "tools/build-dep/cmake-2.8.12.2-win32-x86.zip" | Out-Null
+$CMAKE = $SrcDir + "/build/dep/cmake-2.8.12.2-win32-x86/bin/cmake"
+
 # Expat (needed for DBus)
 echo "Building Expat..."
 New-Item -type directory "build/library/expat" | Out-Null
-Copy-Item -recurse $env:VOXIEBUILD_PATH_EXPAT_SRC "build/library/expat/"
+External build/dep/7za -obuild/library/expat/ x "tools/build-dep/expat-2.1.0.tar.gz" | Out-Null
+External build/dep/7za -obuild/library/expat/ x "build/library/expat/expat-2.1.0.tar" | Out-Null
+rm build/library/expat/expat-2.1.0.tar
 cd build/library/expat/*
 $ExpatDir = $PWD
 New-Item -type directory build | Out-Null
@@ -209,9 +306,10 @@ AddCr $ExpatDir/COPYING $TARGET/COPYING.expat.txt
 
 # DBUS
 echo "Building DBus..."
-#ExpandZIPFile $env:VOXIEBUILD_PATH_DBUS_SRC "build/library/dbus"
 New-Item -type directory "build/library/dbus" | Out-Null
-Copy-Item -recurse $env:VOXIEBUILD_PATH_DBUS_SRC "build/library/dbus/"
+External build/dep/7za -obuild/library/dbus/ x "tools/build-dep/dbus-1.8.2.tar.gz" | Out-Null
+External build/dep/7za -obuild/library/dbus/ x "build/library/dbus/dbus-1.8.2.tar" | Out-Null
+rm build/library/dbus/dbus-1.8.2.tar
 cd build/library/dbus/*
 $DBusDir = $PWD
 New-Item -type directory build | Out-Null
@@ -230,14 +328,13 @@ Copy-Item $DBusDir/build/bus/*.conf $TARGET/bus
 New-Item -type directory $TARGET/bus/session.d | Out-Null
 New-Item -type directory $TARGET/bus/system.d | Out-Null
 
-$env:VOXIEBUILD_PATH_HDF5
 # HDF5
 echo "Copying HDF5 files..."
-Copy-Item $env:VOXIEBUILD_PATH_HDF5/bin/hdf5.dll $TARGET
-Copy-Item $env:VOXIEBUILD_PATH_HDF5/bin/zlib.dll $TARGET
-Copy-Item $env:VOXIEBUILD_PATH_HDF5/bin/szip.dll $TARGET
-Copy-Item $env:VOXIEBUILD_PATH_HDF5/bin/vcruntime*.dll $TARGET
-Copy-Item $env:VOXIEBUILD_PATH_HDF5/bin/msvcp*.dll $TARGET
+Copy-Item $PATH_HDF5/bin/hdf5.dll $TARGET
+Copy-Item $PATH_HDF5/bin/zlib.dll $TARGET
+Copy-Item $PATH_HDF5/bin/szip.dll $TARGET
+Copy-Item $PATH_HDF5/bin/vcruntime*.dll $TARGET
+Copy-Item $PATH_HDF5/bin/msvcp*.dll $TARGET
 AddCr lib/COPYING.hdf5 $TARGET/COPYING.hdf5.txt
 
 echo "Copying Qt files..."
@@ -254,10 +351,10 @@ echo "Creating README..."
 $text = [IO.File]::ReadAllText("tools/README-windows.tmpl") -replace "`n", "`r`n"
 $text = $text -replace "%QT_VERSION%", $QT_VERSION
 $text = $text -replace "%OPENCL_ICD_LOADER_COMMIT%", $OPENCL_ICD_LOADER_COMMIT
-$text = $text -replace "%EXPAT_URL%", $env:VOXIEBUILD_URL_EXPAT_SRC
-$text = $text -replace "%DBUS_URL%", $env:VOXIEBUILD_URL_DBUS_SRC
-$text = $text -replace "%HDF5_URL%", $env:VOXIEBUILD_URL_HDF5
-$text = $text -replace "%QT_URL%", $env:VOXIEBUILD_URL_QT
+$text = $text -replace "%EXPAT_URL%", $URL_EXPAT_SRC
+$text = $text -replace "%DBUS_URL%", $URL_DBUS_SRC
+$text = $text -replace "%HDF5_URL%", $URL_HDF5
+$text = $text -replace "%QT_URL%", $URL_QT
 $text = $text -replace "%QT_URL_COPY%", $env:VOXIEBUILD_URL_QT_COPY
 $text = $text -replace "%VOXIE_TAG%", $VOXIE_TAG
 $text = $text -replace "%VOXIE_COMMIT%", $env:CI_BUILD_REF

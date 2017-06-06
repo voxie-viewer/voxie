@@ -1,0 +1,11 @@
+/tmp
+
+*.zip
+*.dll
+*.xz
+*.gz
+*.whl
+*.exe
+*.msi
+*.tar.bz2
+*.7z
