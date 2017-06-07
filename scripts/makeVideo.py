@@ -91,7 +91,7 @@ with instance.createClient() as client:
         if args.fps is not None:
             fps = float(args.fps)
         outputFile = args.output_file
-        process = subprocess.Popen(['avconv', '-v', 'quiet', '-f', 'rawvideo', '-vcodec', 'rawvideo', '-s', '%dx%d' % (width, height), '-r', '%f' % fps, '-pix_fmt', 'rgb24', '-i', '-', '-codec', 'mjpeg', '-qscale', '1', '-y', outputFile], stdin = subprocess.PIPE)
+        process = subprocess.Popen(['ffmpeg', '-v', 'quiet', '-f', 'rawvideo', '-vcodec', 'rawvideo', '-s', '%dx%d' % (width, height), '-r', '%f' % fps, '-pix_fmt', 'rgb24', '-i', '-', '-codec', 'mjpeg', '-qscale', '1', '-y', outputFile], stdin = subprocess.PIPE)
 
         for i in range (int ((posmax[2] - posmin[2]) / slicethick + 1)):
             pos0 = (posmin[0], posmin[1], posmin[2] + slicethick * i)

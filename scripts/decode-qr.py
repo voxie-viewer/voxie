@@ -73,11 +73,11 @@ with instance.createClient() as client:
         global allData
         zbarImage = zbar.Image(image.size[0], image.size[1], 'Y800', image.tobytes())
         scanner.scan (zbarImage)
-        print len(scanner.results)
+        print (len(scanner.results))
         for result in scanner.results:
             data = '%s %s %s "%s"' % (result.type, result.quality, result.location, result.data)
             allData = allData + data + "\n"
-            print data
+            print (data)
             # im2 = image.copy ().convert ('RGB')
             # draw = ImageDraw.ImageDraw (im2)
             # line = list(result.location)
