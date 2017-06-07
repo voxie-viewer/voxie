@@ -293,6 +293,10 @@ Copy-Item build/Script*/*/*.exe $TARGET/scripts
 Copy-Item build/Ext*/*/*.exe $TARGET/scripts
 Copy-Item src/Ext*/*.conf $TARGET/scripts
 cp scripts/Example*.js $TARGET/scripts
+cp scripts/voxie.py $TARGET/scripts
+cp scripts/createChessboard.py $TARGET/scripts
+cp scripts/getAverage.py $TARGET/scripts
+cp scripts/shmemTest.py $TARGET/scripts
 cp scripts/de.uni_stuttgart.Voxie.xml $TARGET
 
 # CMake (needed for building Expat and DBus)

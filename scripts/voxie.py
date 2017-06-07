@@ -191,10 +191,52 @@ endianMap = {
     "big": ">",
 }
 class Buffer:
+    def win_dbus_get_local_machine_id():
+        import ctypes
+        import ctypes.util
+        import ctypes.wintypes
+
+        lib = ctypes.CDLL (ctypes.util.find_library ('dbus-1'))
+        lib.dbus_get_local_machine_id.restype = ctypes.c_voidp
+        lib.dbus_free.argtypes = [ctypes.c_voidp]
+        ptr = lib.dbus_get_local_machine_id ()
+        uuid = ctypes.c_char_p (ptr).value
+        lib.dbus_free (ptr)
+        return str (uuid, 'utf-8')
+
     def __init__(self, info, dim, writable):
         self.info = info
         (self.handle, self.offset, (self.typeName, self.typeSize, self.typeEndian), self.size, self.stride, self.metadata) = info
 
+        self.size = numpy.array(self.size, dtype='uint64')
+        if len(self.stride) != dim or len(self.size) != dim:
+            raise Exception('Invalid dimension')
+
+        if int (self.typeSize) % 8 != 0:
+            raise Exception('Invalid size')
+        self.dtype = endianMap[self.typeEndian] + typeNameMap[self.typeName] + str (int (self.typeSize) // 8)
+        #print (dtype)
+
+        bytes = int (self.offset)
+        pos0 = int (self.offset)
+        bytes += int (self.typeSize) // 8
+        for i in range (0, dim):
+            stride = int (self.stride[i])
+            size = int (self.size[i])
+            if size == 0:
+                bytes = 0
+                pos0 = 0
+                break
+            if stride > 0:
+                bytes += (size - 1) * stride;
+            else:
+                pos0 += (size - 1) * stride;
+        #print (pos0, bytes)
+        if int (self.offset) < 0:
+            raise Exception ('self.offset < 0')
+        if int (pos0) < 0:
+            raise Exception ('pos0 < 0')
+        
         self.handleType = self.handle["Type"]
         if self.handleType == "UnixFileDescriptor":
             fd = self.handle["FileDescriptor"].take()
@@ -205,17 +247,35 @@ class Buffer:
                 self.mmap = mmap.mmap(fd, 0, prot = prot)
             finally:
                 os.close(fd)
+        elif self.handleType == "WindowsNamedFileMapping":
+            import ctypes
+            import ctypes.util
+            import ctypes.wintypes
+
+            #print (self.handle)
+
+            localMachineIDVoxie = str (self.handle["LocalMachineID"])
+            localMachineIDLocal = Buffer.win_dbus_get_local_machine_id ()
+            if localMachineIDVoxie != localMachineIDLocal:
+                raise Exception ("Machine ID mismatch: '" + localMachineIDVoxie + "' (Voxie) != '" + localMachineIDLocal + "' (local)")
+
+            pid = os.getpid ()
+            sessionIDLocal = ctypes.wintypes.DWORD ()
+            if not ctypes.windll.kernel32.ProcessIdToSessionId (ctypes.wintypes.DWORD (pid), ctypes.byref (sessionIDLocal)):
+                raise Exception ("Call to ProcessIdToSessionId() failed");
+            sessionIDLocal = sessionIDLocal.value
+            sessionIDVoxie = int (self.handle["SessionID"])
+            if sessionIDVoxie != sessionIDLocal:
+                raise Exception ("Session ID mismatch: '%s' (Voxie) != '%s' (local)" % (sessionIDVoxie, sessionIDLocal));
+
+            objectName = str (self.handle["MappingObjectName"])
+
+            access = mmap.ACCESS_READ
+            if writable:
+                access = mmap.ACCESS_WRITE
+            self.mmap = mmap.mmap(0, bytes, objectName, access = access)
         else:
-            raise Exception('Unknown handle type')
-
-        self.size = numpy.array(self.size, dtype='uint64')
-        if len(self.stride) != dim or len(self.size) != dim:
-            raise Exception('Invalid dimension')
-
-        if int (self.typeSize) % 8 != 0:
-            raise Exception('Invalid size')
-        self.dtype = endianMap[self.typeEndian] + typeNameMap[self.typeName] + str (int (self.typeSize) // 8)
-        #print (dtype)
+            raise Exception('Unknown handle type: "' + self.handleType + '"')
 
         self.array = numpy.ndarray(self.size, dtype=self.dtype, strides=self.stride, buffer=self.mmap, offset=self.offset)
 
