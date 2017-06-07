@@ -512,47 +512,63 @@ void CoreWindow::populateScriptsMenu()
         }
         Root::instance()->settings()->endArray();
         Root::instance()->settings()->endGroup();
+        if (!fileTypes.contains("*.py"))
+            fileTypes << "*.py";
 
-        if(fileTypes.size() > 0) {
-            for (auto scriptDirectory : Root::instance()->directoryManager()->scriptPath()) {
-                QDir scriptDir = QDir(scriptDirectory);
-                QStringList externalScripts = scriptDir.entryList(fileTypes, QDir::Files | QDir::Readable);
-                for(QString script : externalScripts) {
-                    if (script.endsWith("~"))
-                        continue;
-                    QString scriptFile = scriptDirectory + "/" + script;
+        for (auto scriptDirectory : Root::instance()->directoryManager()->scriptPath()) {
+            QDir scriptDir = QDir(scriptDirectory);
+            QStringList externalScripts = scriptDir.entryList(fileTypes, QDir::Files | QDir::Readable);
+            for(QString script : externalScripts) {
+                if (script.endsWith("~"))
+                    continue;
+                QString scriptFile = scriptDirectory + "/" + script;
 
-                    if (QFileInfo (scriptFile).isExecutable ())
-                        continue;
+                if (QFileInfo (scriptFile).isExecutable ())
+                    continue;
 
-                    QString baseName = scriptFile;
-                    if (baseName.endsWith(".exe"))
-                        baseName = scriptFile.left(scriptFile.length() - 4);
-                    if (QFile::exists (baseName + ".conf"))
-                        continue;
+                QString baseName = scriptFile;
+                if (baseName.endsWith(".exe"))
+                    baseName = scriptFile.left(scriptFile.length() - 4);
+                if (QFile::exists (baseName + ".conf"))
+                    continue;
 
-                    QAction *action = this->scriptsMenu->addAction(QIcon(":/icons/script-attribute-p.png"), script);
-                    connect(action, &QAction::triggered, [this, scriptFile]() -> void {
-                            Root::instance()->settings()->beginGroup("scripting");
-                            int size = Root::instance()->settings()->beginReadArray("externals");
-                            for (int i = 0; i < size; ++i) {
-                                Root::instance()->settings()->setArrayIndex(i);
-                                QString executable = Root::instance()->settings()->value("executable").toString();
-                                // Not used yet.
-                                // QString arguments = Root::instance()->settings()->value("arguments").toString();
+                QAction *action = this->scriptsMenu->addAction(QIcon(":/icons/script-attribute-p.png"), script);
+                connect(action, &QAction::triggered, [this, scriptFile]() -> void {
+                        Root::instance()->settings()->beginGroup("scripting");
+                        int size = Root::instance()->settings()->beginReadArray("externals");
+                        bool found = false;
+                        for (int i = 0; i < size; ++i) {
+                            Root::instance()->settings()->setArrayIndex(i);
+                            QString executable = Root::instance()->settings()->value("executable").toString();
+                            // Not used yet.
+                            // QString arguments = Root::instance()->settings()->value("arguments").toString();
 
-                                for(const QString &ext : Root::instance()->settings()->value("extension").toString().split(';')) {
-                                    QRegExp regexp(ext, Qt::CaseInsensitive, QRegExp::WildcardUnix);
-                                    if(regexp.exactMatch(scriptFile) == false)
-                                        continue;
+                            for(const QString &ext : Root::instance()->settings()->value("extension").toString().split(';')) {
+                                QRegExp regexp(ext, Qt::CaseInsensitive, QRegExp::WildcardUnix);
+                                if(regexp.exactMatch(scriptFile) == false)
+                                    continue;
 
-                                    startScript(scriptFile, &executable);
-                                }
+                                startScript(scriptFile, &executable);
+                                found = true;
+                                break;
                             }
-                            Root::instance()->settings()->endArray();
-                            Root::instance()->settings()->endGroup();
-                        });
-                }
+                            if (found)
+                                break;
+                        }
+                        if (!found && scriptFile.endsWith(".py")) {
+#if defined(Q_OS_WIN)
+                            QString executable = QCoreApplication::applicationDirPath() + "/python/python.exe";
+#else
+                            QString executable = "python3";
+#endif
+                            startScript(scriptFile, &executable);
+                            found = true;
+                        }
+                        if (!found)
+                            QMessageBox(QMessageBox::Critical, this->windowTitle(), QString("Failed to find interpreter for script " + scriptFile), QMessageBox::Ok, this).exec();
+                        Root::instance()->settings()->endArray();
+                        Root::instance()->settings()->endGroup();
+                    });
             }
         }
     }

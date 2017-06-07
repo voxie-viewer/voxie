@@ -120,13 +120,26 @@ $files = @(
   "hdf5-1.10.0-patch1-win64-vs2015-shared.zip",
   "cmake-2.8.12.2-win32-x86.zip",
   "expat-2.1.0.tar.gz",
-  "dbus-1.8.2.tar.gz"
+  "dbus-1.8.2.tar.gz",
+
+  "python-3.5.3-embed-amd64.zip",
+  "Python-3.5.3.tgz", # For the license file
+  "numpy-1.12.1-cp35-none-win_amd64.whl",
+  "numpy-1.12.1.zip", # For the license file
+  "dbus-1.2.4-cp35-none-win_amd64.zip"
+  "Pillow-4.1.1-cp35-cp35m-win_amd64.whl",
+  "Pillow-4.1.1.tar.gz" # For the license file
 )
 
 $URL_EXPAT_SRC = GetUrl("expat-2.1.0.tar.gz")
 $URL_DBUS_SRC = GetUrl("dbus-1.8.2.tar.gz")
 $URL_HDF5 = GetUrl("hdf5-1.10.0-patch1.tar.bz2")
 $URL_QT = GetUrl("qt-everywhere-opensource-src-5.6.0.tar.gz")
+
+$URL_PYTHON_SRC = GetUrl("Python-3.5.3.tgz")
+$URL_NUMPY_SRC = GetUrl("numpy-1.12.1.zip")
+$URL_PYTHON_DBUS_SRC = GetUrl("dbus-python-1.2.4.tar.gz")
+$URL_PILLOW_SRC = GetUrl("Pillow-4.1.1.tar.gz")
 
 echo "Checking build dependencies..."
 $algorithm = [Security.Cryptography.HashAlgorithm]::Create("SHA512")
@@ -342,7 +355,23 @@ echo "Copying Qt files..."
 CheckErrorCode
 Copy-Item -recurse $TARGET/platforms $TARGET/scripts # Needed for ScriptGetAverage
 rm $TARGET/vcredist*.exe
-AddCr $env:VOXIEBUILD_PATH_QT/../../Licenses/LICENSE COPYING.qt.txt
+AddCr $env:VOXIEBUILD_PATH_QT/../../Licenses/LICENSE $TARGET/COPYING.qt.txt
+
+echo "Extracting python files"
+New-Item -type directory $TARGET/python | Out-Null
+External build/dep/7za "-o$TARGET/python" x "tools/build-dep/python-3.5.3-embed-amd64.zip" | Out-Null
+External build/dep/7za "-o$TARGET/python" x "tools/build-dep/numpy-1.12.1-cp35-none-win_amd64.whl" | Out-Null
+External build/dep/7za "-o$TARGET/python" x "tools/build-dep/dbus-1.2.4-cp35-none-win_amd64.zip" | Out-Null
+External build/dep/7za "-o$TARGET/python" x "tools/build-dep/Pillow-4.1.1-cp35-cp35m-win_amd64.whl" | Out-Null
+Copy-Item $TARGET/python/COPYING.dbus-python.txt $TARGET/
+External build/dep/7za "-obuild/dep/python-src" x "tools/build-dep/Python-3.5.3.tgz" | Out-Null
+External build/dep/7za "-obuild/dep/python-src" x "build/dep/python-src/Python-3.5.3.tar" Python-3.5.3/LICENSE | Out-Null
+AddCr build/dep/python-src/Python-3.5.3/LICENSE $TARGET/COPYING.python.txt
+External build/dep/7za "-obuild/dep/numpy-src" x "tools/build-dep/numpy-1.12.1.zip" numpy-1.12.1/LICENSE.txt | Out-Null
+AddCr build/dep/numpy-src/numpy-1.12.1/LICENSE.txt $TARGET/COPYING.numpy.txt
+External build/dep/7za "-obuild/dep/pillow-src" x "tools/build-dep/Pillow-4.1.1.tar.gz" | Out-Null
+External build/dep/7za "-obuild/dep/pillow-src" x "build/dep/pillow-src/dist/Pillow-4.1.1.tar" Pillow-4.1.1/LICENSE | Out-Null
+AddCr build/dep/pillow-src/Pillow-4.1.1/LICENSE $TARGET/COPYING.pillow.txt
 
 echo "Copying manual..."
 Copy-Item manual.pdf $TARGET
@@ -354,6 +383,10 @@ $text = $text -replace "%OPENCL_ICD_LOADER_COMMIT%", $OPENCL_ICD_LOADER_COMMIT
 $text = $text -replace "%EXPAT_URL%", $URL_EXPAT_SRC
 $text = $text -replace "%DBUS_URL%", $URL_DBUS_SRC
 $text = $text -replace "%HDF5_URL%", $URL_HDF5
+$text = $text -replace "%URL_PYTHON_SRC%", $URL_PYTHON_SRC
+$text = $text -replace "%URL_NUMPY_SRC%", $URL_NUMPY_SRC
+$text = $text -replace "%URL_PYTHON_DBUS_SRC%", $URL_PYTHON_DBUS_SRC
+$text = $text -replace "%URL_PILLOW_SRC%", $URL_PILLOW_SRC
 $text = $text -replace "%QT_URL%", $URL_QT
 $text = $text -replace "%QT_URL_COPY%", $env:VOXIEBUILD_URL_QT_COPY
 $text = $text -replace "%VOXIE_TAG%", $VOXIE_TAG
