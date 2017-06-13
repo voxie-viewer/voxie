@@ -14,12 +14,12 @@
 using namespace voxie;
 using namespace voxie::gui;
 
-ScriptConsole::ScriptConsole(QWidget *parent) :
+ScriptConsole::ScriptConsole(QWidget *parent, const QString& title) :
 	QDialog(parent),
 	snippetEdit(nullptr),
 	scriptLog(nullptr)
 {
-	this->setWindowTitle("Voxie - Script Console");
+	this->setWindowTitle(title);
 	this->resize(800, 500);
 
 	this->scriptLog = new QTextEdit(this);
@@ -43,10 +43,10 @@ ScriptConsole::ScriptConsole(QWidget *parent) :
 	vlayout->addLayout(hlayout);
 	this->setLayout(vlayout);
 
-	connect(Root::instance(), &Root::logEmitted, this, &ScriptConsole::appendLog);
+	connect(Root::instance(), &Root::logEmitted, this, &ScriptConsole::appendLine);
 
     for (const auto& msg : Root::getBufferedMessages())
-        this->scriptLog->append(msg);
+        this->appendLine(msg);
 }
 
 void ScriptConsole::executeScript()
@@ -59,13 +59,22 @@ void ScriptConsole::executeScript()
 	}
     */
 
-    Root::instance()->exec(snippet, snippet);
+    executeCode(snippet);
     this->snippetEdit->setText("");
 }
 
-void ScriptConsole::appendLog(const QString &log)
+#include <iostream>
+
+void ScriptConsole::append(const QString &log)
 {
-	this->scriptLog->append(log);
+    this->scriptLog->moveCursor(QTextCursor::End);
+    this->scriptLog->insertPlainText(log);
+    this->scriptLog->ensureCursorVisible();
+}
+
+void ScriptConsole::appendLine(const QString &log)
+{
+    this->append(log + "\n");
 }
 
 // Local Variables:

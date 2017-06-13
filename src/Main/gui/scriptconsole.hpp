@@ -22,7 +22,7 @@ private:
     QLineEdit *snippetEdit;
     QTextEdit *scriptLog;
 public:
-    explicit ScriptConsole(QWidget *parent = 0);
+    explicit ScriptConsole(QWidget *parent, const QString& title);
 
 private slots:
     /**
@@ -30,16 +30,17 @@ private slots:
      */
     void executeScript();
 
+public slots:
     /**
      * @brief Appends a message to the log window.
      * @param log The text to be logged.
      */
-    void appendLog(const QString &log);
+    void append(const QString &log);
+
+    void appendLine(const QString &log);
 
 signals:
-
-public slots:
-
+    void executeCode(const QString& code);
 };
 
 }

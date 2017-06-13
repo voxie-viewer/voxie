@@ -574,7 +574,7 @@ bool Root::execFile(const QString &fileName)
     // Hide local variables defined in code
     code = "(function () { " + code + " }) ()";
 
-	bool success = this->exec(code, "");
+	bool success = this->exec(code, "", [this](const QString& text) { log(text); });
 	//bool success = this->exec(code, "voxie.ExecuteQScriptFile(" + escapeJSString(fileName) + ")");
 
 	file.close();
@@ -582,25 +582,25 @@ bool Root::execFile(const QString &fileName)
 	return success;
 }
 
-bool Root::exec(const QString& code, const QString& codeToPrint)
+bool Root::exec(const QString& code, const QString& codeToPrint, const std::function<void(const QString&)>& print)
 {
     if (codeToPrint != "")
-        this->log("> " + codeToPrint);
+        print("> " + codeToPrint);
 	QScriptValue result = this->jsEngine.evaluate(code);
 	//if(result.isError()) { // isError() only returns whether the object is an instance of the Error class, not whether there was an exception
 	if(root->scriptEngine().hasUncaughtException()) {
-		this->log("--- " + result.toString());
+		print("--- " + result.toString());
 		return false;
 	}
 	if(!result.isUndefined()) {
         if(result.isArray()) {
             int length = result.property("length").toInteger();
-            this->log("Array[" + QString::number(length) + "]");
+            print("Array[" + QString::number(length) + "]");
             for(int i = 0; i < length; i++) {
-                this->log(result.property(i));
+                print(result.property(i).toString());
             }
         } else {
-            this->log(result.toString());
+            print(result.toString());
         }
 	}
 	return true;

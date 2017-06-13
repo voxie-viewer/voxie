@@ -248,6 +248,39 @@ Visualizer* CoreWindow::getActiveVisualizer() {
   return activeVisualizer;
 }
 
+// https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals
+static QString escapePythonString(const QString& s) {
+    QString ret = "'";
+    for (QChar c : s) {
+        if (c < 32 || c >= 127 || c == '\\' || c == '\'') {
+            if (c == '\\')
+                ret += "\\\\";
+            else if (c == '\'')
+                ret += "\\\'";
+            else if (c == '\a')
+                ret += "\\a";
+            else if (c == '\b')
+                ret += "\\b";
+            else if (c == '\f')
+                ret += "\\f";
+            else if (c == '\n')
+                ret += "\\n";
+            else if (c == '\r')
+                ret += "\\r";
+            else if (c == '\t')
+                ret += "\\t";
+            else if (c == '\v')
+                ret += "\\v";
+            else
+                ret += QString("\\u%1").arg(c.unicode(), 4, 16, (QChar) '0');
+        } else {
+            ret += c;
+        }
+    }
+    ret += "'";
+    return ret;
+}
+
 void CoreWindow::initMenu()
 {
     QMenuBar *menu = new QMenuBar(this);
@@ -285,7 +318,7 @@ void CoreWindow::initMenu()
     this->visualizerMenus.insert(voxie::plugin::vtMiscellaneous, visualizerMenu->addMenu(QIcon(":/icons/equalizer.png"), "&Miscellaneous"));
 
     QAction *pluginManagerAction = this->pluginsMenu->addAction(QIcon(":/icons/plug.png"), "&Plugin Manager…");
-    connect(pluginManagerAction, &QAction::triggered, [this]() -> void
+    connect(pluginManagerAction, &QAction::triggered, this, [this]() -> void
     {
         PluginManagerWindow* pluginmanager = new PluginManagerWindow(this);
         pluginmanager->setAttribute(Qt::WA_DeleteOnClose);
@@ -293,13 +326,120 @@ void CoreWindow::initMenu()
     });
     this->pluginsMenu->addSeparator();
 
-    QAction *scriptConsoleAction = this->scriptsMenu->addAction(QIcon(":/icons/application-terminal.png"), "&Script Console…");
-    scriptConsoleAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
-    connect(scriptConsoleAction, &QAction::triggered, [this]() -> void
+    QAction *scriptConsoleAction = this->scriptsMenu->addAction(QIcon(":/icons/application-terminal.png"), "&JS Console…");
+    connect(scriptConsoleAction, &QAction::triggered, this, [this]() -> void
     {
-        ScriptConsole *console = new ScriptConsole(this);
+        ScriptConsole *console = new ScriptConsole(this, "Voxie - JS Console");
         console->setAttribute(Qt::WA_DeleteOnClose);
+        connect(console, &ScriptConsole::executeCode, this, [this, console](const QString& code) -> void
+        {
+            Root::instance()->exec(code, code, [console](const QString& text) { console->appendLine(text); });
+        });
         console->show();
+        console->activateWindow();
+        //console->raise();
+    });
+
+    QAction *pythonConsoleAction = this->scriptsMenu->addAction(QIcon(":/icons/application-terminal.png"), "&Python Console…");
+    pythonConsoleAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
+    connect(pythonConsoleAction, &QAction::triggered, this, [this]() -> void
+    {
+        // Search for handler for .py files
+        Root::instance()->settings()->beginGroup("scripting");
+        int size = Root::instance()->settings()->beginReadArray("externals");
+        bool found = false;
+        QString executable;
+        for (int i = 0; i < size; ++i) {
+            Root::instance()->settings()->setArrayIndex(i);
+            executable = Root::instance()->settings()->value("executable").toString();
+            for(const QString &ext : Root::instance()->settings()->value("extension").toString().split(';')) {
+                QRegExp regexp(ext, Qt::CaseInsensitive, QRegExp::WildcardUnix);
+                if(regexp.exactMatch("script.py") == false)
+                    continue;
+                
+                found = true;
+                break;
+            }
+            if (found)
+                break;
+        }
+        if (!found) {
+#if defined(Q_OS_WIN)
+            executable = QCoreApplication::applicationDirPath() + "/python/python.exe";
+#else
+            executable = "python3";
+#endif
+            found = true;
+        }
+        Root::instance()->settings()->endArray();
+        Root::instance()->settings()->endGroup();
+
+        ScriptConsole *console = new ScriptConsole(this, "Voxie - Python Console");
+        console->setAttribute(Qt::WA_DeleteOnClose);
+        auto process = new QProcess();
+        connect(console, &QObject::destroyed, process, &QProcess::closeWriteChannel);
+        // connect(console, &QObject::destroyed, process, &QObject::deleteLater);
+        process->setProcessChannelMode(QProcess::MergedChannels);
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        QString pythonLibDir = Root::instance()->directoryManager()->pythonLibDir();
+        /*
+        QString pythonPath = pythonLibDir;
+        if (env.contains("PYTHONPATH"))
+            pythonPath += ":" + env.value("PYTHONPATH");
+        env.insert("PYTHONPATH", pythonPath);
+        process->setProcessEnvironment(env);
+        */
+        process->setWorkingDirectory(Root::instance()->directoryManager()->baseDir());
+        process->setProgram(executable);
+        QStringList args;
+        args << "-i";
+        args << "-u";
+        //args << "-I";
+        args << "-c";
+        QString escapedPythonLibDir = escapePythonString(pythonLibDir);
+        args << "import sys; sys.path.insert(1, " + escapedPythonLibDir + "); import numpy as np; import voxie; args = voxie.parser.parse_args(); instance = voxie.Voxie(args); client = instance.createClient()";
+        //args.append("--voxie-bus-address=" + ...);
+        args.append("--voxie-bus-name=" + QDBusConnection::sessionBus().baseService());
+        process->setArguments(args);
+        connect<void (QProcess::*)(int), std::function<void(int)>>(
+            process, &QProcess::finished, console,
+            std::function<void(int)>([process, console](int exitCode) -> void {
+              console->appendLine(
+                  QString(
+                      "Script host finished with exit status %1 / exit code %2")
+                      .arg(process->exitStatus())
+                      .arg(exitCode));
+              process->deleteLater();
+            }));
+        auto isStarted = createQSharedPointer<bool>();
+        connect(process, &QProcess::started, this,
+                [isStarted]() { *isStarted = true; });
+        connect(process, &QProcess::stateChanged, this,
+                [process, isStarted](QProcess::ProcessState newState) {
+                  // Root::instance()->log(QString("State change occurred for
+                  // script host: %1").arg(newState));
+                  if (newState == QProcess::NotRunning && !*isStarted) {
+                    Root::instance()->log(
+                        QString("Error while starting script host: %1")
+                            .arg(process->error()));
+                    process->deleteLater();
+                  }
+                });
+        connect(process, &QProcess::readyRead, console, [process, console]() -> void {
+            QString data = QString(process->readAll());
+            console->append(data);
+        });
+        connect(console, &ScriptConsole::executeCode, process, [process, console](const QString& code) -> void
+        {
+            QString code2 = code + "\n";
+            console->append(code2);
+            // TODO: handle case when python process does not read input
+            process->write(code2.toUtf8());
+        });
+        process->start();
+        console->show();
+        console->activateWindow();
+        //console->raise();
     });
     this->scriptsMenu->addSeparator();
 

@@ -198,7 +198,7 @@ public:
      * @param code The snippet to be executed.
      * @return True on success.
      */
-    bool exec(const QString& code, const QString& codeToPrint);
+    bool exec(const QString& code, const QString& codeToPrint, const std::function<void(const QString&)>& print);
 
     // throws ScriptingException
     voxie::plugin::VoxiePlugin* getPluginByName (const QString& name);

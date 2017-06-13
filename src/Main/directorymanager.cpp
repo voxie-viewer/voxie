@@ -19,9 +19,19 @@ DirectoryManager::DirectoryManager(QObject* parent) : QObject(parent) {
     QString split = ";";
 #endif
 
-    QString pluginPathStr = QProcessEnvironment::systemEnvironment().value("VOXIE_PLUGIN_PATH", "");
-    QString scriptPathStr = QProcessEnvironment::systemEnvironment().value("VOXIE_SCRIPT_PATH", "");
+    auto env = QProcessEnvironment::systemEnvironment();
+    
+    QString pluginPathStr = env.value("VOXIE_PLUGIN_PATH", "");
+    QString scriptPathStr = env.value("VOXIE_SCRIPT_PATH", "");
 
+    if (env.contains("VOXIE_DIR")) {
+        baseDir_ = QDir(env.value("VOXIE_DIR")).absolutePath();
+        pythonLibDir_ = QDir(baseDir_).absoluteFilePath("scripts");
+    } else {
+        baseDir_ = "";
+        pythonLibDir_ = "";
+    }
+    
 #if !defined(Q_OS_WIN)
     for (QString path : QStandardPaths::standardLocations(QStandardPaths::GenericConfigLocation)) {
         QString configDir = path + "/voxie";
@@ -68,13 +78,17 @@ DirectoryManager::DirectoryManager(QObject* parent) : QObject(parent) {
         }
 
         voxieDir.cdUp();
+        baseDir_ = voxieDir.absolutePath();
+        pythonLibDir_ = voxieDir.absoluteFilePath("scripts");
         scriptPath_.push_back(voxieDir.absoluteFilePath("scripts"));
     } else {
-        // On Linux the wrapper script is expected to set VOXIE_PLUGIN_PATH and VOXIE_SCRIPT_PATH
+        // On Linux the wrapper script is expected to set VOXIE_DIR, VOXIE_PLUGIN_PATH and VOXIE_SCRIPT_PATH
 #if defined(Q_OS_WIN)
         QDir appDir(QCoreApplication::applicationDirPath());
         pluginPath_.push_back(appDir.absoluteFilePath("plugins"));
         scriptPath_.push_back(appDir.absoluteFilePath("scripts"));
+        baseDir_ = appDir.absolutePath();
+        pythonLibDir_ = appDir.absoluteFilePath("scripts");
 #endif
     }
 }

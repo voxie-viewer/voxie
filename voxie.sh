@@ -55,6 +55,9 @@ done
 # Add ./scripts to $VOXIE_SCRIPT_PATH
 export VOXIE_SCRIPT_PATH="${VOXIE_SCRIPT_PATH+$VOXIE_SCRIPT_PATH:}$POS/scripts"
 
+# Set VOXIE_DIR
+export VOXIE_DIR="$POS"
+
 # Set VOXIE_MANUAL_FILE
 export VOXIE_MANUAL_FILE="$VOXIE_BUILD_DIR/extra/manual.pdf"
 
