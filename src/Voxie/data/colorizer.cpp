@@ -1,5 +1,6 @@
 #include "colorizer.hpp"
 
+#include <cmath>
 #include <functional>
 
 #include <QtCore/QDebug>

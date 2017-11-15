@@ -1,5 +1,6 @@
 #include "floatimage.hpp"
 
+#include <cmath>
 #include <string.h>
 
 #include <QtGui/QColor>

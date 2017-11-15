@@ -1,5 +1,6 @@
 #include "filterchain3d.hpp"
 
+#include <cmath>
 #include <Voxie/ivoxie.hpp>
 
 #include <Voxie/plugin/metafilter3d.hpp>
@@ -151,7 +152,7 @@ void FilterChain3D::fromXML(QString fileName)
 
     this->filters.clear();
     while (xml.readNextStartElement()) {
-        if (xml.attributes().value("type").compare("filter3d")==0) {
+        if (xml.attributes().value("type").compare(QString("filter3d"))==0) {
             for(VoxiePlugin* plugin : ::voxie::voxieRoot().plugins()) {
                 for(MetaFilter3D *metaFilter : plugin->filters3D()) {
                     if (metaFilter->objectName().compare(xml.name())==0) {

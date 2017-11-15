@@ -10,6 +10,7 @@
 
 #include <Voxie/scripting/scriptingcontainer.hpp>
 
+#include <cmath>
 #include <functional>
 
 #include <inttypes.h>

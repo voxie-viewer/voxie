@@ -2,6 +2,7 @@
 
 #include <Voxie/voxiecore_global.hpp>
 
+#include <cmath>
 #include <QtCore/QVector>
 
 #include <QtGui/QMatrix4x4>

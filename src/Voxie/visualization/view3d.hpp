@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <Voxie/voxiecore_global.hpp>
 
 #include <QtCore/QObject>

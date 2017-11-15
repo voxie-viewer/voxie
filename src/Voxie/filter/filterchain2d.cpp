@@ -189,7 +189,7 @@ void FilterChain2D::fromXML(QString fileName)
 
     this->filters.clear();
     while (xml.readNextStartElement()) {
-        if (xml.attributes().value("type").compare("filter2d")==0) {
+        if (xml.attributes().value("type").compare(QString("filter2d"))==0) {
             for(VoxiePlugin* plugin : ::voxie::voxieRoot().plugins()) {
                 for(MetaFilter2D *metaFilter : plugin->filters2D()) {
                     if (metaFilter->objectName().compare(xml.name())==0) {
