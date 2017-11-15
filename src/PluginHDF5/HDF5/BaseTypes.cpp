@@ -50,8 +50,8 @@ namespace HDF5 {
     //return Object (Exception::check ("H5Rdereference", H5Rdereference (file.handle (), H5R_OBJECT, &value ()))); // doesn't work because H5Rdereference has non-const pointer argument
     ObjectReference cpy = *this;
 #if H5_VERSION_GE (1, 10, 0)
-    //return Object (Exception::check ("H5Rdereference", H5Rdereference (file.handle (), H5P_DEFAULT, H5R_OBJECT, &cpy.value ())));
-    return Object (Exception::check ("H5Rdereference", H5Rdereference (file.handle (), setEFilePrefix ()/*TODO: pass as argument?*/.handle (), H5R_OBJECT, &cpy.value ())));
+    //return Object (Exception::check ("H5Rdereference2", H5Rdereference2 (file.handle (), H5P_DEFAULT, H5R_OBJECT, &cpy.value ())));
+    return Object (Exception::check ("H5Rdereference2", H5Rdereference2 (file.handle (), setEFilePrefix ()/*TODO: pass as argument?*/.handle (), H5R_OBJECT, &cpy.value ())));
 #else
     /* // Does not work for anonymous datasets
     if (getType (file) == H5O_TYPE_DATASET) {
