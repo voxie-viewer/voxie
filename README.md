@@ -11,7 +11,7 @@ Compiling from source on Linux
 
 First, install the packages required to run Voxie. On Ubuntu 14.04 this can be done using:
 
-    sudo apt-get install build-essential qt5-default qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev opencl-headers libhdf5-dev libboost-all-dev
+    sudo apt-get install build-essential pkg-config qt5-default qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev opencl-headers libhdf5-dev libboost-all-dev
 
 If you want to compile the manual, you also have to install LaTeX:
 
