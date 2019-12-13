@@ -66,6 +66,6 @@ build-windows:
   variables:
     VOXIEBUILD_PATH_VISUAL_STUDIO: "e:\\Microsoft Visual Studio 14.0"
     VOXIEBUILD_PATH_QT: "e:\\Qt\\Qt5.6.0\\5.6\\msvc2015_64"
-    VOXIEBUILD_URL_QT_COPY: "https://www.ipvs.uni-stuttgart.de/files/pas/src/qt-everywhere-opensource-src-5.6.0.tar.gz"
+    VOXIEBUILD_URL_QT_COPY: "https://ipvs.informatik.uni-stuttgart.de/pas/src/qt-everywhere-opensource-src-5.6.0.tar.gz"
     VOXIEBUILD_USE_GIT: "1"
-    VOXIEBUILD_URL_BASE: "https://www.ipvs.uni-stuttgart.de/files/pas/src"
+    VOXIEBUILD_URL_BASE: "https://ipvs.informatik.uni-stuttgart.de/pas/src"
