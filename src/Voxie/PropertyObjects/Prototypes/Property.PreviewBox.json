@@ -1,0 +1,15 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "TODO",
+            "DisplayName": "PreviewBox",
+            "Name": "de.uni_stuttgart.Voxie.Property.PreviewBox",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.PreviewBox"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Property",
+            "Icon": ":/icons/image-map.png",
+            "Properties": {}
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+{
+    "Name": "OpenCL-Headers",
+    "Description": "OpenCL headers",
+    "GitRepository": "https://github.com/KhronosGroup/OpenCL-Headers",
+    "GitCommit": "8e196ba99632fc43998cf17cce87282c250d9177",
+    "GitBranch": "open21"
+}

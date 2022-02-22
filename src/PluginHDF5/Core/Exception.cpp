@@ -45,6 +45,7 @@
 
 #if OS_UNIX
 #include <dlfcn.h>
+#include <link.h>
 #elif OS_WIN
 #include <windows.h>
 #include <imagehlp.h>
@@ -96,6 +97,30 @@ typedef DWORD64 ptrint;
 typedef DWORD ptrint;
 #endif
 #endif
+
+#if OS_UNIX
+template <typename F>
+inline void call_dl_iterate_phdr(const F& f) {
+  std::exception_ptr error;
+  auto lambda = [&](dl_phdr_info* info, size_t size) {
+    try {
+      return f(info, size);
+    } catch (...) {
+      error = std::current_exception();
+      return 1;
+    }
+  };
+  auto lambdaPtr = &lambda;
+  dl_iterate_phdr(
+      [](dl_phdr_info* info, size_t size, void* data) {
+        auto lambdaPtr2 = reinterpret_cast<decltype(lambdaPtr)>(data);
+        return (*lambdaPtr2)(info, size);
+      },
+      lambdaPtr);
+  if (error) std::rethrow_exception(error);
+}
+#endif
+
 
 namespace Core {
   namespace {
@@ -199,10 +224,10 @@ namespace Core {
   }
 
   StackFrame::StackFrame (void* ptr) :
-    _ptr (ptr), _isResolved (false),
-    _hasSharedObject (false), _sharedObjectBase (NULL), _hasSymbol (false), _symbolAddr (NULL), // will be reinitialized later, set to something here to make compiler happy
-    _hasAddr2line (false)
+    _ptr (ptr)
   {}
+
+  StackFrame::StackFrame (const StackFrame& o) : _ptr(o._ptr) {}
 
   namespace {
     inline std::string pad (const std::string str, size_t* size, bool left = false) {
@@ -223,8 +248,27 @@ namespace Core {
     }
   }
 
-  std::string StackFrame::toString (int* i, size_t* addrSize, size_t* symbSize, size_t* locSize) const {
+  std::string StackFrame::toString(int* iPtr, size_t* addrSize,
+                                   size_t* symbSize, size_t* locSize) const {
     std::stringstream str;
+    
+    if (false) {
+      str << "-- " << (hasSharedObject () ? "SO" : "NOSO");
+      str.setf (std::ios::hex, std::ios::basefield);
+      if (hasSharedObject ()) {
+        str << " " << sharedObjectName ();
+        if (hasBuildID ()) {
+          str << " ";
+          str.fill ('0');
+          for (const auto& val : buildID())
+            str << std::setw (2) << (int) val;
+        }
+        if (hasSharedObjectBase ())
+          str << " +0x" << sharedObjectOffset();
+      }
+      str << std::endl;
+    }
+    
     const std::vector<InlineStackFrame> isfs = inlineStackFrames ();
     size_t size = isfs.size ();
     if (size == 0)
@@ -234,8 +278,8 @@ namespace Core {
         str << std::endl;
       str.setf (std::ios::dec, std::ios::basefield);
       str.fill ('0');
-      if (i) {
-        str << " #" << std::setw (2) << (*i)++;
+      if (iPtr) {
+        str << " #" << std::setw (2) << (*iPtr)++;
       }
       str.setf (std::ios::hex, std::ios::basefield);
       str << " at";
@@ -299,7 +343,7 @@ namespace Core {
         hasSymb = true;
       }
       if (!hasSymb) {
-        if (hasSharedObject () && sharedObjectName () != "") {
+        if (hasSharedObject () && sharedObjectName () != "" && hasSharedObjectBase ()) {
           std::stringstream str2;
           str2.setf (std::ios::hex, std::ios::basefield);
           str2 << "<nosymb " + sharedObjectName () + "+0x" << sharedObjectOffset () << ">";
@@ -336,7 +380,7 @@ namespace Core {
     return str.str ();
   }
 
-  void StackFrame::doResolve () const {
+  void StackFrame::doResolve (UNUSED const std::lock_guard<std::mutex>& guard) const {
     if (_isResolved)
       abort ();
 
@@ -347,7 +391,10 @@ namespace Core {
     //dlcheck ("dladdr", dladdr (ptr (), &info));
     if (!dladdr (ptr (), &info)) {
       _hasSharedObject = false;
+      _sharedObjectBaseFirstSegment = NULL;
+      _hasSharedObjectBase = false;
       _sharedObjectBase = NULL;
+      _hasBuildID = false;
       _hasSymbol = false;
       _symbolAddr = NULL;
     } else {
@@ -355,10 +402,73 @@ namespace Core {
       if (info.dli_fname) {
         _hasSharedObject = true;
         _sharedObjectName = info.dli_fname;
-        _sharedObjectBase = info.dli_fbase;
+        _sharedObjectBaseFirstSegment = info.dli_fbase;
+
+        _hasSharedObjectBase = false;
+        _hasBuildID = false;
+        
+        // Look for information using dl_phdr_info
+        // TODO: Cache this?
+        call_dl_iterate_phdr([&](dl_phdr_info* phdrInfo, UNUSED size_t size) {
+          bool found = false;
+          for (size_t i = 0; i < phdrInfo->dlpi_phnum; i++) {
+            if (phdrInfo->dlpi_phdr[i].p_type != PT_LOAD) continue;
+
+            auto map_start =
+                (void*)(phdrInfo->dlpi_addr + phdrInfo->dlpi_phdr[i].p_vaddr);
+
+            if (map_start != _sharedObjectBaseFirstSegment) return 0;
+
+            found = true;
+            break;
+          }
+          if (!found) return 0;  // No PT_LOAD found, continue
+
+          _sharedObjectBase = (void*)phdrInfo->dlpi_addr;
+          _hasSharedObjectBase = true;
+
+          // Note: This has to be done inside the dl_iterate_phdr() callback to make sure that the object is not unloaded while its PT_NOTE data is used
+
+          // Look for build ID
+          // https://git.mattst88.com/build-id/tree/build-id.c?id=5380624471e4ac22edd397cd91289844650ef5e5#n86
+          // https://github.com/bminor/mesa-mesa/blob/dcba7731e6056b6cad03064f90a97cf206e68a75/src/util/build_id.c#L73
+          for (size_t i = 0; i < phdrInfo->dlpi_phnum; i++) {
+            if (phdrInfo->dlpi_phdr[i].p_type != PT_NOTE) continue;
+
+            auto note = (ElfW(Nhdr)*)(phdrInfo->dlpi_addr +
+                                      phdrInfo->dlpi_phdr[i].p_vaddr);
+            ptrdiff_t len = phdrInfo->dlpi_phdr[i].p_filesz;
+
+#define ALIGN(val, align) (((val) + (align)-1) & ~((align)-1))
+            while (len >= (ptrdiff_t) sizeof(ElfW(Nhdr))) {
+              char* noteName = (char*)(note + 1);
+              if (note->n_type == NT_GNU_BUILD_ID &&
+                  note->n_descsz != 0 && note->n_namesz == 4 &&
+                  memcmp(noteName, "GNU", 4) == 0) {
+                char* noteValue = noteName + ALIGN(note->n_namesz, 4);
+                _buildID.resize(note->n_descsz);
+                memcpy(_buildID.data(), noteValue, note->n_descsz);
+                _hasBuildID = true;
+                break;
+              }
+
+              size_t offset = sizeof(ElfW(Nhdr)) + ALIGN(note->n_namesz, 4) +
+                              ALIGN(note->n_descsz, 4);
+              note = (ElfW(Nhdr)*)(void*)((char*)note + offset);
+              len -= offset;
+            }
+            break;
+          }
+#undef ALIGN
+
+          return 1;  // Finished
+        });
       } else {
         _hasSharedObject = false;
+        _sharedObjectBaseFirstSegment = NULL;
+        _hasSharedObjectBase = false;
         _sharedObjectBase = NULL;
+        _hasBuildID = false;
       }
 
       if (info.dli_sname) {
@@ -373,10 +483,15 @@ namespace Core {
     }
 
 #elif OS_WIN
-    checkWin ("SymInitialize", SymInitialize (GetCurrentProcess(), 0, TRUE));
+    // TODO: According to https://docs.microsoft.com/en-us/windows/desktop/api/dbghelp/nf-dbghelp-syminitialize Syminitialize() etc. are single threaded, do something about that?
+    //checkWin ("SymInitialize", SymInitialize (GetCurrentProcess(), nullptr, TRUE));
+    SymInitialize (GetCurrentProcess(), nullptr, TRUE); // TODO: seems to fail with "SymInitialize: The parameter is incorrect. (87)", at least when it is called a second time?
+    checkWin ("SymInitialize", SymInitialize (GetCurrentProcess(), nullptr, FALSE));
 
     {
       _sharedObjectBase = (void*) checkWin ("SymGetModuleBase", SymGetModuleBase (GetCurrentProcess (), (ptrint) ptr ()));
+      _hasSharedObjectBase = true;
+      _sharedObjectBaseFirstSegment = _sharedObjectBase;
 
       std::vector<char> filename (128);
       DWORD size;
@@ -434,7 +549,7 @@ namespace Core {
     return str.str ();
   }
 
-  void StackFrame::doAddr2line () const {
+  void StackFrame::doAddr2line (UNUSED const std::lock_guard<std::mutex>& guard) const {
     if (_hasAddr2line)
       abort ();
     if (_inlineStackFrames.size () != 0)
@@ -446,9 +561,15 @@ namespace Core {
     return;
 #endif
 
+    if (!hasSharedObject()) {
+      // TODO: Are there cases when this is false?
+      _hasAddr2line = true;
+      return;
+    }
+
     try {
       // Hack to avoid looking up JITted functions
-      if (hasSharedObject () && sharedObjectName ().substr (0, 4) == "mono") {
+      if (sharedObjectName ().substr (0, 4) == "mono") {
         _hasAddr2line = true;
         return;
       }
@@ -459,13 +580,15 @@ namespace Core {
 
       std::stringstream str;
 
-      bool sharedLibrary = ((uintptr_t) ptr ()) > 0x40000000 && hasSharedObject (); // XTODO: Replace this hack by better way to determine whether this is a shared library
+      if (!hasSharedObjectBase ())
+        throw SimpleStdException ("Unable to find shared object");
 
       str << "addr2line -ife ";
-      if (hasSharedObject () && sharedObjectName () != "") {
+      if (sharedObjectName () != "") {
         //str << sharedObjectName ();
         str << escape (sharedObjectName ());
       } else {
+        // TODO: Should this ever be the case?
 #if OS_UNIX
         str << "/proc/" << getpid () << "/exe";
 #elif OS_WIN
@@ -478,10 +601,7 @@ namespace Core {
       // buffer[i] points to the return address, subtract 1 to get an address
       // in the call instruction
       str.setf (std::ios::hex, std::ios::basefield);
-      if (sharedLibrary)
-        str << " 0x" << sharedObjectOffset () - 1;
-      else
-        str << " " << static_cast<void*> (static_cast<char*> (ptr ()) - 1);
+      str << " 0x" << sharedObjectOffset () - 1;
       std::string cmd = str.str ();
       std::string cmdExpl = " (addr2line invocation was `" + cmd + "')";
       //std::cout << cmd << std::endl;
@@ -636,17 +756,19 @@ namespace Core {
 #elif OS_WIN
     ptrint eip, esp, ebp;
 #ifdef _MSC_VER
-    CONTEXT context;
-    RtlCaptureContext (&context);
+    {
+      CONTEXT context;
+      RtlCaptureContext(&context);
 #ifdef _WIN64
-    eip = context.Rip;
-    esp = context.Rsp;
-    ebp = context.Rbp;
+      eip = context.Rip;
+      esp = context.Rsp;
+      ebp = context.Rbp;
 #else
-    eip = context.Eip;
-    esp = context.Esp;
-    ebp = context.Ebp;
+      eip = context.Eip;
+      esp = context.Esp;
+      ebp = context.Ebp;
 #endif
+    }
 #else
     asm (
          "call L_a%= \n\t"
@@ -666,7 +788,35 @@ namespace Core {
            "=g" (ebp)
          );
 #endif
-    
+
+#ifdef _WIN64
+    STACKFRAME64 frame;
+    memset (&frame, 0, sizeof (frame));
+    frame.AddrPC.Mode = AddrModeFlat;
+    frame.AddrPC.Offset = eip;
+    frame.AddrStack.Mode = AddrModeFlat;
+    frame.AddrStack.Offset = esp;
+    frame.AddrFrame.Mode = AddrModeFlat;
+    frame.AddrFrame.Offset = ebp;
+
+    CONTEXT context;
+    memset (&context, 0, sizeof (context));
+
+    while (StackWalk64 (IMAGE_FILE_MACHINE_AMD64, GetCurrentProcess (), GetCurrentThread (), &frame, &context, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL)) {
+      _frames.push_back (StackFrame ((void*) frame.AddrPC.Offset));
+    }
+
+    /* // StackWalk64 does not set last error according to MSDN
+    DWORD err = GetLastError ();
+    if (err != ERROR_NOACCESS && err != ERROR_INVALID_ADDRESS) {
+      try {
+        checkWin ("StackWalk64", 0);
+      } catch (const SimpleStdException& e) {
+        std::cerr << "Error while creating stack trace: " << e.what () << std::endl;
+      }
+    }
+    */
+#else // !_WIN64
     STACKFRAME frame;
     memset (&frame, 0, sizeof (frame));
     frame.AddrPC.Mode = AddrModeFlat;
@@ -688,6 +838,7 @@ namespace Core {
         std::cerr << "Error while creating stack trace: " << e.what () << std::endl;
       }
     }
+#endif // !_WIN64
 #else
     // Do nothing => empty stack trace
 #endif

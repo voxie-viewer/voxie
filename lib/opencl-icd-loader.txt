@@ -1,1 +1,0 @@
-OpenCL ICD Loader from https://github.com/KhronosGroup/OpenCL-ICD-Loader branch master (commit 4defeaeccb40f70b310d9308b7d2dd3687404bb7)

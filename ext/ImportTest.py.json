@@ -1,0 +1,13 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.Example.TestImporter",
+            "DisplayName": "Test importer",
+            "Description": "Test importer",
+            "Patterns": [
+                "*.test",
+                "*.bar"
+            ]
+        }
+    ]
+}

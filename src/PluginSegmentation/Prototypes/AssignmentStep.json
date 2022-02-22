@@ -1,0 +1,24 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Assigns selected voxels to a label",
+            "DisplayName": "Assignment Step",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.AssignmentStep",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "LabelStep",
+            "IsSpecialStep": true,
+            "Icon": ":/icons/desktop.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.SegmentationStep.AssignmentStep.LabelID": {
+                    "Name": "LabelID",
+                    "DisplayName": "LabelID",
+                    "MinimumValue": 0,
+                    "MaximumValue": 999999,
+                    "DefaultValue": -1,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int"
+                }
+            }
+        }
+    ]
+}
+

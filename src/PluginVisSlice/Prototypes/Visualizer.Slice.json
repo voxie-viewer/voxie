@@ -1,0 +1,502 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "TODO",
+            "DisplayName": "Slice Visualizer",
+            "Icon": ":/icons/layers.png",
+            "Name": "de.uni_stuttgart.Voxie.Visualizer.Slice",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.SliceVisualizer"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.Plane"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Property.Plane"
+                    ],
+                    "DisplayName": "Plane",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Orientation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.Plane.Orientation"
+                    ],
+                    "DisplayName": "rotation",
+                    "IsCustomStorage": true,
+                    "IsCustomUI": true,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D",
+                    "CallSetOrder": 10
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Origin": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.Plane.Origin"
+                    ],
+                    "DisplayName": "position",
+                    "IsCustomStorage": true,
+                    "IsCustomUI": true,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D",
+                    "CallSetOrder": 10
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.Volume": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.Volume"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "CallSetOrder": -20
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.LabelContainer": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.ContainerNode"
+                    ],
+                    "DisplayName": "LabelContainer",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.SegmentationFilter": {
+                    "AllowedNodeKinds": [
+                        "de.uni_stuttgart.Voxie.NodeKind.Filter"
+                    ],
+                    "DisplayName": "SegmentationFilter",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.Surface": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.Surface"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Surfaces",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReferenceList",
+                    "CallSetOrder": -10
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GeometricPrimitive": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GeometricPrimitive"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.GeometricPrimitive"
+                    ],
+                    "DisplayName": "Geometric primitives",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "CallSetOrder": -10
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.InfoTable": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.InfoTable"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Table"
+                    ],
+                    "DisplayName": "Info table",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "CallSetOrder": -10
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.Filter2DConfiguration": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.Filter2DConfiguration"
+                    ],
+                    "DisplayName": "2D Filter Configuration",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String",
+                    "IsCustomUI": true,
+                    "IsCustomStorage": true
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.ValueColorMapping": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.ValueColorMapping"
+                    ],
+                    "DisplayName": "Value to color mapping",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ValueColorMapping",
+                    "TODO": "Add properties for histogram widget?"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GeometricPrimitiveColorOnSlice": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GeometricPrimitiveColorOnSlice"
+                    ],
+                    "DisplayName": "Geometric primitives: Color on slice",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "DefaultValue": [
+                        0.0,
+                        1.0,
+                        0.0,
+                        1.0
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GeometricPrimitiveColorBehindSlice": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GeometricPrimitiveColorBehindSlice"
+                    ],
+                    "DisplayName": "Geometric primitives: Color behind slice",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "DefaultValue": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GeometricPrimitiveColorInFrontOfSlice": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GeometricPrimitiveColorInFrontOfSlice"
+                    ],
+                    "DisplayName": "Geometric primitives: Color in front of slice",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "DefaultValue": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GeometricPrimitiveVisibilityDistance": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GeometricPrimitiveVisibilityDistance"
+                    ],
+                    "DisplayName": "Geometric primitives: Visibility distance",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "Unit": [
+                        [
+                            "m",
+                            1
+                        ]
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GridShow": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GridShow"
+                    ],
+                    "DisplayName": "Show grid",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GridColor": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GridColor"
+                    ],
+                    "DisplayName": "Grid color",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "ShowAlpha": true,
+                    "DefaultValue": [
+                        1.0,
+                        1.0,
+                        0.0,
+                        0.5
+                    ],
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.GridShow",
+                        "Values": [
+                            true
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GridSpacingAutomatic": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GridSpacingAutomatic"
+                    ],
+                    "DisplayName": "Choose grid spacing automatically",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true,
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.GridShow",
+                        "Values": [
+                            true
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GridSpacing": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.GridSpacing"
+                    ],
+                    "DisplayName": "Grid spacing",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "Unit": [
+                        [
+                            "m",
+                            1
+                        ]
+                    ],
+                    "DefaultValue": 0.001,
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.And",
+                        "Conditions": [
+                            {
+                                "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.GridShow",
+                                "Values": [
+                                    true
+                                ]
+                            },
+                            {
+                                "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.GridSpacingAutomatic",
+                                "Values": [
+                                    false
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerShow": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.RulerShow"
+                    ],
+                    "DisplayName": "Show ruler",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerColor": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.RulerColor"
+                    ],
+                    "DisplayName": "Ruler color",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "ShowAlpha": true,
+                    "DefaultValue": [
+                        1.0,
+                        1.0,
+                        0.0,
+                        0.5
+                    ],
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerShow",
+                        "Values": [
+                            true
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerSpacingAutomatic": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.RulerSpacingAutomatic"
+                    ],
+                    "DisplayName": "Choose ruler spacing automatically",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true,
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerShow",
+                        "Values": [
+                            true
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerSpacing": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.RulerSpacing"
+                    ],
+                    "DisplayName": "Ruler spacing",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "Unit": [
+                        [
+                            "m",
+                            1
+                        ]
+                    ],
+                    "DefaultValue": 0.001,
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.And",
+                        "Conditions": [
+                            {
+                                "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerShow",
+                                "Values": [
+                                    true
+                                ]
+                            },
+                            {
+                                "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerSpacingAutomatic",
+                                "Values": [
+                                    false
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.VolumeGridShow": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.VolumeGridShow"
+                    ],
+                    "DisplayName": "Show volume grid",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.VolumeGridColor": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.VolumeGridColor"
+                    ],
+                    "DisplayName": "Volume grid color",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "ShowAlpha": true,
+                    "DefaultValue": [
+                        1.0,
+                        1.0,
+                        0.0,
+                        0.5
+                    ],
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.VolumeGridShow",
+                        "Values": [
+                            true
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.View2D.CenterPoint": {
+                    "DisplayName": "Center point",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Point2D"
+                },
+                "de.uni_stuttgart.Voxie.View2D.VerticalSize": {
+                    "DisplayName": "Vertical size (m)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.Interpolation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.Interpolation"
+                    ],
+                    "DisplayName": "Interpolation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Interpolation.NearestNeighbor": {
+                            "DisplayName": "Nearest neighbor",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Interpolation.Linear": {
+                            "DisplayName": "Linear",
+                            "UIPosition": 2
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Interpolation.Linear"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.ShowSliceCenter": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.ShowSliceCenter"
+                    ],
+                    "DisplayName": "Show slice center",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "IsCustomStorage": true
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.Show2DFilterMask": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.SliceVisualizer.Show2DFilterMask"
+                    ],
+                    "DisplayName": "Show 2D filter mask",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 0
+                }
+            },
+            "UI": {
+                "SidePanelSections": [
+                    {
+                        "Name": "InfoSection",
+                        "DisplayName": "Info",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.SliceVisualizer.Info"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "ColorizerSection",
+                        "DisplayName": "Colorizer",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.ValueColorMapping",
+                                "LabelStyle": "None"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "HistogramSection",
+                        "DisplayName": "Histogram",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.SliceVisualizer.Histogram"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "SizePosition",
+                        "DisplayName": "Size and position",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.View2D.CenterPoint"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.View2D.VerticalSize"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Grid",
+                        "DisplayName": "Grid",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.GridShow"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.GridColor"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.GridSpacingAutomatic"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.GridSpacing"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Ruler",
+                        "DisplayName": "Ruler",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerShow"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerColor"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerSpacingAutomatic"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.RulerSpacing"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "VolumeGrid",
+                        "DisplayName": "Volume grid",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.VolumeGridShow"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.VolumeGridColor"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+{
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Table.Json.Export",
+            "DisplayName": "Voxie Table JSON",
+            "Description": "Save table to JSON files",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.Table"
+            ],
+            "Patterns": [
+                "*.vxtbl.json"
+            ]
+        }
+    ],
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Table.Json.Import",
+            "DisplayName": "Voxie Table JSON",
+            "Description": "Load table from JSON file",
+            "Patterns": [
+                "*.vxtbl.json"
+            ]
+        }
+    ]
+}

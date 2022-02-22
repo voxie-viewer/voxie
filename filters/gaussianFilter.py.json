@@ -1,0 +1,39 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Adds Gaussian blur to the input to remove detail and noise.",
+            "DisplayName": "Gaussian Filter",
+            "Name": "de.uni_stuttgart.Voxie.Filter.GaussianFilter",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Icon": ":/icons/contrast.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.GaussianFilter.Sigma": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.GaussianFilter.Sigma"
+                    ],
+                    "DisplayName": "Sigma",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 1,
+                    "MinimumValue": 0
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "OutputTags": [
+                        "de.uni_stuttgart.Voxie.Tags.Volume.Float"
+                    ],
+                    "DisplayName": "Output",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

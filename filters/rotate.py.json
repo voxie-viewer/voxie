@@ -1,0 +1,90 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Rotate a volume.",
+            "DisplayName": "Rotate volume",
+            "Name": "de.uni_stuttgart.Voxie.Filter.Rotate",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.Rotate.Plane": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Plane"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Property.Plane"
+                    ],
+                    "DisplayName": "Plane",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.BoundingBoxData": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.GeometricPrimitive"
+                    ],
+                    "DisplayName": "Bounding box",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.Rotate.SetMissingDataToNaN": {
+                    "DisplayName": "Set missing data to NaN",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false
+                },
+                "de.uni_stuttgart.Voxie.Filter.Rotate.EnableOverwriteVoxelSize": {
+                    "DisplayName": "Overwrite output voxel size",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false
+                },
+                "de.uni_stuttgart.Voxie.Filter.Rotate.OverwriteVoxelSize": {
+                    "DisplayName": "Overwrite output voxel size value",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "Unit": [
+                        [
+                            "m",
+                            1
+                        ]
+                    ],
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Filter.Rotate.EnableOverwriteVoxelSize",
+                        "Values": [
+                            true
+                        ]
+                    },
+                    "DefaultValue": 0.001
+                },
+                "de.uni_stuttgart.Voxie.SizeRoundingMode": {
+                    "DisplayName": "Size rounding mode",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.SizeRoundingMode.Floor": {
+                            "DisplayName": "Floor",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.SizeRoundingMode.Round": {
+                            "DisplayName": "Round",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.SizeRoundingMode.Ceil": {
+                            "DisplayName": "Ceil",
+                            "UIPosition": 3
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.SizeRoundingMode.Ceil"
+                }
+            }
+        }
+    ]
+}

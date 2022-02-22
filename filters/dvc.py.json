@@ -1,0 +1,410 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "DVC (Digital Volume Correlation)",
+            "DisplayName": "DVC (Digital Volume Correlation)",
+            "Name": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.Filter.DVC"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Reference": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.V1",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.V1"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Reference Volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Deformed": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.V2",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.V2"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Deformed Volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Roi.X": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.RoiX",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.RoiX"
+                    ],
+                    "DisplayName": "ROI size in Voxel (X)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 32
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Roi.Y": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.RoiY",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.RoiY"
+                    ],
+                    "DisplayName": "ROI size in Voxel (Y)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 32
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Roi.Z": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.RoiZ",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.RoiZ"
+                    ],
+                    "DisplayName": "ROI size in Voxel (Z)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 32
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Kernel.X": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.CX",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CX"
+                    ],
+                    "DisplayName": "Kernel window size in Voxel (X)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 16
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Kernel.Y": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.CY",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CY"
+                    ],
+                    "DisplayName": "Kernel window size in Voxel (Y)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 16
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Kernel.Z": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.CZ",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CZ"
+                    ],
+                    "DisplayName": "Kernel window size in Voxel (Z)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 16
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Stride.X": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.StrideX",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.StrideX"
+                    ],
+                    "DisplayName": "Stride size (X)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 1
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Stride.Y": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.StrideY",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.StrideY"
+                    ],
+                    "DisplayName": "Stride size (Y)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 1
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Stride.Z": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.StrideZ",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.StrideZ"
+                    ],
+                    "DisplayName": "Stride size (Z)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 1
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.StdvThreshold": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.StdvThreshold"
+                    ],
+                    "DisplayName": "Skip subvolume if stdv leq than",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CurveFitWindow": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.CurveFitWindow"
+                    ],
+                    "IsCustomUI": true,
+                    "TODO": "remove this property and make sure the old projects can still be loaded",
+                    "DisplayName": "Window Size for fitting corr results, possible values: 0,3,5",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 0
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.SubvoxelAccuracyMode": {
+                    "DisplayName": "Subvoxel Accuracy Mode",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "UIPosition": 1,
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.SubvoxelAccuracyMode.Disabled": {
+                            "DisplayName": "Disabled",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.SubvoxelAccuracyMode.OptimalFilter": {
+                            "DisplayName": "Optimal Filter",
+                            "UIPosition": 1
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.SubvoxelAccuracyMode.OptimalFilter"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.OptimalFilter.InterpolationOrder": {
+                    "DisplayName": "Optimal Filter: Interpolation Order",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 4,
+                    "ShortDescription": "Even orders have poorer performance than the odd orders.\nThis is because of the bias zero that odd order filters have at an offset of 0.5."
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CalculationMode": {
+                    "DisplayName": "Calculation mode",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "UIPosition": 1,
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CalculationMode.Automatic": {
+                            "DisplayName": "Automatic",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CalculationMode.GpuReikna": {
+                            "DisplayName": "GPU reikna",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CalculationMode.Cpu": {
+                            "DisplayName": "CPU",
+                            "UIPosition": 3
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CalculationMode.Automatic"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.WorkersPerGPU": {
+                    "DisplayName": "Workers per GPU",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "ShortDescription": "Selecting '0' means an automatic estimate will be chosen.",
+                    "DefaultValue": 0,
+                    "MinimumValue": 0
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.Displacement.X": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.DisplacementX",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.DisplacementX"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Displacement Vector's X",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.Displacement.Y": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.DisplacementY",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.DisplacementY"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Displacement Vector's Y",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.Displacement.Z": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.DisplacementZ",
+                        "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.DisplacementZ"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Displacement Vector's Z",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.CorrelationMax": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.CorrelationMax"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Correlation's maximum value",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            },
+            "PropertiesDisabledTODO": {
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.StrainTensorXX": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.StrainTensorXX"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "StrainTensor's exx element",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.StrainTensorYY": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.StrainTensorYY"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "StrainTensor's eyy element",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.StrainTensorZZ": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.StrainTensorZZ"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "StrainTensor's ezz element",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.StrainTensorXY": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.StrainTensorXY"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "StrainTensor's exy element",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.StrainTensorXZ": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.StrainTensorXZ"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "StrainTensor's exz element",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.StrainTensorYZ": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.DVC.Output.StrainTensorYZ"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "StrainTensor's eyz element",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            },
+            "UI": {
+                "SidePanelSections": [
+                    {
+                        "Name": "Input",
+                        "DisplayName": "Input",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Reference"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Deformed"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Output",
+                        "DisplayName": "Output",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.Displacement.X"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.Displacement.Y"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.Displacement.Z"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Output.CorrelationMax"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Kernel",
+                        "DisplayName": "Kernel",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Kernel.X"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Kernel.Y"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Kernel.Z"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Stride.X"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Stride.Y"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Stride.Z"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "ROI",
+                        "DisplayName": "Region of Interest",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Roi.X"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Roi.Y"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.Roi.Z"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Subvoxel",
+                        "DisplayName": "Subvoxel Accuracy",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.SubvoxelAccuracyMode"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.OptimalFilter.InterpolationOrder"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Misc",
+                        "DisplayName": "Miscellaneous",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.StdvThreshold"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.CalculationMode"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.DigitalVolumeCorrelation.WorkersPerGPU"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

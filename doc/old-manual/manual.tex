@@ -1,0 +1,67 @@
+\documentclass[]{article}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage[]{hyperref}
+
+\addto\extrasenglish{%
+  \def\subsectionname{section}%
+  \def\subsectionautorefname{section}%
+  \def\subsubsectionname{section}%
+  \def\subsubsectionautorefname{section}%
+}
+
+\newcommand*{\fullref}[1]{\hyperref[{#1}]{\autoref*{#1} \nameref*{#1}}}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, finally, for, function, if, in, instanceof, new, return, switch, this, throw, try, typeof, var, void, while, with},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  sensitive=true
+}
+
+\hypersetup{
+  colorlinks=true,  % links sind farbig und haben keine umrandung
+  linkcolor=[rgb]{0,0.2,0.4}, % dunkelblaue farbe für dokumenten interne links
+  urlcolor=blue % url links sind blau
+}
+
+%opening
+\title{Voxie - User Manual}
+\author{}
+
+\begin{document}
+
+\maketitle
+
+\section{Table Of Contents}
+\tableofcontents
+\newpage
+
+\section{Introduction}
+\input{intro.tex}
+
+\section{Overview}
+\input{overview.tex}
+\section{User Interface}
+\input{ui.tex}
+\section{Visualizer}
+\input{visualizer.tex}
+\subsection{Volume-based visualizer}
+\input{2d.tex}
+\subsection{Raw-based visualizer}
+\input{raw.tex}
+\subsection{3D}
+\input{3d.tex}
+\section{Appendix}
+\input{appendix.tex}
+%\section{Scripting}
+%\input{scripting.tex}
+%\section{Plugins}
+%\input{plugins.tex}
+
+\end{document}

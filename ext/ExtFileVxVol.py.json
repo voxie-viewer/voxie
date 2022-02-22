@@ -1,0 +1,12 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol.Import",
+            "DisplayName": "Voxie Volume JSON",
+            "Description": "Load volume from JSON file",
+            "Patterns": [
+                "*.vxvol.json"
+            ]
+        }
+    ]
+}

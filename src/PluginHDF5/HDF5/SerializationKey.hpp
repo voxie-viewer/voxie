@@ -27,14 +27,14 @@
 
 #include <HDF5/BaseTypes.hpp>
 
-#include <boost/weak_ptr.hpp>
-#include <boost/make_shared.hpp>
+#include <memory>
+#include <memory>
 #include <boost/type_traits/remove_cv.hpp>
 
 #include <typeinfo>
 
 #define HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR 0
-// For HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR=0: The cycle detection code works only when the object is passed in as a boost::shared_ptr<>
+// For HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR=0: The cycle detection code works only when the object is passed in as a std::shared_ptr<>
 // For HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR=1: If an object which gets serialized is destroyed during serialization and another object is created at the same memory address, this class will fail (i.e. it will consider the second object as the same as the first object). Therefore all objects which are serialized should live until the end of the serialization.
 
 namespace HDF5 {
@@ -43,28 +43,28 @@ namespace HDF5 {
   class SerializationKey {
     const std::type_info* type_;
 #if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
-    boost::weak_ptr<const void> weakPtr_;
+    std::weak_ptr<const void> weakPtr_;
 #else
     const void* ptr_;
 #endif
 
     template <typename T>
     struct GetWeakPointer {
-      static boost::weak_ptr<const void> get (UNUSED const T& t) {
-        return boost::weak_ptr<const void> (boost::make_shared<int> (0)); // Create a unique weak_ptr
+      static std::weak_ptr<const void> get (UNUSED const T& t) {
+        return std::weak_ptr<const void> (std::make_shared<int> (0)); // Create a unique weak_ptr
       }
     };
     template <typename T>
-    struct GetWeakPointer<boost::shared_ptr<T> > {
-      static boost::weak_ptr<const void> get (const boost::shared_ptr<T>& t) {
-        return boost::weak_ptr<const void> (t);
+    struct GetWeakPointer<std::shared_ptr<T> > {
+      static std::weak_ptr<const void> get (const std::shared_ptr<T>& t) {
+        return std::weak_ptr<const void> (t);
       }
     };
 
   public:
     SerializationKey (const std::type_info* type,
 #if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
-                      const boost::weak_ptr<const void>& weakPtr
+                      const std::weak_ptr<const void>& weakPtr
 #else
                       const void* ptr
 #endif
@@ -95,7 +95,7 @@ namespace HDF5 {
         return false;
 #if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
       else
-        return weakPtr_ < other.weakPtr_;
+        return weakPtr_.owner_before (other.weakPtr_);
 #else
       else
         return ptr_ < other.ptr_;

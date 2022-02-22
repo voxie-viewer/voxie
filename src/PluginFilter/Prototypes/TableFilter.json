@@ -1,0 +1,37 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Extracts a subset of a CCA (Connected Component Analysis) result table which fulfils a set of specified constraints.",
+            "DisplayName": "Table Filter",
+            "Name": "de.uni_stuttgart.Voxie.Filter.TableFilter",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.CCAResultSelection"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Icon": ":/icons/table-delete-row.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Table"
+                    ],
+                    "DisplayName": "Input",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReferenceList"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Table"
+                    ],
+                    "DisplayName": "Output",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            },
+            "RunFilterEnabledCondition": {
+                "Type": "de.uni_stuttgart.Voxie.PropertyCondition.Not",
+                "Condition": {
+                    "Type": "de.uni_stuttgart.Voxie.PropertyCondition.IsEmpty",
+                    "Property": "de.uni_stuttgart.Voxie.Input"
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,93 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Displays a distribution view of onne columns from a table object as a histogram.",
+            "DisplayName": "Histogram visualizer",
+            "Name": "de.uni_stuttgart.Voxie.Visualizer.Histogram",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.HistogramVisualizer"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.Histogram.Table": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.HistogramVisualizer.Table"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Table"
+                    ],
+                    "DisplayName": "Table",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "UIPosition": 1
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Histogram.Column": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.HistogramVisualizer.Column"
+                    ],
+                    "DisplayName": "Column",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String",
+                    "IsCustomUI": true,
+                    "UIPosition": 2
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Histogram.LogarithmicX": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.LogarithmicX"
+                    ],
+                    "DisplayName": "Logarithmic X-axis",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false,
+                    "UIPosition": 3
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Histogram.LogarithmicY": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.LogarithmicY"
+                    ],
+                    "DisplayName": "Logarithmic Y-axis",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false,
+                    "UIPosition": 4
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Histogram.BucketCount": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.HistogramVisualizer.BucketCount"
+                    ],
+                    "DisplayName": "Bucket count",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 100,
+                    "MinimumValue": 1,
+                    "UIPosition": 5
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Histogram.ColorMap": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.HistogramVisualizer.ColorMap"
+                    ],
+                    "DisplayName": "Color map",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ValueColorMapping",
+                    "UIPosition": 6
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Histogram.LowerBoundXFraction": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.HistogramVisualizer.LowerBoundXFraction"
+                    ],
+                    "DisplayName": "Bucket lower bound percentile",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0.05,
+                    "MinimumValue": 0.0,
+                    "MaximumValue": 1.0,
+                    "UIPosition": 7
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Histogram.UpperBoundXFraction": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.HistogramVisualizer.UpperBoundXFraction"
+                    ],
+                    "DisplayName": "Bucket upper bound percentile",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0.95,
+                    "MinimumValue": 0.0,
+                    "MaximumValue": 1.0,
+                    "UIPosition": 8
+                }
+            }
+        }
+    ]
+}

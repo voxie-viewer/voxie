@@ -1,0 +1,13 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.ExtDataT3R.EventListImporter",
+            "DisplayName": "Timepix3 Event List importer",
+            "Description": "Reads Timepix3 Event List files in the Timepix3 raw format",
+            "Patterns": [
+                "*.t3r",
+                "*.timepixraw.json"
+            ]
+        }
+    ]
+}

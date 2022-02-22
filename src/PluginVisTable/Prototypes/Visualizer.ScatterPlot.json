@@ -1,0 +1,120 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Displays a correlation view of two columns from a table object as a scatter plot.",
+            "DisplayName": "Scatter plot visualizer",
+            "Name": "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ScatterPlotVisualizer"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.Table": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.Table"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Table"
+                    ],
+                    "DisplayName": "Table",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "UIPosition": 1
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnX": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.ColumnX"
+                    ],
+                    "DisplayName": "X coordinate column",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String",
+                    "IsCustomUI": true,
+                    "UIPosition": 2
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnY": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.ColumnY"
+                    ],
+                    "DisplayName": "Y coordinate column",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String",
+                    "IsCustomUI": true,
+                    "UIPosition": 3
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnColor": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.ColumnColor"
+                    ],
+                    "DisplayName": "Color column",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String",
+                    "IsCustomUI": true,
+                    "UIPosition": 4
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.LogarithmicX": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.LogarithmicX"
+                    ],
+                    "DisplayName": "Logarithmic X-axis",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false,
+                    "UIPosition": 5
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.LogarithmicY": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.LogarithmicY"
+                    ],
+                    "DisplayName": "Logarithmic Y-axis",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false,
+                    "UIPosition": 6
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointLimit": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.PointLimit"
+                    ],
+                    "DisplayName": "Point display limit",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 1000,
+                    "MinimumValue": 1,
+                    "UIPosition": 7
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointScale": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.PointScale"
+                    ],
+                    "DisplayName": "Point scale",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 4.0,
+                    "MinimumValue": 1,
+                    "UIPosition": 8
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColorMap": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.ColorMap"
+                    ],
+                    "DisplayName": "Color map",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ValueColorMapping",
+                    "UIPosition": 9
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ViewPercentile": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.ViewPercentile"
+                    ],
+                    "DisplayName": "View scale percentile",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 95.0,
+                    "MinimumValue": 1.0,
+                    "MaximumValue": 100.0,
+                    "UIPosition": 10
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ViewMargin": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ScatterPlotVisualizer.ViewMargin"
+                    ],
+                    "DisplayName": "View margins",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 5.0,
+                    "MinimumValue": 0.0,
+                    "UIPosition": 11
+                }
+            }
+        }
+    ]
+}

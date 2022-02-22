@@ -34,6 +34,7 @@
 #include <vector>
 #include <string>
 #include <ostream>
+#include <mutex>
 
 #include <stdint.h>
 
@@ -46,7 +47,7 @@ namespace Core {
     SimpleStdException (std::string descr);
     ~SimpleStdException () throw ();
 
-    virtual const char* what () const throw ();
+    const char* what () const throw () override;
   };
 
   class StackFrame;
@@ -81,29 +82,36 @@ namespace Core {
 
     void* _ptr;
 
-    mutable bool _isResolved;
-    mutable bool _hasSharedObject;
+    mutable std::mutex _resolveMutex;
+    mutable bool _isResolved = false;
+    mutable bool _hasSharedObject = false;
     mutable std::string _sharedObjectName;
-    mutable void* _sharedObjectBase;
-    mutable bool _hasSymbol;
+    mutable void* _sharedObjectBaseFirstSegment; // dli_fbase from dladdr(), virtual address of first segment
+    mutable bool _hasSharedObjectBase = false;
+    mutable void* _sharedObjectBase; // dlpi_addr from dl_iterate_phdr(), virtual address of shared object
+    mutable bool _hasBuildID = false;
+    mutable std::vector<uint8_t> _buildID;
+    mutable bool _hasSymbol = false;
     mutable std::string _symbolName;
     mutable void* _symbolAddr;
-    void doResolve () const;
+    void doResolve (const std::lock_guard<std::mutex>& guard) const;
 
-    mutable bool _hasAddr2line;
+    mutable std::mutex _addr2lineMutex;
+    mutable bool _hasAddr2line = false;
     mutable std::vector<InlineStackFrame> _inlineStackFrames;
-    void doAddr2line () const;
+    void doAddr2line (const std::lock_guard<std::mutex>& guard) const;
 
   public:
     StackFrame (void* ptr);
+    StackFrame (const StackFrame& o);
 
     void* ptr () const {
       return _ptr;
     }
 
     void resolve () const {
-      if (!_isResolved)
-        doResolve ();
+      std::lock_guard<std::mutex> guard(_resolveMutex);
+      if (!_isResolved) doResolve(guard);
     }
 
     bool hasSharedObject () const {
@@ -118,15 +126,39 @@ namespace Core {
       return _sharedObjectName;
     }
 
-    void* sharedObjectBase () const {
+    void* sharedObjectBaseFirstSegment () const {
       resolve ();
       if (!_hasSharedObject)
         throw "!_hasSharedObject";
-      return _sharedObjectBase;
+      return _sharedObjectBaseFirstSegment;
     }
 
+    bool hasSharedObjectBase () const {
+      resolve ();
+      return _hasSharedObjectBase;
+    }
+
+    void* sharedObjectBase () const {
+      resolve ();
+      if (!_hasSharedObjectBase)
+        throw "!_hasSharedObjectBase";
+      return _sharedObjectBase;
+    }
+    
     size_t sharedObjectOffset () const {
       return (char*) ptr () - (char*) sharedObjectBase ();
+    }
+    
+    bool hasBuildID () const {
+      resolve ();
+      return _hasBuildID;
+    }
+
+    const std::vector<uint8_t>& buildID () const {
+      resolve ();
+      if (!_hasBuildID)
+        throw "!_hasBuildID";
+      return _buildID;
     }
 
     bool hasSymbol () const {
@@ -153,8 +185,9 @@ namespace Core {
     }
 
     const std::vector<InlineStackFrame>& inlineStackFrames () const {
+      std::lock_guard<std::mutex> guard(_addr2lineMutex);
       if (!_hasAddr2line)
-        doAddr2line ();
+        doAddr2line (guard);
       return _inlineStackFrames;
     }
 
@@ -198,7 +231,7 @@ namespace Core {
 
     void writeTo (std::ostream& stream) const throw ();
     std::string toString () const throw ();
-    virtual const char* what () const throw ();
+    const char* what () const throw () override;
   };
 
 }

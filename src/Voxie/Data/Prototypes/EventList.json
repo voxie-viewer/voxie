@@ -1,0 +1,16 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A series of activation events recorded by a computer tomography scanner",
+            "DisplayName": "Event List",
+            "Name": "de.uni_stuttgart.Voxie.Data.EventListData",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Data",
+            "Icon": ":/icons/table-split-column.png",
+            "SupportedDataDBusInterfaces": [
+                "de.uni_stuttgart.Voxie.EventListDataAccessor"
+            ],
+            "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.EventList.Json.Export",
+            "Properties": {}
+        }
+    ]
+}

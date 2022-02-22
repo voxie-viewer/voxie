@@ -1,0 +1,8 @@
+{
+    "Name": "KaTeX",
+    "GitRepository": "https://github.com/KaTeX/KaTeX",
+    "GitCommit": "225cb591f97b2511960965ee9adc76bdee757189",
+    "GitTag": "v0.11.1",
+    "LicenseFilename": "LICENSE",
+    "Source": "https://github.com/KaTeX/KaTeX/releases/download/v0.11.1/katex.tar.gz"
+}

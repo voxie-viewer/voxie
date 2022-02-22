@@ -1,0 +1,144 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Performs a connected component analysis on a labeled volume dataset and outputs the results as a table with one entry per region.",
+            "DisplayName": "CCA (Connected Component Analysis)",
+            "Name": "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.CCA"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Icon": ":/icons/report.png",
+            "RunFilterEnabledCondition": {
+                "Type": "de.uni_stuttgart.Voxie.PropertyCondition.Not",
+                "Condition": {
+                    "Type": "de.uni_stuttgart.Voxie.PropertyCondition.IsEmpty",
+                    "Property": "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.LabelVolume"
+                }
+            },
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.LabelVolume": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.LabelVolume"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "RequiredTags": [
+                        "de.uni_stuttgart.Voxie.Tags.Volume.Labeled"
+                    ],
+                    "DisplayName": "Labels",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "UIPosition": 1
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.Volume": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.Volume"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "RequiredTags": [
+                        "de.uni_stuttgart.Voxie.Tags.Volume.Float"
+                    ],
+                    "DisplayName": "Volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "UIPosition": 2
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Table"
+                    ],
+                    "OutputTags": [
+                        "de.uni_stuttgart.Voxie.Tags.Table.CCA"
+                    ],
+                    "DisplayName": "Output",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference",
+                    "UIPosition": 3
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.IncludeBorders": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.IncludeBorders"
+                    ],
+                    "DisplayName": "Include edge-bordering regions",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "UIPosition": 4,
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.IncludeBackground": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.IncludeBackground"
+                    ],
+                    "DisplayName": "Include background region",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "UIPosition": 5,
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.Threshold": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.Threshold"
+                    ],
+                    "DisplayName": "Volume threshold",
+                    "Description": "The maximum number of voxels for any metrics to be calculated on a region.",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "UIPosition": 6,
+                    "DefaultValue": 100000000
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.EnableSurfaceArea": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.EnableSurfaceArea"
+                    ],
+                    "DisplayName": "Compute surface area",
+                    "Description": "Toggles whether the surface area of regions should be calculated at all.",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "UIPosition": 7,
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.ThresholdSurfaceArea": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.ThresholdSurfaceArea"
+                    ],
+                    "DisplayName": "Vol. thresh. surface area",
+                    "Description": "The maximum number of voxels a region can have for its surface area to be calculated.",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "UIPosition": 8,
+                    "DefaultValue": 1000000,
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.EnableSurfaceArea",
+                        "Values": [
+                            true
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.EnableInscribedSphereRadius": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.EnableInscribedSphereRadius"
+                    ],
+                    "DisplayName": "Compute inscribed sphere radius",
+                    "Description": "Toggles whether the inscribed sphere radius of regions should be calculated at all.",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "UIPosition": 9,
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.ThresholdInscribedSphereRadius": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Filter.CCA.ThresholdInscribedSphereRadius"
+                    ],
+                    "DisplayName": "Vol. thresh. inscribed sphere radius",
+                    "Description": "The maximum number of voxels a region can have for its inscribed sphere radius to be calculated.",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "UIPosition": 10,
+                    "DefaultValue": 1000000,
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Filter.ConnectedComponentAnalysis.EnableInscribedSphereRadius",
+                        "Values": [
+                            true
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

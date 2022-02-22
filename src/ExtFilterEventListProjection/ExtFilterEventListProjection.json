@@ -1,0 +1,151 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Creates a raw tomography image from clustered photon events",
+            "DisplayName": "Event list projection",
+            "Name": "de.uni_stuttgart.Voxie.Filter.EventListProjection",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.InputClusterList": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.InputClusterList"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.EventListData"
+                    ],
+                    "DisplayName": "Input cluster list",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "UIPosition": 1
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.OutputProjectedData": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.OutputProjectedData"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.TomographyRawData"
+                    ],
+                    "DisplayName": "Output cluster list",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference",
+                    "UIPosition": 2
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.Attribute": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.Attribute"
+                    ],
+                    "DisplayName": "Projection attribute",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.EventListProjection.Attribute.Energy": {
+                            "DisplayName": "Energy",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.EventListProjection.Attribute.EventCount": {
+                            "DisplayName": "Event count",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.EventListProjection.Attribute.TimeOfArrival": {
+                            "DisplayName": "Time of arrival",
+                            "UIPosition": 3
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.EventListProjection.Attribute.Energy",
+                    "UIPosition": 3
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.Mode": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.Mode"
+                    ],
+                    "DisplayName": "Accumulation mode",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.EventListProjection.Mode.Sum": {
+                            "DisplayName": "Sum",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.EventListProjection.Mode.Mean": {
+                            "DisplayName": "Mean",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.EventListProjection.Mode.Maximum": {
+                            "DisplayName": "Maximum",
+                            "UIPosition": 3
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.EventListProjection.Mode.Minimum": {
+                            "DisplayName": "Minimum",
+                            "UIPosition": 4
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.EventListProjection.Mode.Sum",
+                    "UIPosition": 4
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.MinEnergy": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.MinEnergy"
+                    ],
+                    "DisplayName": "Minimum energy (keV)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 0,
+                    "UIPosition": 5
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.MaxEnergy": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.MaxEnergy"
+                    ],
+                    "DisplayName": "Maximum energy (keV)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 10000.0,
+                    "UIPosition": 6
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.MinTime": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.MinTime"
+                    ],
+                    "DisplayName": "Minimum timestamp (s)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0.0,
+                    "UIPosition": 7
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.MaxTime": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.MaxTime"
+                    ],
+                    "DisplayName": "Maximum timestamp (s)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 100000,
+                    "UIPosition": 8
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.ImageWidth": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.ImageWidth"
+                    ],
+                    "DisplayName": "Image width",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "MinimumValue": 1,
+                    "DefaultValue": 256,
+                    "UIPosition": 9
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.ImageHeight": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.ImageHeight"
+                    ],
+                    "DisplayName": "Image height",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "MinimumValue": 1,
+                    "DefaultValue": 256,
+                    "UIPosition": 10
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListProjection.EnableWhiteImage": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListProjection.EnableWhiteImage"
+                    ],
+                    "DisplayName": "Normalize to white image",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false,
+                    "UIPosition": 11
+                }
+            }
+        }
+    ]
+}

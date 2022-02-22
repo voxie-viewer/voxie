@@ -1,0 +1,82 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Display surfaces etc. in a 3D view",
+            "DisplayName": "3D Visualizer",
+            "Name": "de.uni_stuttgart.Voxie.Visualizer.View3D",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.Visualizer3D"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.View3D.Objects": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Visualizer3D.Objects"
+                    ],
+                    "AllowedNodeKinds": [
+                        "de.uni_stuttgart.Voxie.NodeKind.Object3D"
+                    ],
+                    "DisplayName": "3D Objects",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReferenceList"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.FieldOfView": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Visualizer3D.Camera.FieldOfView"
+                    ],
+                    "DisplayName": "The field of view",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "ShortDescription": "The field of view in radians",
+                    "DefaultValue": 0.6981317007977318,
+                    "MinimumValue": 0.0,
+                    "MaximumValue": 3.141592653589793
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ViewSizeUnzoomed": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Visualizer3D.Camera.ViewSizeUnzoomed"
+                    ],
+                    "DisplayName": "View size (unzoomed)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "ShortDescription": "Size of region (in y direction) which can be seen at the center point plane on 100% zoom (in meters)",
+                    "DefaultValue": 0.25,
+                    "MinimumValue": 0.0
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ZoomLog": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Visualizer3D.Camera.ZoomLog"
+                    ],
+                    "DisplayName": "Zoom (log)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "ShortDescription": "The natural logarithm of the zoom",
+                    "DefaultValue": 0.0
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.LookAt": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Visualizer3D.Camera.LookAt"
+                    ],
+                    "DisplayName": "Look at",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D",
+                    "ShortDescription": "The position the camera is looking at (the center point). Rotations of the camera will be around this point.",
+                    "DefaultValue": [
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.Orientation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Visualizer3D.Camera.Orientation"
+                    ],
+                    "DisplayName": "Orientation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D",
+                    "ShortDescription": "The orientation of the camera",
+                    "DefaultValue": [
+                        1,
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            }
+        }
+    ]
+}

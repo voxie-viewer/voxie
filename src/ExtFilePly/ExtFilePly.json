@@ -1,0 +1,25 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Ply.Import",
+            "DisplayName": "Stanford PLY",
+            "Description": "Load Stanford PLY surface files",
+            "Patterns": [
+                "*.ply"
+            ]
+        }
+    ],
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Ply.Export",
+            "DisplayName": "Stanford PLY",
+            "Description": "Save Stanford PLY surface files",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.Surface"
+            ],
+            "Patterns": [
+                "*.ply"
+            ]
+        }
+    ]
+}

@@ -45,7 +45,7 @@ namespace HDF5 {
     Exception (const std::string& methodName);
     virtual ~Exception () throw ();
 
-    virtual std::string message () const;
+    std::string message () const override;
 
     const std::string& methodName () const {
       return methodName_;

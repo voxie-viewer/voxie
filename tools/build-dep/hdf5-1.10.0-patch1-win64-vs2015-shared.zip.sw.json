@@ -1,0 +1,6 @@
+{
+    "Name": "HDF5",
+    "Version": "1.10.0-patch1",
+    "SourceFilename": "hdf5-1.10.0-patch1.tar.bz2",
+    "Source": "https://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/bin/windows/extra/hdf5-1.10.0-patch1-win64-vs2015-shared.zip"
+}

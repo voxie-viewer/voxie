@@ -6,13 +6,25 @@ build-manual:
   stage: build-manual
 
   tags:
-    - ubuntu-16.04
+    - ubuntu-20.04
 
   artifacts:
     paths:
-      - manual.pdf
+      - old-manual.pdf
 
-  script: "tools/create-manual.sh"
+  script: "tools/create-old-manual.sh"
+
+
+check-formatting:
+  stage: build
+
+  tags:
+    - ubuntu-20.04
+
+  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
+  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
+  #script: "tools/check-formatting.py"
+  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/check-formatting.py )"
 
 build-linux-1604:
   stage: build
@@ -24,18 +36,47 @@ build-linux-1604:
     paths:
       - voxie*.tar.gz
 
-  script: "cp src/localconfig-broken-libgl-libdrm.pri src/localconfig.pri && tools/create-release.sh"
+  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
+  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
+  #script: "tools/create-release.sh --unpack-meson --unpack-ninja --disable-help-browser"
+  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/create-release.sh --unpack-meson --unpack-ninja --disable-help-browser )"
 
-  variables:
-    VOXIEBUILD_PATH_HDF5: "/home/src/hdf5-1.10.0-patch1-linux-centos7-x86_64-gcc485-shared"
-    # http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/bin/linux-centos7-x86_64-gcc485/hdf5-1.10.0-patch1-linux-centos7-x86_64-gcc485-shared.tar.gz
-    VOXIEBUILD_URL_HDF5: "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.bz2"
-
-build-windows:
+build-linux-1804:
   stage: build
 
   tags:
-    - windows
+    - ubuntu-18.04
+
+  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
+  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
+  #script: "tools/create-release.sh --unpack-meson"
+  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/create-release.sh --unpack-meson )"
+
+  artifacts:
+    paths:
+      - voxie*.tar.gz
+
+build-linux-2004:
+  stage: build
+
+  tags:
+    - ubuntu-20.04
+
+  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
+  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
+  #script: "tools/create-release.sh"
+  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/create-release.sh )"
+
+  artifacts:
+    paths:
+      - voxie*.tar.gz
+      - doc.tar.bz2
+
+build-windows-10:
+  stage: build
+
+  tags:
+    - windows-10
 
   script: "powershell -ExecutionPolicy Unrestricted .\\tools\\build-windows.ps1"
 
@@ -47,8 +88,42 @@ build-windows:
       - voxie*.zip
 
   variables:
-    VOXIEBUILD_PATH_VISUAL_STUDIO: "e:\\Microsoft Visual Studio 14.0"
-    VOXIEBUILD_PATH_QT: "e:\\Qt\\Qt5.6.0\\5.6\\msvc2015_64"
-    VOXIEBUILD_URL_QT_COPY: "https://ipvs.informatik.uni-stuttgart.de/pas/src/qt-everywhere-opensource-src-5.6.0.tar.gz"
+    VOXIEBUILD_PATH_VISUAL_STUDIO_VC: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build"
+    VOXIEBUILD_PATH_QT: "c:\\Qt\\Qt5.6.3\\5.6.3\\msvc2015_64"
+    VOXIEBUILD_URL_QT_COPY: "https://ipvs.informatik.uni-stuttgart.de/pas/src/qt-everywhere-opensource-src-5.6.3.tar.xz"
     VOXIEBUILD_USE_GIT: "1"
     VOXIEBUILD_URL_BASE: "https://ipvs.informatik.uni-stuttgart.de/pas/src"
+
+build-macos:
+  stage: build
+
+  tags:
+    - macosx
+
+  script: 'PATH="/opt/Qt5.14.2/5.14.2/clang_64/bin:$PATH" QT_VERSION=5.14.2 tools/create-release-mac.sh --disable-hdf5 --disable-lapack'
+
+  artifacts:
+    paths:
+      - voxie*.dmg
+
+build-linux-2004-onlylib:
+  stage: build
+
+  tags:
+    - ubuntu-20.04
+
+  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
+  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
+  #script: "tools/build.sh --only-lib"
+  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/build.sh --only-lib )"
+
+build-linux-2004-nointern:
+  stage: build
+
+  tags:
+    - ubuntu-20.04
+
+  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
+  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
+  #script: "tools/create-release.sh --no-intern"
+  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/create-release.sh --no-intern )"

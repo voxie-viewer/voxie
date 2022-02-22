@@ -1,34 +1,16 @@
-# C++ objects and libs
-*.slo
-*.lo
-*.o
-*.a
-*.la
-*.lai
-*.so
-*.dll
-*.dylib
-/src/Main/voxie
-/src/Voxie/libVoxie.so.1*
+*~
 
-# Qt stuff
-/.qmake.cache
-/.qmake.stash
-*.pro.user
-*.pro.user.*
-*.moc
-moc_*.cpp
-qrc_*.cpp
-ui_*.h
-Makefile*
 /build-*
 /build
+/builddir
+
 # QtCreator
 *.autosave
 *.qmlproject.user
 *.qmlproject.user.*
 
-# QtCreator Voxie
-localconfig.pri
+# python
+.idea/
 
-*~
+# VS Code
+.vscode

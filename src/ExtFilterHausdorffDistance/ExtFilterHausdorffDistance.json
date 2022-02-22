@@ -1,0 +1,39 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Calculate Hausdorff Distance",
+            "DisplayName": "Hausdorff Distance",
+            "Name": "de.uni_stuttgart.Voxie.Filter.HausdorffDistance",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.HausdorffDistance.NominalInput": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.HausdorffDistanceNominalInput"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input Nominal",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.HausdorffDistance.ActualInput": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.HausdorffDistanceActualInput"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input Actual",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "OutputSurface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

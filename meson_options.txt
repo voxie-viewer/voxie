@@ -1,0 +1,17 @@
+option('help_browser', type : 'feature', value : 'enabled')
+option('hdf5', type : 'feature', value : 'enabled')
+option('lapack', type : 'feature', value : 'enabled')
+option('hdf5_path', type : 'string', value : '')
+option('lapacke_path', type : 'string', value : '')
+option('boost_include_path', type : 'string', value : '')
+option('intern', type : 'feature', value : 'enabled')
+
+option('additional_licenses_file', type : 'string', value : '')
+
+# Allow disabling parts of the build
+option('libvoxie', type : 'feature', value : 'enabled')
+option('main', type : 'feature', value : 'enabled')
+option('plugins', type : 'feature', value : 'enabled')
+option('ext', type : 'feature', value : 'enabled')
+option('extra', type : 'feature', value : 'enabled')
+option('test', type : 'feature', value : 'enabled')

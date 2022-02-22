@@ -1,0 +1,77 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Display table data",
+            "DisplayName": "Table visualizer",
+            "Name": "de.uni_stuttgart.Voxie.Visualizer.Table",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.TableVisualizer"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.Table.Table": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.TableVisualizer.Table"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Table"
+                    ],
+                    "DisplayName": "Table",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "UIPosition": 1
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Table.RowLimit": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.TableVisualizer.RowLimit"
+                    ],
+                    "DisplayName": "Row display limit",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 1000,
+                    "MinimumValue": 1,
+                    "UIPosition": 2
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Table.SortColumn": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.TableVisualizer.SortColumn"
+                    ],
+                    "DisplayName": "Sorting column",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String",
+                    "IsCustomStorage": true,
+                    "IsCustomUI": true,
+                    "UIPosition": 3
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.TableVisualizer.SortOrder"
+                    ],
+                    "DisplayName": "Sorting order",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "IsCustomStorage": true,
+                    "IsCustomUI": true,
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder.Ascending": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.TableVisualizer.SortOrder.Ascending"
+                            ],
+                            "DisplayName": "Ascending",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder.Descending": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.TableVisualizer.SortOrder.Descending"
+                            ],
+                            "DisplayName": "Descending",
+                            "UIPosition": 2
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder.Ascending",
+                    "UIPosition": 4
+                }
+            },
+            "UI": {
+                "TODO": "Add table column list (with visibility/sorting/position) and row count information",
+                "SidePanelSections": []
+            }
+        }
+    ]
+}

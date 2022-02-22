@@ -1,0 +1,11 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Can be used to group nodes together so they are shown as a single node in the node graph.",
+            "DisplayName": "NodeGroup",
+            "Name": "de.uni_stuttgart.Voxie.Node.NodeGroup",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.NodeGroup",
+            "Properties": {}
+        }
+    ]
+}

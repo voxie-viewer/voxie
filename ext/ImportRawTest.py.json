@@ -1,0 +1,20 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.Example.RawTestImporter",
+            "DisplayName": "Raw test importer",
+            "Description": "Raw test importer",
+            "Patterns": [
+                "*.testraw"
+            ],
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Example.RawTestImporter.SomeValue": {
+                    "DisplayName": "Some value",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 5,
+                    "MinimumValue": 1
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,168 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Display CT raw data",
+            "DisplayName": "Raw data visualizer",
+            "Name": "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.RawVisualizer",
+                "de.uni_stuttgart.Voxie.Visualizer.Raw"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.RawData": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.RawVisualizer.RawData"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.TomographyRawData"
+                    ],
+                    "DisplayName": "Raw data",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "CallSetOrder": -10
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.CurrentImageList": {
+                    "DisplayName": "Current image list",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageList",
+                    "ParentProperty": "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.RawData",
+                    "CallSetOrder": 0
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.CurrentImage": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.RawVisualizer.CurrentImage"
+                    ],
+                    "DisplayName": "Current image",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "CallSetOrder": 10
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImageKind": {
+                    "DisplayName": "Image kind",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageKind",
+                    "ParentProperty": "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.RawData",
+                    "CallSetOrder": 20
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ValueColorMapping": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.RawVisualizer.ValueColorMapping"
+                    ],
+                    "DisplayName": "Value to color mapping",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ValueColorMapping",
+                    "TODO": "Don't show 'Label mapping' entry here"
+                },
+                "de.uni_stuttgart.Voxie.View2D.CenterPoint": {
+                    "DisplayName": "Center point",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Point2D"
+                },
+                "de.uni_stuttgart.Voxie.View2D.VerticalSize": {
+                    "DisplayName": "Vertical size (m)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.Interpolation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.RawVisualizer.Interpolation"
+                    ],
+                    "DisplayName": "Interpolation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Interpolation.NearestNeighbor": {
+                            "DisplayName": "Nearest neighbor",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Interpolation.Linear": {
+                            "DisplayName": "Linear",
+                            "UIPosition": 2
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Interpolation.Linear"
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImagesPerSecond": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.View2D.ImagesPerSecond"
+                    ],
+                    "DisplayName": "Images per second",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 15,
+                    "MinimumValue": 0.1,
+                    "MaximumValue": 1000,
+                    "Unit": [
+                        [
+                            "s",
+                            -1
+                        ]
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.WaitForImages": {
+                    "DisplayName": "Wait for images",
+                    "ShortDescrption": "Wait for images during animation to make sure every image is shown",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false
+                }
+            },
+            "UI": {
+                "SidePanelSections": [
+                    {
+                        "Name": "InfoSection",
+                        "DisplayName": "Info",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.Info"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "ImageSelectionSection",
+                        "DisplayName": "Current image",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.CurrentImageList"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.CurrentImage"
+                            },
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.RawVisualizer.ShowPerImageMetadata"
+                            },
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.RawVisualizer.ImageSelectionButtons"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImageKind"
+                            },
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.RawVisualizer.ShowImageKind"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "ColorizerSection",
+                        "DisplayName": "Colorizer",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ValueColorMapping",
+                                "LabelStyle": "None"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "HistogramSection",
+                        "DisplayName": "Histogram",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.RawVisualizer.Histogram"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

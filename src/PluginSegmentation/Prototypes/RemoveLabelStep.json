@@ -1,0 +1,20 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Remove passed labels from the labelTable and the labelVolume",
+            "DisplayName": "Remove label step",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.RemoveLabelStep",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "None",
+            "IsSpecialStep": true,
+            "Icon": ":/icons/desktop.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.SegmentationStep.RemoveLabelStep.LabelIDs": {
+                    "Name": "Label IDs",
+                    "DisplayName": "Label IDs",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.IntList"
+                }
+            }
+        }
+    ]
+}

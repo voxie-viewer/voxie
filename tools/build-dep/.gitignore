@@ -10,3 +10,8 @@
 *.tar.bz2
 *.7z
 *.tgz
+*.lib
+*.pkg
+
+*.run
+*.dmg

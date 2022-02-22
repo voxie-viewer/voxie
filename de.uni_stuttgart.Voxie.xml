@@ -1,0 +1,2412 @@
+<?xml version='1.0' encoding='utf-8'?>
+<node>
+  <interface name="de.uni_stuttgart.Voxie.Client">
+    <!--
+        UniqueConnectionName:
+        
+        The bus name of the client or an empty string if the Client object was
+        created with CreateIndependentClient() or if the client is on a
+        peer-to-peer connection.
+        
+        Should only be used for debugging purposes.
+    -->
+    <property access="read" name="UniqueConnectionName" type="s" />
+
+    <!--
+        DBusConnectionName:
+        
+        The name of the connection the client is on. This is useful in the
+        peer-to-peer mode to distinguish clients (because all clients will have
+        an empty string as UniqueConnectionName).
+        
+        This property should only be used for debugging.
+    -->
+    <property access="read" name="DBusConnectionName" type="s" />
+    
+    <!--
+        DecRefCount:
+        
+        Decrese the reference count from this client to the object o.
+        
+        If the reference count drops to zero and the object is not referenced from anywhere else, the object will be freed.
+        
+        If the reference count from this client is already zero, the method will return an error.
+        
+        This method should only be called by the client itself.
+    -->
+    <method name="DecRefCount">
+      <arg direction="in" name="o" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="-1" />
+      </arg>
+      <!-- Note: This method has no options parameter -->
+    </method>
+    
+    <!--
+        IncRefCount:
+        
+        Increse the reference count from this client to the object o.
+        
+        This method will fail with an error if the object is already being destroyed.
+        
+        This method should only be called by the client itself.
+    -->
+    <method name="IncRefCount">
+      <arg direction="in" name="o" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <!-- Note: This method has no options parameter -->
+    </method>
+
+    <!--
+        GetReferencedObjects:
+        
+        Get the list of objects referenced by this client.
+        
+        Should only be used for debugging purposes.
+    -->
+    <method name="GetReferencedObjects">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="a{ot}" />
+    </method>
+  </interface>
+
+  <!--
+      de.uni_stuttgart.Voxie.ClientManager:
+      
+      Interface for creating new Client objects for reference counting.
+      
+      This is a singleton interface which is always available at /de/uni_stuttgart/Voxie/ClientManager
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ClientManager">
+    <method name="CreateClient">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+    </method>
+    <!-- TODO: add this?
+    <method name="CreateClientWithName">
+      <arg direction="in" name="uniqueConnectionName" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="o" />
+      </method>
+    -->
+    <method name="CreateIndependentClient">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+    </method>
+    <!--
+        DestroyClient:
+        
+        Destroy the client and release all references held by this client.
+        
+        If the client has already been destroyed, this method will return an error.
+    -->
+    <method name="DestroyClient">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.Component">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.DynamicObject" />
+
+    <!--
+        ComponentContainer:
+        
+        The extension or plugin this component is implemented in.
+    -->
+    <property access="read" name="ComponentContainer" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ComponentContainer" />
+    </property>
+
+    <!--
+        Type:
+        
+        The type of the component, e.g. de.uni_stuttgart.Voxie.NodePrototype
+    -->
+    <property access="read" name="ComponentType" type="s" />
+
+    <!--
+        Name:
+        
+        The name of the functionality, e.g. de.uni_stuttgart.Voxie.CreateSurface
+    -->
+    <property access="read" name="Name" type="s" />
+  </interface>
+
+  <!--
+        de.uni_stuttgart.Voxie.ComponentContainer:
+        
+        A list of components. Normally this will be an Extension or a Plugin.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ComponentContainer">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.DynamicObject" />
+
+    <!--
+        ListComponents:
+        
+        Get a list of all components with a certain component type.
+
+        Valid options:
+        - 'AllowComponentTypeCompatibilityNames' ('b'): Whether to also look up
+          compatibility names for the component type. Defaults to true.
+    -->
+    <method name="ListComponents">
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Component" />
+      </arg>
+      <arg direction="in" name="type" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        GetComponent:
+        
+        Get the component with a certain component type and name.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+        - 'AllowComponentTypeCompatibilityNames' ('b'): Whether to also look up
+          compatibility names for the component type. Defaults to true.
+    -->
+    <method name="GetComponent">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Component" />
+      </arg>
+      <arg direction="in" name="type" type="s" />
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.Extension">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.ComponentContainer" />
+
+    <property access="read" name="ExecutableFilename" type="s" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.Plugin">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.ComponentContainer" />
+
+    <property access="read" name="IsCorePlugin" type="b" />
+    
+    <!-- TODO: Remove and provide filename instead? -->
+    <property access="read" name="Name" type="s" />
+  </interface>
+
+  <!-- TODO: Split up interface into this interface and e.g. TomographyRawDataAccessorOperations for metadata stuff etc.? -->
+  <!--
+      de.uni_stuttgart.Voxie.TomographyRawData2DAccessorOperations:
+      @short_description: Lazy raw data loading backend interface
+      
+      Interface implemented by raw data importers to provide raw images on
+      demand.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.TomographyRawData2DAccessorOperations">
+    <!--
+        GetAvailableImageKinds:
+        
+        Returns a list of possible values for the imageKind parameter of
+        ReadImages().
+    -->
+    <method name="GetAvailableImageKinds">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="aa{sv}">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+    </method>
+
+    <!--
+        GetAvailableStreams:
+        
+        Returns a list of possible values for the stream parameter of
+        ReadImages().
+    -->
+    <method name="GetAvailableStreams">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="as" />
+    </method>
+    
+    <!--
+        GetAvailableGeometryTypes:
+        
+        Returns a list of available geometry types. The most specific
+        geometry type is listed first. Later geometry types generally indicate
+        some kind of filtered or transformed data.
+        
+        See [TomographyRawData Geometries](voxie:///help/topic/interfaces/tomography-rawdata-geometries) for more information about geometry types.
+    -->
+    <method name="GetAvailableGeometryTypes">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="as" />
+    </method>
+    
+    <!--
+        GetGeometryData:
+
+        Return geometry information for a certain geometry type.
+
+        See [TomographyRawData Geometries](voxie:///help/topic/interfaces/tomography-rawdata-geometries) for more information about geometry data.
+
+        The returned data consists of JSON values encoded as DBus variants, see [JSON data on DBus](voxie:///help/topic/interfaces/json-on-dbus) for more information.
+    -->
+    <method name="GetGeometryData">
+      <arg direction="in" name="geometryType" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="a{sv}">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+    </method>
+    
+    <!--
+        GetNumberOfImages:
+        
+        The number of images provided by the raw data set in a certain stream.
+    -->
+    <method name="GetNumberOfImages">
+      <arg direction="in" name="stream" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="t" />
+    </method>
+    
+    <!--
+        GetMetadata:
+        @options: Currently no options are defined.
+        @ret: A dictionary containing metadata for the raw data set.
+        
+        Returns general information about the data set.
+
+        The returned data consists of JSON values encoded as DBus variants, see [JSON data on DBus](voxie:///help/topic/interfaces/json-on-dbus) for more information.
+    -->
+    <method name="GetMetadata">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="a{sv}">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+    </method>
+
+    <!-- TODO: per-stream metadata? -->
+
+    <!--
+        GetImageShape:
+        @id: The ID of the image
+        @options: Currently no options are defined.
+        @size: The width and the height of the image in pixels.
+        
+        Returns the size of an image. Should be fast.
+    -->
+    <method name="GetImageShape">
+      <arg direction="in" name="stream" type="s" />
+      <arg direction="in" name="id" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="size" type="(tt)" />
+    </method>
+
+    <!--
+        GetPerImageMetadata:
+        
+        Returns metadata about the image. Should be fast.
+
+        The returned data consists of JSON values encoded as DBus variants, see [JSON data on DBus](voxie:///help/topic/interfaces/json-on-dbus) for more information.
+    -->
+    <method name="GetPerImageMetadata">
+      <arg direction="in" name="stream" type="s" />
+      <arg direction="in" name="id" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="a{sv}">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+    </method>
+
+    <!--
+    <property access="read" name="ImageShape" type="(tt)" />
+    -->
+    <!--
+        ReadImages:
+        @imageKind: The kind of image requested (this describes e.g. whether this is an intensity or attenuation image and what corrections have been applied).
+        @images: A list of images which should be read. Each image consists of a stream name and an ID of the image in this stream.
+        @inputRegionStart: The lower left pixel of the image to be read from the stream.
+        @output: A reference (consisting of a unique bus name and an object path) to a TomographyRawData2DRegular object in voxie where the data should be written.
+        @firstOutputImageId: The ID in output where the first image should be written.
+        @outputRegionStart: The pixel in the output image where the lower left pixel should be written.
+        @regionSize: The size of the region which should be read in pixels.
+        @options: Currently no options are defined.
+        @versionString: The VersionString of the version returned by UpdateFinish(). Note that the reference to the version is dropped and the version might already be destroyed.
+        
+        Load a set of raw images. Might be slow.
+    -->
+    <method name="ReadImages">
+      <arg direction="in" name="imageKind" type="a{sv}">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+      <!--
+      <arg direction="in" name="stream" type="s" />
+      <arg direction="in" name="firstImageId" type="t" />
+      -->
+      <arg direction="in" name="images" type="a(st)" />
+      <arg direction="in" name="inputRegionStart" type="(tt)" />
+      <arg direction="in" name="output" type="(so)">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.TomographyRawData2DRegular" />
+      </arg>
+      <arg direction="in" name="firstOutputImageId" type="t" />
+      <arg direction="in" name="outputRegionStart" type="(tt)" />
+      <!--
+      <arg direction="in" name="count" type="t" />
+      -->
+      <arg direction="in" name="regionSize" type="(tt)" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <!-- TODO: Provide a way to get the version? Maybe a second overload which returns a DataVersion instead of the string? -->
+      <arg direction="out" name="versionString" type="s" />
+    </method>
+  </interface>
+
+  <!--
+      de.uni_stuttgart.Voxie.EventListDataBuffer:
+      @short_description: Data buffer containing a list of events, each of which has a timestamp and multiple attributes
+      
+      Interface implemented by event list loaders to query sections of an event list on-demand
+  -->
+  <interface name="de.uni_stuttgart.Voxie.EventListDataBuffer">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+    <!--
+        Capacity:
+        
+        The total number of events that can fit into the event buffer.
+    -->
+    <property access="read" name="Capacity" type="t" />
+    
+    <!--
+        Attributes:
+        
+        The list of attributes available for each event within this data buffer
+    -->
+    <property access="read" name="Attributes" type="a(s(sus)sa{sv}a{sv})" />
+    
+    <!--
+        GetAttributeReadonly:
+        
+        Returns a read-only 1D array containing the values of the specified attribute for each event
+    -->
+    <method name="GetAttributeReadonly">
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(t)(x)a{sv})" />
+    </method>
+
+    <!--
+        GetAttributeWritable:
+        
+        Returns a writable 1D array containing the values of the specified attribute for each event
+    -->
+    <method name="GetAttributeWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(t)(x)a{sv})" />
+    </method>
+  </interface>
+  
+  <!--
+      de.uni_stuttgart.Voxie.EventListDataAccessorOperations:
+      @short_description: Lazy event list data loading backend interface
+      
+      Interface implemented by event list loaders to query sections of an event list on-demand
+  -->
+  <interface name="de.uni_stuttgart.Voxie.EventListDataAccessorOperations">
+    <!--
+        StreamCount:
+        
+        The total number of streams within the event list.
+    -->
+    <property access="read" name="StreamCount" type="t" />
+
+    <!--
+        GetMetadata:
+        @options: Currently no options are defined.
+        @ret: A dictionary containing metadata for the raw data set.
+        
+        Returns information like the Source-Detector-Distance etc.
+    -->
+    <method name="GetMetadata">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="ret" type="a{sv}">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+    </method>
+
+    <!--
+        GetStreamInfo:
+        @streamID: The ID of the stream to retrieve information for.
+        @options: Currently no options are defined.
+        @eventCount: The number of events contained in the stream (this may be an approximation/upper bound).
+        @minimumTimestamp: The lowest inclusive timestamp within the specified stream.
+        @maximumTimestamp: The highest inclusive timestamp within the specified stream.
+        @attributeTypes: A dictionary mapping attribute names to their data type.
+        @metadata: A dictionary containing metadata for the specified stream.
+        
+        Returns various information relating to a specific stream within the event list.
+    -->
+    <method name="GetStreamInfo">
+      <arg direction="in" name="streamID" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="eventCount" type="t" />
+      <arg direction="out" name="minimumTimestamp" type="x" />
+      <arg direction="out" name="maximumTimestamp" type="x" />
+      <arg direction="out" name="attributes" type="a(s(sus)sa{sv}a{sv})" />
+      <arg direction="out" name="metadata" type="a{sv}">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+    </method>
+    
+    <!--
+        ReadEvents:
+        @streamID: The ID of the stream to read events from.
+        @firstTimestamp: The lowest inclusive timestamp to read from.
+        @lastTimestamp: The highest inclusive timestamp to read up to.
+        @targetEventOffset: The offset at which to read events into the buffer.
+        @targetEventCount: The maximum number of events to read into the buffer.
+        @output: The buffer to write read events to.
+        @options: Currently no options are defined.
+        @readEventCount: The number of events actually read by the operation.
+        @lastReadTimestamp: The highest timestamp included in the effective read range.
+        
+        Returns events data within the specified timestamp range. The timestamp bounds are treated inclusively. May
+        return an incomplete subset of the range, the upper bound of which will be returned in lastReadTimestamp.
+        In such a case, another request request should be performed with the next subsequent timestamp.
+    -->
+    <method name="ReadEvents">
+      <arg direction="in" name="streamID" type="t" />
+      <arg direction="in" name="firstTimestamp" type="x" />
+      <arg direction="in" name="lastTimestamp" type="x" />
+      <arg direction="in" name="targetEventOffset" type="t" />
+      <arg direction="in" name="targetEventCount" type="t" />
+      <arg direction="in" name="output" type="(so)">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.EventListDataBuffer" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="readEventCount" type="t" />
+      <arg direction="out" name="lastReadTimestamp" type="x" />
+      <arg direction="out" name="versionString" type="s" />
+    </method>
+  </interface>
+
+  <!--
+      de.uni_stuttgart.Voxie.EventListDataAccessor:
+      @short_description: Lazy accessor for event list data
+      
+      Allows lazy-loaded access to event lists
+  -->
+  <interface name="de.uni_stuttgart.Voxie.EventListDataAccessor">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.EventListDataAccessorOperations" />
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.Operation">
+    <property access="read" name="IsFinished" type="b" />
+    <property access="read" name="IsCancelled" type="b" />
+
+    <!--
+        Finished:
+
+        A signal which is emitted whenever the operation finishes (whether
+        successful or not).
+
+        After registering for this signal the property IsFinished should be read
+        to avoid race conditions.
+    -->
+    <signal name="Finished">
+      <arg direction="out" name="options" type="a{sv}" />
+    </signal>
+    
+    <!--
+        WaitFor:
+
+        Wait until the operation has finished (if it has already finished when
+        the method is called, the method will return immediately).
+
+        If the operation failed, an error will be returned.
+
+        In most cases it will be a good idea to increase the DBus timeout for
+        calling this method.
+
+        Valid options:
+        - 'Timeout' ('d'): The timeout for waiting for the operation to finish.
+          Must be a non-negative time in seconds. After this time, the method
+          will return with an de.uni_stuttgart.Voxie.Timeout error.
+          When the operation was already finished before calling this method,
+          it will not return an error, even if the timeout is 0.
+          If no timeout is given, the method will wait forever (note however
+          that the DBus timeout might also apply).
+    -->
+    <method name="WaitFor">
+      <!-- TODO: Add method which allows getting the result of the operation? -->
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        GetSucceeded
+
+        Return true if the operation was successful. If this method is called
+        before the operation is finished, this method will return an error.
+    -->
+    <method name="GetSucceeded">
+      <arg direction="out" type="b" />
+    </method>
+    <!--
+        GetError
+
+        Return the error which occured during the operation. If this method is
+        called before the operation is finished or if the operation was
+        successful, this method will return an error.
+    -->
+    <method name="GetError">
+      <arg direction="out" name="name" type="s" />
+      <arg direction="out" name="message" type="s" />
+    </method>
+  </interface>
+
+  <!--
+      OperationResult:
+
+      An interface which allows access to the result of an operation.
+
+      As long as this interface is kept alive the result of the operation will
+      also be kept alive.
+
+      Getting result values will throw an error if the operation is not finished
+      or the operation failed.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.OperationResult">
+    <!-- TODO: The DBus wrapper for this property probably should automatically get a reference -->
+    <property access="read" name="Operation" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Operation" />
+    </property>
+  </interface>
+  <interface name="de.uni_stuttgart.Voxie.OperationResultImport">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.OperationResult" />
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.DynamicObject" /> <!-- TODO: Move this to OperationResult? -->
+    <!-- TODO: The DBus wrapper for this property probably should automatically get a reference -->
+    <property access="read" name="Data" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+    </property>
+
+    <!-- TODO: The DBus wrapper for this property probably should automatically get a reference -->
+    <property access="read" name="DataVersion" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataVersion" />
+    </property>
+  </interface>
+  <interface name="de.uni_stuttgart.Voxie.OperationResultImportNode">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.OperationResultImport" />
+
+    <property access="read" name="DataNode" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataNode" />
+    </property>
+  </interface>
+  <interface name="de.uni_stuttgart.Voxie.OperationResultImportObject">
+    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.OperationResultImport" />
+
+    <property access="read" name="DataObject" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataObject" />
+    </property>
+  </interface>
+
+  <!--
+      de.uni_stuttgart.Voxie.ExternalOperation:
+      
+      An operation implemented by an extension.
+      
+      This object should only be used by the extension implementing the
+      operation and references to it also should only be held by this extension.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ExternalOperation">
+    <property access="read" name="Name" type="s" />
+    
+    <property access="read" name="Action" type="s" />
+    
+    <property access="read" name="IsCancelled" type="b" />
+    <signal name="Cancelled">
+      <arg direction="out" name="options" type="a{sv}" />
+    </signal>
+    <!--
+        Must be called before doing anything else with the object
+        After the operation is finished, client.DecRefCount(operation) has to
+        be called.
+    -->
+    <method name="ClaimOperation">
+      <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" /> <!-- applies to 'this' ExternalOperation object -->
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <!--
+        SetProgress:
+        
+        Set the progress of the operation.
+        (progress should be between 0.0 and 1.0)
+    -->
+    <method name="SetProgress">
+      <arg direction="in" name="progress" type="d" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <method name="FinishError">
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="message" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+  
+  <!--
+      de.uni_stuttgart.Voxie.ExternalOperationImport:
+      
+      An import operation implemented by an extension.
+      
+      This object should only be used by the extension implementing the
+      operation and references to it also should only be held by this extension.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ExternalOperationImport">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.ExternalOperation" />
+
+    <property access="read" name="Filename" type="s" />
+    <property access="read" name="Properties" type="a{sv}" />
+
+    <method name="Finish">
+      <arg direction="in" name="data" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+      <arg direction="in" name="version" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataVersion" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+  
+  <!--
+      de.uni_stuttgart.Voxie.ExternalOperationExport:
+      
+      An export operation implemented by an extension.
+      
+      This object should only be used by the extension implementing the
+      operation and references to it also should only be held by this extension.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ExternalOperationExport">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.ExternalOperation" />
+    <property access="read" name="Data" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+    </property>
+    <property access="read" name="Filename" type="s" />
+    <method name="Finish">
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <!--
+      de.uni_stuttgart.Voxie.ExternalOperationRunFilter:
+      
+      A filter operation implemented by an extension.
+      
+      This object should only be used by the extension implementing the
+      operation and references to it also should only be held by this extension.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ExternalOperationRunFilter">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.ExternalOperation" />
+    <!--
+        FilterNode:
+        
+        The object path of the filter node itself.
+    -->
+    <property access="read" name="FilterNode" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.FilterNode" />
+    </property>
+    <!--
+        FilterObject:
+        
+        The object path of the filter object itself.
+    -->
+    <property access="read" name="FilterObject" type="o">
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.FilterObject" />
+    </property>
+    <!--
+        Parameters:
+        
+        The parameters which should used for the filter. This is a map which
+        contains information for the filter node itself and each of its
+        direct dependencies and outputs.
+        
+        The information is a snapshot of the information when the filter
+        run was started. The filter should use the information from this
+        snapshot instead of the live information from the nodes itself.
+        
+        For each node there is a map which contains:
+        - "PrototypeName": The name of the prototype of the node
+        - "Properties": A map ('a{sv}') with the properties of the node
+        - For data nodes: "Data": A reference ('o') to the data interface or '/' if there is no data.
+        - For data nodes: "DataVersion": A reference ('o') to the data version which was the current version when the script was started. When "Data" is '/' this is missing.
+    -->
+    <property access="read" name="Parameters" type="a{oa{sv}}" />
+    <!--
+        Finish:
+        
+        Finish the operation. This method should be called once the filter
+        function has finished its work.
+        
+        The result parameter is a map which contains result information for each
+        output node of the filter (i.e. each node mentioned as an
+        OutputNodeReference property of the filter).
+        
+        For each node there is a map which should contain:
+        - For data nodes: "Data": A reference ('o') to the data object. If no "Data" member is given the data interface is assumed to be unchanged.
+        - For data nodes: "DataVersion": A reference ('o') to the data version which was produced by the script. If no "DataVersion" is given, the data is assumed to be unchanged. If "Data" is given, "DataVersion" must also be given.
+        - "Properties": A map ('a{sv}') with updated properties of the node. If there is no "Properties" map, the properties of the node will be unchanged. If a property is not included in the map, it will be unchanged.
+    -->
+    <method name="Finish">
+      <arg direction="in" name="result" type="a{oa{sv}}" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+  
+    <!--
+      de.uni_stuttgart.Voxie.ExternalOperationRunSegmentationStep:
+      
+      A SegmentationStep operation implemented by an extension.
+      
+      This object should only be used by the extension implementing the
+      operation and references to it also should only be held by this extension.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ExternalOperationRunSegmentationStep">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.ExternalOperation" />
+    <!--
+        SegmentationStepNode:
+        
+        The node path of the SegmentationStep itself.
+    -->
+    <property access="read" name="SegmentationStepNode" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Node" />
+    </property>
+
+    <!--
+        InputNode:
+
+        The object path of the input volume itself.
+    -->
+    <property access="read" name="InputNode" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataNode" />
+    </property>
+
+    <!--
+        LabelData:
+
+        The object path of the label Volume.
+    -->
+    <property access="read" name="LabelData" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataNode" />
+    </property>
+
+    <!--
+        ContainerData:
+
+        The object path of the containerData.
+    -->
+    <property access="read" name="ContainerData" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataNode" />
+    </property>
+    <!--
+        Parameters:
+        
+        The parameters which should used for the SegmentationStep. This is a map which
+        contains information for the SegmentationStep itself and each of its
+        direct dependencies and outputs.
+        
+        The information is a snapshot of the information when the SegmentationStep calculation
+        run was started. The SegmentationStep should use the information from this
+        snapshot instead of the live information from the nodes itself.
+        
+        For each node there is a map which contains:
+        - "PrototypeName": The name of the prototype of the node
+        - "Properties": A map ('a{sv}') with the properties of the node
+        - For data nodes: "Data": A reference ('o') to the data interface or '/' if there is no data.
+        - For data nodes: "DataVersion": A reference ('o') to the data version which was the current version when the script was started. When "Data" is '/' this is missing.
+    -->
+    <property access="read" name="Parameters" type="a{oa{sv}}" />
+    <!--
+        Finish:
+        
+        Finish the operation. This method should be called once the SegmentationStep
+        function has finished its work.
+        
+        The result parameter is a map which contains result information for each
+        output node of the SegmentationStep (i.e. each node mentioned as an
+        OutputNodeReference property of the SegmentationStep).
+        
+        For each node there is a map which should contain:
+        - For data nodes: "Data": A reference ('o') to the data object. If no "Data" member is given the data interface is assumed to be unchanged.
+        - For data nodes: "DataVersion": A reference ('o') to the data version which was produced by the script. If no "DataVersion" is given, the data is assumed to be unchanged. If "Data" is given, "DataVersion" must also be given.
+        - "Properties": A map ('a{sv}') with updated properties of the node. If there is no "Properties" map, the properties of the node will be unchanged. If a property is not included in the map, it will be unchanged.
+    -->
+    <method name="Finish">
+      <arg direction="in" name="labelDataVersion" type="o" >
+            <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataVersion" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.Importer">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Component" />
+
+    <property access="read" name="Filter" type="a{sv}" />
+
+    <!--
+        StartImport
+
+        Import a file.
+
+        Valid options:
+        - 'Properties' ('a{sv}'): Properties to use for the import (see ListProperties()). Properties which are not specified will use their default value.
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names for properties. Defaults to true.
+        - 'CreateNode' ('o'): Whether to create a result node. Defaults to false. If this is true, the returned value will implement de.uni_stuttgart.Voxie.OperationResultImportNode.
+    -->
+    <method name="StartImport">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="fileName" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.OperationResultImport" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
+    
+    <method name="ListProperties">
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ImporterProperty" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.ImporterProperty">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Property" />
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.Exporter">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Component" />
+
+    <property access="read" name="Filter" type="a{sv}" />
+    <!--
+        FilterAddExtension:
+
+        Modify the given filename so that it matches the filter.
+    -->
+    <method name="FilterAddExtension">
+      <arg direction="in" name="filename" type="s" />
+      <arg direction="out" name="filenameOut" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <method name="StartExport">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="data" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+      <arg direction="in" name="fileName" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.OperationResult" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
+    <!-- TODO: Remove this, use StartExport().WaitFor() instead? -->
+    <method name="Export">
+      <arg direction="in" name="data" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+      <arg direction="in" name="fileName" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.PropertyType">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Component" />
+
+    <!--
+        Name:
+        
+        Internal name used in DBus interface
+    -->
+    <property access="read" name="Name" type="s" />
+    <!--
+        DisplayName:
+        
+        Name shown in GUI
+    -->
+    <property access="read" name="DisplayName" type="s" />
+    
+    <!--
+        DefaultValue:
+        
+        The value which is used as default value if it is not changed by the
+        property itself.
+    -->
+    <property access="read" name="DefaultValue" type="v" />
+
+    <!--
+        DBusSignature:
+
+        The DBus signature of a value of this type.
+    -->
+    <property access="read" name="DBusSignature" type="g" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.Property">
+    <property access="read" name="Name" type="s" />
+    <property access="read" name="DisplayName" type="s" />
+    <property access="read" name="Type" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.PropertyType" />
+    </property>
+
+    <!--
+        PropertyDefinition:
+        
+        PropertyDefinition contains the JSON used to define the property.
+
+        The returned data consists of JSON values encoded as DBus variants, see [JSON data on DBus](voxie:///help/topic/interfaces/json-on-dbus) for more information.
+    -->
+    <property access="read" name="PropertyDefinition" type="v">
+      <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+    </property>
+
+    <!-- TODO: For NodeReference etc.: Allowed types -->
+  </interface>
+
+  <!--
+      DynamicObject:
+      
+      In some cases voxie might return an object and it might not be clear to
+      the client what the precise type of the object is (e.g. Importer.Import()
+      returns a Data object, but that might either be a VolumeData or a
+      SurfaceData object). When different volume or surface object
+      implementations are supported, the same problem appears for VolumeData
+      or SurfaceData. This interface allows getting a list of implemented
+      interfaces. The list is sorted so that the most specific / newest
+      interface is listed first and the least specific / oldest interface is
+      listed last. This means the client can simply pick the first interface it
+      understand from the list and use that interface.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.DynamicObject">
+    <property access="read" name="SupportedInterfaces" type="as" />
+  </interface>
+  
+  <!--
+      de.uni_stuttgart.Voxie.Data:
+      
+      Base interface for all interfaces storing data. In order to modify data
+      a ExternalDataUpdate object has to be created.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.Data">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.DynamicObject" />
+
+    <!--
+        CreateUpdate:
+
+        Create a new ExternalDataUpdate object.
+
+        Valid options:
+        - 'ContainerUpdates' ('a{oo}'): A map containing an update object for each container which contains this data object.
+    -->
+    <method name="CreateUpdate">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
+
+    <property access="read" name="CurrentVersionString" type="s" />
+    <method name="GetCurrentVersion">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataVersion" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
+
+    <!--
+        DataChanged:
+        
+        newVersion: A reference to the new data version.
+        
+        newVersionVersionString / newVersionDate / newVersionUpdateIsRunning: Values copied from newVersion (needed because newVersion might be destroyed before the listener can act on the signal)
+        
+        reason: The reason for the signal was emitted:
+            de.uni_stuttgart.Voxie.Data.DataChangedReason.Initialized: DataChanged is emitted because the object has been initialized
+            de.uni_stuttgart.Voxie.Data.DataChangedReason.NewUpdate: DataChanged is emitted because a new update object was created
+            de.uni_stuttgart.Voxie.Data.DataChangedReason.UpdateFinished: DataChanged is emitted because an update has finished
+    -->
+    <signal name="DataChanged">
+      <arg direction="out" name="newVersion" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataVersion" />
+      </arg>
+      <arg direction="out" name="newVersionVersionString" type="s" />
+      <arg direction="out" name="newVersionUpdateIsRunning" type="b" />
+      <arg direction="out" name="newVersionDate" type="s" />
+      <arg direction="out" name="reason" type="s" />
+      <arg direction="out" name="options" type="a{sv}" />
+    </signal>
+  </interface>
+
+  <!--
+      de.uni_stuttgart.Voxie.ExternalDataUpdate:
+      
+      Interface describing an in-progress update of a Data object.
+      
+      This object should only be used by the script which created the object
+      and references to it also should only be held by this script.
+
+      After the object has been destroyed or the Finish() method has been
+      called, the underlying Data object must not be modified anymore.
+      This cannot be enforced by Voxie, but violating this constraint will cause
+      problems.
+      It is, however, ok to reuse the shared memory returned by
+      GetDataWritable() after a new ExternalDataUpdate for the Data object has
+      been created.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ExternalDataUpdate">
+    <property access="read" name="Data" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+    </property>
+    
+    <!--
+        Finish:
+
+        Should be called after the modification of the data has been finished.
+        Afterwards the data must not be modified anymore.
+        Returns a new object describing the version of the data after the
+        update.
+
+        Valid options:
+        - 'Metadata' ('a{sv}'): The metadata for the newly generated version. This is JSON data encoded as DBus variants.
+    -->
+    <method name="Finish">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataVersion" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
+  </interface>
+  
+
+  <!--
+      de.uni_stuttgart.Voxie.DataVersion:
+      
+      Describes the version of the data in a Data object.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.DataVersion">
+    <!--
+        Data:
+        
+        The Data object whose version is being described.
+        Because the DataVersion object does not keep a strong reference to the
+        Data object, this might be a reference to a dead object (meaning all
+        DBus calls on it will fail).
+    -->
+    <property access="read" name="Data" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+    </property>
+
+    <!--
+        VersionString:
+        
+        A string describing the version. For each Data object, each version has
+        a unique VersionString for the lifetime of the program.
+    -->
+    <property access="read" name="VersionString" type="s" />
+
+    <!--
+        Date:
+        
+        The time when the version was created as an ISO date string.
+    -->
+    <property access="read" name="Date" type="s" />
+
+    <!--
+        UpdateIsRunning:
+        
+        True if this is a version where an update is currently running. The data
+        of such a version might change.
+    -->
+    <property access="read" name="UpdateIsRunning" type="b" />
+
+    <!--
+        Metadata:
+
+        Returns general information about the version.
+
+        The returned data consists of JSON values encoded as DBus variants, see [JSON data on DBus](voxie:///help/topic/interfaces/json-on-dbus) for more information.
+
+        If the metadata contains an entry "Status", the version contains incomplete, which should be updated later. The "Status" member is an object which can contain the following entries:
+        - "Progress": A floating point value between 0.0 and 1.0 indicating the progress.
+        - "Error": If this entry exists, there was an error while generating the data and there will be no further updates. The entry is an object with two members: "Name" (the name of the error in reverse-DNS form) and "Message" (a message describing the error).
+    -->
+    <property access="read" name="Metadata" type="a{sv}">
+      <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+    </property>
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.TomographyRawDataBase">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+    <!-- TODO: Information like the number of images etc.? -->
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.TomographyRawDataAccessor">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.TomographyRawDataBase" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.TomographyRawData2DAccessor">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.TomographyRawDataAccessor" />
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.TomographyRawData2DAccessorOperations" />
+
+    <!-- TODO: bus name / object path of real backend? (might not be available if this is just a local RawData2D object) -->
+
+    <!-- This object might provide additional image kinds and automatically convert the data from the backend -->
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.TomographyRawData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.TomographyRawDataBase" />
+  </interface>
+
+  <!-- TODO: metadata? -->
+  <!-- TODO: Split into more interfaces / move some functionality to TomographyRawData? -->
+  <interface name="de.uni_stuttgart.Voxie.TomographyRawData2DRegular">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.TomographyRawData" />
+    <!-- TODO: Should GridSpacing and ImageOrigin be here or should this be moved to metadata? -->
+    <property access="read" name="GridSpacing" type="(dd)" />
+    <property access="read" name="ImageOrigin" type="(dd)" />
+    <property access="read" name="DataType" type="(sus)" />
+
+    <property access="read" name="ImageShape" type="(tt)" />
+    <property access="read" name="ImageCount" type="t" />
+    <method name="GetDataReadonly">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(ttt)(xxx)a{sv})" />
+    </method>
+    <method name="GetDataWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(ttt)(xxx)a{sv})" />
+    </method>
+    <method name="Save">
+      <arg direction="in" name="fileName" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.SurfaceData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+
+    <!--
+        Attributes:
+        
+        The attributes of the surface.
+
+        Each attribute contains:
+        - The internal name ('s')
+        - The attribute kind ('s', either 'de.uni_stuttgart.Voxie.SurfaceAttributeKind.Triangle' or 'de.uni_stuttgart.Voxie.SurfaceAttributeKind.Vertex')
+        - The component count ('t')
+        - The type of the attribute values ('(sus)')
+        - The human-readable name displayed to the user ('s')
+        - Metadata for the attribute ('a{sv}'). This is JSON data encoded as DBus variants.
+        - Other options specified when creating the attribute (currently none defined) ('a{sv}')
+    -->
+    <property access="read" name="Attributes" type="a(sst(sus)sa{sv}a{sv})" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.SurfaceDataTriangleIndexed">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.SurfaceData" />
+
+    <property access="read" name="TriangleCount" type="t" />
+    <property access="read" name="VertexCount" type="t" />
+    
+    <property access="read" name="TrianglesWritable" type="b" />
+    <method name="GetTrianglesReadonly">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(tt)(xx)a{sv})" />
+    </method>
+    <method name="GetVerticesReadonly">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(tt)(xx)a{sv})" />
+    </method>
+    <method name="GetTrianglesWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(tt)(xx)a{sv})" />
+    </method>
+    <method name="GetVerticesWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(tt)(xx)a{sv})" />
+    </method>
+
+    <method name="GetAttributeReadonly">
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(tt)(xx)a{sv})" />
+    </method>
+    <method name="GetAttributeWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(tt)(xx)a{sv})" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.VolumeStructure">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.DynamicObject" />
+  </interface>
+  <interface name="de.uni_stuttgart.Voxie.VolumeStructureVoxel">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.VolumeStructure" />
+
+    <property access="read" name="ArrayShape" type="(ttt)" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.VolumeData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+
+    <property access="read" name="VolumeStructure" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeStructure" />
+    </property>
+    
+    <!-- Currently not implemented in Voxie -->
+    <method name="Save">
+      <arg direction="in" name="fileName" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <property access="read" name="DataType" type="(sus)" />
+    <property access="read" name="VolumeOrigin" type="(ddd)" />
+    <property access="read" name="VolumeSize" type="(ddd)" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.VolumeDataVoxel">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.VolumeData" />
+    <property access="read" name="GridSpacing" type="(ddd)" />
+    <property access="read" name="ArrayShape" type="(ttt)" />
+
+    <method name="GetDataReadonly">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(ttt)(xxx)a{sv})" />
+    </method>
+    <method name="GetDataWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(ttt)(xxx)a{sv})" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.ContainerData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+
+    <method name="GetElement">
+      <arg direction="in" name="key" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="data" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+    </method>
+
+    <method name="GetName">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="name" type="s">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+    </method>
+
+    <method name="GetValues">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="data" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+    </method>
+
+    <method name="GetKeys">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="data" type="as">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+    </method>
+    
+    <method name="InsertElement">
+      <arg direction="in" name="key" type="s" />
+      <arg direction="in" name="value" type="o">
+              <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.TableData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+
+    <property access="read" name="Columns" type="a(sosa{sv}a{sv})" />
+
+    <property access="read" name="RowCount" type="t" />
+    
+    <method name="GetRows">
+      <arg direction="in" name="firstRowID" type="t" />
+      <arg direction="in" name="lastRowID" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="data" type="a(tav)" />
+    </method>
+    
+    <method name="AddRow">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="data" type="av" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="rowID" type="t" />
+    </method>
+    
+    <method name="RemoveRow">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="rowID" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="result" type="b" />
+    </method>
+  </interface>
+    
+  <interface name="de.uni_stuttgart.Voxie.GeometricPrimitiveData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+
+    <method name="AddPrimitive">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="primitiveType" type="o" />
+      <arg direction="in" name="displayName" type="s" />
+      <arg direction="in" name="primitiveValues" type="a{sv}" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="resultId" type="t" />
+    </method>
+
+    <!--
+        GetPrimitives:
+        
+        Return all primitives with an id >= firstID and <= lastID.
+    -->
+    <method name="GetPrimitives">
+      <arg direction="in" name="firstID" type="t" />
+      <arg direction="in" name="lastID" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <!--
+          result:
+          
+          A list of primitives. Each primitive contains:
+          - The primitive ID
+          - The primitive type (as a object path to a de.uni_stuttgart.Voxie.GeometricPrimitiveType)
+          - The display name
+          - The primitive values
+          - Additional information (currently none)
+      -->
+      <arg direction="out" name="result" type="a(tosa{sv}a{sv})" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.GeometricPrimitiveType">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Component" />
+
+    <!--
+        "Name" already is in Component, add anyway (returns the same information)
+    -->
+    <!--
+        Name:
+
+        Internal name used in DBus interface
+    -->
+    <property access="read" name="Name" type="s" />
+
+    <!--
+        DisplayName:
+
+        Name shown in GUI
+    -->
+    <property access="read" name="DisplayName" type="s" />
+
+    <!--
+        ValueDBusSignatures:
+
+        The DBus signatures of the entries in a value.
+    -->
+    <property access="read" name="ValueDBusSignatures" type="a{sg}" />
+  </interface>
+
+
+  <!-- ****** Node Interfaces ****** -->
+
+  <interface name="de.uni_stuttgart.Voxie.NodeProperty">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Property" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.NodePrototype">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Component" />
+    <property access="read" name="NodeKind" type="s" />
+    <!--
+        "Name" already is in Component, add anyway (returns the same information)
+    -->
+    <property access="read" name="Name" type="s" />
+    <property access="read" name="DisplayName" type="s" />
+    <property access="read" name="Description" type="s" />
+    
+    <!--
+        CreateNode:
+        
+        Create a new node with this prototype and return it. properties contains a map of properties to set on new node, missing properties will be set to the default value.
+        
+        Valid options:
+        - 'ManualDisplayName' ('(bs)'): The initial value for the manually set display name.
+        - 'Data' ('o') (only for an NodeKind of de.uni_stuttgart.Voxie.NodeKind.Data): A reference to the initial data for the node.
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names for properties. Defaults to true.
+    -->
+    <method name="CreateNode">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Node" />
+      </arg>
+      <arg direction="in" name="properties" type="a{sv}" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <method name="ListProperties">
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.NodeProperty" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <!--
+        GetPropertyByName:
+        
+        Get a property object.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <method name="GetPropertyByName">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.NodeProperty" />
+      </arg>
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        SupportedDataDBusInterfaces:
+
+        For data node prototypes: A list of interfaces deriving from de.uni_stuttgart.Voxie.Data which are supported for the Data member of de.uni_stuttgart.Voxie.Node, i.e. the Data member will always implement at least one of these interfaces.
+    -->
+    <property access="read" name="SupportedDataDBusInterfaces" type="as" />
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.Node">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.DynamicObject" />
+    <property access="read" name="Prototype" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.NodePrototype" />
+    </property>
+
+    <!--
+        DisplayName:
+        
+        The current name of the node in the UI, regardless of whether it was
+        set manually or automatically.
+    -->
+    <property access="read" name="DisplayName" type="s" />
+    <!--
+        ManualDisplayName:
+        
+        A boolean indicating whether the display name was set manually and,
+        if the boolean is true, the string the name was set to. If the boolean
+        is false, the string has to be the empty string.
+    -->
+    <property access="readwrite" name="ManualDisplayName" type="(bs)" />
+    
+    <property access="readwrite" name="ParentNodeGroup" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Node" />
+    </property>
+
+    <property access="readwrite" name="ExportedProperties" type="as" />
+
+    <!--
+        GraphPosition:
+        
+        The position of the node which is displayed in the graph.  
+    -->
+    <property access="readwrite" name="GraphPosition" type="(dd)" />
+
+    <!-- TODO: should this be writable to allow scripts to overwrite the automatic name? -->
+    <!--
+        AutomaticDisplayName:
+        
+        The automatically set display name which is used then the boolen in
+        ManualDisplayName is false.
+    -->
+    <property access="read" name="AutomaticDisplayName" type="s" />
+    
+    <signal name="PropertyChanged">
+      <arg direction="out" name="propertyName" type="s" />
+      <arg direction="out" name="value" type="v" />
+      <arg direction="out" name="options" type="a{sv}" />
+    </signal>
+
+    <!--
+        GetProperty:
+        
+        Get a property value.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <method name="GetProperty">
+      <arg direction="out" type="v" />
+      <!--
+          Note: This is of type 's' instead of type 'o' (pointing to the NodeProperty object) because when it is called the property name is generally known but the path of the property generally won't be known.
+      -->
+      <arg direction="in" name="key" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <!--
+        SetProperty:
+        
+        Set a property value.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <method name="SetProperty">
+      <arg direction="in" name="key" type="s" />
+      <arg direction="in" name="value" type="v" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <!-- TODO: Add GetProperties? -->
+    <!--
+        SetProperties:
+        
+        Set multiple properties at the same time.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <method name="SetProperties">
+      <arg direction="in" name="values" type="a{sv}" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <method name="Destroy">
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.DataNode">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Node" />
+
+    <!-- TODO: FileName vs. Filename should be consistent -->
+    <!--
+        FileName:
+        
+        The file name the data node was loaded from. An empty string if the
+        data node was not loaded from a file or was modified afterwards.
+    -->
+    <property access="read" name="FileName" type="s" />
+    <!--
+        Importer:
+
+        The importer used for loading the data. Is '/' if the data node was
+        not loaded from a file or was modified afterwards.
+    -->
+    <property access="read" name="Importer" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Importer" />
+    </property>
+    <!--
+        ImportProperties:
+
+        The properties which were used for importing the file. Properties which
+        were set to the default value might be missing.
+    -->
+    <property access="read" name="ImportProperties" type="a{sv}" />
+
+    <!--
+        Data:
+        
+        A reference to the actual data.
+    -->
+    <property access="read" name="Data" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+    </property>
+
+    <!-- TODO: Can the default exporter change when Data changes? -->
+    <!--
+        DefaultExporter:
+
+        The default exporter for this data node or '/' if there is no default
+        exporter.
+    -->
+    <property access="read" name="DefaultExporter" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Exporter" />
+    </property>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.VisualizerNode">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Node" />
+
+    <method name="RenderScreenshot">
+      <arg direction="in" name="image" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ImageDataPixel" />
+      </arg>
+      <arg direction="in" name="outputRegionStart" type="(tt)" />
+      <arg direction="in" name="size" type="(tt)" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        VisualizerPosition:
+
+        The position of the Window in the Visualizer.  
+    -->
+    <property access="readwrite" name="VisualizerPosition" type="(dd)" />
+
+    <!--
+        VisualizerSize:
+
+        The Size of the Window in the Visualizer.
+    -->
+    <property access="readwrite" name="VisualizerSize" type="(dd)" />
+
+    <property access="readwrite" name="IsAttached" type="b" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.FilterNode">
+    <property access="read" name="PreviewActive" type="b" />
+    <property access="read" name="PreviewPoint" type="(dddd)" />
+  </interface>
+
+  <!-- ****** Node Compatibility Interfaces ****** -->
+
+  <interface name="de.uni_stuttgart.Voxie.ObjectProperty">
+    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Property" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.ObjectPrototype">
+    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Component" />
+    <property access="read" name="ObjectKind" type="s" />
+    <!--
+        "Name" already is in Component, add anyway (returns the same information)
+    -->
+    <property access="read" name="Name" type="s" />
+    <property access="read" name="DisplayName" type="s" />
+    <property access="read" name="Description" type="s" />
+    
+    <!--
+        CreateObject:
+        
+        Create a new object with this prototype and return it. properties contains a map of properties to set on new object, missing properties will be set to the default value.
+        
+        Valid options:
+        - 'ManualDisplayName' ('(bs)'): The initial value for the manually set display name.
+        - 'Data' ('o') (only for an ObjectKind of de.uni_stuttgart.Voxie.ObjectKind.Data): A reference to the initial data for the object.
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names for properties. Defaults to true.
+    -->
+    <method name="CreateObject">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Object" />
+      </arg>
+      <arg direction="in" name="properties" type="a{sv}" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <method name="ListObjectProperties">
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ObjectProperty" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <!--
+        GetObjectPropertyByName:
+        
+        Get a property object.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <method name="GetObjectPropertyByName">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ObjectProperty" />
+      </arg>
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.Object">
+    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.DynamicObject" />
+    <property access="read" name="Prototype" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ObjectPrototype" />
+    </property>
+
+    <!--
+        DisplayName:
+        
+        The current name of the object in the UI, regardless of whether it was
+        set manually or automatically.
+    -->
+    <property access="read" name="DisplayName" type="s" />
+    <!--
+        ManualDisplayName:
+        
+        A boolean indicating whether the display name was set manually and,
+        if the boolean is true, the string the name was set to. If the boolean
+        is false, the string has to be the empty string.
+    -->
+    <property access="readwrite" name="ManualDisplayName" type="(bs)" />
+
+    <property access="readwrite" name="ParentNodeGroup" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Node" />
+    </property>
+
+    <property access="readwrite" name="ExportedProperties" type="as" />
+
+    <!--
+        GraphPosition:
+        
+        The position of the object which is displayed in the graph.  
+    -->
+    <property access="readwrite" name="GraphPosition" type="(dd)" />
+
+    <!-- TODO: should this be writable to allow scripts to overwrite the automatic name? -->
+    <!--
+        AutomaticDisplayName:
+        
+        The automatically set display name which is used then the boolen in
+        ManualDisplayName is false.
+    -->
+    <property access="read" name="AutomaticDisplayName" type="s" />
+    
+    <signal name="PropertyChanged">
+      <arg direction="out" name="propertyName" type="s" />
+      <arg direction="out" name="value" type="v" />
+      <arg direction="out" name="options" type="a{sv}" />
+    </signal>
+
+    <!--
+        GetProperty:
+        
+        Get a property value.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <method name="GetProperty">
+      <arg direction="out" type="v" />
+      <!--
+          Note: This is of type 's' instead of type 'o' (pointing to the ObjectProperty object) because when it is called the property name is generally known but the path of the property generally won't be known.
+      -->
+      <arg direction="in" name="key" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <!--
+        SetProperty:
+        
+        Set a property value.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <method name="SetProperty">
+      <arg direction="in" name="key" type="s" />
+      <arg direction="in" name="value" type="v" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <!-- TODO: Add GetProperties? -->
+    <!--
+        SetProperties:
+        
+        Set multiple properties at the same time.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <method name="SetProperties">
+      <arg direction="in" name="values" type="a{sv}" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <method name="Destroy">
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.DataObject">
+    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Object" />
+
+    <!-- TODO: FileName vs. Filename should be consistent -->
+    <!--
+        FileName:
+        
+        The file name the data object was loaded from. An empty string if the
+        data object was not loaded from a file or was modified afterwards.
+    -->
+    <property access="read" name="FileName" type="s" />
+    <!--
+        Importer:
+
+        The importer used for loading the data. Is '/' if the data object was
+        not loaded from a file or was modified afterwards.
+    -->
+    <property access="read" name="Importer" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Importer" />
+    </property>
+    <!--
+        ImportProperties:
+
+        The properties which were used for importing the file. Properties which
+        were set to the default value might be missing.
+    -->
+    <property access="read" name="ImportProperties" type="a{sv}" />
+
+    <!--
+        Data:
+        
+        A reference to the actual data.
+    -->
+    <property access="read" name="Data" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+    </property>
+
+    <!-- TODO: Can the default exporter change when Data changes? -->
+    <!--
+        DefaultExporter:
+
+        The default exporter for this data object or '/' if there is no default
+        exporter.
+    -->
+    <property access="read" name="DefaultExporter" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Exporter" />
+    </property>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.VisualizerObject">
+    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Object" />
+
+    <method name="RenderScreenshot">
+      <arg direction="in" name="image" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ImageDataPixel" />
+      </arg>
+      <arg direction="in" name="outputRegionStart" type="(tt)" />
+      <arg direction="in" name="size" type="(tt)" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        VisualizerPosition:
+
+        The position of the Window in the Visualizer.  
+    -->
+    <property access="readwrite" name="VisualizerPosition" type="(dd)" />
+
+    <!--
+        VisualizerSize:
+
+        The Size of the Window in the Visualizer.
+    -->
+    <property access="readwrite" name="VisualizerSize" type="(dd)" />
+
+    <property access="readwrite" name="IsAttached" type="b" />
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.FilterObject">
+    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    <property access="read" name="PreviewActive" type="b" />
+    <property access="read" name="PreviewPoint" type="(dddd)" />
+  </interface>
+
+
+  <!-- ****** Singleton Interfaces ****** -->
+
+  <interface name="de.uni_stuttgart.Voxie.Instance">
+    <!--
+        VersionInformation:
+        
+        Information about the version of voxie.
+    -->
+    <property access="read" name="VersionInformation" type="a{sv}" />
+
+    <property access="read" name="Gui" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Gui" />
+    </property>
+
+    <property access="read" name="Utilities" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Utilities" />
+    </property>
+
+    <!--
+        Components:
+
+        A list of all available components.
+    -->
+    <property access="read" name="Components" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ComponentContainer" />
+    </property>
+
+    <!-- TODO: Remove ListPrototypes, GetComponent and use Instance.Components object instead? -->
+    <!--
+        ListPrototypes:
+        
+        Return a list of all available prototypes.
+    -->
+    <method name="ListPrototypes">
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ObjectPrototype" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <!--
+        GetComponent:
+        
+        Return the component with a certain type and name.
+        
+        Return an error when zero or more than one such prototypes exist.
+
+        Valid options:
+        - 'AllowCompatibilityNames' ('b'): Whether to also look up compatibility
+          names. Defaults to true.
+    -->
+    <!-- TOOD: Remove, is replaced by Compoment.GetComponent -->
+    <method name="GetComponent">
+      <!-- TODO: Support reference counting for components. Then, add a another method ('GetComponentRef'?) which will increase the reference count? -->
+
+      <arg direction="in" name="componentType" type="s" />
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Component" />
+      </arg>
+    </method>
+    <!-- Provide a ListComponentContainers() + GetComponentContainer()? -->
+    <method name="ListPlugins">
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Plugin" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <method name="GetPluginByName">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Plugin" />
+      </arg>
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <method name="ListNodes">
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Node" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <method name="ListObjects">
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Object" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <method name="CreateImage">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ImageDataPixel" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="size" type="(tt)" />
+      <arg direction="in" name="componentCount" type="t" />
+      <arg direction="in" name="dataType" type="(sus)" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        CreateEventListDataBuffer:
+        
+        Create a new EventListDataBuffer object for transferring data from/to an event list.
+    -->
+    <method name="CreateEventListDataBuffer">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.EventListDataBuffer" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="capacity" type="t" />
+      <arg direction="in" name="attributes" type="a(s(sus)sa{sv}a{sv})" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        CreateEventListDataAccessor:
+        
+        Create a new CreateEventListDataAccessor object for lazy-loading event list data.
+    -->
+    <method name="CreateEventListDataAccessor">
+      <arg direction="out" name="result" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.EventListDataAccessor" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <!--
+          Bus name (empty string for peer-to-peer connection) and object path of the de.uni_stuttgart.Voxie.EventListDataAccessor object
+      -->
+      <arg direction="in" name="backend" type="(so)">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.EventListDataAccessorOperations" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        CreateSurfaceDataTriangleIndexed:
+        
+        Create a new SurfaceDataTriangleIndexed object.
+        
+        Valid options:
+        - 'Attributes' ('a(sst(sus)sa{sv}a{sv})'): The list of attributes of the surface. If not provided, no attributes are created.
+
+        Each attribute contains:
+        - The internal name ('s')
+        - The attribute kind ('s', either 'de.uni_stuttgart.Voxie.SurfaceAttributeKind.Triangle' or 'de.uni_stuttgart.Voxie.SurfaceAttributeKind.Vertex')
+        - The component count ('t')
+        - The type of the attribute values ('(sus)')
+        - The human-readable name displayed to the user ('s')
+        - Metadata for the attribute ('a{sv}'). This is JSON data encoded as DBus variants.
+        - Other options for creating the attribute (currently none defined) ('a{sv}')
+    -->
+    <method name="CreateSurfaceDataTriangleIndexed">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="triangleCount" type="t" />
+      <arg direction="in" name="vertexCount" type="t" />
+      <arg direction="in" name="triangleSource" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.SurfaceDataTriangleIndexed" />
+      </arg>
+      <arg direction="in" name="triangleWritable" type="b" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.SurfaceDataTriangleIndexed" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
+    
+    <method name="CreateVolumeDataVoxel">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeDataVoxel" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="arrayShape" type="(ttt)" />
+      <arg direction="in" name="dataType" type="(sus)" />
+      <arg direction="in" name="volumeOrigin" type="(ddd)" />
+      <arg direction="in" name="gridSpacing" type="(ddd)" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <method name="CreateTomographyRawData2DRegular">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="imageShape" type="(tt)" />
+      <arg direction="in" name="imageCount" type="t" />
+      <arg direction="in" name="dataType" type="(sus)" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.TomographyRawData2DRegular" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
+
+    <!--
+        CreateTableData:
+        
+        Create a new TableData object.
+        
+        The columns parameter contains:
+        - The internal name
+        - The type of the column (as an object path to the type)
+        - The human-readable name displayed to the user
+        - Metadata for the column. This is JSON data encoded as DBus variants.
+        - Other options for creating the column (currently none defined)
+    -->
+    <method name="CreateTableData">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.TableData" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="columns" type="a(sosa{sv}a{sv})" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        CreateContainerData:
+        
+        Create a new ContainerData object.
+       
+    -->
+    <method name="CreateContainerData">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ContainerData" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        CreateGeometricPrimitiveData:
+        
+        Create a new GeometricPrimitiveData object.
+    -->
+    <method name="CreateGeometricPrimitiveData">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.GeometricPrimitiveData" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <method name="CreateTomographyRawData2DAccessor">
+      <arg direction="out" name="result" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.TomographyRawData2DAccessor" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <!--
+          Bus name (empty string for peer-to-peer connection) and object path of the de.uni_stuttgart.Voxie.TomographyRawData2DAccessorOperations object
+      -->
+      <arg direction="in" name="backend" type="(so)">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.TomographyRawData2DAccessorOperations" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        Quit:
+        
+        Quit voxie.
+        
+        Available options:
+        - AskForConfirmation ('b'): Whether to ask for confirmation if there are unsaved changes.
+    -->
+    <method name="Quit">
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!-- TODO: Remove? -->
+    <method name="ExecuteQScriptCode">
+      <arg direction="out" type="v" />
+      <arg direction="in" name="code" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    
+    <!-- TODO: add option for setting node properties? -->
+    <!-- TODO: Different names for this / Import? -->
+    <!-- TODO: Add a StartImport() method which will return an OperationResultImport and have a parameter or option for deciding whether a DataNode should be created (when yes, both the Data and the DataNode will be returned in the OperationResultImport) -->
+    <!-- TODO: Remove? -->
+    <method name="OpenFile">
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataObject" />
+      </arg>
+      <arg direction="in" name="file" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!-- Unlike OpenFile (which returns a DataNode) this will return a Data object -->
+    <method name="Import">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="fileName" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!-- TODO: This probably should take more arguments etc. -->
+    <method name="RunAllFilters">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.OperationResult" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.Gui">
+    <property access="read" name="ActiveVisualizer" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VisualizerNode" />
+    </property>
+    <!--
+        SelectedNodes:
+        
+        The nodes currently selected in the graph view / tree view.
+    -->
+    <property access="read" name="SelectedNodes" type="ao">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Node" />
+    </property>
+    <!--
+        SelectedObjects:
+        
+        The objects currently selected in the graph view / tree view.
+    -->
+    <property access="read" name="SelectedObjects" type="ao">
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Object" />
+    </property>
+
+    <property access="readwrite" name="MdiViewMode" type="s" />
+
+    <method name="RaiseWindow">
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+    <!--
+        GetMainWindowID:
+        
+        The Window ID of the main window, useful e.g. for using it as a
+        transient parent.
+        Returns 0 if not supported.
+    -->
+    <method name="GetMainWindowID">
+      <arg direction="out" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.ImageDataPixel">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+    
+    <property access="read" name="Size" type="(tt)" />
+    <!--
+        ComponentCount:
+        
+        The number of components in the image, normally 1 (grayscale), 3 (RGB)
+        or 4 (RGBA).
+    -->
+    <property access="read" name="ComponentCount" type="t" />
+    <property access="read" name="DataType" type="(sus)" />
+
+    <!--
+        GetDataReadonly:
+        
+        Return an array of size $`width*height*componentCount`$.
+    -->
+    <method name="GetDataReadonly">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(ttt)(xxx)a{sv})" />
+    </method>
+    <method name="GetDataWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(ttt)(xxx)a{sv})" />
+    </method> 
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.Utilities">
+    <method name="ExtractSlice">
+      <arg direction="in" name="volume" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeData" />
+      </arg>
+      <arg direction="in" name="origin" type="(ddd)" />
+      <arg direction="in" name="rotation" type="(dddd)" />
+      <arg direction="in" name="outputSize" type="(tt)" />
+      <arg direction="in" name="pixelSize" type="(dd)" />
+      <arg direction="in" name="outputImage" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ImageDataPixel" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+</node>

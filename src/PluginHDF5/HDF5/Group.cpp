@@ -37,6 +37,19 @@ namespace HDF5 {
   }
 
   Object Group::open (const std::string& name, LinkAccessPropList lapl) const {
+    if (lapl.isValid() && lapl.isA(H5P_DATASET_ACCESS)) {
+      // Newer version of hdf5 (e.g. 1.10.6+repack-4+deb11u1) will not pass the lapl to H5Dopen() (or internally H5D_open()), while older versions (e.g. 1.10.0-patch1) did.
+      // If the target is a dataset, use H5Dopen() instead of H5Oopen().
+      H5O_info_t oinfo;
+      Exception::check("H5Oget_info_by_name",
+                       H5Oget_info_by_name(handle(), name.c_str(), &oinfo,
+                                           lapl.handleOrDefault()));
+      if (oinfo.type == H5O_TYPE_DATASET)
+        return Object(Exception::check(
+            "H5Dopen",
+            H5Dopen(handle(), name.c_str(), lapl.handleOrDefault())));
+    }
+
     return Object (Exception::check ("H5Oopen", H5Oopen (handle (), name.c_str (), lapl.handleOrDefault ())));
   }
   bool Group::exists (const std::string& name, LinkAccessPropList lapl) const {

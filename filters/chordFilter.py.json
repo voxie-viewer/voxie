@@ -1,0 +1,60 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Transforms all Pores into Chords with different lengths",
+            "DisplayName": "Chord Transform",
+            "Name": "de.uni_stuttgart.Voxie.Filter.ChordFilter",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Icon": ":/icons/contrast.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.ChordFilter.Spacing": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ChordFilter.Spacing"
+                    ],
+                    "DisplayName": "Spacing",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 1,
+                    "MinimumValue": 0
+                },
+                "de.uni_stuttgart.Voxie.Filter.ChordFilter.xDimension": {
+                    "DisplayName": "X-Dimension",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "UIPosition": 4,
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Filter.ChordFilter.yDimension": {
+                    "DisplayName": "Y-Dimension",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "UIPosition": 5,
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Filter.ChordFilter.zDimension": {
+                    "DisplayName": "Z-Dimension",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "UIPosition": 6,
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "RequiredTags": [
+                        "de.uni_stuttgart.Voxie.Tags.Volume.Segmented"
+                    ],
+                    "DisplayName": "Input",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "OutputTags": [
+                        "de.uni_stuttgart.Voxie.Tags.Volume.Chord"
+                    ],
+                    "DisplayName": "Output",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

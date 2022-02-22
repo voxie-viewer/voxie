@@ -23,6 +23,7 @@
 #include "ComplexConversion.hpp"
 
 #include <Core/Util.hpp>
+#include <Core/StaticCache.hpp>
 
 #if OS_WIN
 // H5Epublic.h defines H5E_ERR_CLS etc. outside of an 'extern "C"' block which causes problems with MSVC
@@ -328,7 +329,7 @@ namespace HDF5 {
     };
   }
 
-  void registerComplexConversion () {
-    static ComplexConversionRegistration reg;
+  void registerComplexConversion() {
+    Core::staticCache([] { return ComplexConversionRegistration(); });
   }
 }

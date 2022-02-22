@@ -1,0 +1,12 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.TomographyRawData.VxTRaw.Import",
+            "DisplayName": "Voxie Tomography Raw Data JSON",
+            "Description": "Load tomography raw data from JSON file",
+            "Patterns": [
+                "*.vxtraw.json"
+            ]
+        }
+    ]
+}

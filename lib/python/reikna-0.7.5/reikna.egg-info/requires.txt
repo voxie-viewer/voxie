@@ -1,0 +1,15 @@
+mako>=0.8.0
+numpy>=1.6.0
+funcsigs>=0.3
+
+[dev]
+pytest>=5
+pytest-cov
+scipy
+sphinx>=1.2
+
+[pycuda]
+pycuda>=2018.1.1
+
+[pyopencl]
+pyopencl>=2018.1.1

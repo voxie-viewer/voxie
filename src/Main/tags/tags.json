@@ -1,0 +1,44 @@
+{
+    "Tags": [
+        {
+            "Description": "Floating point data with arbitrary values",
+            "DisplayName": "Float",
+            "Name": "de.uni_stuttgart.Voxie.Tags.Volume.Float"
+        },
+        {
+            "Description": "Each voxel represents an X-ray absorption value",
+            "DisplayName": "Absorption",
+            "Name": "de.uni_stuttgart.Voxie.Tags.Volume.Absorption"
+        },
+        {
+            "Description": "Binary volume where each voxel's value can be either 0 or 1.",
+            "DisplayName": "Segmented",
+            "Name": "de.uni_stuttgart.Voxie.Tags.Volume.Segmented"
+        },
+        {
+            "Description": "Each voxel is labeled with a unique integer representing its connected region.",
+            "DisplayName": "Labeled",
+            "Name": "de.uni_stuttgart.Voxie.Tags.Volume.Labeled"
+        },
+        {
+            "Description": "Each non-zero voxel encodes its distance to the closest zero-valued voxel.",
+            "DisplayName": "Distance",
+            "Name": "de.uni_stuttgart.Voxie.Tags.Volume.Distance"
+        },
+        {
+            "Description": "Segmented volume with a three-dimensional grid of chords running through it along all axes.",
+            "DisplayName": "Chords",
+            "Name": "de.uni_stuttgart.Voxie.Tags.Volume.Chord"
+        },
+        {
+            "Description": "Holds an entry for each connected region in the volume.",
+            "DisplayName": "CCA result",
+            "Name": "de.uni_stuttgart.Voxie.Tags.Table.CCA"
+        },
+        {
+            "Description": "Holds an entry for each chord in the volume.",
+            "DisplayName": "Chord analysis result",
+            "Name": "de.uni_stuttgart.Voxie.Tags.Table.ChordAnalysis"
+        }
+    ]
+}

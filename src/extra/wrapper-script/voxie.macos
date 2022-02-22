@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+# https://stackoverflow.com/questions/3572030/bash-script-absolute-path-with-osx/30795461#30795461
+SCRIPT="$(perl -e 'use Cwd "abs_path"; print abs_path(@ARGV[0])' -- "$0")"
+VOXIE_DIR="${SCRIPT%/*}"
+VOXIE_DIR="${VOXIE_DIR%/*}"
+
+# Add $VOXIE_DIR/lib directory to LD_LIBRARY_PATH / DYLD_LIBRARY_PATH
+# TODO: Use rpath
+VOXIE_LIB_PATH="$VOXIE_DIR/Frameworks"
+export DYLD_LIBRARY_PATH="$VOXIE_LIB_PATH${DYLD_LIBRARY_PATH+:$DYLD_LIBRARY_PATH}"
+
+# Workaround for https://bugreports.qt.io/browse/QTBUG-87014
+export QT_MAC_WANTS_LAYER=1
+
+# Run voxie
+exec "$VOXIE_DIR/MacOS/voxie.bin" "$@"

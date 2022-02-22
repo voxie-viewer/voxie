@@ -1,6 +1,14 @@
 <RCC>
     <qresource prefix="/">
+        <file>icons-voxie/control-to-next.png</file>
+        <file>icons-voxie/control-from-previous.png</file>
+        <file>icons-voxie/control-red.png</file>
+        <file>icons-voxie/control-skip-red.png</file>
         <file>icons-voxie/voxel-data-16.png</file>
         <file>icons-voxie/voxel-data-32.png</file>
+        <file>icons-voxie/play.png</file>
+        <file>icons-voxie/pause.png</file>
+        <file>icons-voxie/skip-next.png</file>
+        <file>icons-voxie/skip-previous.png</file>
     </qresource>
 </RCC>

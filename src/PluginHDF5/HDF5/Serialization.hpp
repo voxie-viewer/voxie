@@ -172,7 +172,7 @@ namespace HDF5 {
     ~DeserializationContext ();
 
     template <typename T>
-    void registerValue (ObjectReference name, boost::shared_ptr<T> ptr) {
+    void registerValue (ObjectReference name, std::shared_ptr<T> ptr) {
       ASSERT (!objects.count (name));
       ASSERT (inProgress.count (name));
       objects[name] = boost::any (ptr);
@@ -180,15 +180,15 @@ namespace HDF5 {
     }
 
     template <typename T>
-    boost::shared_ptr<T> resolve (ObjectReference name) {
+    std::shared_ptr<T> resolve (ObjectReference name) {
       if (objects.count (name))
-        return boost::any_cast<boost::shared_ptr<T> > (objects[name]);
+        return boost::any_cast<std::shared_ptr<T> > (objects[name]);
       ASSERT (!inProgress.count (name));
       inProgress.insert (name);
       HDF5::DataSet dataSet = (DataSet) name.dereference (file);
       Serializer<T>::h5Load (*this, name, dataSet);
       ASSERT (!inProgress.count (name));
-      return boost::any_cast<boost::shared_ptr<T> > (objects[name]);
+      return boost::any_cast<std::shared_ptr<T> > (objects[name]);
     }
   };
 
@@ -199,7 +199,7 @@ namespace HDF5 {
     file.rootGroup ().link (name, context.get (object).dereference (file));
   }
 
-  template <typename T> inline boost::shared_ptr<T> deserialize (const FilenameType& outputFile, const std::string& name) {
+  template <typename T> inline std::shared_ptr<T> deserialize (const FilenameType& outputFile, const std::string& name) {
     ASSERT (name != "");
     HDF5::File file = HDF5::File::open (outputFile, H5F_ACC_RDONLY);
     DeserializationContext context (file);

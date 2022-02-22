@@ -1,0 +1,93 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Matches two point clouds of the same object",
+            "DisplayName": "Iterative Closest Point",
+            "Name": "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.ReferencePoints": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Reference Points",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.ReferenceKeyPoints": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Reference KeyPoints",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.InputPoints": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input Points",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.InputKeyPoints": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input KeyPoints",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Registered Surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.Samples": {
+                    "DisplayName": "Number of sample points",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 4000,
+                    "MinimumValue": 0
+                },
+                "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.SupportRadius": {
+                    "DisplayName": "Feature Support Radius",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0,
+                    "MinimumValue": 0,
+                    "Unit": [
+                        [
+                            "m",
+                            1
+                        ]
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.Method": {
+                    "DisplayName": "Initial Guess Method",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "UIPosition": 1,
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.Method.None": {
+                            "DisplayName": "None",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.Method.PFH": {
+                            "DisplayName": "Feature PFH",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.Method.FPFH": {
+                            "DisplayName": "Feature FPFH",
+                            "UIPosition": 3
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.Method.Center": {
+                            "DisplayName": "Center of Mass",
+                            "UIPosition": 4
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.Method.Property": {
+                            "DisplayName": "Input Property",
+                            "UIPosition": 5
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.IterativeClosestPoint.Method.None"
+                }
+            }
+        }
+    ]
+}

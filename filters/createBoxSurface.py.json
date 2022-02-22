@@ -1,0 +1,30 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Create a box surface. (example filter)",
+            "DisplayName": "Create Box Surface (example)",
+            "Name": "de.uni_stuttgart.Voxie.Example.Filter.CreateBoxSurface",
+            "CompatibilityNames": [
+                "org.example.CreateBoxSurface"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Example.Filter.CreateBoxSurface.Size": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.CreateBoxSurface.Size"
+                    ],
+                    "DisplayName": "Size (in m)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0.1
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

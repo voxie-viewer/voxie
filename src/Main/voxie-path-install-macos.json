@@ -1,0 +1,4 @@
+{
+    "PythonExecutable": "../Frameworks/Python.framework/Versions/Current/bin/python3",
+    "VoxieDir": "../Resources"
+}

@@ -58,6 +58,7 @@ namespace Math {
 #pragma GCC diagnostic push
 #endif
 #pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wfloat-conversion"
 #endif
 #ifdef VECTOR2_USE_ARRAY
     //NVCC_HOST_DEVICE explicit Vector2 (T v) { data_[0] = v; data_[1] = v }

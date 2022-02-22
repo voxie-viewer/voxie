@@ -1,0 +1,33 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Create examples shift volumes for the shift filter.",
+            "DisplayName": "Create example shift volumes",
+            "Name": "de.uni_stuttgart.Voxie.Example.Filter.CreateExampleShiftVolumes",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Example.Filter.CreateExampleShiftVolumes.OutputX": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output volume X",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Example.Filter.CreateExampleShiftVolumes.OutputY": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output volume Y",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Example.Filter.CreateExampleShiftVolumes.OutputZ": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output volume Z",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

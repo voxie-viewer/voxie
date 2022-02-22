@@ -2,23 +2,13 @@
 
 set -e
 
-if [ -z "$VOXIE_DIR" ]; then
-    SCRIPT="$(readlink -f -- "$0")"
-    VOXIE_DIR="${SCRIPT%/*}"
-fi
-export VOXIE_DIR
+SCRIPT="$(readlink -v -f -- "$0")"
+VOXIE_DIR="${SCRIPT%/*}"
 
-# Add $VOXIE_DIR/lib directory to LD_LIBRARY_PATH
-export LD_LIBRARY_PATH="$VOXIE_DIR/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}"
-
-# Add $VOXIE_DIR/plugins directories to VOXIE_PLUGIN_PATH
-export VOXIE_PLUGIN_PATH="${VOXIE_PLUGIN_PATH+$VOXIE_PLUGIN_PATH:}$VOXIE_DIR/plugins"
-
-# Add $VOXIE_DIR/scripts to $VOXIE_SCRIPT_PATH
-export VOXIE_SCRIPT_PATH="${VOXIE_SCRIPT_PATH+$VOXIE_SCRIPT_PATH:}$VOXIE_DIR/scripts"
-
-# Set VOXIE_MANUAL_FILE
-export VOXIE_MANUAL_FILE="$VOXIE_DIR/doc/manual.pdf"
+# Add $VOXIE_DIR/lib directory to LD_LIBRARY_PATH / DYLD_LIBRARY_PATH
+# TODO: Use rpath
+VOXIE_LIB_PATH="$VOXIE_DIR/lib"
+export LD_LIBRARY_PATH="$VOXIE_LIB_PATH${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}"
 
 # Run voxie
 exec "$VOXIE_DIR/bin/voxie" "$@"

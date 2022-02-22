@@ -1,0 +1,6 @@
+{
+    "Name": "python",
+    "Version": "3.9.0",
+    "SourceFilename": "Python-3.9.0.tar.xz",
+    "Source": "https://www.python.org/ftp/python/3.9.0/python-3.9.0-macosx10.9.pkg"
+}

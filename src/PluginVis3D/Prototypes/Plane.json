@@ -1,0 +1,86 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Plane shown in the 3D visualizer",
+            "DisplayName": "Plane",
+            "Name": "de.uni_stuttgart.Voxie.Object3D.Plane",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Object3D",
+            "Icon": ":/icons/universal.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Object3D.Plane.Plane": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Property.Plane"
+                    ],
+                    "DisplayName": "Plane",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Plane.ClippingDirection": {
+                    "DisplayName": "Clipping direction",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Object3D.Plane.ClippingDirection.None": {
+                            "DisplayName": "None",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Object3D.Plane.ClippingDirection.Positive": {
+                            "DisplayName": "Positive",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Object3D.Plane.ClippingDirection.Negative": {
+                            "DisplayName": "Negative",
+                            "UIPosition": 3
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Object3D.Plane.ClippingDirection.None"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Plane.Color": {
+                    "DisplayName": "Color",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "ShortDescription": "The color the plane should be displayed with"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Plane.ShowVolumeSlice": {
+                    "DisplayName": "Show volume slice",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Plane.SliceVolume": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Slice volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Plane.SliceValueColorMapping": {
+                    "DisplayName": "Slice value to color mapping",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ValueColorMapping"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Plane.SliceTextureResolution": {
+                    "DisplayName": "Slice texture resolution",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Object3D.Plane.SliceTextureResolution.R128": {
+                            "DisplayName": "128",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Object3D.Plane.SliceTextureResolution.R256": {
+                            "DisplayName": "256",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Object3D.Plane.SliceTextureResolution.R512": {
+                            "DisplayName": "512",
+                            "UIPosition": 3
+                        },
+                        "de.uni_stuttgart.Voxie.Object3D.Plane.SliceTextureResolution.R1024": {
+                            "DisplayName": "1024",
+                            "UIPosition": 4
+                        },
+                        "de.uni_stuttgart.Voxie.Object3D.Plane.SliceTextureResolution.R2048": {
+                            "DisplayName": "2048",
+                            "UIPosition": 5
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Object3D.Plane.SliceTextureResolution.R512"
+                }
+            }
+        }
+    ]
+}

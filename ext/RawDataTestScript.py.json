@@ -1,0 +1,13 @@
+{
+    "Tool": [
+        {
+            "ToolType": "TargetNode",
+            "Name": "de.uni_stuttgart.Voxie.Example.RawDataTestScript",
+            "DisplayName": "Example script",
+            "Description": "Some example script",
+            "TargetNodePrototypes": [
+                "de.uni_stuttgart.Voxie.Data.TomographyRawData"
+            ]
+        }
+    ]
+}

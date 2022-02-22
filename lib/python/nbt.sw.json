@@ -1,0 +1,15 @@
+{
+    "Name": "NBT",
+    "Description": "NBT library for Python",
+    "GitRepository": [
+        "https://github.com/steffen-kiess/NBT",
+        "https://github.com/twoolie/NBT"
+    ],
+    "GitCommit": "a4fb394fbc74784bcb2c34ebe1b7f242e725ec82",
+    "FileFilter": [
+        "LICENSE.txt",
+        "README.md",
+        "nbt"
+    ],
+    "LicenseFilename": "LICENSE.txt"
+}

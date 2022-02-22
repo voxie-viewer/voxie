@@ -1,0 +1,46 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Calculate exact material of each voxel in a volume and label accordingly.\nEnter Initial Threshold Values to get (Theshold Count + 1) different materials (best results when using accumulation points).\nUpper Gradient Limit specifies the maximum tolerance for accepting a gray value associated with a material.\nRefinement Iterations and Threshold Difference Significance specify how accurately gray values are assigned to materials.",
+            "DisplayName": "Multi-Material Volume Segementation",
+            "Name": "de.uni_stuttgart.Voxie.Filter.MultiMaterialVolumeSegmentation",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.MultiMaterialVolumeSegmentation.Thresholds": {
+                    "DisplayName": "Initial Material Threshold Values",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String",
+                    "DefaultValue": "0.33; 1.23; 4.20"
+                },
+                "de.uni_stuttgart.Voxie.Filter.MultiMaterialVolumeSegmentation.MaxIterations": {
+                    "DisplayName": "Max. Refinement Iterations",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 10
+                },
+                "de.uni_stuttgart.Voxie.Filter.MultiMaterialVolumeSegmentation.ThresholdDifferenceSignificance": {
+                    "DisplayName": "Threshold difference Significance",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0.05
+                },
+                "de.uni_stuttgart.Voxie.Filter.MultiMaterialVolumeSegmentation.Epsilon": {
+                    "DisplayName": "Upper Gradient Limit",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 10000
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input Volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output Volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

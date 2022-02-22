@@ -25,6 +25,7 @@
 
 // Provides HDF5::getH5Type<T>() which returns a HDF5 representation for T
 
+#include <Core/StaticCache.hpp>
 #include <Core/Util.hpp>
 
 #include <HDF5/BaseTypes.hpp>
@@ -42,9 +43,9 @@ namespace HDF5 {
     }
   };
 
-  template <typename T> inline HDF5::DataType getH5Type () {
-    static HDF5::DataType type = TypeImpl<T>::createClassH5Type ();
-    return type;
+  template <typename T>
+  inline HDF5::DataType getH5Type() {
+    return Core::staticCache([] { return TypeImpl<T>::createClassH5Type(); });
   }
   template <typename T, typename U> inline HDF5::DataType getTargetH5Type (UNUSED T U::* ptr) {
     return getH5Type<T> ();
@@ -60,7 +61,7 @@ public:                                                         \
  static HDF5::DataType createClassH5Type () {                     \
  ::HDF5::CompoundType ct = ::HDF5::CompoundType::create (sizeof (HDF5_CurrentType));
 #define HDF5_TYPE_END                           \
-  return ct;                                    \
+  return std::move(ct);                         \
 }
 
 #define HDF5_SPECIALIZE_PREDTYPE(ty, pt)        \
@@ -89,11 +90,12 @@ public:                                                         \
       HDF5::StringType ty = (HDF5::StringType) HDF5::C_S1 ().copy ();
       //ty.setSize (H5T_VARIABLE);
       Exception::check ("H5Tset_size", H5Tset_size (ty.handle (), H5T_VARIABLE));
-      return ty;
+      return std::move(ty);
     }
   };
   template <typename T> class TypeImpl<std::complex<T> > {
     struct MyComplex {
+      // TODO: Rename to 'r', 'i' to match h5py? (How would matlab handle that / how to ensure compatibility?)
       T real, imag;
     };
 

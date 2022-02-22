@@ -1,0 +1,5 @@
+{
+    "OldManualFile": "doc/old-manual.pdf",
+    "PythonExecutable": "python/python.exe",
+    "VoxieDir": "."
+}

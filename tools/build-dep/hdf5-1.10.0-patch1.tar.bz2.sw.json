@@ -1,0 +1,6 @@
+{
+    "Name": "HDF5",
+    "Version": "1.10.0-patch1",
+    "LicenseFilename": "hdf5-1.10.0-patch1/COPYING",
+    "Source": "https://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.bz2"
+}

@@ -54,13 +54,13 @@ namespace Math {
     explicit DiagMatrix3 (T v) : diag_ (v, v, v) {}
     DiagMatrix3 (T x, T y, T z) : diag_ (x, y, z) {}
     template <typename U> explicit DiagMatrix3 (const Vector3<U>& diag) : diag_ (diag) {}
-#if defined (__clang__) || GCC_VERSION_IS_ATLEAST(4, 6)
+#if (defined (__clang__) || GCC_VERSION_IS_ATLEAST(4, 6)) && !defined (__CUDACC__)
 #pragma GCC diagnostic push
 #endif
 #pragma GCC diagnostic ignored "-Wconversion"
     template <typename U> DiagMatrix3 (DiagMatrix3<U> v, UNUSED typename boost::enable_if<boost::is_convertible<U, T>, PrivateType>::type dummy = PrivateType ()) : diag_ (v.diag ()) {}
     template <typename U> explicit DiagMatrix3 (DiagMatrix3<U> v, UNUSED typename boost::disable_if<boost::is_convertible<U, T>, PrivateType>::type dummy = PrivateType ()) : diag_ (v.diag ()) {}
-#if defined (__clang__) || GCC_VERSION_IS_ATLEAST(4, 6)
+#if (defined (__clang__) || GCC_VERSION_IS_ATLEAST(4, 6)) && !defined (__CUDACC__)
 #pragma GCC diagnostic pop
 #endif
 

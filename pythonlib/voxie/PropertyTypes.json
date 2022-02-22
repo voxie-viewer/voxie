@@ -1,0 +1,123 @@
+{
+  "de.uni_stuttgart.Voxie.PropertyType.Boolean": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "b",
+    "DisplayName": "Boolean"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.BoundingBox3D": {
+    "DBusSignature": "((ddd)(ddd))",
+    "DisplayName": "Bounding box (3D)"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.Color": {
+    "DBusSignature": "(dddd)",
+    "DisplayName": "Color"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.DataType": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "(sus)",
+    "DisplayName": "Data type"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.Enumeration": {
+    "DBusSignature": "s",
+    "DisplayName": "Enumeration"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.FileName": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "s",
+    "DisplayName": "File Name"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.Float": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "d",
+    "DisplayName": "Floating pointer number"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.GeometricPrimitive": {
+    "DBusSignature": "t",
+    "DisplayName": "Geometric primitive"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.Int": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "x",
+    "DisplayName": "Integer number (64 bit, signed)"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.IntList": {
+    "DBusSignature": "ax",
+    "DisplayName": "Int List"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.LabelList": {
+    "DBusSignature": "at",
+    "DisplayName": "Label List"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.ListPosition3D": {
+    "DBusSignature": "a(ddd)",
+    "DisplayName": "Position3D List"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.ListPosition3DDoubleTuple": {
+    "DBusSignature": "a((ddd)d)",
+    "DisplayName": "List with (3DPosition, double) tuples"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.NodeReference": {
+    "CompatibilityNames": [
+      "de.uni_stuttgart.Voxie.PropertyType.ObjectReference"
+    ],
+    "DBusSignature": "o",
+    "DisplayName": "Node reference"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.NodeReferenceList": {
+    "CompatibilityNames": [
+      "de.uni_stuttgart.Voxie.PropertyType.ObjectReferenceList"
+    ],
+    "DBusSignature": "ao",
+    "DisplayName": "Node reference list"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.Orientation3D": {
+    "DBusSignature": "(dddd)",
+    "DisplayName": "Orientation (3D)"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference": {
+    "CompatibilityNames": [
+      "de.uni_stuttgart.Voxie.PropertyType.OutputObjectReference"
+    ],
+    "DBusSignature": "o",
+    "DisplayName": "Output node reference"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.Point2D": {
+    "DBusSignature": "(dd)",
+    "DisplayName": "Point (2D)"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.Position3D": {
+    "DBusSignature": "(ddd)",
+    "DisplayName": "Position"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.SizeInteger3D": {
+    "DBusSignature": "(ttt)",
+    "DisplayName": "Size (integer)"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.String": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "s",
+    "DisplayName": "String"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.ThresholdLabelMapping": {
+    "DBusSignature": "a(d(dddd)x)",
+    "DisplayName": "ThresholdLabelMapping"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageKind": {
+    "DBusSignature": "a{sv}",
+    "DisplayName": "Tomography raw data image kind",
+    "RawType": "QJsonObject"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageList": {
+    "DBusSignature": "(sa{sv})",
+    "DisplayName": "Tomography raw data image list",
+    "RawType": "std::tuple<QString, QJsonObject>"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.ValueColorMapping": {
+    "DBusSignature": "a(d(dddd)i)",
+    "DisplayName": "Color mapping"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.VolumeIndexList": {
+    "DBusSignature": "a(uuu)",
+    "DisplayName": "Volume index list"
+  }
+}

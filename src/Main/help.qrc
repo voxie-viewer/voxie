@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Help/template.html</file>
+        <file>../../LICENSE</file>
+        <file>../../doc/software.json</file>
+    </qresource>
+    <qresource prefix="/dbusxml">
+        <file>../../de.uni_stuttgart.Voxie.xml</file>
+    </qresource>
+</RCC>

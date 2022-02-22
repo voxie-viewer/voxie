@@ -1,0 +1,15 @@
+{
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.TomographyRawData.Rek.Export",
+            "DisplayName": "FhG/Werth REK file format",
+            "Description": "Save volume data to REK files",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.Volume"
+            ],
+            "Patterns": [
+                "*.rek"
+            ]
+        }
+    ]
+}

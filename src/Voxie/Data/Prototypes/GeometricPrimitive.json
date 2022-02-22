@@ -1,0 +1,41 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A set of geometric primitives (points etc.)",
+            "DisplayName": "Geometric primitive collection object",
+            "Name": "de.uni_stuttgart.Voxie.Data.GeometricPrimitive",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.GeometricPrimitiveObject"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Data",
+            "Icon": ":/icons/processor.png",
+            "SupportedDataDBusInterfaces": [
+                "de.uni_stuttgart.Voxie.GeometricPrimitiveData"
+            ],
+            "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.GeometricPrimitive.Json.Export",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.SelectedPrimitive": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.GeometricPrimitiveObject.SelectedPrimitive"
+                    ],
+                    "DisplayName": "Selected primitive",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.GeometricPrimitive"
+                },
+                "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.MeasurementPrimitive1": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.GeometricPrimitiveObject.MeasurementPrimitive1"
+                    ],
+                    "DisplayName": "Measurement primitive 1",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.GeometricPrimitive"
+                },
+                "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.MeasurementPrimitive2": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.GeometricPrimitiveObject.MeasurementPrimitive2"
+                    ],
+                    "DisplayName": "Measurement primitive 2",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.GeometricPrimitive"
+                }
+            }
+        }
+    ]
+}

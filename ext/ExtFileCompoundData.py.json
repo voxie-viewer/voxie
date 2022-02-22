@@ -1,0 +1,25 @@
+{
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.ContainerData.Json.Export",
+            "DisplayName": "Voxie ContainerData JSON",
+            "Description": "Save ContainerData to JSON files",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.ContainerNode"
+            ],
+            "Patterns": [
+                "*.vxco.json"
+            ]
+        }
+    ],
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.ContainerData.Json.Import",
+            "DisplayName": "Voxie ContainerData JSON",
+            "Description": "Load ContainerData from JSON files",
+            "Patterns": [
+                "*.vxco.json"
+            ]
+        }
+    ]
+}

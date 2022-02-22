@@ -1,0 +1,36 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Modify a surface. (example filter)",
+            "DisplayName": "Modify surface (example)",
+            "Name": "de.uni_stuttgart.Voxie.Example.Filter.ModifySurface",
+            "CompatibilityNames": [
+                "org.example.ModifySurface"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Example.Filter.ModifySurface.Threshold": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurface.Threshold"
+                    ],
+                    "DisplayName": "Threshold",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float"
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

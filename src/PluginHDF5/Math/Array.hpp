@@ -36,7 +36,8 @@
 #include <boost/type_traits/is_volatile.hpp>
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/make_shared.hpp>
+#include <memory>
+#include <boost/static_assert.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/utility/enable_if.hpp>
 
@@ -44,19 +45,6 @@
 
 #include <limits>
 #include <vector>
-
-#if !HAVE_CXX11
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum_binary_params.hpp>
-#include <boost/preprocessor/repetition/enum_trailing_params.hpp>
-#include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
-#include <boost/preprocessor/repetition/repeat.hpp>
-#include <boost/preprocessor/arithmetic/add.hpp>
-#include <boost/preprocessor/control/if.hpp>
-
-// Maximum dimension for ArrayView<const >/ArrayView<>/Array<>
-#define MATH_ARRAY_MAX_ARRAY_DIM 10
-#endif
 
 // TODO: Allow negative array indices (when non-zero-based indices are enabled)?
 
@@ -147,8 +135,8 @@ namespace Math {
     }
 
     template <typename Config>
-    static inline boost::shared_ptr<ArrayAllocator<Config, T> > getDefaultAllocator () {
-      return boost::make_shared<DefaultArrayAllocator<Config, T> > ();
+    static inline std::shared_ptr<ArrayAllocator<Config, T> > getDefaultAllocator () {
+      return std::make_shared<DefaultArrayAllocator<Config, T> > ();
     }
   };
 
@@ -164,7 +152,7 @@ namespace Math {
 
     virtual ~ArrayAllocator () {}
     virtual std::size_t calculateStrides (std::size_t dim, std::ptrdiff_t* strides, const std::size_t* shape, bool fortranOrdering) const = 0;
-    virtual boost::shared_ptr<Handle> allocate (std::size_t count) const = 0;
+    virtual std::shared_ptr<Handle> allocate (std::size_t count) const = 0;
   };
 
   template <typename Config, typename T> class DefaultArrayAllocator : public ArrayAllocator<Config, T> {
@@ -175,14 +163,14 @@ namespace Math {
       MyHandle (std::size_t count) : data (new T [count]) {}
 
       virtual ~MyHandle () {}
-      virtual typename Config::ArithmeticPointer getPointer () {
+      typename Config::ArithmeticPointer getPointer () override {
         return Config::template Type<T>::toArith (data.get ());
       }
     };
 
   public:
     virtual ~DefaultArrayAllocator () {}
-    virtual std::size_t calculateStrides (std::size_t dim, std::ptrdiff_t* strides, const std::size_t* shape, bool fortranOrdering) const {
+    std::size_t calculateStrides (std::size_t dim, std::ptrdiff_t* strides, const std::size_t* shape, bool fortranOrdering) const override {
       //Core::CheckedInteger<std::size_t> elements = 1;
       std::size_t elements = 1;
       for (std::size_t i = fortranOrdering ? 0 : dim - 1; i < dim; fortranOrdering ? i++ : i--) {
@@ -194,10 +182,10 @@ namespace Math {
       }
       return elements;
     }
-    virtual boost::shared_ptr<typename ArrayAllocator<Config, T>::Handle> allocate (std::size_t count) const {
+    std::shared_ptr<typename ArrayAllocator<Config, T>::Handle> allocate (std::size_t count) const override {
       if (!count)
-        return boost::shared_ptr<typename ArrayAllocator<Config, T>::Handle> ();
-      return boost::make_shared<MyHandle> (count);
+        return std::shared_ptr<typename ArrayAllocator<Config, T>::Handle> ();
+      return std::make_shared<MyHandle> (count);
     }
   };
 
@@ -228,7 +216,6 @@ namespace Math {
       return boost::true_type ();
     }
 
-#if HAVE_CXX11
     template <typename... T> struct PackLen;
     template <typename T1, typename... T> struct PackLen<T1, T...> {
       static const std::size_t value = PackLen<T...>::value + 1;
@@ -399,205 +386,6 @@ namespace Math {
 
       typedef OpPInfoDim<T, retDim, false, Config, Assert> Info;
     };
-#else
-    struct OpPSetup {
-#define DEFINE_OVERLOADS(n)                                             \
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static void setupZ (const ArrayViewBase<dim, nonzeroLB, Config>& view, typename Config::ArithmeticPointer* ptr, size_t* shape, ptrdiff_t* stridesBytes, size_t val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        Assert::template check<dpos> (view, val);                                \
-        *ptr += val * view.template strideBytes<dpos> ();               \
-        setupZ<dim, nonzeroLB, Config, Assert, dpos + 1, rDim> (view, ptr, shape, stridesBytes  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-                                                                        \
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static void setupNZ (const ArrayViewBase<dim, nonzeroLB, Config>& view, typename Config::ArithmeticPointer* ptr, size_t* lowerBounds, size_t* shape, ptrdiff_t* stridesBytes, size_t val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        Assert::template check<dpos> (view, val);                                \
-        *ptr += val * view.template strideBytes<dpos> ();               \
-        setupNZ<dim, nonzeroLB, Config, Assert, dpos + 1, rDim> (view, ptr, lowerBounds, shape, stridesBytes  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-                                                                        \
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static void setupZ (const ArrayViewBase<dim, nonzeroLB, Config>& view, typename Config::ArithmeticPointer* ptr, size_t* shape, ptrdiff_t* stridesBytes, Range val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT (rDim > 0);                                 \
-        size_t start = val.start;                                       \
-        size_t length = val.length;                                     \
-        Assert::template check<dpos> (view, val);                                \
-        *ptr += start * view.template strideBytes<dpos> ();             \
-        shape[0] = length;                                              \
-        stridesBytes[0] = view.template strideBytes<dpos> ();           \
-        setupZ<dim, nonzeroLB, Config, Assert, dpos + 1, rDim - 1> (view, ptr, shape + 1, stridesBytes + 1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-                                                                        \
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static void setupNZ (const ArrayViewBase<dim, nonzeroLB, Config>& view, typename Config::ArithmeticPointer* ptr, size_t* lowerBounds, size_t* shape, ptrdiff_t* stridesBytes, Range val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT (rDim > 0);                                 \
-        size_t start = val.start;                                       \
-        size_t length = val.length;                                     \
-        Assert::template check<dpos> (view, val);                                \
-        *ptr += start * view.template strideBytes<dpos> ();             \
-        lowerBounds[0] = 0;                                             \
-        shape[0] = length;                                              \
-        stridesBytes[0] = view.template strideBytes<dpos> ();           \
-        setupNZ<dim, nonzeroLB, Config, Assert, dpos + 1, rDim - 1> (view, ptr, lowerBounds + 1, shape + 1, stridesBytes + 1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-                                                                        \
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static void setupZ (const ArrayViewBase<dim, nonzeroLB, Config>& view, typename Config::ArithmeticPointer* ptr, size_t* shape, ptrdiff_t* stridesBytes, OpenRange val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT (rDim > 0);                                 \
-        size_t start = val.start;                                       \
-        Assert::template check<dpos> (view, val);                                \
-        size_t length = view.template upperBound<dpos> () - start;      \
-        *ptr += start * view.template strideBytes<dpos> ();             \
-        shape[0] = length;                                              \
-        stridesBytes[0] = view.template strideBytes<dpos> ();           \
-        setupZ<dim, nonzeroLB, Config, Assert, dpos + 1, rDim - 1> (view, ptr, shape + 1, stridesBytes + 1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-                                                                        \
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static void setupNZ (const ArrayViewBase<dim, nonzeroLB, Config>& view, typename Config::ArithmeticPointer* ptr, size_t* lowerBounds, size_t* shape, ptrdiff_t* stridesBytes, OpenRange val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT (rDim > 0);                                 \
-        size_t start = val.start;                                       \
-        Assert::template check<dpos> (view, val);                                \
-        size_t length = view.template upperBound<dpos> () - start;      \
-        *ptr += start * view.template strideBytes<dpos> ();             \
-        lowerBounds[0] = length;                                        \
-        shape[0] = length;                                              \
-        stridesBytes[0] = view.template strideBytes<dpos> ();           \
-        setupNZ<dim, nonzeroLB, Config, Assert, dpos + 1, rDim - 1> (view, ptr, lowerBounds + 1, shape + 1, stridesBytes + 1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-                                                                        \
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static void setupZ (const ArrayViewBase<dim, nonzeroLB, Config>& view, typename Config::ArithmeticPointer* ptr, size_t* shape, ptrdiff_t* stridesBytes, UNUSED AllRange val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT (rDim > 0);                                 \
-        /*BOOST_STATIC_ASSERT (!nonzeroLB); TODO: ?*/                   \
-        /* Assert::template check<dpos> (view, val); // No need to check anything */ \
-        shape[0] = view.template size<dpos> ();                         \
-        stridesBytes[0] = view.template strideBytes<dpos> ();           \
-        setupZ<dim, nonzeroLB, Config, Assert, dpos + 1, rDim - 1> (view, ptr, shape + 1, stridesBytes + 1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-                                                                        \
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static void setupNZ (const ArrayViewBase<dim, nonzeroLB, Config>& view, typename Config::ArithmeticPointer* ptr, size_t* lowerBounds, size_t* shape, ptrdiff_t* stridesBytes, UNUSED AllRange val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT (rDim > 0);                                 \
-        /*BOOST_STATIC_ASSERT (!nonzeroLB); TODO: ?*/                   \
-        /* Assert::template check<dpos> (view, val); // No need to check anything */ \
-        lowerBounds[0] = view.template lowerBound<dpos> ();             \
-        shape[0] = view.template upperBound<dpos> ();                   \
-        stridesBytes[0] = view.template strideBytes<dpos> ();           \
-        setupNZ<dim, nonzeroLB, Config, Assert, dpos + 1, rDim - 1> (view, ptr, lowerBounds + 1, shape + 1, stridesBytes + 1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-
-#define DEFINE_OVERLOADS2(z, i, data) DEFINE_OVERLOADS (i)
-      BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS2, NOTHING)
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_OVERLOADS
-
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim>
-      NVCC_HOST_DEVICE static void setupZ (UNUSED const ArrayViewBase<dim, nonzeroLB, Config>& view, UNUSED typename Config::ArithmeticPointer* ptr, UNUSED size_t* shape, UNUSED ptrdiff_t* stridesBytes) {
-        BOOST_STATIC_ASSERT (rDim == 0);
-      }
-
-      template <std::size_t dim, bool nonzeroLB, typename Config, typename Assert, std::size_t dpos, std::size_t rDim>
-      NVCC_HOST_DEVICE static void setupNZ (UNUSED const ArrayViewBase<dim, nonzeroLB, Config>& view, UNUSED typename Config::ArithmeticPointer* ptr, UNUSED size_t* lowerBounds, UNUSED size_t* shape, UNUSED ptrdiff_t* stridesBytes) {
-        BOOST_STATIC_ASSERT (rDim == 0);
-      }
-    };
-
-    template <typename T, std::size_t retDim, bool retNonzeroLB, typename Config, typename Assert> struct OpPInfoDim;
-    template <typename T, std::size_t retDim, typename Config, typename Assert> struct OpPInfoDim<T, retDim, false, Config, Assert> {
-      typedef ArrayView<T, retDim, false, Config, Assert> RetType;
-#define DEFINE_OVERLOADS(n)                                             \
-      template <std::size_t dim, bool nonzeroLB  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static RetType access (const ArrayView<T, dim, nonzeroLB, Config, Assert>& view  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT ((n == dim));                               \
-        size_t shape[retDim];                                           \
-        ptrdiff_t stridesBytes[retDim];                                          \
-        typename Config::ArithmeticPointer ptr = view.arithData ();                         \
-        OpPSetup::setupZ<dim, nonzeroLB, Config, Assert, 0, retDim> (view, &ptr, shape, stridesBytes  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-        return ArrayView<T, retDim, false, Config, Assert> (Config::template Type<T>::fromArith (ptr), shape, stridesBytes); \
-      }                                                                 \
-
-#define DEFINE_OVERLOADS2(z, i, data) DEFINE_OVERLOADS (BOOST_PP_ADD(i, 1))
-      BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS2, NOTHING)
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_OVERLOADS
-    };                                                                  \
-    template <typename T, std::size_t retDim, typename Config, typename Assert> struct OpPInfoDim<T, retDim, true, Config, Assert> {
-      typedef ArrayView<T, retDim, true, Config, Assert> RetType;
-#define DEFINE_OVERLOADS(n)                                             \
-      template <std::size_t dim, bool nonzeroLB  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static RetType access (const ArrayView<T, dim, nonzeroLB, Config, Assert>& view  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT ((n == dim));                               \
-        size_t lowerBounds[retDim];                                           \
-        size_t shape[retDim];                                           \
-        ptrdiff_t stridesBytes[retDim];                                          \
-        typename Config::ArithmeticPointer ptr = view.arithData ();                         \
-        OpPSetup::setupNZ<dim, nonzeroLB, Config, Assert, 0, retDim> (view, &ptr, lowerBounds, shape, stridesBytes  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-        return ArrayView<T, retDim, true, Config, Assert> (Config::template Type<T>::fromArith (ptr), lowerBounds, shape, stridesBytes); \
-      }                                                                 \
-
-#define DEFINE_OVERLOADS2(z, i, data) DEFINE_OVERLOADS (BOOST_PP_ADD(i, 1))
-      BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS2, NOTHING)
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_OVERLOADS
-    };                                                                  \
-
-    template <typename T, typename Config, typename Assert> struct OpPInfoDim<T, 0, false, Config, Assert> {
-      typedef typename Config::template Type<T>::Pointer PtrRetType;
-      typedef T& RetType;
-#define DEFINE_OVERLOADS(n)                                             \
-      template <std::size_t dim, bool nonzeroLB  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static PtrRetType accessPtr (const ArrayView<T, dim, nonzeroLB, Config, Assert>& view  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        BOOST_STATIC_ASSERT ((n == dim));                               \
-        typename Config::ArithmeticPointer ptr = view.arithData ();     \
-        OpPSetup::setupZ<dim, nonzeroLB, Config, Assert, 0, 0> (view, &ptr, NULL, NULL  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-        return Config::template Type<T>::fromArith (ptr);              \
-      }                                                                 \
-      template <std::size_t dim, bool nonzeroLB  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-      NVCC_HOST_DEVICE static RetType access (const ArrayView<T, dim, nonzeroLB, Config, Assert>& view  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-        return *accessPtr<dim> (view  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-      }                                                                 \
-
-#define DEFINE_OVERLOADS2(z, i, data) DEFINE_OVERLOADS (BOOST_PP_ADD(i, 1))
-      BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS2, NOTHING)
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_OVERLOADS
-    };
-    template <typename T, typename Config, typename Assert> struct OpPInfoDim<T, 0, true, Config, Assert> {
-      // Should never be used (retDim = 0 cannot be a nonzeroLB array)
-    };
-
-    template <typename T, bool nonzeroLB, typename Config, typename Assert>
-    struct OpPInfo_0 {
-      static const std::size_t retDim = 0;
-      static const bool retNonzeroLB = false;
-
-      typedef OpPInfoDim<T, retDim, false, Config, Assert> Info;
-    };
-
-#define OpPInfo_n(n) OpPInfo_##n
-#define OpPInfo_n_x(n) OpPInfo_n (n)
-#define OpPInfo_n_plus_1(n) OpPInfo_n_x (BOOST_PP_ADD (n, 1))
-
-#define DEFINE_OVERLOADS(n)                                             \
-    template <typename T, bool nonzeroLB, typename Config, typename Assert, typename Par1  BOOST_PP_ENUM_TRAILING_PARAMS (n, typename ParT)> \
-    struct OpPInfo_n_plus_1(n) {                                        \
-      typedef DECLTYPE(OpPArgInfoIsRange (*(Par1*)NULL)) Par1IsRange;   \
-      typedef DECLTYPE(OpPArgInfoIsNZRange (*(Par1*)NULL)) Par1IsNZRange; \
-      static const std::size_t retDim = OpPInfo_##n<T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::retDim + ((Par1IsRange::value) ? 1 : 0); \
-      static const bool retNonzeroLB = OpPInfo_##n<T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::retNonzeroLB || (nonzeroLB && Par1IsRange::value && Par1IsNZRange::value); \
-                                                                        \
-      typedef OpPInfoDim<T, retDim, retNonzeroLB, Config, Assert> Info; \
-    };                                                                  \
-
-#define DEFINE_OVERLOADS2(z, i, data) DEFINE_OVERLOADS (i)
-      BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS2, NOTHING)
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_OVERLOADS
-#undef OpPInfo_n
-#undef OpPInfo_n_x
-#undef OpPInfo_n_plus_1
-#endif
 
     template <typename T, std::size_t dim, bool nonzeroLB, typename Config, typename Assert> struct ArrayElementAccess {
       BOOST_STATIC_ASSERT (dim > 1);
@@ -750,7 +538,7 @@ namespace Math {
 
   template <std::size_t dim> class ArrayViewUpperBoundsProvider {
     //std::size_t shape_[dim];
-    boost::array<std::size_t, dim> shape_;
+    std::array<std::size_t, dim> shape_;
 
     template <typename T, std::size_t dim2, typename Config2, typename Assert2> friend class Array;
 
@@ -759,7 +547,7 @@ namespace Math {
 
     NVCC_HOST_DEVICE ArrayViewUpperBoundsProvider (const std::size_t* shape) {
       for (size_t i = 0; i < dim; i++) {
-        // TODO: boost::array<>::operator[] does not work on Cuda device
+        // TODO: std::array<>::operator[] does not work on Cuda device
         /*
         shape_[i] = shape[i];
         */
@@ -770,7 +558,7 @@ namespace Math {
     NVCC_HOST_DEVICE const std::size_t* shape () const {
       //return shape_;
       //return shape_.data ();
-      return (const std::size_t*)&shape_; // TODO: boost::array<>::data() does not work on Cuda device
+      return (const std::size_t*)&shape_; // TODO: std::array<>::data() does not work on Cuda device
     }
     template <std::size_t n>
     NVCC_HOST_DEVICE std::size_t upperBound () const {
@@ -810,14 +598,14 @@ namespace Math {
 
   template <std::size_t dim> class ArrayViewBoundsProvider<dim, true> : public ArrayViewUpperBoundsProvider<dim> {
     //std::size_t lowerBounds_[dim];
-    boost::array<std::size_t, dim> lowerBounds_;
+    std::array<std::size_t, dim> lowerBounds_;
 
   public:
     NVCC_HOST_DEVICE ArrayViewBoundsProvider () {}
 
     NVCC_HOST_DEVICE ArrayViewBoundsProvider (const std::size_t* shape) : ArrayViewUpperBoundsProvider<dim> (shape) {
       for (size_t i = 0; i < dim; i++) {
-        // TODO: boost::array<>::operator[] does not work on Cuda device
+        // TODO: std::array<>::operator[] does not work on Cuda device
         /*
         lowerBounds_[i] = 0;
         */
@@ -827,7 +615,7 @@ namespace Math {
 
     NVCC_HOST_DEVICE ArrayViewBoundsProvider (const ArrayViewBoundsProvider<dim, false>& orig) : ArrayViewUpperBoundsProvider<dim> (orig) {
       for (size_t i = 0; i < dim; i++) {
-        // TODO: boost::array<>::operator[] does not work on Cuda device
+        // TODO: std::array<>::operator[] does not work on Cuda device
         /*
         lowerBounds_[i] = 0;
         */
@@ -837,7 +625,7 @@ namespace Math {
 
     NVCC_HOST_DEVICE ArrayViewBoundsProvider (const std::size_t* lowerBounds, const std::size_t* shape) : ArrayViewUpperBoundsProvider<dim> (shape) {
       for (size_t i = 0; i < dim; i++) {
-        // TODO: boost::array<>::operator[] does not work on Cuda device
+        // TODO: std::array<>::operator[] does not work on Cuda device
         /*
         lowerBounds_[i] = lowerBounds[i];
         */
@@ -848,7 +636,7 @@ namespace Math {
     NVCC_HOST_DEVICE const std::size_t* lowerBounds () const {
       //return lowerBounds_;
       //return lowerBounds_.data ();
-      return (const std::size_t*)&lowerBounds_; // TODO: boost::array<>::data() does not work on Cuda device
+      return (const std::size_t*)&lowerBounds_; // TODO: std::array<>::data() does not work on Cuda device
     }
     template <std::size_t n>
     NVCC_HOST_DEVICE std::size_t lowerBound () const {
@@ -883,7 +671,7 @@ namespace Math {
   private:
     ArithmeticPointer ptr;
     //std::ptrdiff_t stridesBytes_[dim];
-    boost::array<std::ptrdiff_t, dim> stridesBytes_;
+    std::array<std::ptrdiff_t, dim> stridesBytes_;
 
     class PrivateType {
       friend class ArrayViewBase;
@@ -895,7 +683,7 @@ namespace Math {
 
     NVCC_HOST_DEVICE ArrayViewBase (ArithmeticPointer ptr, const std::size_t* shape, const std::ptrdiff_t* stridesBytes) : Base (shape), ptr (ptr) {
       for (size_t i = 0; i < dim; i++) {
-        // TODO: boost::array<>::operator[] does not work on Cuda device
+        // TODO: std::array<>::operator[] does not work on Cuda device
         /*
         stridesBytes_[i] = stridesBytes[i];
         */
@@ -903,10 +691,13 @@ namespace Math {
       }
     }
 
+    // Suppress -Wdeprecated-copy warning (because a operator= is defined)
+    NVCC_HOST_DEVICE ArrayViewBase (const ArrayViewBase& other) = default;
+
     template <typename StdSize> // has to be std::size, this is only to avoid the problem that instantiating this class with nonzeroLB otherwise would cause an error
     NVCC_HOST_DEVICE ArrayViewBase (ArithmeticPointer ptr, const StdSize* lowerBounds, const std::size_t* shape, const std::ptrdiff_t* stridesBytes, UNUSED typename boost::enable_if_c<nonzeroLB && boost::is_same<StdSize, std::size_t>::value, PrivateType>::type dummy = PrivateType ()) : Base (lowerBounds, shape), ptr (ptr) {
       for (size_t i = 0; i < dim; i++) {
-        // TODO: boost::array<>::operator[] does not work on Cuda device
+        // TODO: std::array<>::operator[] does not work on Cuda device
         /*
         stridesBytes_[i] = stridesBytes[i];
         */
@@ -917,7 +708,7 @@ namespace Math {
     template <bool nonzeroLB2> // has to be false, this is only to avoid the problem that instantiating this class with !nonzeroLB otherwise would cause an error
     NVCC_HOST_DEVICE ArrayViewBase (const ArrayViewBase<dim, nonzeroLB2, Config_>& orig, UNUSED typename boost::enable_if_c<(!nonzeroLB2 && nonzeroLB), PrivateType>::type dummy = PrivateType ()) : Base (orig), ptr (orig.arithData ()) {
       for (size_t i = 0; i < dim; i++) {
-        // TODO: boost::array<>::operator[] does not work on Cuda device
+        // TODO: std::array<>::operator[] does not work on Cuda device
         /*
         stridesBytes_[i] = orig.stridesBytes ()[i];
         */
@@ -933,7 +724,7 @@ namespace Math {
     NVCC_HOST_DEVICE const std::ptrdiff_t* stridesBytes () const {
       //return stridesBytes_;
       //return stridesBytes_.data ();
-      return (const std::ptrdiff_t*)&stridesBytes_; // TODO: boost::array<>::data() does not work on Cuda device
+      return (const std::ptrdiff_t*)&stridesBytes_; // TODO: std::array<>::data() does not work on Cuda device
     }
     template <std::size_t n>
     NVCC_HOST_DEVICE std::ptrdiff_t strideBytes () const {
@@ -982,12 +773,15 @@ namespace Math {
     NVCC_HOST_DEVICE ArrayView (ConstPointer ptr, const StdSize* lowerBounds, const std::size_t* shape, const std::ptrdiff_t* stridesBytes, UNUSED typename boost::enable_if_c<nonzeroLB && boost::is_same<StdSize, std::size_t>::value, PrivateType>::type dummy = PrivateType ()) : Base (TypeInfo::toArith (ptr), lowerBounds, shape, stridesBytes) {
     }
 
-    NVCC_HOST_DEVICE ArrayView (ConstPointer ptr, const boost::array<std::size_t, dim>& shape, const boost::array<std::ptrdiff_t, dim>& stridesBytes) : Base (TypeInfo::toArith (ptr), shape.data (), stridesBytes.data ()) {
+    NVCC_HOST_DEVICE ArrayView (ConstPointer ptr, const std::array<std::size_t, dim>& shape, const std::array<std::ptrdiff_t, dim>& stridesBytes) : Base (TypeInfo::toArith (ptr), shape.data (), stridesBytes.data ()) {
     }
 
     template <typename StdSize> // has to be std::size, this is only to avoid the problem that instantiating this class with nonzeroLB otherwise would cause an error
-    NVCC_HOST_DEVICE ArrayView (ConstPointer ptr, const boost::array<StdSize, dim>& lowerBounds, const boost::array<std::size_t, dim>& shape, const boost::array<std::ptrdiff_t, dim>& stridesBytes, UNUSED typename boost::enable_if_c<nonzeroLB && boost::is_same<StdSize, std::size_t>::value, PrivateType>::type dummy = PrivateType ()) : Base (TypeInfo::toArith (ptr), lowerBounds.data (), shape.data (), stridesBytes.data ()) {
+    NVCC_HOST_DEVICE ArrayView (ConstPointer ptr, const std::array<StdSize, dim>& lowerBounds, const std::array<std::size_t, dim>& shape, const std::array<std::ptrdiff_t, dim>& stridesBytes, UNUSED typename boost::enable_if_c<nonzeroLB && boost::is_same<StdSize, std::size_t>::value, PrivateType>::type dummy = PrivateType ()) : Base (TypeInfo::toArith (ptr), lowerBounds.data (), shape.data (), stridesBytes.data ()) {
     }
+
+    // Suppress -Wdeprecated-copy warning (because a operator= is defined)
+    NVCC_HOST_DEVICE ArrayView (const ArrayView& other) = default;
 
     // Different nonzeroLB or Assert parameter
     template <bool nonzeroLB2, typename Assert2>
@@ -1006,7 +800,6 @@ namespace Math {
       return Intern::ArrayElementAccess<const T, dim, nonzeroLB, Config, Assert>::access (*this, pos);
     }
 
-#if HAVE_CXX11
     template <typename... ParT>
     NVCC_HOST_DEVICE typename Intern::OpPInfo<const T, nonzeroLB, Config, Assert, ParT...>::Info::RetType operator() (ParT... pars) const {
       return Intern::OpPInfo<const T, nonzeroLB, Config, Assert, ParT...>::Info::template access<dim, nonzeroLB, ParT...> (*this, pars...);
@@ -1015,28 +808,6 @@ namespace Math {
     NVCC_HOST_DEVICE ConstPointer pointer (ParT... pars) const {
       return Intern::OpPInfo<const T, nonzeroLB, Config, Assert, ParT...>::Info::template accessPtr<dim, nonzeroLB, ParT...> (*this, pars...);
     }
-#else
-#define TEMPLATE(n) BOOST_PP_IF (n, template <, public:/*To avoid warnings*/) \
-    BOOST_PP_ENUM_PARAMS (n, typename ParT)                             \
-    BOOST_PP_IF (n, >, public:/*To avoid warnings*/)
-#define DEFINE_OVERLOADS(n)                                             \
-    TEMPLATE(n)                                                         \
-    NVCC_HOST_DEVICE typename Intern::OpPInfo_##n<const T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::Info::RetType operator() (BOOST_PP_ENUM_BINARY_PARAMS (n, const ParT, & pars)) const { \
-      return Intern::OpPInfo_##n<const T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::Info::template access<dim, nonzeroLB  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)> (*this  BOOST_PP_ENUM_TRAILING_PARAMS (n, pars)); \
-    }                                                                   \
-    TEMPLATE(n)                                                         \
-    NVCC_HOST_DEVICE ConstPointer pointer (BOOST_PP_ENUM_BINARY_PARAMS (n, const ParT, & pars)) const { \
-      return Intern::OpPInfo_##n<const T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::Info::template accessPtr<dim, nonzeroLB  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)> (*this  BOOST_PP_ENUM_TRAILING_PARAMS (n, pars)); \
-    }                                                                   \
-
-#define DEFINE_OVERLOADS2(n) DEFINE_OVERLOADS (n)
-#define DEFINE_OVERLOADS3(z, i, data) DEFINE_OVERLOADS2 (BOOST_PP_ADD(i, 1))
-      BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS3, NOTHING)
-#undef DEFINE_OVERLOADS3
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_OVERLOADS
-#undef TEMPLATE
-#endif
   };
 
   template <typename T_, std::size_t dim, bool nonzeroLB, typename Config_, typename Assert_> class ArrayView : public ArrayView<const T_, dim, nonzeroLB, Config_, Assert_> {
@@ -1074,12 +845,15 @@ namespace Math {
     NVCC_HOST_DEVICE ArrayView (Pointer ptr, const StdSize* lowerBounds, const std::size_t* shape, const std::ptrdiff_t* stridesBytes, UNUSED typename boost::enable_if_c<nonzeroLB && boost::is_same<StdSize, std::size_t>::value, PrivateType>::type dummy = PrivateType ()) : Base (ptr, lowerBounds, shape, stridesBytes) {
     }
 
-    NVCC_HOST_DEVICE ArrayView (Pointer ptr, const boost::array<std::size_t, dim>& shape, const boost::array<std::ptrdiff_t, dim>& stridesBytes) : Base (ptr, shape, stridesBytes) {
+    NVCC_HOST_DEVICE ArrayView (Pointer ptr, const std::array<std::size_t, dim>& shape, const std::array<std::ptrdiff_t, dim>& stridesBytes) : Base (ptr, shape, stridesBytes) {
     }
 
     template <typename StdSize> // has to be std::size, this is only to avoid the problem that instantiating this class with nonzeroLB otherwise would cause an error
-    NVCC_HOST_DEVICE ArrayView (Pointer ptr, const boost::array<StdSize, dim>& lowerBounds, const boost::array<std::size_t, dim>& shape, const boost::array<std::ptrdiff_t, dim>& stridesBytes, UNUSED typename boost::enable_if_c<nonzeroLB && boost::is_same<StdSize, std::size_t>::value, PrivateType>::type dummy = PrivateType ()) : Base (ptr, lowerBounds, shape, stridesBytes) {
+    NVCC_HOST_DEVICE ArrayView (Pointer ptr, const std::array<StdSize, dim>& lowerBounds, const std::array<std::size_t, dim>& shape, const std::array<std::ptrdiff_t, dim>& stridesBytes, UNUSED typename boost::enable_if_c<nonzeroLB && boost::is_same<StdSize, std::size_t>::value, PrivateType>::type dummy = PrivateType ()) : Base (ptr, lowerBounds, shape, stridesBytes) {
     }
+
+    // Suppress -Wdeprecated-copy warning (because a operator= is defined)
+    NVCC_HOST_DEVICE ArrayView (const ArrayView& other) = default;
 
     // Different nonzeroLB or Assert parameter
     template <bool nonzeroLB2, typename Assert2>
@@ -1100,7 +874,6 @@ namespace Math {
       return Intern::ArrayElementAccess<T, dim, nonzeroLB, Config, Assert>::access (*this, pos);
     }
 
-#if HAVE_CXX11
     template <typename... ParT>
     NVCC_HOST_DEVICE typename Intern::OpPInfo<T, nonzeroLB, Config, Assert, ParT...>::Info::RetType operator() (ParT... pars) const {
       return Intern::OpPInfo<T, nonzeroLB, Config, Assert, ParT...>::Info::template access<dim, nonzeroLB, ParT...> (*this, pars...);
@@ -1109,28 +882,6 @@ namespace Math {
     NVCC_HOST_DEVICE Pointer pointer (ParT... pars) const {
       return Intern::OpPInfo<T, nonzeroLB, Config, Assert, ParT...>::Info::template accessPtr<dim, nonzeroLB, ParT...> (*this, pars...);
     }
-#else
-#define TEMPLATE(n) BOOST_PP_IF (n, template <, public:/*To avoid warnings*/) \
-    BOOST_PP_ENUM_PARAMS (n, typename ParT)                             \
-    BOOST_PP_IF (n, >, public:/*To avoid warnings*/)
-#define DEFINE_OVERLOADS(n)                                             \
-    TEMPLATE(n)                                                         \
-    NVCC_HOST_DEVICE typename Intern::OpPInfo_##n<T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::Info::RetType operator() (BOOST_PP_ENUM_BINARY_PARAMS (n, const ParT, & pars)) const { \
-      return Intern::OpPInfo_##n<T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::Info::template access<dim, nonzeroLB  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)> (*this  BOOST_PP_ENUM_TRAILING_PARAMS (n, pars)); \
-    }                                                                   \
-    TEMPLATE(n)                                                         \
-    NVCC_HOST_DEVICE Pointer pointer (BOOST_PP_ENUM_BINARY_PARAMS (n, const ParT, & pars)) const { \
-      return Intern::OpPInfo_##n<T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::Info::template accessPtr<dim, nonzeroLB  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)> (*this  BOOST_PP_ENUM_TRAILING_PARAMS (n, pars)); \
-    }                                                                   \
-
-#define DEFINE_OVERLOADS2(n) DEFINE_OVERLOADS (n)
-#define DEFINE_OVERLOADS3(z, i, data) DEFINE_OVERLOADS2 (BOOST_PP_ADD(i, 1))
-    BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS3, NOTHING)
-#undef DEFINE_OVERLOADS3
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_OVERLOADS
-#undef TEMPLATE
-#endif
 
     void assign (const ArrayView<const T, dim, nonzeroLB, Config, Assert>& orig) const {
       Intern::ArrayUtil<T, dim, Config, Assert>::assign (*this, orig);
@@ -1164,10 +915,10 @@ namespace Math {
 
   private:
     typedef ArrayView<T, dim, nonzeroLB, Config, Assert> View;
-    typedef boost::shared_ptr<ArrayAllocator<Config, T> > Allocator;
+    typedef std::shared_ptr<ArrayAllocator<Config, T> > Allocator;
 
     Allocator allocator;
-    boost::shared_ptr<typename ArrayAllocator<Config, T>::Handle> handle;
+    std::shared_ptr<typename ArrayAllocator<Config, T>::Handle> handle;
     View storage;
 
     void init (const std::size_t* shape, bool fortranOrdering) {
@@ -1193,7 +944,7 @@ namespace Math {
       init (shape, fortranOrdering);
     }
 
-    explicit Array (const boost::array<std::size_t, dim>& shape, bool fortranOrdering = true) : allocator (Config::template Type<T>::template getDefaultAllocator<Config> ()) {
+    explicit Array (const std::array<std::size_t, dim>& shape, bool fortranOrdering = true) : allocator (Config::template Type<T>::template getDefaultAllocator<Config> ()) {
       init (shape.data (), fortranOrdering);
     }
 
@@ -1211,7 +962,7 @@ namespace Math {
       init (shape, fortranOrdering);
     }
 
-    explicit Array (Allocator allocator, const boost::array<std::size_t, dim>& shape, bool fortranOrdering = true) : allocator (allocator) {
+    explicit Array (Allocator allocator, const std::array<std::size_t, dim>& shape, bool fortranOrdering = true) : allocator (allocator) {
       init (shape.data (), fortranOrdering);
     }
 
@@ -1234,7 +985,7 @@ namespace Math {
       init (shape, fortranOrdering);
     }
 
-    void recreate (const boost::array<std::size_t, dim>& shape, bool fortranOrdering = true) {
+    void recreate (const std::array<std::size_t, dim>& shape, bool fortranOrdering = true) {
       init (shape.data (), fortranOrdering);
     }
 
@@ -1251,7 +1002,6 @@ namespace Math {
   private:
     static void getLen (UNUSED std::size_t* shape) {
     }
-#if HAVE_CXX11
     template <typename... ParT>
     static void getLen (std::size_t* shape, std::size_t val, ParT... v) {
       shape[0] = val;
@@ -1282,62 +1032,6 @@ namespace Math {
       getLen (shape, val1, v...);
       init (shape, true);
     }
-#else
-#define TEMPLATEP(n) BOOST_PP_IF (n, template <, private:/*To avoid warnings*/) \
-    BOOST_PP_ENUM_PARAMS (n, typename ParT)                             \
-    BOOST_PP_IF (n, >, private:/*To avoid warnings*/)
-#define TEMPLATE(n) BOOST_PP_IF (n, template <, public:/*To avoid warnings*/) \
-    BOOST_PP_ENUM_PARAMS (n, typename ParT)                             \
-    BOOST_PP_IF (n, >, public:/*To avoid warnings*/)
-#define DEFINE_GETLEN_OVERLOADS(n)                                      \
-    private:                                                            \
-    TEMPLATEP(n)                                                        \
-    static void getLen (std::size_t* shape, std::size_t val  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-      shape[0] = val;                                                   \
-      getLen (shape + 1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v)); \
-    }                                                                   \
-
-#define DEFINE_OVERLOADS(n)                                             \
-  public:                                                               \
-  TEMPLATE(n)                                                           \
-  explicit Array (std::size_t val1  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) : allocator (Config::template Type<T>::template getDefaultAllocator<Config> ()) { \
-    BOOST_STATIC_ASSERT (((n + 1) == dim));                             \
-    std::size_t shape[dim];                                             \
-    getLen (shape, val1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v));         \
-    init (shape, true);                                                 \
-  }                                                                     \
-                                                                        \
-  TEMPLATE(n)                                                           \
-  explicit Array (Allocator allocator, std::size_t val1  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) : allocator (allocator) { \
-    BOOST_STATIC_ASSERT (((n + 1) == dim));                             \
-    std::size_t shape[dim];                                             \
-    getLen (shape, val1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v));         \
-    init (shape, true);                                                 \
-  }                                                                     \
-                                                                        \
-  TEMPLATE(n)                                                           \
-  void recreate (std::size_t val1  BOOST_PP_ENUM_TRAILING_BINARY_PARAMS (n, const ParT, & v)) { \
-    BOOST_STATIC_ASSERT (((n + 1) == dim));                             \
-    std::size_t shape[dim];                                             \
-    getLen (shape, val1  BOOST_PP_ENUM_TRAILING_PARAMS (n, v));         \
-    init (shape, true);                                                 \
-  }                                                                     \
-
-#define DEFINE_GETLEN_OVERLOADS2(z, i, data) DEFINE_GETLEN_OVERLOADS (i)
-#ifndef ARRAY_OMIT_ONEDIM_CTOR_OVERLOADS
-#define DEFINE_OVERLOADS2(z, i, data) DEFINE_OVERLOADS (i)
-#else
-#define DEFINE_OVERLOADS2(z, i, data) DEFINE_OVERLOADS (BOOST_PP_ADD(i, 1))
-#endif
-      BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_GETLEN_OVERLOADS2, NOTHING)
-      BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS2, NOTHING)
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_GETLEN_OVERLOADS2
-#undef DEFINE_OVERLOADS
-#undef DEFINE_GETLEN_OVERLOADS
-#undef TEMPLATE
-#undef TEMPLATEP
-#endif
 
     const ArrayView<const T, dim, nonzeroLB, Config, Assert>& constView () const {
       return storage;
@@ -1392,7 +1086,6 @@ namespace Math {
       return view ()[pos];
     }
 
-#if HAVE_CXX11
     template <typename... ParT>
     typename Intern::OpPInfo<const T, nonzeroLB, Config, Assert, ParT...>::Info::RetType operator() (ParT... pars) const {
       return view () (pars...);
@@ -1409,36 +1102,6 @@ namespace Math {
     typename View::Pointer pointer (ParT... pars) {
       return view ().pointer (pars...);
     }
-#else
-#define TEMPLATE(n) BOOST_PP_IF (n, template <, public:/*To avoid warnings*/) \
-    BOOST_PP_ENUM_PARAMS (n, typename ParT)                             \
-    BOOST_PP_IF (n, >, public:/*To avoid warnings*/)
-#define DEFINE_OVERLOADS(n)                                             \
-    TEMPLATE(n)                                                         \
-    typename Intern::OpPInfo_##n<const T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::Info::RetType operator() (BOOST_PP_ENUM_BINARY_PARAMS (n, const ParT, & pars)) const { \
-      return view () (BOOST_PP_ENUM_PARAMS (n, pars));                  \
-    }                                                                   \
-    TEMPLATE(n)                                                         \
-    typename Intern::OpPInfo_##n<T, nonzeroLB, Config, Assert  BOOST_PP_ENUM_TRAILING_PARAMS (n, ParT)>::Info::RetType operator() (BOOST_PP_ENUM_BINARY_PARAMS (n, const ParT, & pars)) { \
-      return view () (BOOST_PP_ENUM_PARAMS (n, pars));                  \
-    }                                                                   \
-    TEMPLATE(n)                                                         \
-    typename View::ConstPointer pointer (BOOST_PP_ENUM_BINARY_PARAMS (n, const ParT, & pars)) const { \
-      return view ().pointer (BOOST_PP_ENUM_PARAMS (n, pars));          \
-    }                                                                   \
-    TEMPLATE(n)                                                         \
-    typename View::Pointer pointer (BOOST_PP_ENUM_BINARY_PARAMS (n, const ParT, & pars)) { \
-      return view ().pointer (BOOST_PP_ENUM_PARAMS (n, pars));          \
-    }                                                                   \
-
-#define DEFINE_OVERLOADS2(n) DEFINE_OVERLOADS (n)
-#define DEFINE_OVERLOADS3(z, i, data) DEFINE_OVERLOADS2 (BOOST_PP_ADD(i, 1))
-    BOOST_PP_REPEAT (MATH_ARRAY_MAX_ARRAY_DIM, DEFINE_OVERLOADS3, NOTHING)
-#undef DEFINE_OVERLOADS3
-#undef DEFINE_OVERLOADS2
-#undef DEFINE_OVERLOADS
-#undef TEMPLATE
-#endif
 
     void assign (const ArrayView<const T, dim, nonzeroLB, Config, Assert>& orig) {
       view ().assign (orig);

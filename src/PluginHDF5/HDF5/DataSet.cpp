@@ -23,6 +23,7 @@
 #include "DataSet.hpp"
 
 #include <Core/CheckedCast.hpp>
+#include <Core/StaticCache.hpp>
 
 #include <HDF5/DataType.hpp>
 #include <HDF5/DataSpace.hpp>
@@ -43,9 +44,8 @@ namespace HDF5 {
   }
 
   DataSetAccessPropList setEFilePrefix (const DataSetAccessPropList& list) {
-    static DataSetAccessPropList def = createEFilePrefixPList ();
-    if (!list.isValid ())
-      return def;
+    if (!list.isValid())
+      return Core::staticCache([] { return createEFilePrefixPList(); });
 
     DataSetAccessPropList copy = (DataSetAccessPropList) list.copy ();
     setEFilePrefixValue (copy);

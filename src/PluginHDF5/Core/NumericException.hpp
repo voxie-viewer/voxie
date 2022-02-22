@@ -92,7 +92,7 @@ namespace Core {
       return _value;
     }
 
-    virtual std::string message () const {
+    std::string message () const override {
       std::stringstream str;
       typedef std::numeric_limits<To> target;
       str << "Error converting from " << Type::getName<From> () << " to " << Type::getName<To> () << ": " << Intern::intToString (value ()) << " is not in [" << Intern::intToString (target::min ()) << ";" << Intern::intToString (target::max ()) << "]";

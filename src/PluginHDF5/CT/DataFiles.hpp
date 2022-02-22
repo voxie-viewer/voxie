@@ -115,33 +115,33 @@ namespace DataFilesIntern {
 }
 // Rather slow (will transpose volume in memory)
 template <typename T>
-boost::shared_ptr<const Math::Array<T, 3> > transformedTransposedVolume (const VolumeGen<T>& self, bool forceCopy = false) {
+std::shared_ptr<const Math::Array<T, 3> > transformedTransposedVolume (const VolumeGen<T>& self, bool forceCopy = false) {
   if (forceCopy || self.VolumeScalingFactor || self.VolumeStorageOrder) {
-    boost::shared_ptr<Math::Array<T, 3> > copyPtr = boost::make_shared<Math::Array<T, 3> > (transposedUnscaledVolume (self));
+    std::shared_ptr<Math::Array<T, 3> > copyPtr = std::make_shared<Math::Array<T, 3> > (transposedUnscaledVolume (self));
     scaleValues (copyPtr->view ());
     return copyPtr;
   } else {
-    return boost::shared_ptr<const Math::Array<T, 3> > (&self.Volume, DataFilesIntern::NoopDeallocator ());
+    return std::shared_ptr<const Math::Array<T, 3> > (&self.Volume, DataFilesIntern::NoopDeallocator ());
   }
 }
 template <typename T>
-boost::shared_ptr<const Math::ArrayView<const T, 3> > transformedVolume (const VolumeGen<T>& self, bool forceCopy = false) {
+std::shared_ptr<const Math::ArrayView<const T, 3> > transformedVolume (const VolumeGen<T>& self, bool forceCopy = false) {
   if (forceCopy || self.VolumeScalingFactor) {
-    //boost::shared_ptr<Math::Array<T, 3> > copyPtr = boost::make_shared<Math::Array<T, 3> > (Volume);
-    boost::shared_ptr<std::pair<Math::Array<T, 3>, boost::scoped_ptr<Math::ArrayView<const T, 3> > > > copyPtr = boost::make_shared<std::pair<Math::Array<T, 3>, boost::scoped_ptr<Math::ArrayView<const T, 3> > > > ();
+    //std::shared_ptr<Math::Array<T, 3> > copyPtr = std::make_shared<Math::Array<T, 3> > (Volume);
+    std::shared_ptr<std::pair<Math::Array<T, 3>, boost::scoped_ptr<Math::ArrayView<const T, 3> > > > copyPtr = std::make_shared<std::pair<Math::Array<T, 3>, boost::scoped_ptr<Math::ArrayView<const T, 3> > > > ();
     copyPtr->first.recreate (self.Volume);
     self.scaleValues (copyPtr->first);
     copyPtr->second.reset (new Math::ArrayView<const T, 3> (self.transposeVolume (copyPtr->first.view ())));
-    //return boost::shared_ptr<const Math::ArrayView<const T, 3> > (copyPtr, &copyPtr->view ()); // Only works if Array::view() returns a reference
-    return boost::shared_ptr<const Math::ArrayView<const T, 3> > (copyPtr, copyPtr->second.get ());
+    //return std::shared_ptr<const Math::ArrayView<const T, 3> > (copyPtr, &copyPtr->view ()); // Only works if Array::view() returns a reference
+    return std::shared_ptr<const Math::ArrayView<const T, 3> > (copyPtr, copyPtr->second.get ());
   } else {
-    return boost::make_shared<const Math::ArrayView<const T, 3> > (transposedUnscaledVolume (self));
+    return std::make_shared<const Math::ArrayView<const T, 3> > (transposedUnscaledVolume (self));
   }
 }
 
 template <typename T>
-boost::shared_ptr<VolumeGen<T> > load (const VolumeGen<T, true>& self) {
-  boost::shared_ptr<VolumeGen<T> > data = boost::make_shared<VolumeGen<T> > ();
+std::shared_ptr<VolumeGen<T> > load (const VolumeGen<T, true>& self) {
+  std::shared_ptr<VolumeGen<T> > data = std::make_shared<VolumeGen<T> > ();
   data->Type = self.Type;
   data->GridSpacing = self.GridSpacing;
   data->GridOrigin = self.GridOrigin;
@@ -245,7 +245,7 @@ void loadAndTransformTo (const VolumeGen<T, true>& self, const Math::ArrayView<T
   //QDateTime end = QDateTime::currentDateTimeUtc ();
   //qDebug() << (end.toMSecsSinceEpoch() - start.toMSecsSinceEpoch());
 }
-static void callbackDoNothing(UNUSED size_t pos, UNUSED size_t count) {}
+static inline void callbackDoNothing(UNUSED size_t pos, UNUSED size_t count) {}
 template <typename BufferType, typename T>
 void loadAndTransformTo (const VolumeGen<T, true>& self, const Math::ArrayView<T, 3>& view) {
   loadAndTransformTo<BufferType, T>(self, view, callbackDoNothing);

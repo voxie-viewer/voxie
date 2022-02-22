@@ -46,7 +46,7 @@ namespace HDF5 {
       sizeUnknown = false;
     }
 
-    boost::array<std::size_t, N> size;
+    std::array<std::size_t, N> size;
     bool sizeUnknown;
     mutable HDF5::DataSet dataSet;
 

@@ -1,0 +1,40 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Lasso based selection",
+            "DisplayName": "Lasso Selection Step",
+            "StepTip": "Lasso Selection",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "SelectionStep",
+            "IsSpecialStep": true,
+            "Icon": ":/icons/layer-shape-polygon.png",
+            "Properties": { 
+                "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.PolygonNodes": {
+                    "DisplayName": "Nodes of the Polygon",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ListPosition3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.VolumeOrientation": {
+                    "DisplayName": "Rotation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.VolumeOrigin": {
+                    "DisplayName": "Translation [m]",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.VoxelSize": {
+                    "DisplayName": "VoxelSize [m]",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.PlaneOrientation": {
+                    "DisplayName": "Rotation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.PlaneOrigin": {
+                    "DisplayName": "Translation [m]",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D"
+                }
+            }
+        }
+    ]
+}

@@ -2,4 +2,8 @@
     <qresource prefix="/">
         <file>XRay.cl</file>
     </qresource>
+    <qresource prefix="/PluginVis3D">
+        <file>Shader/RenderTriangles.vs.glsl</file>
+        <file>Shader/RenderTriangles.fs.glsl</file>
+    </qresource>
 </RCC>

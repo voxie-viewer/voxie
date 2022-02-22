@@ -62,7 +62,7 @@ namespace Core {
         return _condition;
       }
 
-      virtual std::string message () const {
+      std::string message () const override {
         std::stringstream str;
         str << "Assertion `" << condition () << "' failed in " << file () << ":" << line ();
         if (additionalMessage () != "")
@@ -76,7 +76,7 @@ namespace Core {
       AbortCalled (std::string file, int line, std::string additionalMessage) : AssertionFailureBase (file, line, additionalMessage) {}
       ~AbortCalled () throw () {}
 
-      virtual std::string message () const {
+      std::string message () const override {
         std::stringstream str;
         str << "Abort called in " << file () << ":" << line ();
         if (additionalMessage () != "")

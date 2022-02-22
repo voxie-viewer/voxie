@@ -1,0 +1,12 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Vgi.Import",
+            "DisplayName": "Volume Graphics VGI",
+            "Description": "Load Volume Graphics VGI files",
+            "Patterns": [
+                "*.vgi"
+            ]
+        }
+    ]
+}

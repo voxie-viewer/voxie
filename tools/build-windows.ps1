@@ -1,5 +1,11 @@
+# Note: When using meson "vctip.exe" seems to be started using some meson dll, which prevents the automatic cleanup by gitlab. Can be worked around by renaming "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\vctip.exe" to "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\old_vctip.exe"
+
+# TODO: Add vcruntime140_1.dll needed for scikit-image 0.18.1? (Currently windows uses version 0.17.2 because of this)
+
 set ErrorActionPreference Stop
 Set-StrictMode -Version 2.0
+
+$DoVoxieBuild = 1
 
 function CheckErrorCode {
   if (-Not $?) {
@@ -86,7 +92,7 @@ function AddCr([string]$source, [string]$target) {
 
 # http://stackoverflow.com/questions/2124753/how-i-can-use-powershell-with-the-visual-studio-command-prompt
 function SetVsCmd {
-    pushd $env:VOXIEBUILD_PATH_VISUAL_STUDIO/VC
+    pushd $env:VOXIEBUILD_PATH_VISUAL_STUDIO_VC
     cmd /c "vcvarsall.bat x64&set" |
     foreach {
       if ($_ -match "(.*?)=(.*)") {
@@ -112,34 +118,55 @@ function GetUrl {
   return $url
 }
 
+
+# $VERSION_PYTHON = "3.5.3"
+# $VERSION_PYTHON_SHORT = "cp35"
+
+$VERSION_PYTHON = "3.7.9"
+$VERSION_PYTHON_SHORT = "cp37"
+
 $files = @(
   "ICSharpCode.SharpZipLib.dll",
   "7za920.zip",
   "lessmsi-v1.6.1.zip",
+  # Note: Meson 0.56.2 seems to fail with the error message: '..\src\meson.build:1:0: ERROR: Requested C runtime based on buildtype, but buildtype is "custom".'
+  # Seems to be fixed by using an optimization level of 3, see commit aeb5982d207035f62ba7ad8fc3d1e78e641eedb5
+  #"meson-0.56.2-64.msi",
+  "meson-0.57.0-64.msi",
   "boost_1_61_0.zip",
+
+  "lapack/3.7.0-win64/liblapacke.lib",
+  "lapack/3.7.0-win64/libblas.dll",
+  "lapack/3.7.0-win64/liblapack.dll",
+  "lapack/3.7.0-win64/liblapacke.dll",
+  "lapack/3.7.0-win64/libtmglib.dll",
+
+  "cmake-2.8.12.2-win32-x86.zip"
+)
+$files_lic = @(
   "hdf5-1.10.0-patch1-win64-vs2015-shared.zip",
-  "cmake-2.8.12.2-win32-x86.zip",
   "expat-2.1.0.tar.gz",
   "dbus-1.8.2.tar.gz",
 
-  "python-3.5.3-embed-amd64.zip",
-  "Python-3.5.3.tgz", # For the license file
-  "numpy-1.12.1-cp35-none-win_amd64.whl",
-  "numpy-1.12.1.zip", # For the license file
-  "dbus-1.2.4-cp35-none-win_amd64.zip"
-  "Pillow-4.1.1-cp35-cp35m-win_amd64.whl",
-  "Pillow-4.1.1.tar.gz" # For the license file
+  #"LAPACKE_examples.zip",
+  #"lapack-3.5.0.tgz",
+  #"LAPACKE-3.5.0.lib",
+  "lapack-3.7.0.tgz",
+
+  "python-$VERSION_PYTHON-embed-amd64.zip"
 )
+$files_lic_only = @(
+  "qt-everywhere-opensource-src-5.6.3.tar.xz"
+)
+$files = $files + $files_lic
+$files_lic = $files_lic + $files_lic_only
 
 $URL_EXPAT_SRC = GetUrl("expat-2.1.0.tar.gz")
 $URL_DBUS_SRC = GetUrl("dbus-1.8.2.tar.gz")
 $URL_HDF5 = GetUrl("hdf5-1.10.0-patch1.tar.bz2")
-$URL_QT = GetUrl("qt-everywhere-opensource-src-5.6.0.tar.gz")
+$URL_QT = GetUrl("qt-everywhere-opensource-src-5.6.3.tar.xz")
 
-$URL_PYTHON_SRC = GetUrl("Python-3.5.3.tgz")
-$URL_NUMPY_SRC = GetUrl("numpy-1.12.1.zip")
-$URL_PYTHON_DBUS_SRC = GetUrl("dbus-python-1.2.4.tar.gz")
-$URL_PILLOW_SRC = GetUrl("Pillow-4.1.1.tar.gz")
+$URL_PYTHON_SRC = GetUrl("Python-$VERSION_PYTHON.tgz")
 
 echo "Checking build dependencies..."
 $algorithm = [Security.Cryptography.HashAlgorithm]::Create("SHA512")
@@ -184,10 +211,10 @@ echo "Checking environment variables..."
 
 # Visual Studio
 # https://www.visualstudio.com/downloads/download-visual-studio-vs (Visual Studio Community 2015 with Update 2)
-CheckEnvVar PATH_VISUAL_STUDIO
+CheckEnvVar PATH_VISUAL_STUDIO_VC
 
 # Qt
-# http://download.qt.io/official_releases/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2015_64-5.6.0.exe
+# http://download.qt.io/archive/qt/5.6/5.6.3/qt-opensource-windows-x86-msvc2015_64-5.6.3.exe
 CheckEnvVar PATH_QT
 CheckEnvVar URL_QT_COPY
 
@@ -213,23 +240,48 @@ if ($env:VOXIEBUILD_USE_GIT -ne "0") {
   }
   
   #$TARGET_NAME = "voxie"
-  $REV = git describe --always
+  # $REV = git describe --always
+  # CheckErrorCode
+  # $REV = $REV.Trim()
+  # if ($REV.StartsWith("voxie-")) {
+  #     $REV = $REV.Substring(6);
+  # }
+
+  $VOXIE_REF = git rev-parse HEAD
   CheckErrorCode
-  $REV = $REV.Trim()
-  if ($REV.StartsWith("voxie-")) {
-      $REV = $REV.Substring(6);
-  }
-  $TARGET_NAME = "voxie-" + $REV
+  $VOXIE_REF_SHORT = git rev-parse --short=10 $VOXIE_REF
+  CheckErrorCode
 } else {
-  $TARGET_NAME = "voxie"
+  $VOXIE_REF = "unknown"
+  $VOXIE_REF_SHORT = "unknown"
 }
+
+# $VOXIE_TAG = $env:CI_BUILD_REF
+# if (($env:CI_BUILD_TAG -ne $null) -and ($env:CI_BUILD_TAG -ne "")) {
+#     $VOXIE_TAG = $env:CI_BUILD_TAG
+# }
+
+$VOXIE_TAG = $VOXIE_REF
+
+$VOXIE_VERSION = [IO.File]::ReadAllText("src/version.txt").Trim() -replace "`"", ""
+$VOXIE_VERSION_SUFFIX = ""
+if (Test-Path "intern/version-suffix.txt") {
+  $VOXIE_VERSION_SUFFIX = [IO.File]::ReadAllText("intern/version-suffix.txt").Trim() -replace "`"", ""
+}
+
+$TAG = "voxie-" + $VOXIE_VERSION + $VOXIE_VERSION_SUFFIX + "-" + $VOXIE_REF_SHORT
+
+echo "Voxie version is: '$TAG'"
+
+$TARGET_NAME = $TAG
 $TARGET = "build/release/install/" + $TARGET_NAME
 
 New-Item -type directory $TARGET | Out-Null
 $SrcDir = [System.IO.Path]::GetFullPath(".")
 
 $QMAKE = $env:VOXIEBUILD_PATH_QT + "/bin/qmake"
-
+# Meson needs qmake in path to find Qt
+$env:PATH = $env:VOXIEBUILD_PATH_QT + "/bin;" + $env:PATH
 
 #$MAKE = "nmake"
 #$MAKE_ARGS = @()
@@ -240,15 +292,6 @@ $MAKE_ARGS = @( "-j5" )
 
 
 $QT_VERSION = [System.IO.Path]::GetFilename([System.IO.Path]::GetFullPath($env:VOXIEBUILD_PATH_QT + "/../..")) -replace "Qt", ""
-$VOXIE_TAG = $env:CI_BUILD_REF
-if (($env:CI_BUILD_TAG -ne $null) -and ($env:CI_BUILD_TAG -ne "")) {
-    $VOXIE_TAG = $env:CI_BUILD_TAG
-}
-
-$OPENCL_ICD_LOADER_COMMIT = [IO.File]::ReadAllText("lib/opencl-icd-loader.txt")
-$OPENCL_ICD_LOADER_COMMIT = $OPENCL_ICD_LOADER_COMMIT.SubString($OPENCL_ICD_LOADER_COMMIT.IndexOf("commit "))
-$OPENCL_ICD_LOADER_COMMIT = $OPENCL_ICD_LOADER_COMMIT.SubString(7)
-$OPENCL_ICD_LOADER_COMMIT = $OPENCL_ICD_LOADER_COMMIT.SubString(0, 40)
 
 SetVsCmd
 
@@ -259,45 +302,142 @@ New-Item -type directory build/dep | Out-Null
 #New-Item -type directory build/dep/7z | Out-Null
 #External build/dep/7za -obuild/dep/7z x "tools/build-dep/7z1604-extra.7z" | Out-Null
 
-echo "Unpacking boost..."
-External build/dep/7za -obuild/dep x "tools/build-dep/boost_1_61_0.zip" boost_1_61_0/boost | Out-Null
-$BOOST_INCLUDE = $SrcDir + "/build/dep/boost_1_61_0"
-
 echo "Unpacking lessmsi..."
 External build/dep/7za -obuild/dep/lessmsi x "tools/build-dep/lessmsi-v1.6.1.zip" | Out-Null
+
+echo "Unpacking meson/ninja..."
+#External build/dep/lessmsi/lessmsi x "tools\build-dep\meson-0.56.2-64.msi" "build\dep\meson\"
+External build/dep/lessmsi/lessmsi x "tools\build-dep\meson-0.57.0-64.msi" "build\dep\meson\"
+$MESON = $SrcDir + "/build/dep/meson/SourceDir/Meson/meson.exe"
+$NINJA = $SrcDir + "/build/dep/meson/SourceDir/Meson/ninja.exe"
+# Meson seems to need ninja in path
+$env:PATH = $SrcDir + "/build/dep/meson/SourceDir/Meson;" + $env:PATH
+
+echo "Unpacking boost..."
+# TODO: Should boost be listed as bundeled?
+External build/dep/7za -obuild/dep x "tools/build-dep/boost_1_61_0.zip" boost_1_61_0/boost | Out-Null
+$BOOST_INCLUDE = "build/dep/boost_1_61_0"
 
 echo "Unpacking HDF5..."
 External build/dep/7za -obuild/dep x "tools/build-dep/hdf5-1.10.0-patch1-win64-vs2015-shared.zip" | Out-Null
 External build/dep/lessmsi/lessmsi x "build\dep\hdf5\HDF5-1.10.0-win64.msi" "build\dep\hdf5\"
-$PATH_HDF5 = "$SrcDir/build/dep/hdf5/SourceDir/HDF_Group/HDF5/1.10.0"
+$PATH_HDF5 = "build/dep/hdf5/SourceDir/HDF_Group/HDF5/1.10.0"
+
+echo "Unpacking LAPACKE..."
+#External build/dep/7za -obuild/dep x "tools/build-dep/LAPACKE_examples.zip" | Out-Null
+#Rename-Item build/dep/LAPACKE_examples/lib build/dep/LAPACKE_examples/lib.old
+#New-Item -type directory build/dep/LAPACKE_examples/lib | Out-Null
+#Copy-Item tools/build-dep/LAPACKE-3.5.0.lib build/dep/LAPACKE_examples/lib/LAPACKE.lib
+#$PATH_LAPACKE = "$SrcDir/build/dep/LAPACKE_examples"
+
+#External build/dep/7za -obuild/dep x "tools/build-dep/lapack-3.5.0.tgz" | Out-Null
+#External build/dep/7za -obuild/dep x "build/dep/lapack-3.5.0.tar" | Out-Null
+#Copy-Item build/dep/lapack-3.5.0/lapacke/include/lapacke_mangling_with_flags.h build/dep/lapack-3.5.0/lapacke/include/lapacke_mangling.h
+#New-Item -type directory build/dep/lapack-3.5.0/lapacke/lib | Out-Null
+#Copy-Item tools/build-dep/LAPACKE-3.5.0.lib build/dep/lapack-3.5.0/lapacke/lib/LAPACKE.lib
+#$PATH_LAPACKE = "$SrcDir/build/dep/lapack-3.5.0/lapacke"
+
+External build/dep/7za -obuild/dep x "tools/build-dep/lapack-3.7.0.tgz" | Out-Null
+External build/dep/7za -obuild/dep x "build/dep/lapack-3.7.0.tar" | Out-Null
+New-Item -type directory build/dep/lapack-3.7.0/LAPACKE/lib | Out-Null
+Copy-Item tools/build-dep/lapack/3.7.0-win64/liblapacke.lib build/dep/lapack-3.7.0/LAPACKE/lib/LAPACKE.lib
+$PATH_LAPACKE = "build/dep/lapack-3.7.0/LAPACKE"
+
+echo "Extracting python files"
+New-Item -type directory $TARGET/python | Out-Null
+External build/dep/7za "-o$TARGET/python" x "tools/build-dep/python-$VERSION_PYTHON-embed-amd64.zip" | Out-Null
+
+echo "Getting license files"
+if (Test-Path -Path "build/licenses") {
+   Remove-Item -recurse "build/licenses"
+}
+New-Item -type directory "build/licenses" | Out-Null
+External "$TARGET/python/python.exe" -c "import sys; sys.path.insert(0, 'tools'); import download_dep; download_dep.main()" --license-only "--license-output-dir=build/licenses" "--unpack-program-7z=build/dep/7za" $files_lic
+
+# Extract python packages
+# Note: This has to be done before building voxie to get the license files
+# TODO: Do more stuff in python, unpack build-time python somewhere else
+# External "$TARGET/python/python.exe" "tools/python_packages_unpack.py" --python-tag=$VERSION_PYTHON_SHORT --abi-tag=${VERSION_PYTHON_SHORT}m --platform-tag=win_amd64 "$TARGET/python" "--license-output-dir=$TARGET"
+External "$TARGET/python/python.exe" -c "import sys; sys.path.insert(0, 'tools'); import python_packages_unpack; python_packages_unpack.main()" --python-tag=$VERSION_PYTHON_SHORT --abi-tag=${VERSION_PYTHON_SHORT}m --platform-tag=win_amd64 "$TARGET/python" "--license-output-dir=build/licenses"
 
 # Voxie
+if ($DoVoxieBuild) {
 echo "Building Voxie..."
 # New-Item -type directory build | Out-Null
 cd build
-& $QMAKE "BOOST_PATH=$BOOST_INCLUDE" "HDF5_PATH=$PATH_HDF5" ../src
+# -Dbuildtype=release seems to be needed to prevent meson from using the debug version of Qt
+& $MESON "-Dboost_include_path=$BOOST_INCLUDE" "-Dhdf5_path=$PATH_HDF5" "-Dadditional_licenses_file=build/licenses/list.jsonl" "-Dlapacke_path=$PATH_LAPACKE" "-Ddebug=false" "-Doptimization=3" "-Dbuildtype=release" ..
 CheckErrorCode
-& $MAKE $MAKE_ARGS
+# & $NINJA --verbose -k0
+& $NINJA --verbose
 CheckErrorCode
+# TODO: Use ninja install
+
 cd $SrcDir
 echo "Copying files..."
-AddCr COPYING $TARGET/COPYING.txt
-AddCr lib/opencl-icd-loader/LICENSE.txt $TARGET/COPYING.opencl-icd-loader.txt
-Copy-Item build/Main/*/*.exe $TARGET/
-Copy-Item build/Voxie/*/*.dll $TARGET/
-Copy-Item build/lib/OpenCLICDLoader/*/OpenCL.dll $TARGET/
+AddCr LICENSE $TARGET/LICENSE.txt
+# Copy-Item C:/Windows/System32/ucrtbased.dll $TARGET/ # Needed for debug build, not sure where it should come from
+Copy-Item build/src/Main/*.exe $TARGET/
+Copy-Item build/src/VoxieClient/*.dll $TARGET/
+Copy-Item build/src/VoxieBackend/*.dll $TARGET/
+Copy-Item build/src/Voxie/*.dll $TARGET/
 New-Item -type directory $TARGET/plugins | Out-Null
-Copy-Item build/Plugin*/*/*.dll $TARGET/plugins
+Copy-Item build/src/Plugin*/*.dll $TARGET/plugins
+Copy-Item -recurse build/src/extra/licenses $TARGET/licenses
+Copy-Item src/Main/voxie-path-install-win.json $TARGET/voxie-path.json
+New-Item -type directory $TARGET/pythonlib/voxie | Out-Null
+cp pythonlib/voxie/*.py $TARGET/pythonlib/voxie
+cp pythonlib/voxie/*.json $TARGET/pythonlib/voxie
+cp pythonlib/voxie/*.xml $TARGET/pythonlib/voxie
+if (Test-Path -Path intern/pythonlib/voxie_full) {
+  New-Item -type directory $TARGET/pythonlib/voxie_full | Out-Null
+  cp intern/pythonlib/voxie_full/*.py $TARGET/pythonlib/voxie_full
+  cp intern/pythonlib/voxie_full/*.json $TARGET/pythonlib/voxie_full
+  cp intern/pythonlib/voxie_full/*.xml $TARGET/pythonlib/voxie_full
+}
+cp de.uni_stuttgart.Voxie.xml $TARGET/pythonlib/voxie
+cp de.uni_stuttgart.Voxie.xml $TARGET
+if (Test-Path -Path intern) {
+  Copy-Item intern/*/de.uni_stuttgart.Voxie.*.xml $TARGET/pythonlib/voxie
+  Copy-Item intern/*/de.uni_stuttgart.Voxie.*.xml $TARGET
+}
+
+if (Test-Path "lib/python/") {
+  New-Item -type directory $TARGET/python-extra | Out-Null
+  ForEach ($a in [System.IO.Directory]::GetDirectories("lib/python/")) {
+    Copy-Item -recurse $a/* $TARGET/python-extra
+  }
+}
+
+}
+
 New-Item -type directory $TARGET/scripts | Out-Null
-Copy-Item build/Script*/*/*.exe $TARGET/scripts
-Copy-Item build/Ext*/*/*.exe $TARGET/scripts
-Copy-Item src/Ext*/*.conf $TARGET/scripts
-cp scripts/Example*.js $TARGET/scripts
-cp scripts/voxie.py $TARGET/scripts
+Copy-Item build/src/Script*/*.exe $TARGET/scripts
 cp scripts/createChessboard.py $TARGET/scripts
 cp scripts/getAverage.py $TARGET/scripts
 cp scripts/shmemTest.py $TARGET/scripts
-cp scripts/de.uni_stuttgart.Voxie.xml $TARGET
+
+New-Item -type directory $TARGET/ext | Out-Null
+# TODO: Copy Ext* except ExtFilter*
+Copy-Item build/src/ExtFile*/*.exe $TARGET/ext
+Copy-Item src/ExtFile*/*.json $TARGET/ext
+Copy-Item ext/*.py $TARGET/ext
+Copy-Item ext/*.json $TARGET/ext
+
+New-Item -type directory $TARGET/filters | Out-Null
+Copy-Item build/src/ExtFilter*/*.exe $TARGET/filters
+Copy-Item src/ExtFilter*/*.json $TARGET/filters
+Copy-Item filters/*.py $TARGET/filters
+Copy-Item filters/*.json $TARGET/filters
+Copy-Item filters/*.png $TARGET/filters
+Copy-Item filters/*.md $TARGET/filters
+
+New-Item -type directory $TARGET/doc | Out-Null
+Copy-Item -recurse doc/topic $TARGET/doc
+Copy-Item -recurse doc/prototype $TARGET/doc
+
+New-Item -type directory $TARGET/lib | Out-Null
+Copy-Item -recurse lib/katex-0.11.1 $TARGET/lib
 
 # CMake (needed for building Expat and DBus)
 echo "Unpacking CMake..."
@@ -319,7 +459,6 @@ CheckErrorCode
 & $MAKE $MAKE_ARGS
 CheckErrorCode
 cd $SrcDir
-AddCr $ExpatDir/COPYING $TARGET/COPYING.expat.txt
 
 # DBUS
 echo "Building DBus..."
@@ -336,7 +475,6 @@ CheckErrorCode
 & $MAKE $MAKE_ARGS
 CheckErrorCode
 cd $SrcDir
-AddCr $DBusDir/COPYING $TARGET/COPYING.dbus.txt
 Copy-Item $ExpatDir/build/expat.dll $TARGET
 Copy-Item $DBusDir/build/bin/dbus-1.dll $TARGET
 Copy-Item $DBusDir/build/bin/dbus-daemon.exe $TARGET
@@ -352,49 +490,42 @@ Copy-Item $PATH_HDF5/bin/zlib.dll $TARGET
 Copy-Item $PATH_HDF5/bin/szip.dll $TARGET
 Copy-Item $PATH_HDF5/bin/vcruntime*.dll $TARGET
 Copy-Item $PATH_HDF5/bin/msvcp*.dll $TARGET
-AddCr lib/COPYING.hdf5 $TARGET/COPYING.hdf5.txt
 
+# LAPACK
+echo "Copying LAPACK files..."
+Copy-Item tools/build-dep/lapack/3.7.0-win64/libblas.dll $TARGET
+Copy-Item tools/build-dep/lapack/3.7.0-win64/liblapack.dll $TARGET
+Copy-Item tools/build-dep/lapack/3.7.0-win64/liblapacke.dll $TARGET
+#Copy-Item tools/build-dep/lapack/3.7.0-win64/libtmglib.dll $TARGET
+
+if ($DoVoxieBuild) {
 echo "Copying Qt files..."
-& ${env:VOXIEBUILD_PATH_QT}/bin/windeployqt.exe $TARGET/voxie.exe
+& ${env:VOXIEBUILD_PATH_QT}/bin/windeployqt.exe $TARGET/voxie.exe $TARGET/Voxie.dll $TARGET/VoxieClient.dll $TARGET/VoxieBackend.dll (gci $TARGET/plugins/*.dll | % { "$_" })
 CheckErrorCode
-Copy-Item -recurse $TARGET/platforms $TARGET/scripts # Needed for ScriptGetAverage
+Copy-Item -recurse $TARGET/platforms $TARGET/scripts # Needed for Qt executables
+Copy-Item -recurse $TARGET/platforms $TARGET/ext # Needed for Qt executables
+Copy-Item -recurse $TARGET/platforms $TARGET/filters # Needed for Qt executables
 rm $TARGET/vcredist*.exe
-AddCr $env:VOXIEBUILD_PATH_QT/../../Licenses/LICENSE $TARGET/COPYING.qt.txt
+# QtWebEngineCore... is too large, artifact is rejected by build server => Works when increasing the setting in the gitlab CI admin panel https://stackoverflow.com/questions/57367224/how-to-increase-maximum-artifacts-size-for-gitlab-on-premises
+#rm $TARGET/Qt5WebEngine*.dll
+}
 
-echo "Extracting python files"
-New-Item -type directory $TARGET/python | Out-Null
-External build/dep/7za "-o$TARGET/python" x "tools/build-dep/python-3.5.3-embed-amd64.zip" | Out-Null
-External build/dep/7za "-o$TARGET/python" x "tools/build-dep/numpy-1.12.1-cp35-none-win_amd64.whl" | Out-Null
-External build/dep/7za "-o$TARGET/python" x "tools/build-dep/dbus-1.2.4-cp35-none-win_amd64.zip" | Out-Null
-External build/dep/7za "-o$TARGET/python" x "tools/build-dep/Pillow-4.1.1-cp35-cp35m-win_amd64.whl" | Out-Null
-Copy-Item $TARGET/python/COPYING.dbus-python.txt $TARGET/
-External build/dep/7za "-obuild/dep/python-src" x "tools/build-dep/Python-3.5.3.tgz" | Out-Null
-External build/dep/7za "-obuild/dep/python-src" x "build/dep/python-src/Python-3.5.3.tar" Python-3.5.3/LICENSE | Out-Null
-AddCr build/dep/python-src/Python-3.5.3/LICENSE $TARGET/COPYING.python.txt
-External build/dep/7za "-obuild/dep/numpy-src" x "tools/build-dep/numpy-1.12.1.zip" numpy-1.12.1/LICENSE.txt | Out-Null
-AddCr build/dep/numpy-src/numpy-1.12.1/LICENSE.txt $TARGET/COPYING.numpy.txt
-External build/dep/7za "-obuild/dep/pillow-src" x "tools/build-dep/Pillow-4.1.1.tar.gz" | Out-Null
-External build/dep/7za "-obuild/dep/pillow-src" x "build/dep/pillow-src/dist/Pillow-4.1.1.tar" Pillow-4.1.1/LICENSE | Out-Null
-AddCr build/dep/pillow-src/Pillow-4.1.1/LICENSE $TARGET/COPYING.pillow.txt
+if (1) {
+  Move-Item "$TARGET/python/dbus-python-windows/Lib/dbus" "$TARGET/python"
+  Move-Item "$TARGET/python/dbus-python-windows/DLLs/_dbus_bindings.pyd" "$TARGET/python"
+  Move-Item "$TARGET/python/dbus-python-windows/DLLs/libpython3.7m.dll" "$TARGET/python" # TODO: ?
+  Copy-Item "$TARGET/dbus-1.dll" "$TARGET/python/libdbus-1-3.dll" # TODO: ?
+  Remove-Item -recurse "$TARGET/python/dbus-python-windows"
+}
 
 echo "Copying manual..."
-Copy-Item manual.pdf $TARGET
+Copy-Item old-manual.pdf $TARGET
 
 echo "Creating README..."
 $text = [IO.File]::ReadAllText("tools/README-windows.tmpl") -replace "`n", "`r`n"
 $text = $text -replace "%QT_VERSION%", $QT_VERSION
-$text = $text -replace "%OPENCL_ICD_LOADER_COMMIT%", $OPENCL_ICD_LOADER_COMMIT
-$text = $text -replace "%EXPAT_URL%", $URL_EXPAT_SRC
-$text = $text -replace "%DBUS_URL%", $URL_DBUS_SRC
-$text = $text -replace "%HDF5_URL%", $URL_HDF5
-$text = $text -replace "%URL_PYTHON_SRC%", $URL_PYTHON_SRC
-$text = $text -replace "%URL_NUMPY_SRC%", $URL_NUMPY_SRC
-$text = $text -replace "%URL_PYTHON_DBUS_SRC%", $URL_PYTHON_DBUS_SRC
-$text = $text -replace "%URL_PILLOW_SRC%", $URL_PILLOW_SRC
-$text = $text -replace "%QT_URL%", $URL_QT
-$text = $text -replace "%QT_URL_COPY%", $env:VOXIEBUILD_URL_QT_COPY
 $text = $text -replace "%VOXIE_TAG%", $VOXIE_TAG
-$text = $text -replace "%VOXIE_COMMIT%", $env:CI_BUILD_REF
+$text = $text -replace "%VOXIE_COMMIT%", $VOXIE_REF
 [IO.File]::WriteAllText("build/README", $text)
 AddCr build/README $TARGET/README.txt
 

@@ -1,0 +1,15 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Display some random charts",
+            "Icon": ":/icons/equalizer.png",
+            "DisplayName": "Example Visualizer",
+            "Name": "de.uni_stuttgart.Voxie.Example.Visualizer.RandomChart",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ExampleVisualizer"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "Properties": {}
+        }
+    ]
+}

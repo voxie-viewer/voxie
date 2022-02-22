@@ -1,0 +1,6 @@
+{
+    "Name": "LAPACK",
+    "Version": "3.7.0",
+    "LicenseFilename": "lapack-3.7.0/LICENSE",
+    "Source": "http://www.netlib.org/lapack/lapack-3.7.0.tgz"
+}

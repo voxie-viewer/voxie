@@ -1,0 +1,66 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Median Filter",
+            "DisplayName": "Median Filter",
+            "Name": "de.uni_stuttgart.Voxie.Filter.MedianFilter",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Icon": ":/icons/contrast.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.MedianFilter.Range": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.MedianFilter.Range"
+                    ],
+                    "DisplayName": "Range",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "UIPosition": 0,
+                    "DefaultValue": 1,
+                    "MinimumValue": 1
+                },
+                "de.uni_stuttgart.Voxie.Filter.MedianFilter.Mode": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.MedianFilter.Mode"
+                    ],
+                    "DisplayName": "Mode",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "UIPosition": 1,
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.MedianFilter.Mode.Diamond": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.MedianFilter.Mode.Diamond"
+                            ],
+                            "DisplayName": "Diamond"
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.MedianFilter.Mode.Sphere": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.MedianFilter.Mode.Sphere"
+                            ],
+                            "DisplayName": "Sphere"
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.MedianFilter.Mode.Cube": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.MedianFilter.Mode.Cube"
+                            ],
+                            "DisplayName": "Cube"
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.MedianFilter.Mode.Diamond"
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

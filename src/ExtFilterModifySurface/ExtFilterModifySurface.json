@@ -1,0 +1,279 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Mesh Smoothing: Denoise the Surface using Diffusion Flow",
+            "DisplayName": "Mesh Smoothing - Taubin Smoothing",
+            "Name": "de.uni_stuttgart.Voxie.Filter.Surface.TaubinFiltering",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ModifySurfaceCPP.TaubinFiltering"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.Surface.TaubinFiltering.TaubinIterations": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.TaubinIterations"
+                    ],
+                    "DisplayName": "Number of iterations",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "MinimumValue": 0,
+                    "DefaultValue": 65
+                },
+                "de.uni_stuttgart.Voxie.Filter.Surface.TaubinFiltering.Attenuation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.Attenuation"
+                    ],
+                    "DisplayName": "Attenuation factor (λ)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 0.4
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        },
+        {
+            "Description": "Denoise the Surface using Mean Normal Filtering",
+            "DisplayName": "Mesh Smoothing - Mean Normal Filtering",
+            "Name": "de.uni_stuttgart.Voxie.Filter.Surface.MeanNormalFiltering",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.Filter.SurfaceMeanNormalFiltering"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.Surface.MeanNormalFiltering.MeanIterations": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.MeanIterations"
+                    ],
+                    "DisplayName": "Number of Iterations",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "MinimumValue": 0,
+                    "DefaultValue": 13
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        },
+        {
+            "Description": "Mesh Smoothing: Denoise the Surface using Bilateral Filtering",
+            "DisplayName": "Mesh Smoothing - Bilateral Filtering",
+            "Name": "de.uni_stuttgart.Voxie.Filter.Surface.BilateralFiltering",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ModifySurfaceCPP.BilateralFiltering"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.Surface.BilateralFiltering.BilateralSigmaSpacial": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.BilateralSigmaSpacial"
+                    ],
+                    "DisplayName": "Width of Spacial Filter (σ_f)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 7.0
+                },
+                "de.uni_stuttgart.Voxie.Filter.Surface.BilateralFiltering.BilateralSigmaSignal": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.BilateralSigmaSignal"
+                    ],
+                    "DisplayName": "Width of Signal Filter (σ_g)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 2.0
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        },
+        {
+            "Description": "Mesh Smoothing: Denoise the Surface using Fast and Effective Feature-Preserving Mesh Denoising (FED)",
+            "DisplayName": "Mesh Smoothing - Fast and Effective Feature-Preserving Mesh Denoising (FED)",
+            "Name": "de.uni_stuttgart.Voxie.Filter.Surface.FastEffectiveDPFilter",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ModifySurfaceCPP.FastEffectiveDPFilter"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.Surface.FastEffectiveDPFilter.FEDThreshold": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.FEDThreshold"
+                    ],
+                    "DisplayName": "Threshold for the normal filtering (T)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 0.4
+                },
+                "de.uni_stuttgart.Voxie.Filter.Surface.FastEffectiveDPFilter.FEDIterations": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.FEDIterations"
+                    ],
+                    "DisplayName": "Iterations",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "MinimumValue": 0,
+                    "DefaultValue": 10
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        },
+        {
+            "Description": "Mesh Smoothing: Denoise the Surface using Feature-convinced Denoising",
+            "DisplayName": "Mesh Smoothing - Feature-convinced Denoising",
+            "Name": "de.uni_stuttgart.Voxie.Filter.Surface.FeatureConvincedDenoising",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ModifySurfaceCPP.FeatureConvincedDenoising"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.Surface.FeatureConvincedDenoising.FCDExtensions": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.FCDExtensions"
+                    ],
+                    "DisplayName": "Maximum Extension Steps (reasonable values range from 3 to 15)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "MinimumValue": 0,
+                    "DefaultValue": 4
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        },
+        {
+            "Description": "Mesh Simplification: Reduce the complexity of the Mesh using Progressive Mesh Decimation",
+            "DisplayName": "Mesh Simplification - Progressive Mesh Decimation",
+            "Name": "de.uni_stuttgart.Voxie.Filter.Surface.ProgressiveMeshDecimation",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ModifySurfaceCPP.ProgressiveMeshDecimation"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.Surface.ProgressiveMeshDecimation.PMDReduction": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.PMDReduction"
+                    ],
+                    "DisplayName": "Fraction of Vertices to be eliminated",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "MaximumValue": 1.0,
+                    "DefaultValue": 0.5
+                },
+                "de.uni_stuttgart.Voxie.Filter.Surface.ProgressiveMeshDecimation.PMDAngle": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.PMDAngle"
+                    ],
+                    "DisplayName": "Minimum angle of feature edges (α_f)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 0.5
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        },
+        {
+            "Description": "Add noise in normal direction to the mesh",
+            "DisplayName": "Add noise to mesh",
+            "Name": "de.uni_stuttgart.Voxie.Filter.Surface.NoiseApplicator",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ModifySurfaceCPP.NoiseApplicator"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.Surface.NoiseApplicator.NoiseLvl": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ModifySurfaceCPP.NoiseLvl"
+                    ],
+                    "DisplayName": "Amount of Noise to be added",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 1.0
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

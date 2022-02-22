@@ -1,0 +1,8 @@
+reikna
+reikna/algorithms
+reikna/cbrng
+reikna/cluda
+reikna/core
+reikna/fft
+reikna/helpers
+reikna/linalg

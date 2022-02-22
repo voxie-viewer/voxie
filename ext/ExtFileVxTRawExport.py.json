@@ -1,0 +1,15 @@
+{
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.TomographyRawData.VxTRaw.Export",
+            "DisplayName": "Voxie Tomography Raw Data JSON",
+            "Description": "Save Tomography Raw Data to JSON files",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.TomographyRawData"
+            ],
+            "Patterns": [
+                "*.vxtraw.json"
+            ]
+        }
+    ]
+}

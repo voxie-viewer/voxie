@@ -43,7 +43,11 @@
 #endif
 
 // Evaluates to true iff __GNUC__ is defined and (__GNUC__, __GNUC_MINOR__) is at least (major, minor)
-#define GCC_VERSION_IS_ATLEAST(major, minor) (defined (__GNUC__) && (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
+#ifdef __GNUC__
+#define GCC_VERSION_IS_ATLEAST(major, minor) (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#else
+#define GCC_VERSION_IS_ATLEAST(major, minor) (0)
+#endif
 
 // For methods which should never be called
 #if __has_attribute(error) || GCC_VERSION_IS_ATLEAST(4, 3)

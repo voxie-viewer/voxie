@@ -1,0 +1,19 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A table containing information about labels extracted out of a 3D volume.",
+            "DisplayName": "Table",
+            "Name": "de.uni_stuttgart.Voxie.Data.Table",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.Table"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Data",
+            "Icon": ":/icons/table.png",
+            "SupportedDataDBusInterfaces": [
+                "de.uni_stuttgart.Voxie.TableData"
+            ],
+            "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.Table.Json.Export",
+            "Properties": {}
+        }
+    ]
+}

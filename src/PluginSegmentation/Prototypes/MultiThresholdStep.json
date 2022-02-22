@@ -1,0 +1,37 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Segmentation by setting multiple thresholds",
+            "DisplayName": "",
+            "StepTip": "Multi-Threshold Segmentation",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "LabelStep",
+            "IsSpecialStep": false,
+            "StartsRunAutomatic": false,
+            "Icon": ":/icons/chart-pie-separate.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep.ThresholdList": {
+                    "Name": "ThresholdList",
+                    "DisplayName": "Threshold List",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ThresholdLabelMapping"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep.Volume": {
+                    "AllowedNodeTypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                }
+            }, 
+            "UI": {
+                "SegmentationStepUIEntries": [
+                    {
+                        "Type": "Custom",
+                        "Name": "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep.MultiThresWidget"
+                    }
+                ]
+            }
+        }
+    ]
+}

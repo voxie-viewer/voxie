@@ -51,6 +51,9 @@ namespace HDF5 {
       checkType ();
     }
 
+    DataSpace getSpace () const;
+    DataType getDataType () const;
+    
     void read (void* buf, const HDF5::DataType& memType) const;
     void write (const void* buf, const HDF5::DataType& memType) const;
   };

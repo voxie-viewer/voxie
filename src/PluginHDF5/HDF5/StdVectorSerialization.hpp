@@ -43,7 +43,7 @@ namespace HDF5 {
       ASSERT (space.getSimpleExtentNdims () == 1);
       hsize_t size;
       space.getSimpleExtentDims (&size);
-      boost::shared_ptr<std::vector<T, Alloc> > v (new std::vector<T, Alloc> (Core::checked_cast<size_t> (size)));
+      std::shared_ptr<std::vector<T, Alloc> > v (new std::vector<T, Alloc> (Core::checked_cast<size_t> (size)));
       context.registerValue (name, v);
       dataSet.read (v->data (), getH5Type<T> ());
     }

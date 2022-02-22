@@ -1,0 +1,38 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Add random shift to raw data.",
+            "DisplayName": "Add random shift to raw data",
+            "Name": "de.uni_stuttgart.Voxie.Example.Filter.RawDataAddRandomShift",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.TomographyRawData"
+                    ],
+                    "DisplayName": "Input data",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.TomographyRawData"
+                    ],
+                    "DisplayName": "Output data",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Example.Filter.RawDataAddRandomShift.Seed": {
+                    "DisplayName": "Seed",
+                    "MinimumValue": 0,
+                    "MaximumValue": 4294967295,
+                    "DefaultValue": 1337,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int"
+                },
+                "de.uni_stuttgart.Voxie.Example.Filter.RawDataAddRandomShift.ShiftFirstImage": {
+                    "DisplayName": "Shift first image",
+                    "DefaultValue": false,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean"
+                }
+            }
+        }
+    ]
+}

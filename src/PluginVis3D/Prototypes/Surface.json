@@ -1,0 +1,116 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Surface shown in the 3D visualizer",
+            "DisplayName": "Surface",
+            "Name": "de.uni_stuttgart.Voxie.Object3D.Surface",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Object3D",
+            "Icon": ":/icons/universal.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Object3D.Generic.Visible": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Object3D.Visible"
+                    ],
+                    "DisplayName": "Visible",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.Surface": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.FaceCulling": {
+                    "DisplayName": "Face culling",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Object3D.Surface.FaceCulling.None": {
+                            "DisplayName": "None (show both faces)",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Object3D.Surface.FaceCulling.ShowFront": {
+                            "DisplayName": "Show only front faces",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Object3D.Surface.FaceCulling.ShowBack": {
+                            "DisplayName": "Show only back faces",
+                            "UIPosition": 3
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Object3D.Surface.FaceCulling.None"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.DrawOrigin": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Object3D.DrawOrigin"
+                    ],
+                    "DisplayName": "Draw origin",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.DrawAxisArrows": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Object3D.DrawAxisArrows"
+                    ],
+                    "DisplayName": "Draw axis arrows",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.DrawBoundingBox": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Object3D.DrawBoundingBox"
+                    ],
+                    "DisplayName": "Draw bounding box",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.HighlightCurrentTriangle": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Object3D.HighlightCurrentTriangle"
+                    ],
+                    "DisplayName": "Highlight current triangle",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.ShadingTechnique": {
+                    "DisplayName": "Shading technique",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.ShadingTechnique.Flat": {
+                            "DisplayName": "Flat",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.ShadingTechnique.Smooth": {
+                            "DisplayName": "Smooth",
+                            "UIPosition": 2
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.ShadingTechnique.Flat"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.FrontColor": {
+                    "DisplayName": "Surface color",
+                    "ShortDescription": "Color for front side of surface (only used if the surface does not include color information)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "DefaultValue": [
+                        0.7,
+                        0.7,
+                        0.7,
+                        1.0
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Object3D.Surface.BackColor": {
+                    "DisplayName": "Surface back color",
+                    "ShortDescription": "Color for back side of surface (only used if the surface does not include color information)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "DefaultValue": [
+                        0.5,
+                        0.5,
+                        0.5,
+                        1.0
+                    ]
+                }
+            }
+        }
+    ]
+}

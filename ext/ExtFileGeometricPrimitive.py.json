@@ -1,0 +1,25 @@
+{
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.GeometricPrimitive.Json.Export",
+            "DisplayName": "Voxie geometric primitive JSON",
+            "Description": "Save geometric primitive data to JSON files",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.GeometricPrimitive"
+            ],
+            "Patterns": [
+                "*.vxgmpr.json"
+            ]
+        }
+    ],
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.GeometricPrimitive.Json.Import",
+            "DisplayName": "Voxie geometric primitive JSON",
+            "Description": "Load geometric primitive data from JSON files",
+            "Patterns": [
+                "*.vxgmpr.json"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A set of geometric primitives shown in the 3D visualizer",
+            "DisplayName": "Geometric primitive",
+            "Name": "de.uni_stuttgart.Voxie.Object3D.GeometricPrimitive",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Object3D",
+            "Icon": ":/icons/universal.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Object3D.Generic.Visible": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Object3D.Visible"
+                    ],
+                    "DisplayName": "Visible",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Object3D.GeometricPrimitive.GeometricPrimitive": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.GeometricPrimitive"
+                    ],
+                    "DisplayName": "Geometric primitive",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                }
+            }
+        }
+    ]
+}

@@ -30,7 +30,15 @@
 
 #include <boost/foreach.hpp>
 
+#if defined (__clang__) || defined (__GNUC__)
+// Disable -Wsuggest-override for utf8cpp include
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-override"
+#endif
 #include <lib/utf8cpp/utf8.h>
+#if defined (__clang__) || defined (__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 #if !OS_WIN
 #include <unistd.h>
@@ -345,7 +353,7 @@ namespace HDF5 {
   void MatlabSerializer<bool>::h5MatlabLoad (const MatlabDeserializationContextHandle<bool>& handle) {
     MatlabObject mo (handle.get ());
     uint8_t value = mo.getScalar<uint8_t> ();
-    handle.registerValue (boost::make_shared<bool> ((bool) value));
+    handle.registerValue (std::make_shared<bool> ((bool) value));
   }
 
   void MatlabSerializer<std::string>::h5MatlabSave (const MatlabSerializationContextHandle& handle, const std::string& s) {
@@ -372,13 +380,13 @@ namespace HDF5 {
       std::vector<int16_t> v;
       mo.get1dStdVector (v);
       std::string result (v.begin (), v.end ());
-      handle.registerValue (boost::make_shared<std::string> (result));
+      handle.registerValue (std::make_shared<std::string> (result));
     } else {
       std::vector<uint16_t> v;
       mo.get1dStdVector (v);
       std::string result;
       utf8::utf16to8 (v.begin (), v.end (), std::back_inserter (result));
-      handle.registerValue (boost::make_shared<std::string> (result));
+      handle.registerValue (std::make_shared<std::string> (result));
     }
   }
 }

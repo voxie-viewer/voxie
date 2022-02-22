@@ -1,0 +1,6 @@
+{
+    "Name": "Qt",
+    "Version": "5.6.3",
+    "LicenseFilename": "qt-everywhere-opensource-src-5.6.3/LICENSE.LGPLv21",
+    "Source": "https://download.qt.io/archive/qt/5.6/5.6.3/single/qt-everywhere-opensource-src-5.6.3.tar.xz"
+}

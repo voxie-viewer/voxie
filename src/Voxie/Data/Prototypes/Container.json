@@ -1,0 +1,35 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A data node that can hold an arbitrary amount of voxie data objects",
+            "DisplayName": "Container",
+            "Name": "de.uni_stuttgart.Voxie.Data.Container",
+            "Tags": "",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ContainerNode",
+                "de.uni_stuttgart.Voxie.Data.ContainerNode"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Data",
+            "Icon": ":/icons/table.png",
+            "SupportedDataDBusInterfaces": [
+                "de.uni_stuttgart.Voxie.ContainerData"
+            ],
+            "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.ContainerData.Json.Export",
+            "Properties": {},
+            "UI": {
+                "SidePanelSections": [
+                    {
+                        "Name": "InfoSection",
+                        "DisplayName": "Info",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.Data.Container.Info"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

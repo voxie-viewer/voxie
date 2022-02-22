@@ -1,0 +1,12 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Grid",
+            "DisplayName": "Grid",
+            "Name": "de.uni_stuttgart.Voxie.Object3D.Grid",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Object3D",
+            "Icon": ":/icons/universal.png",
+            "Properties": {}
+        }
+    ]
+}

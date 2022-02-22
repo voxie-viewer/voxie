@@ -1,0 +1,72 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Blurs the image using a non-local means algorithm. Results in greater post-filtering clarity compared with local means filters.",
+            "DisplayName": "Non-local means",
+            "Name": "de.uni_stuttgart.Voxie.Filter.NonLocalMeans",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.Filter.NonLocalMeansFilter"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Icon": ":/icons/contrast.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.NonLocalMeans.PatchSize": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.NonLocalMeansFilter.PatchSize"
+                    ],
+                    "DisplayName": "Patch Size",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 1,
+                    "MinimumValue": 0,
+                    "UIPosition": 1
+                },
+                "de.uni_stuttgart.Voxie.Filter.NonLocalMeans.PatchDistance": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.NonLocalMeansFilter.PatchDistance"
+                    ],
+                    "DisplayName": "Patch Distance",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 1,
+                    "MinimumValue": 0,
+                    "UIPosition": 2
+                },
+                "de.uni_stuttgart.Voxie.Filter.NonLocalMeans.AutoSigma": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.NonLocalMeansFilter.AutoSigma"
+                    ],
+                    "DisplayName": "Auto-Sigma",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true,
+                    "UIPosition": 3
+                },
+                "de.uni_stuttgart.Voxie.Filter.NonLocalMeans.Sigma": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.NonLocalMeansFilter.Sigma"
+                    ],
+                    "DisplayName": "Sigma",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 1,
+                    "MinimumValue": 0,
+                    "UIPosition": 4
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "OutputTags": [
+                        "de.uni_stuttgart.Voxie.Tags.Volume.Float"
+                    ],
+                    "DisplayName": "Output",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

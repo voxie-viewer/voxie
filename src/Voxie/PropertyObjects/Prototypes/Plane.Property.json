@@ -1,0 +1,34 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A plane is a 3D property which can be used in the 2D and 3D visualisation of Voxie.",
+            "DisplayName": "Plane",
+            "Name": "de.uni_stuttgart.Voxie.Property.Plane",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.PlaneProperty"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Property",
+            "Icon": ":/icons/paper-plane.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Property.Plane.Orientation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.PlaneProperty.Orientation"
+                    ],
+                    "DisplayName": "rotation",
+                    "IsCustomStorage": true,
+                    "IsCustomUI": true,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D"
+                },
+                "de.uni_stuttgart.Voxie.Property.Plane.Origin": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.PlaneProperty.Origin"
+                    ],
+                    "DisplayName": "position",
+                    "IsCustomStorage": true,
+                    "IsCustomUI": true,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D"
+                }
+            }
+        }
+    ]
+}

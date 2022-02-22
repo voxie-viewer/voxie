@@ -1,0 +1,65 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Segmentation using a watershed algorithm",
+            "DisplayName": "",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "ExtensionStep",
+            "IsSpecialStep": false,
+            "StartsRunAutomatic": false,
+            "StepTip": "Watershed",
+            "Icon": ":/icons/water.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.Sigma": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Watershed.Sigma"
+                    ],
+                    "DisplayName": "STD of Gaussian blur",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 5,
+                    "MinimumValue": 1
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.Seeds": {
+                    "DisplayName": "LabelIDs used as seeds",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.LabelList",
+                    "SetFromSelectedLabels": true
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.ExecutionKind": {
+                    "DisplayName": "Type of execution",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.ExecutionKind.Sequential": {
+                            "DisplayName": "Sequential",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.ExecutionKind.Parallel": {
+                            "DisplayName": "Parallel",
+                            "UIPosition": 2
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.ExecutionKind.Sequential"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.Volume": {
+                    "AllowedNodeTypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                }
+            },
+            "UI": {
+                "SegmentationStepUIEntries": [
+                    {
+                        "Type": "Property",
+                        "Property": "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.Sigma"
+                    },
+                    {
+                        "Type": "Property",
+                        "Property": "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.ExecutionKind"
+                    }
+                ]
+            }
+        }
+    ]
+}

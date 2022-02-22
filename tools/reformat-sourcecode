@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+git ls-tree -r HEAD src -z --name-only |
+    grep -z '\.hpp$\|\.cpp$' |
+    grep -z -v '^src/PluginHDF5/.*/\|^src/VoxieBackend/lib' |
+    xargs -0 clang-format -i --

@@ -1,0 +1,25 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.EventList.Json.Import",
+            "DisplayName": ".vxevl event list files",
+            "Description": "Load .vxevl event list files",
+            "Patterns": [
+                "*.vxevl"
+            ]
+        }
+    ],
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.EventList.Json.Export",
+            "DisplayName": ".vxevl event list files",
+            "Description": "Save .vxevl event list files",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.EventListData"
+            ],
+            "Patterns": [
+                "*.vxevl"
+            ]
+        }
+    ]
+}

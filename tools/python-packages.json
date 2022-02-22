@@ -1,0 +1,43 @@
+[
+    {
+        "Name": "numpy",
+        "Version": "1.20.1",
+        "LicenseFilename": "LICENSE.txt",
+        "SourceExtension": "zip"
+    },
+    {
+        "Name": "Pillow",
+        "Version": "8.1.0",
+        "LicenseFilename": "LICENSE"
+    },
+    {
+        "Name": "scipy",
+        "Version": "1.6.1",
+        "LicenseFilename": "LICENSE.txt"
+    },
+    {
+        "Name": "scikit_image",
+        "Version": {
+            "win_amd64": "0.17.2",
+            "": "0.18.1"
+        },
+        "LicenseFilename": "LICENSE.txt"
+    },
+    {
+        "Name": "Mako",
+        "Version": "1.1.4",
+        "IsPurePython": true,
+        "LicenseFilenameSource": "{SOURCE_NAME}-{SOURCE_VERSION}/LICENSE"
+    },
+    {
+        "Name": "dbus",
+        "Version": "1.2.4",
+        "SourceVersion": "1.2.14",
+        "LicenseFilenameSource": "dbus-python-windows-dbus-python-{SOURCE_VERSION}/COPYING",
+        "Filename": {
+            "win_amd64": "dbus-python-windows-{VERSION}_{PYTHON_TAG}_amd64.zip",
+            "macosx_10_9_x86_64": null
+        },
+        "SourceFilename": "dbus-python-windows-{SOURCE_VERSION}.tar.gz"
+    }
+]

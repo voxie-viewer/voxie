@@ -25,7 +25,9 @@
 #include <HDF5/Group.hpp>
 
 #ifndef NO_BOOST_FILESYSTEM_PATH
+#if USE_BOOST_FILESYSTEM
 #include <boost/filesystem.hpp>
+#endif
 #else
 #include <fstream>
 #endif
@@ -33,7 +35,7 @@
 namespace HDF5 {
   static bool fileExists (const FilenameType& name) {
 #ifndef NO_BOOST_FILESYSTEM_PATH
-    return boost::filesystem::exists (name);
+    return Core::filesystem::exists (name);
 #else
     std::ifstream f (getString (name).c_str ());
     return f.good ();

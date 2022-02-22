@@ -1,0 +1,6 @@
+{
+    "Name": "DBus",
+    "Version": "1.8.2",
+    "LicenseFilename": "dbus-1.8.2/COPYING",
+    "Source": "https://dbus.freedesktop.org/releases/dbus/dbus-1.8.2.tar.gz"
+}

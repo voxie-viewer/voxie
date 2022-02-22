@@ -1,0 +1,19 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A set of 2D images for reconstruction into a 3D volume",
+            "DisplayName": "Tomography raw data",
+            "Name": "de.uni_stuttgart.Voxie.Data.TomographyRawData",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.RawObject"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Data",
+            "Icon": ":/icons-voxie/voxel-data-32.png",
+            "SupportedDataDBusInterfaces": [
+                "de.uni_stuttgart.Voxie.TomographyRawDataBase"
+            ],
+            "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.TomographyRawData.VxTRaw.Export",
+            "Properties": {}
+        }
+    ]
+}

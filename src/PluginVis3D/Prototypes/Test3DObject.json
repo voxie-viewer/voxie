@@ -1,0 +1,18 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Test object shown in the 3D visualizer",
+            "DisplayName": "Test 3D object",
+            "Name": "de.uni_stuttgart.Voxie.Example.Object3D.Test3DObject",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Object3D",
+            "Icon": ":/icons/universal.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Example.Object3D.Test3DObject.Length": {
+                    "DisplayName": "Length",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 1.0
+                }
+            }
+        }
+    ]
+}

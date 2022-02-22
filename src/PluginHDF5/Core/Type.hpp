@@ -54,9 +54,7 @@ namespace Core {
     // types with virtual inheritance)
     template <typename C, typename V>
     NVCC_HOST_DEVICE static inline size_t getOffset (V C::* ptr) {
-#if HAVE_CXX11
       static_assert (std::is_standard_layout<C>::value, "C is not a standard layout type");
-#endif
       // This works, but is not portable
       // return ((char*) &(((C*) 0)->*ptr)) - ((char*) 0);
 

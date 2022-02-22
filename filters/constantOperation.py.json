@@ -1,0 +1,108 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Allows to apply binary operations such as addition, subtraction, logical AND, logical OR, and logical XOR to a volume with a constand second operand.",
+            "DisplayName": "Constant Operation",
+            "Name": "de.uni_stuttgart.Voxie.Filter.ConstantOperation",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.ConstantOperation"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Icon": ":/icons/processor.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ConstantOperation.Operation"
+                    ],
+                    "DisplayName": "Operation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation.Add": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.BinaryOperation.Operation.Add"
+                            ],
+                            "DisplayName": "Add",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation.Subtract": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.BinaryOperation.Operation.Subtract"
+                            ],
+                            "DisplayName": "Subtract",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation.Multiply": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.BinaryOperation.Operation.Multiply"
+                            ],
+                            "DisplayName": "Multiply",
+                            "UIPosition": 3
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation.Divide": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.BinaryOperation.Operation.Divide"
+                            ],
+                            "DisplayName": "Divide",
+                            "UIPosition": 4
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation.LogicalAnd": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.BinaryOperation.Operation.LogicalAnd"
+                            ],
+                            "DisplayName": "Logical AND",
+                            "UIPosition": 5
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation.LogicalOr": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.BinaryOperation.Operation.LogicalOr"
+                            ],
+                            "DisplayName": "Logical OR",
+                            "UIPosition": 6
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation.LogicalXor": {
+                            "CompatibilityNames": [
+                                "de.uni_stuttgart.Voxie.BinaryOperation.Operation.LogicalXor"
+                            ],
+                            "DisplayName": "Logical XOR",
+                            "UIPosition": 7
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation.Add"
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Operand 1",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operand2": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.ConstantOperation.Operand2"
+                    ],
+                    "DisplayName": "Operand 2",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            },
+            "RunFilterEnabledCondition": {
+                "Type": "de.uni_stuttgart.Voxie.PropertyCondition.And",
+                "Conditions": [
+                    {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.Not",
+                        "Condition": {
+                            "Type": "de.uni_stuttgart.Voxie.PropertyCondition.IsEmpty",
+                            "Property": "de.uni_stuttgart.Voxie.Input"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

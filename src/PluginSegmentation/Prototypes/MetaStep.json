@@ -1,0 +1,76 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Performs special table entry modification",
+            "DisplayName": "Segmentation Meta Step",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "MetaStep",
+            "IsSpecialStep": true,
+            "Icon": ":/icons/desktop.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.LabelID": {
+                    "Name": "LabelID",
+                    "DisplayName": "LabelID",
+                    "MinimumValue": 0,
+                    "MaximumValue": 999999,
+                    "DefaultValue": -1,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.ModificationKind": {
+                    "Name": "SegmentationTableEnum",
+                    "DisplayName": "...",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "AddLabel": {
+                            "DisplayName": "AddLabel",
+                            "Description": "Adds a new Label-entry to the labelTable with all information",
+                            "UIPosition": 1
+                        },
+                        "Visibility": {
+                            "DisplayName": "VisibleChange",
+                            "UIPosition": 2
+                        },
+                        "Color": {
+                            "DisplayName": "ColorChange",
+                            "UIPosition": 3
+                        },
+                        "Name": {
+                            "DisplayName": "NameChange",
+                            "UIPosition": 4
+                        },
+                        "Description": {
+                            "DisplayName": "DescriptionChange",
+                            "UIPosition": 5
+                        },
+                        "None": {
+                            "DisplayName": "None",
+                            "UIPosition": 6
+                        }
+                    },
+                    "DefaultValue": "None"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Visibility": {
+                    "Name": "LabelVisibility",
+                    "DisplayName": "LabelVisibility",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Color": {
+                    "Name": "LabelColor",
+                    "DisplayName": "LabelColor",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Name": {
+                    "Name": "LabelName",
+                    "DisplayName": "LabelName",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Description": {
+                    "Name": "LabelDescription",
+                    "DisplayName": "LabelDescription",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.String"
+                }
+            }
+        }
+    ]
+}

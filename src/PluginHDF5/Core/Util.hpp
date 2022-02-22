@@ -27,36 +27,11 @@
 
 #include <Core/Util.h>
 
-// HAVE_CXX11 is true iff there is (at least some) support for C++11
-#if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || (defined (_MSC_VER) && _MSC_VER >= 1800)
-#define HAVE_CXX11 1
-#else
-#define HAVE_CXX11 0
+// Make sure there is (at least some) support for C++11
+#if !(defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || (defined (_MSC_VER) && _MSC_VER >= 1800))
+#warning "The C++ version seems to be before C++11, this will probably not work"
 #endif
-
-#if !HAVE_CXX11
-
-// Can be used to disable the copy constructor and assignment operator of a
-// class
-#define NO_COPY_CLASS(n)                                        \
-  private:                                                      \
-  ERROR_ATTRIBUTE ("Class " #n " has no assignment operator")   \
-  n& operator= (const n &x);                                    \
-  ERROR_ATTRIBUTE ("Class " #n " has no copy constructor")      \
-  n (const n &x)
-
-// Can be used to disable the default constructor and destructor of a class
-#define STATIC_CLASS(n)                                 \
-  NO_COPY_CLASS (n);                                    \
-private:                                                \
- ERROR_ATTRIBUTE ("Class " #n " cannot be constructed") \
- n ();                                                  \
- ERROR_ATTRIBUTE ("Class " #n " cannot be constructed") \
- ~n ()
-
-#else // HAVE_CXX11
-
-// Versions for C++11
+#define HAVE_CXX11 1
 
 #define NO_COPY_CLASS(n)                        \
   private:                                      \
@@ -69,20 +44,12 @@ private:                                        \
  n () = delete;                                 \
  ~n () = delete
 
-#endif // HAVE_CXX11
-
 #ifdef __CUDACC__
 #define NVCC_HOST_DEVICE __host__ __device__
 #else
 #define NVCC_HOST_DEVICE
 #endif
 
-#if HAVE_CXX11
 #define DECLTYPE(...) decltype (__VA_ARGS__)
-#elif defined (__CUDACC__) && defined (CUDART_VERSION) && CUDART_VERSION < 5000
-#define DECLTYPE(...) typeof (__VA_ARGS__)
-#else
-#define DECLTYPE(...) __decltype (__VA_ARGS__)
-#endif
 
 #endif // !CORE_UTIL_HPP_INCLUDED

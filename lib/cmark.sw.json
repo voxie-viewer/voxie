@@ -1,0 +1,7 @@
+{
+    "Name": "cmark",
+    "Description": "CommonMark reference implementation",
+    "GitRepository": "https://github.com/commonmark/cmark",
+    "GitCommit": "514c61b98c5fbd9e53000a572bbffcf2077c789e",
+    "LicenseFilename": "COPYING"
+}

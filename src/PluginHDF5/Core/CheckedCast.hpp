@@ -72,7 +72,19 @@ namespace Core {
       throw TypedConversionOverflowException<From, To> (value);
     }
 
-    template <typename T, typename U> struct ConverterSameSign {
+    template <typename T, typename U> struct ConverterU {
+      static inline T convert (U v) {
+        typedef std::numeric_limits<T> target;
+
+        // unsigned, no need to check for target::min ()
+        if (v > target::max ()) {
+          overflow<T, U> (v);
+        }
+        return (T) v;
+      }
+    };
+
+    template <typename T, typename U> struct ConverterS {
       static inline T convert (U v) {
         typedef std::numeric_limits<T> target;
 
@@ -113,7 +125,7 @@ namespace Core {
       BOOST_STATIC_ASSERT (std::numeric_limits<From>::is_integer);
 
       typedef ConversionInfo<To, From> Info;
-      typedef typename boost::mpl::if_c<Info::signedEqual, ConverterSameSign<To, From>, typename boost::mpl::if_c<Info::sourceSigned, ConverterSU<To, From> , ConverterUS<To, From> >::type >::type Conv;
+      typedef typename boost::mpl::if_c<Info::signedEqual, typename boost::mpl::if_c<Info::sourceSigned, ConverterS<To, From> , ConverterU<To, From> >::type, typename boost::mpl::if_c<Info::sourceSigned, ConverterSU<To, From> , ConverterUS<To, From> >::type >::type Conv;
 
       static inline To convert (From value) {
         return Conv::convert (value);

@@ -1,0 +1,45 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Generates a blurry sphere",
+            "DisplayName": "The sphere generator",
+            "Name": "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.Example.TheSphereGenerator"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Size": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Example.TheSphereGenerator.Size"
+                    ],
+                    "DisplayName": "Size",
+                    "MinimumValue": 0,
+                    "MaximumValue": 9999,
+                    "DefaultValue": 129,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int"
+                },
+                "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Seed": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Example.TheSphereGenerator.Seed"
+                    ],
+                    "DisplayName": "Seed",
+                    "MinimumValue": 0,
+                    "MaximumValue": 4294967295,
+                    "DefaultValue": 1337,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            },
+            "RunFilterEnabledCondition": {
+                "Type": "de.uni_stuttgart.Voxie.PropertyCondition.True"
+            }
+        }
+    ]
+}

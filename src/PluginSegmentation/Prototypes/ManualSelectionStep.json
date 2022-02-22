@@ -1,0 +1,20 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Manually choose labels for selection",
+            "DisplayName": "Manual Selection Step",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.ManualSelectionStep",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "SelectionStep",
+            "IsSpecialStep": true,
+            "Icon": ":/icons/desktop.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.SegmentationStep.ManualSelectionStep.LabelIds": {
+                    "Name": "LabelIds",
+                    "DisplayName": "Label IDs",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.IntList"
+                }
+            }
+        }
+    ]
+}

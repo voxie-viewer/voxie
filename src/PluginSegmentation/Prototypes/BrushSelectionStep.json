@@ -1,0 +1,44 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Brush based selection",
+            "DisplayName": "Brush Selection Step",
+            "StepTip": "Brush Selection",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "SelectionStep",
+            "IsSpecialStep": true,
+            "Icon": ":/icons/paint-brush.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.BrushSelectCentersWithRadius": {
+                    "DisplayName": "Brush centers with corresponding radius for selection in 3D space [m]",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ListPosition3DDoubleTuple"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.BrushEraseCentersWithRadius": {
+                    "DisplayName": "Brush centers with corresponding radius for erasing in 3D space [m]",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.ListPosition3DDoubleTuple"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.VolumeOrientation": {
+                    "DisplayName": "Rotation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.VolumeOrigin": {
+                    "DisplayName": "Translation [m]",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.VoxelSize": {
+                    "DisplayName": "VoxelSize [m]",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.PlaneOrientation": {
+                    "DisplayName": "Rotation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.PlaneOrigin": {
+                    "DisplayName": "Translation [m]",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D"
+                }
+            }
+        }
+    ]
+}

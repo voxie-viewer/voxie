@@ -1,0 +1,93 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Groups activation events in the t3r format into clusters, each representing a photon",
+            "DisplayName": "Event list clustering",
+            "Name": "de.uni_stuttgart.Voxie.Filter.EventListClustering",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.InputEventList": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.InputEventList"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.EventListData"
+                    ],
+                    "DisplayName": "Input event list",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.OutputClusterList": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.OutputClusterList"
+                    ],
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.EventListData"
+                    ],
+                    "DisplayName": "Output cluster list",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.TemporalMargin": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.TemporalMargin"
+                    ],
+                    "DisplayName": "Temporal clustering margin (ns)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 50.0
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.XRFCorrection": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.XRFCorrection"
+                    ],
+                    "DisplayName": "X-Ray Fluorescence correction",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.XRFMinEnergy": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.XRFMinEnergy"
+                    ],
+                    "DisplayName": "XRF minimum energy (keV)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 10.0
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.XRFMaxEnergy": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.XRFMaxEnergy"
+                    ],
+                    "DisplayName": "XRF maximum energy (keV)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 40.0
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.XRFTemporalMargin": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.XRFTemporalMargin"
+                    ],
+                    "DisplayName": "XRF temporal margin (ns)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 15.0
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.XRFDistanceLimit": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.XRFDistanceLimit"
+                    ],
+                    "DisplayName": "XRF distance limit (px)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0.0,
+                    "DefaultValue": 10.0
+                },
+                "de.uni_stuttgart.Voxie.Filter.EventListClustering.Passthrough": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.EventListClustering.Passthrough"
+                    ],
+                    "DisplayName": "Passthrough (skip clustering)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false
+                }
+            }
+        }
+    ]
+}

@@ -69,7 +69,7 @@ namespace HDF5 {
     }
     static inline void h5MatlabLoadDirect (const MatlabDeserializationContextHandleDirect<Math::Array<T, N> >& handle) {
       MatlabObject mo (handle.get ());
-      boost::array<size_t, N> len;
+      std::array<size_t, N> len;
       if (mo.isEmpty () && mo.isNullDataSpace ()) {
         for (size_t i = 0; i < N; i++)
           len[i] = 0;

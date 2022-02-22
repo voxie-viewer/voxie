@@ -37,12 +37,12 @@
 #include <HDF5/PropLists.hpp> // Needed for default constructors
 
 #ifndef NO_BOOST_FILESYSTEM_PATH
-#include <boost/filesystem/path.hpp>
+#include <Core/BoostFilesystem.hpp>
 #endif
 
 namespace HDF5 {
 #ifndef NO_BOOST_FILESYSTEM_PATH
-  typedef boost::filesystem::path FilenameType;
+  typedef Core::Path FilenameType;
   inline std::string getString (const FilenameType& path) { return path.string (); }
 #else
   typedef std::string FilenameType;

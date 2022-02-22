@@ -24,6 +24,7 @@
 
 #include <HDF5/Group.hpp>
 #include <HDF5/DataType.hpp>
+#include <HDF5/DataSpace.hpp>
 
 namespace HDF5 {
   void Attribute::checkType () const {
@@ -33,6 +34,13 @@ namespace HDF5 {
       ABORT_MSG ("Not an attribute");
   }
 
+  DataSpace Attribute::getSpace () const {
+    return DataSpace (Exception::check ("H5Aget_space", H5Aget_space (handle ())));
+  }
+  DataType Attribute::getDataType () const {
+    return DataType (Exception::check ("H5Aget_type", H5Aget_type (handle ())));
+  }
+  
   void Attribute::read (void* buf, const HDF5::DataType& memType) const {
     Exception::check ("H5Aread", H5Aread (handle (), memType.handle (), buf));
   }

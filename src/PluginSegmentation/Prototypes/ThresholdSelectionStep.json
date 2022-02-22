@@ -1,0 +1,42 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Threshold based selection",
+            "DisplayName": "",
+            "StepTip": "Threshold Selection",
+            "Name": "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
+            "StepKind": "SelectionStep",
+            "IsSpecialStep": false,
+            "StartsRunAutomatic": true,
+            "Icon": ":/icons/ui-splitter.png",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep.LowerThreshold": {
+                    "Name": "LowerThreshold",
+                    "DisplayName": "LowerThreshold",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep.UpperThreshold": {
+                    "Name": "UpperThreshold",
+                    "DisplayName": "UpperThreshold",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float"
+                },
+                "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep.Volume": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                }
+            }, 
+            "UI": {
+                "SegmentationStepUIEntries": [
+                    {
+                        "Type": "Custom",
+                        "Name": "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep.ThresholdWidget"
+                    }
+                ]
+            }
+        }
+    ]
+}

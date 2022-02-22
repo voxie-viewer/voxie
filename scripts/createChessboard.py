@@ -1,4 +1,25 @@
 #!/usr/bin/python3
+#
+# Copyright (c) 2014-2022 The Voxie Authors
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 
 import sys
 import os
@@ -20,18 +41,21 @@ spacing = 1.0 / fieldSize
 origin = -fields / 2.0
 
 with instance.createClient() as client:
-    with instance.createVoxelData(client, (overallSize, overallSize, overallSize), {'Origin': (origin, origin, origin), 'Spacing': (spacing, spacing, spacing)}) as data, data.getDataWritable() as buffer:
-        array = buffer.array.reshape((fields, fieldSize, fields, fieldSize, fields, fieldSize))
+    with instance.createVolumeDataVoxel(client, (overallSize, overallSize, overallSize), {'Origin': (origin, origin, origin), 'Spacing': (spacing, spacing, spacing)}) as data, data.getDataWritable() as buffer:
+        array = buffer.array.reshape(
+            (fields, fieldSize, fields, fieldSize, fields, fieldSize))
         array[:] = 0
-        array[::2,:,::2,:,::2,:] = 1
-        array[1::2,:,1::2,:,::2,:] = 1
-        array[1::2,:,::2,:,1::2,:] = 1
-        array[::2,:,1::2,:,1::2,:] = 1
+        array[::2, :, ::2, :, ::2, :] = 1
+        array[1::2, :, 1::2, :, ::2, :] = 1
+        array[1::2, :, ::2, :, 1::2, :] = 1
+        array[::2, :, 1::2, :, 1::2, :] = 1
 
-        dataSet = instance.createDataSet('Chessboard', data)
+        dataSet = instance.createVolumeObject('Chessboard', data)
 
     slice = dataSet.createSlice()
 
     slicePlugin = instance.getPlugin('VisSlice')
-    visualizerFactory = slicePlugin.getMemberDBus('de.uni_stuttgart.Voxie.VisualizerFactory', 'SliceMetaVisualizer')
-    visualizerFactory.Create(dbus.Array(signature='o'), [slice.path], voxie.emptyOptions)
+    visualizerPrototype = slicePlugin.getMemberDBus(
+        'de.uni_stuttgart.Voxie.VisualizerPrototype', 'SliceMetaVisualizer')
+    visualizerPrototype.Create(dbus.Array(signature='o'), [
+                               slice.path], voxie.emptyOptions)

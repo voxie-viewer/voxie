@@ -33,8 +33,8 @@
 #include <Core/Util.hpp>
 #include <Core/Assert.hpp>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
+#include <memory>
+#include <memory>
 
 #include <hdf5.h>
 
@@ -56,14 +56,14 @@ namespace HDF5 {
         Exception::check ("H5Idec_ref", H5Idec_ref (value));
       }
     };
-    boost::shared_ptr<Shared> shared;
+    std::shared_ptr<Shared> shared;
 
   public:
     IdComponent () {
     }
 
     // This constructor takes ownership of the object refered to by value
-    explicit IdComponent (hid_t value) : shared (boost::make_shared<Shared> (value)) {
+    explicit IdComponent (hid_t value) : shared (std::make_shared<Shared> (value)) {
     }
 
     bool isValid () const {

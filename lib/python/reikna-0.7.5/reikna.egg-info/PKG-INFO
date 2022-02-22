@@ -1,0 +1,47 @@
+Metadata-Version: 2.1
+Name: reikna
+Version: 0.7.5
+Summary: GPGPU algorithms for PyCUDA and PyOpenCL
+Home-page: http://github.com/fjarri/reikna
+Author: Bogdan Opanchuk
+Author-email: bogdan@opanchuk.net
+License: UNKNOWN
+Description: =====================================
+        Reikna, the pure Python GPGPU library
+        =====================================
+        
+        ``Reikna`` is a library containing various GPU algorithms built on top of `PyCUDA <http://documen.tician.de/pycuda>`_ and `PyOpenCL <http://documen.tician.de/pyopencl>`_.
+        The main design goals are:
+        
+        * separation of computation cores (matrix multiplication, random numbers generation etc) from simple transformations on their input and output values (scaling, typecast etc);
+        * separation of the preparation and execution stage, maximizing the performance of the execution stage at the expense of the preparation stage (in other words, aiming at large simulations)
+        * partial abstraction from CUDA/OpenCL
+        
+        Tests can be run by installing `Py.Test <http://pytest.org>`_ and running ``py.test`` from the ``test`` folder (run ``py.test --help`` to get the list of options).
+        
+        For more information proceed to the `project documentation page <http://reikna.publicfields.net>`_. If you have a general question that does not qualify as an issue, you can ask it at the `discussion forum <https://groups.google.com/d/forum/reikna>`_.
+        
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Topic :: Software Development
+Classifier: Topic :: Scientific/Engineering
+Classifier: Operating System :: OS Independent
+Requires: mako(>= 0.8.0)
+Requires: numpy(>= 1.6.0)
+Requires: funcsigs(>= 0.3)
+Provides: reikna
+Provides-Extra: pyopencl
+Provides-Extra: pycuda
+Provides-Extra: dev
