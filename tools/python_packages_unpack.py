@@ -64,7 +64,26 @@ def unpack(base, output_dir, *, python_tag, abi_tag, platform_tags, license_outp
                                 mb.name = mb.name[len(prefix):]
                                 members.append(mb)
                                 break
-                    zip.extractall(path=output_dir, members=members)
+                    def is_within_directory(directory, target):
+                        
+                        abs_directory = os.path.abspath(directory)
+                        abs_target = os.path.abspath(target)
+                    
+                        prefix = os.path.commonprefix([abs_directory, abs_target])
+                        
+                        return prefix == abs_directory
+                    
+                    def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                    
+                        for member in tar.getmembers():
+                            member_path = os.path.join(path, member.name)
+                            if not is_within_directory(path, member_path):
+                                raise Exception("Attempted Path Traversal in Tar File")
+                    
+                        tar.extractall(path, members, numeric_owner=numeric_owner) 
+                        
+                    
+                    safe_extract(zip, path=output_dir, members=members)
                 print(flush=True)
             elif fn is not None:
                 print('Unpacking %s...' % (fn,), end='', flush=True)
