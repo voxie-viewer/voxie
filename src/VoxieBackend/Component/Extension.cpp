@@ -30,7 +30,7 @@
 #include <VoxieBackend/Component/ComponentType.hpp>
 #include <VoxieBackend/Component/ExtensionLauncher.hpp>
 #include <VoxieBackend/Component/ExternalOperation.hpp>
-#include <VoxieBackend/Component/JsonUtil.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 
 #include <VoxieBackend/IO/Operation.hpp>
 
@@ -176,6 +176,88 @@ QProcess* Extension::start(const QString& action, const QStringList& arguments,
                                         process, scriptOutput);
 }
 
+ProcessStatus::ProcessStatus(QProcess* process) {
+  connect(process, &QProcess::started, this,
+          [this]() { this->isStarted_ = true; });
+  connect(process, &QProcess::stateChanged, this,
+          [this, process](QProcess::ProcessState newState) {
+            if (newState == QProcess::NotRunning && !this->isStarted_ &&
+                !this->isFailed_) {
+              this->error_ = process->error();
+              this->isFailed_ = true;
+            }
+          });
+  connect<void (QProcess::*)(int, QProcess::ExitStatus),
+          std::function<void(int, QProcess::ExitStatus)>>(
+      process, &QProcess::finished, this,
+      std::function<void(int, QProcess::ExitStatus)>(
+          [this, process](int exitCode,
+                          QProcess::ExitStatus exitStatus) -> void {
+            if (this->isExited_) {
+              qWarning() << "QProcess::finished emitted multiple times";
+              return;
+            }
+
+            this->exitCode_ = exitCode;
+            this->exitStatus_ = exitStatus;
+            this->isExited_ = true;
+          }));
+}
+
+QProcess::ProcessError ProcessStatus::error() const {
+  vx::checkOnMainThread("ProcessStatus::error()");
+
+  if (!isFailed_)
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.Error",
+        "ProcessStatus::error() called on non-failed ProcessStatus");
+
+  return error_;
+}
+
+int ProcessStatus::exitCode() const {
+  vx::checkOnMainThread("ProcessStatus::exitCode()");
+
+  if (!isExited_)
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.Error",
+        "ProcessStatus::error() called on non-exited ProcessStatus");
+
+  return exitCode_;
+}
+QProcess::ExitStatus ProcessStatus::exitStatus() const {
+  vx::checkOnMainThread("ProcessStatus::exitStatus()");
+
+  if (!isExited_)
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.Error",
+        "ProcessStatus::error() called on non-exited ProcessStatus");
+
+  return exitStatus_;
+}
+
+QString vx::exitStatusToString(QProcess::ExitStatus status) {
+#define S(name) \
+  if (status == QProcess::name) return #name
+  S(NormalExit);
+  S(CrashExit);
+#undef S
+  return QVariant(status).toString();
+}
+
+QString vx::processErrorToString(QProcess::ProcessError error) {
+#define S(name) \
+  if (error == QProcess::name) return #name
+  S(FailedToStart);
+  S(Crashed);
+  S(Timedout);
+  S(WriteError);
+  S(ReadError);
+  S(UnknownError);
+#undef S
+  return QVariant(error).toString();
+}
+
 void Extension::startOperation(
     const QSharedPointer<vx::ExternalOperation>& exOp,
     const QStringList& arguments) {
@@ -200,12 +282,14 @@ void Extension::startOperation(
     });
     return;
   }
-  op->process = process;
+  exOp->setInitialProcess(process);
+  auto initialProcessStatus = exOp->initialProcessStatus();
 
   // Note: This lambda also will keep alive initialRef (and therefore exOp until
   // exOp is claimed by the extension or until the process quits)
   connect(
-      process, &QObject::destroyed, this, [this, initialRef, scriptOutput]() {
+      process, &QObject::destroyed, this,
+      [this, initialRef, scriptOutput, initialProcessStatus]() {
         auto exOpValue = *initialRef;
         initialRef->reset();
         if (exOpValue) {  // exit without claiming the operation
@@ -213,13 +297,40 @@ void Extension::startOperation(
           if (scriptOutputString != "")
             scriptOutputString = "\n\nScript output:\n" + scriptOutputString;
 
+          // QString errorString = "Extension failed to claim the operation" ;
+          QString errorString;
+          if (!initialProcessStatus) {
+            // Should never happen here
+            errorString = "Extension failed to claim the operation, no process";
+          } else if (!initialProcessStatus->isStarted()) {
+            if (!initialProcessStatus->isFailed()) {
+              errorString = "Process failed to start";
+            } else {
+              errorString = "Process failed to start: " +
+                            processErrorToString(initialProcessStatus->error());
+            }
+          } else if (!initialProcessStatus->isExited()) {
+            qWarning() << "Process finished without QProcess::finished";
+            errorString = "Process finished without QProcess::finished";
+          } else if (initialProcessStatus->exitStatus() !=
+                         QProcess::NormalExit ||
+                     initialProcessStatus->exitCode() != 0) {
+            errorString =
+                QString(
+                    "Process finished with exit status %1 / exit code %2 "
+                    "without claiming the operation")
+                    .arg(exitStatusToString(initialProcessStatus->exitStatus()))
+                    .arg(initialProcessStatus->exitCode());
+          } else {
+            errorString = "Extension failed to claim the operation";
+          }
+
           // TODO: Should this contain script output?
           exOpValue->operation()->finish(
               createQSharedPointer<vx::io::Operation::ResultError>(
                   createQSharedPointer<Exception>(
                       "de.uni_stuttgart.Voxie.ExtensionErrorNoClaim",
-                      "Extension failed to claim the operation" +
-                          scriptOutputString)));
+                      errorString + scriptOutputString)));
         }
       });
 }

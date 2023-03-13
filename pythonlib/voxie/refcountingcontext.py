@@ -227,8 +227,8 @@ class RefCountingContext(dbusobject.DBusObjectContext):
         if enableService and mainloop is None:
             # import voxie.dbus_mainloop as voxie_dbus_mainloop
             # mainloop = voxie.dbus_mainloop.mainloop
-            # def iteration():
-            #     voxie.dbus_mainloop.iter()
+            # def iteration(may_block=True):
+            #     voxie.dbus_mainloop.iter(may_block) # TODO
 
             import dbus.mainloop.glib as dbus_mainloop_glib
             import signal
@@ -240,8 +240,8 @@ class RefCountingContext(dbusobject.DBusObjectContext):
                 signal.signal(signal.SIGINT, handler)
             mainloop = dbus.mainloop.glib.DBusGMainLoop()
 
-            def iteration():
-                loop.get_context().iteration(True)
+            def iteration(may_block=True):
+                return loop.get_context().iteration(may_block)
 
             self.mainloop = mainloop
             self.iteration = iteration

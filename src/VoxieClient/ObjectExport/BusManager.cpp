@@ -31,6 +31,12 @@
 
 using namespace vx;
 
+static bool verboseTracking = false;
+// static bool verboseTracking = true;
+// extern char* program_invocation_short_name;
+// static bool verboseTracking = QString(program_invocation_short_name) !=
+// "voxie";
+
 namespace vx {
 namespace intern {
 class OrgFreedesktopDBusLocalInterface : public QDBusAbstractInterface {
@@ -125,7 +131,7 @@ void BusManager::addConnection(
   }
 }
 
-void BusManager::registerObject(ExportedObject* object,
+void BusManager::registerObject(ExportedObject* object, bool isSingleton,
                                 QDBusConnection::RegisterOptions options) {
   vx::checkOnMainThread("BusManager::registerObject");
 
@@ -136,15 +142,32 @@ void BusManager::registerObject(ExportedObject* object,
 
     // Note: The QPointer has already been invalidated at this point
 
+    auto oldNonSingletonObjects = nonSingletonObjects;
     for (int i = 0; i < entries.size(); i++) {
       while (i < entries.size() && (std::get<1>(entries[i]) == object ||
                                     std::get<1>(entries[i]) == nullptr)) {
+        if (!std::get<3>(entries[i])) {
+          if (!nonSingletonObjects) {
+            qCritical() << "nonSingletonObjects is 0";
+          } else {
+            nonSingletonObjects--;
+          }
+        }
         entries.removeAt(i);
       }
     }
+    if (verboseTracking)
+      qDebug() << "After destroying exported objects: Remaining are"
+               << nonSingletonObjects << "/" << entries.count();
+    if (oldNonSingletonObjects != 0 && nonSingletonObjects == 0)
+      Q_EMIT allNonSingletonObjectsDestroyed();
   });
 
-  entries << std::make_tuple(path.path(), object, options);
+  if (verboseTracking)
+    qDebug() << "Registering object" << path.path() << object
+             << "isSingleton:" << isSingleton;
+  entries << std::make_tuple(path.path(), object, options, isSingleton);
+  if (!isSingleton) nonSingletonObjects++;
 
   for (auto& connection : connections) {
     if (!connection->connection().registerObject(path.path(), object,
@@ -153,6 +176,12 @@ void BusManager::registerObject(ExportedObject* object,
                  << connection->connectionName();
     }
   }
+}
+
+bool BusManager::haveNonSingletonObjects() {
+  vx::checkOnMainThread("BusManager::haveNonSingletonObjects()");
+
+  return nonSingletonObjects != 0;
 }
 
 void BusManager::sendEverywhere(const QDBusMessage& msg) {

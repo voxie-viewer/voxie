@@ -24,6 +24,8 @@
 
 #include <QtWidgets/QAbstractSpinBox>
 
+// TODO: Add unsigned version?
+
 namespace vx {
 class Int64SpinBox : public QAbstractSpinBox {
   Q_OBJECT

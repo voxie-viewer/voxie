@@ -70,7 +70,8 @@ ExportedObject::ExportedObject(const QString& type, QObject* parent,
     }
     path = QString("/de/uni_stuttgart/Voxie/%1/%2").arg(type).arg(id);
   }
-  getBusManager()->registerObject(this, QDBusConnection::ExportAdaptors);
+  getBusManager()->registerObject(this, singleton,
+                                  QDBusConnection::ExportAdaptors);
 
   {
     QMutexLocker lock1(&mutex);

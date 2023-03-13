@@ -30,7 +30,7 @@
 
 #include <half.hpp>
 
-#include <VoxieBackend/Data/Bool8.hpp>
+#include <VoxieClient/Bool8.hpp>
 
 struct vx::VolumeDataVoxel::SupportedTypes
     : vx::DataTypeList<

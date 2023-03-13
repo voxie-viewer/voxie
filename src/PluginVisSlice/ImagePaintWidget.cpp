@@ -42,7 +42,9 @@
 
 ImagePaintWidget::ImagePaintWidget(SliceVisualizer* sv, QWidget* parent)
     : QLabel(parent), sv(sv) {
-  QImage image(":/icons/transparency_.png");
+  // TODO: High-DPI displays (should use larger checkerboard with higher
+  // resolution)
+  QImage image(":/icons-voxie/transparency_.png");
   b.setTextureImage(image);
   b.setStyle(Qt::TexturePattern);
   this->setFocusPolicy(Qt::WheelFocus);

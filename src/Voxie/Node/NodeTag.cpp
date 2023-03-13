@@ -24,7 +24,7 @@
 
 #include <VoxieClient/Exception.hpp>
 
-#include <VoxieBackend/Component/JsonUtil.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 
 using namespace vx;
 

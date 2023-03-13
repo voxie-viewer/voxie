@@ -28,6 +28,8 @@
 
 #include <VoxieClient/ObjectExport/BusManager.hpp>
 
+#include <VoxieBackend/Component/Extension.hpp>
+
 #include <Voxie/Util.hpp>
 
 #include <Main/DirectoryManager.hpp>
@@ -164,7 +166,7 @@ QProcess* ScriptLauncher::startScript(const QString& scriptFile,
             Root::instance()->log(
                 QString("Script %1 finished with exit status %2 / exit code %3")
                     .arg(id)
-                    .arg(QVariant(exitStatus).toString())
+                    .arg(exitStatusToString(exitStatus))
                     .arg(exitCode));
             process->deleteLater();
           }));
@@ -181,9 +183,10 @@ QProcess* ScriptLauncher::startScript(const QString& scriptFile,
             // Root::instance()->log(QString("State change occurred for script
             // %1: %2").arg(id).arg(newState));
             if (newState == QProcess::NotRunning && !*isStarted) {
-              Root::instance()->log(QString("Error occurred for script %1: %2")
-                                        .arg(id)
-                                        .arg(process->error()));
+              Root::instance()->log(
+                  QString("Error occurred for script %1: %2")
+                      .arg(id)
+                      .arg(processErrorToString(process->error())));
               process->deleteLater();
             }
           });

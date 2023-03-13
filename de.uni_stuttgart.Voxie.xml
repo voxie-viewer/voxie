@@ -125,7 +125,7 @@
     </property>
 
     <!--
-        Type:
+        ComponentType:
         
         The type of the component, e.g. de.uni_stuttgart.Voxie.NodePrototype
     -->
@@ -628,6 +628,11 @@
       operation and references to it also should only be held by this extension.
   -->
   <interface name="de.uni_stuttgart.Voxie.ExternalOperation">
+    <!--
+        Name:
+      
+        The name of the importer / exporter / filter prototype.
+    -->
     <property access="read" name="Name" type="s" />
     
     <property access="read" name="Action" type="s" />
@@ -658,6 +663,7 @@
       <arg direction="in" name="progress" type="d" />
       <arg direction="in" name="options" type="a{sv}" />
     </method>
+    <!-- TODO: Add method "SetStepDescription" or something like that, or add option to "SetProgress", or do something more complex like allowing sub-operations with progress and status message? -->
     <method name="FinishError">
       <arg direction="in" name="name" type="s" />
       <arg direction="in" name="message" type="s" />
@@ -1294,6 +1300,8 @@
 
   <interface name="de.uni_stuttgart.Voxie.VolumeStructure">
     <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.DynamicObject" />
+
+    <property access="read" name="VolumeStructureType" type="s" />
   </interface>
   <interface name="de.uni_stuttgart.Voxie.VolumeStructureVoxel">
     <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.VolumeStructure" />
@@ -1729,8 +1737,21 @@
   </interface>
   
   <interface name="de.uni_stuttgart.Voxie.FilterNode">
-    <property access="read" name="PreviewActive" type="b" />
-    <property access="read" name="PreviewPoint" type="(dddd)" />
+    <!-- TODO: Add PreviewActive, PreviewPoint?
+         <property access="read" name="PreviewActive" type="b" />
+         <property access="read" name="PreviewPoint" type="(dddd)" />
+    -->
+
+    <method name="RunFilter">
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.OperationResult" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+    </method>
   </interface>
 
   <!-- ****** Node Compatibility Interfaces ****** -->
@@ -2332,7 +2353,7 @@
         
         The nodes currently selected in the graph view / tree view.
     -->
-    <property access="read" name="SelectedNodes" type="ao">
+    <property access="readwrite" name="SelectedNodes" type="ao">
       <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Node" />
     </property>
     <!--

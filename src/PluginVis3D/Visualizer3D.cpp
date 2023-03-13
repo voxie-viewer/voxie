@@ -79,19 +79,29 @@ Visualizer3D::Visualizer3D()
     {
       controlLayout = new QFormLayout();
       {
-        controlLayout->addRow(
-            "Projection",
-            (this->orthoProjectionBox = new QCheckBox("&Orthographic")));
+        auto orthoProjectionBox = new QCheckBox("&Orthographic");
+        controlLayout->addRow("Projection", orthoProjectionBox);
         orthoProjectionBox->setToolTip(
             "Toggles orthographic projection. Hotkey: o");
-        this->orthoProjectionBox->setChecked(this->view->isOrtho());
+        // Update the box if the property value changes
+        connect(this->properties, &View3DProperties::fieldOfViewChanged, this,
+                [this, orthoProjectionBox]() {
+                  orthoProjectionBox->setChecked(
+                      this->properties->fieldOfView() == 0);
+                });
+        // Set initial value
+        orthoProjectionBox->setChecked(this->properties->fieldOfView() == 0);
         // Change the projection when the user clicks the checkbox
-        connect(this->orthoProjectionBox, &QCheckBox::clicked, this->view,
-                &Visualizer3DView::switchProjection);
-        // If we change the projection using the hotkey, we also want to update
-        // the status of the checkbox
-        connect(view, SIGNAL(projectionChanged()), this,
-                SLOT(updateOrthoBox()));
+        // TODO: Add animation?
+        connect(
+            orthoProjectionBox, &QCheckBox::clicked, this,
+            [this, orthoProjectionBox]() {
+              if (orthoProjectionBox->isChecked())
+                this->properties->setFieldOfView(0);
+              else if (this->properties->fieldOfView() == 0)
+                this->properties->setFieldOfView(parseVariant<double>(
+                    this->properties->fieldOfViewProperty()->defaultValue()));
+            });
 
         QHBoxLayout* viewLayout = new QHBoxLayout;
         QHBoxLayout* viewLayout2 = new QHBoxLayout;
@@ -141,6 +151,24 @@ Visualizer3D::Visualizer3D()
 
         controlLayout->addRow(viewLabel, viewLayout);
         controlLayout->addItem(viewLayout2);
+
+        QPushButton* zoomToOneButton = new QPushButton("Set zoom to 1");
+        QObject::connect(zoomToOneButton, &QPushButton::clicked, this,
+                         [this]() { this->properties->setZoomLog(0); });
+        controlLayout->addRow("Zoom", zoomToOneButton);
+
+        QPushButton* viewSizePhysicalButton =
+            new QPushButton("Set unzoomed view size to physical size");
+        QObject::connect(
+            viewSizePhysicalButton, &QPushButton::clicked, this, [this]() {
+              auto viewSizePixel = this->view->height();
+              auto viewSizeM =
+                  viewSizePixel / this->view->physicalDpiY() * 0.0254;
+              // qDebug() << "View size" << viewSizePixel << "px /" << viewSizeM
+              //          << "m";
+              this->properties->setViewSizeUnzoomed(viewSizeM);
+            });
+        controlLayout->addRow("View size", viewSizePhysicalButton);
       }
       sectionControl3DSettings->setLayout(controlLayout);
     }
@@ -308,7 +336,7 @@ QWidget* Visualizer3D::createMouseOperationWidget() {
     QHBoxLayout* hBoxLayout = new QHBoxLayout;
     surfaceControlBox->setLayout(hBoxLayout);
     moveSurfaceButton =
-        new QPushButton(QIcon(":/icons/move-surface.png"), "Move");
+        new QPushButton(QIcon(":/icons-voxie/move-surface.png"), "Move");
     // moveSurfaceButton->setFixedSize(16,16);
     moveSurfaceButton->setCheckable(true);
     connect(moveSurfaceButton, &QPushButton::clicked, [=]() {
@@ -419,10 +447,6 @@ QWidget* Visualizer3D::createObjectWidget() {
   objectWidget->setWindowTitle("Objects");
 
   return objectWidget;
-}
-
-void Visualizer3D::updateOrthoBox() {
-  orthoProjectionBox->setChecked(!orthoProjectionBox->isChecked());
 }
 
 /**

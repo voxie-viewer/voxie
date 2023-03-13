@@ -103,8 +103,9 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
 
   void uploadData();
 
-  vx::BoundingBox3D getBoundingBox();
-  void updateBoundingBox(bool changeCurrentZoom);
+  vx::BoundingBox3D getBoundingBoxReal();
+  vx::BoundingBox3D getBoundingBoxWithDefault(bool* isDefaultOut = nullptr);
+  void updateBoundingBox();
 
   /**
    * @brief drawAxisIndicators Draws multiple indicator for orientation in the
@@ -182,14 +183,6 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
    * @param direction The new view direction
    */
   void setFixedAngle(QString direction);
-
-  /**
-   * @brief Returns TRUE if orthographic projection is currently used
-   * @return
-   */
-  bool isOrtho();
-
-  void switchProjection();
 
   vx::visualization::View3D* getView3D() const { return view3d; }
 

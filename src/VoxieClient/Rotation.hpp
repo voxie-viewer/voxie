@@ -176,9 +176,16 @@ inline Rotation<T, 3> identityRotation() {
 }
 
 template <typename To, typename From>
-inline std::enable_if_t<std::is_convertible<From, To>::value, Rotation<To, 3>>
+inline std::enable_if_t<IsConvertibleWithoutNarrowing<From, To>::value,
+                        Rotation<To, 3>>
 rotationCast(const Rotation<From, 3>& rot) {
   return Rotation<To, 3>(quaternionCast<To>(rot.asQuaternion()));
+}
+
+template <typename To, typename From>
+inline std::enable_if_t<std::is_convertible<From, To>::value, Rotation<To, 3>>
+rotationCastNarrow(const Rotation<From, 3>& rot) {
+  return Rotation<To, 3>(quaternionCastNarrow<To>(rot.asQuaternion()));
 }
 
 template <typename T>

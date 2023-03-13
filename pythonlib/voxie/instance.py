@@ -213,6 +213,10 @@ class OperationImpl(voxie.DBusObject):
         finally:
             signal.remove()
 
+    # Automatically set the timeout for WaitFor
+    def WaitFor(self, options={}, *, DBusObject_timeout=timeoutValue):
+        return self._getDBusMethod('WaitFor')(options, DBusObject_timeout=DBusObject_timeout)
+
     # # Override WaitFor to avoid DBus timeout issues if there is a main loop
     # def WaitFor(self, options={}):
     #     options = dict(options)

@@ -107,7 +107,8 @@ class ExporterAdaptorImpl : public ExporterAdaptor {
 
 Exporter::Exporter(const QString& name, const FilenameFilter& filter,
                    const QList<QString>& targetPrototypeNames)
-    : vx::plugin::Component(ComponentTypeInfo<Exporter>::name(), name),
+    // TODO: Pass json (e.g. for TroveClassifiers)
+    : vx::plugin::Component(ComponentTypeInfo<Exporter>::name(), name, {}),
       filter_(filter),
       targetPrototypeNames_(targetPrototypeNames) {
   new ExporterAdaptorImpl(this);

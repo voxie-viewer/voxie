@@ -39,7 +39,8 @@ using namespace vx::gui;
 using namespace vx::gui::about;
 
 AboutDialogWindow::AboutDialogWindow(QWidget* parent) : QDialog(parent) {
-  this->resize(500, 450);
+  this->resize(500 / 96.0 * this->logicalDpiX(),
+               450 / 96.0 * this->logicalDpiY());
   QVBoxLayout* layout = new QVBoxLayout();
   {
     QTabWidget* tabs = new QTabWidget(this);

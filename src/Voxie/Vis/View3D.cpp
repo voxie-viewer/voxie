@@ -43,7 +43,6 @@ View3D::View3D(QObject* parent,
       fieldOfView(40 / 180.0 * M_PI),
       centerPoint(0, 0, 0),
       rotation(1, 0, 0, 0),
-      isOrtho(false),
       mouseOperation(mouseOperation) {
   this->viewSizeStandard = 0.25;
   this->setStandardZoom(1);
@@ -76,64 +75,56 @@ QMatrix4x4 View3D::projectionMatrix(float fWidth, float fHeight) {
   float near = -1000 * viewSizeStandard;
   float far = 1000 * viewSizeStandard;
 
-  if (isOrtho) {
-    matProj.ortho(-viewSize() / 2.0f * fWidth / fHeight,
-                  viewSize() / 2.0f * fWidth / fHeight, -viewSize() / 2.0f,
-                  viewSize() / 2.0f, near, far);
-  } else {
-    // Calculate perspective projection, but allow fieldOfView to be 0 (which
-    // will be the same as orthographic projection)
+  // Calculate perspective projection, but allow fieldOfView to be 0 (which
+  // will be the same as orthographic projection)
 
-    // TODO: handle negative fieldOfView values?
+  // TODO: handle negative fieldOfView values?
 
-    float sine = std::sin(fieldOfView / 2.0f);
-    float cosine = std::cos(fieldOfView / 2.0f);
+  float sine = std::sin(fieldOfView / 2.0f);
+  float cosine = std::cos(fieldOfView / 2.0f);
 
-    // Distance from centerPoint to camera
-    float distanceCameraCenterSine = 0.5f * viewSize() * cosine;
+  // Distance from centerPoint to camera
+  float distanceCameraCenterSine = 0.5f * viewSize() * cosine;
 
-    // near plane is at least 1/10 of camera <-> center distance
-    // near = std::max(near, distanceCameraCenter * 0.1f -
-    // distanceCameraCenter);
-    // Because distanceCameraCenterSine should be positive this condition should
-    // never be true if sine is 0
-    if (near * sine <
-        distanceCameraCenterSine * 0.1f - distanceCameraCenterSine)
-      near =
-          (distanceCameraCenterSine * 0.1f - distanceCameraCenterSine) / sine;
+  // near plane is at least 1/10 of camera <-> center distance
+  // near = std::max(near, distanceCameraCenter * 0.1f -
+  // distanceCameraCenter);
+  // Because distanceCameraCenterSine should be positive this condition should
+  // never be true if sine is 0
+  if (near * sine < distanceCameraCenterSine * 0.1f - distanceCameraCenterSine)
+    near = (distanceCameraCenterSine * 0.1f - distanceCameraCenterSine) / sine;
 
-    // matProj.perspective(fieldOfView / M_PI * 180, fWidth / fHeight, near +
-    // distanceCameraCenterSine/sine, far + distanceCameraCenterSine/sine);
-    // matProj.translate(0, 0, -distanceCameraCenter);
-    // qDebug() << "A" << matProj;
-    float clip = far - near;
-    // Same as matrix produced by QMatrix4x4::perspective(), but with a
-    // translate by (0, 0, -distanceCameraCenter) before it and the entire
-    // matrix multiplied with sine
-    matProj(0, 0) = cosine / fWidth * fHeight;
-    matProj(1, 1) = cosine;
-    matProj(2, 2) =
-        -(near * sine + far * sine + 2 * distanceCameraCenterSine) / clip;
-    // matProj(2, 3) = -(2.0f * near + distanceCameraCenter * far +
-    // distanceCameraCenter) / clip * sine;
-    /*
-    matProj(2, 3) = (-distanceCameraCenterSine) *
-                        (-(near + far + 2 * distanceCameraCenter) / clip) +
-                    -(2.0f * (near * sine + distanceCameraCenterSine) *
-                      (far + distanceCameraCenter)) /
-                        clip;
-    */
-    matProj(2, 3) =
-        (-2.0f * near * far * sine - near * distanceCameraCenterSine -
-         far * distanceCameraCenterSine) /
-        clip;
-    matProj(3, 2) = -1.0f * sine;
-    // matProj(3, 3) = 0.0f * sine;
-    matProj(3, 3) = (-distanceCameraCenterSine) * (-1.0f);
-    // qDebug() << "B" << matProj;
+  // matProj.perspective(fieldOfView / M_PI * 180, fWidth / fHeight, near +
+  // distanceCameraCenterSine/sine, far + distanceCameraCenterSine/sine);
+  // matProj.translate(0, 0, -distanceCameraCenter);
+  // qDebug() << "A" << matProj;
+  float clip = far - near;
+  // Same as matrix produced by QMatrix4x4::perspective(), but with a
+  // translate by (0, 0, -distanceCameraCenter) before it and the entire
+  // matrix multiplied with sine
+  matProj(0, 0) = cosine / fWidth * fHeight;
+  matProj(1, 1) = cosine;
+  matProj(2, 2) =
+      -(near * sine + far * sine + 2 * distanceCameraCenterSine) / clip;
+  // matProj(2, 3) = -(2.0f * near + distanceCameraCenter * far +
+  // distanceCameraCenter) / clip * sine;
+  /*
+  matProj(2, 3) = (-distanceCameraCenterSine) *
+                      (-(near + far + 2 * distanceCameraCenter) / clip) +
+                  -(2.0f * (near * sine + distanceCameraCenterSine) *
+                    (far + distanceCameraCenter)) /
+                      clip;
+  */
+  matProj(2, 3) = (-2.0f * near * far * sine - near * distanceCameraCenterSine -
+                   far * distanceCameraCenterSine) /
+                  clip;
+  matProj(3, 2) = -1.0f * sine;
+  // matProj(3, 3) = 0.0f * sine;
+  matProj(3, 3) = (-distanceCameraCenterSine) * (-1.0f);
+  // qDebug() << "B" << matProj;
 
-    // matProj /= matProj.row(3).length();
-  }
+  // matProj /= matProj.row(3).length();
+
   // qDebug() << near / viewSizeStandard << far / viewSizeStandard;
   // qDebug() << matProj;
   // qDebug() << matProj / matProj.row(3).length();
@@ -358,7 +349,10 @@ void View3D::setFixedAngle(QString direction) {
 }
 
 void View3D::switchProjection() {
-  isOrtho = !isOrtho;
+  if (fieldOfView == 0)
+    fieldOfView = 40 / 180.0 * M_PI;
+  else
+    fieldOfView = 0;
   Q_EMIT changed();
 }
 

@@ -65,25 +65,28 @@ SurfaceNode::SurfaceNode()
   QObject::connect(this, &DataNode::dataChanged, this,
                    &SurfaceNode::updateProperties);
 
-  QWidget* propertySection = new QWidget();
+  if (!voxieRoot().isHeadless()) {
+    QWidget* propertySection = new QWidget();
 
-  propertySection->setMaximumHeight(400);
-  QVBoxLayout* splitLayout = new QVBoxLayout();
-  {
-    this->numberOfVerticesLabel = new QLabel();
-    this->numberOfTrianglesLabel = new QLabel();
-    this->attributesLabel = new QLabel();
+    propertySection->setMaximumHeight(400);
+    QVBoxLayout* splitLayout = new QVBoxLayout();
+    {
+      this->numberOfVerticesLabel = new QLabel();
+      this->numberOfTrianglesLabel = new QLabel();
+      this->attributesLabel = new QLabel();
 
-    QFormLayout* form = new QFormLayout();
-    form->addRow("Vertices: ", this->numberOfVerticesLabel);
-    form->addRow("Triangles: ", this->numberOfTrianglesLabel);
-    form->addRow("Attributes: ", this->attributesLabel);
-    splitLayout->addLayout(form);
+      QFormLayout* form = new QFormLayout();
+      form->addRow("Vertices: ", this->numberOfVerticesLabel);
+      form->addRow("Triangles: ", this->numberOfTrianglesLabel);
+      form->addRow("Attributes: ", this->attributesLabel);
+      splitLayout->addLayout(form);
+    }
+    propertySection->setLayout(splitLayout);
+    this->addPropertySection(propertySection);
+    this->connect(this, &Node::displayNameChanged, propertySection,
+                  &QWidget::setWindowTitle);
   }
-  propertySection->setLayout(splitLayout);
-  this->addPropertySection(propertySection);
-  this->connect(this, &Node::displayNameChanged, propertySection,
-                &QWidget::setWindowTitle);
+
   this->setAutomaticDisplayName("Surface");
 }
 
@@ -105,6 +108,8 @@ void SurfaceNode::setSurface(QSharedPointer<SurfaceData> newSurface) {
 }
 
 void SurfaceNode::updateProperties() {
+  if (voxieRoot().isHeadless()) return;
+
   if (auto srf = qSharedPointerDynamicCast<SurfaceDataTriangleIndexed>(
           this->surface())) {
     this->numberOfVerticesLabel->setText(

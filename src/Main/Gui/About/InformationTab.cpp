@@ -22,7 +22,7 @@
 
 #include "InformationTab.hpp"
 
-#include <VoxieBackend/Component/JsonUtil.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 
 #include <Main/Version.hpp>
 

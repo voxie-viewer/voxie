@@ -51,7 +51,7 @@ bool TableColumn::isAllowedType(const QSharedPointer<PropertyType>& type) {
          type == vx::types::Orientation3DType() ||
          type == vx::types::Point2DType() ||
          type == vx::types::Position3DType() ||
-         type == vx::types::BoundingBox3DType() ||
+         type == vx::types::Box3DAxisAlignedType() ||
          type == vx::types::SizeInteger3DType() ||
          type == vx::types::StringType();
 }

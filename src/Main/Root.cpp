@@ -32,8 +32,8 @@
 #include <VoxieClient/DBusProxies.hpp>
 
 #include <Main/Gui/DataNodeUI.hpp>
+#include <Main/Gui/GraphNode.hpp>
 #include <Main/Gui/GraphWidget.hpp>
-#include <Main/Gui/Node.hpp>
 #include <Main/Gui/SelectObjectConnection.hpp>
 #include <Main/Gui/SidePanel.hpp>
 #include <Main/Gui/SliceView.hpp>
@@ -202,6 +202,7 @@ class CorePlugin : public Plugin {
 Root::Root(bool headless)
     : QObject(),
       coreWindow(nullptr),
+      isHeadless_(headless),
       jsEngine(),
       scriptWrapper(&jsEngine),
       disableOpenGL_(false),
@@ -520,8 +521,8 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
                 if (parser.isSet(str)) options << str;
               for (const auto& str : allArgOptions)
                 if (parser.isSet(str)) argOptions[str] = parser.values(str);
-              QString escapedPythonLibDirs = escapePythonStringArray(
-                  vx::Root::instance()->directoryManager()->allPythonLibDirs());
+              QString escapedPythonLibDirs =
+                  escapePythonStringArray(directoryManager->allPythonLibDirs());
               QString code =
                   "import sys; sys.path = " + escapedPythonLibDirs +
                   " + sys.path; " +
@@ -752,6 +753,9 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
       ::root->coreWindow->show();
     } else if (mainWindowOption == "hidden") {
       // Do nothing
+    } else if (mainWindowOption == "headless") {
+      qCritical() << "--main-window option set to headless, but Root object "
+                     "created with headless=false";
     } else {
       qWarning() << "Unkown value for --main-window option, known ones are: "
                     "normal, background, hidden";
@@ -761,7 +765,7 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
 
   OperationRegistry::instance()->registerNewRunningOperationHandler(
       ::root, [](const QSharedPointer<vx::io::Operation>& operation) {
-        if (::root->mainWindow())
+        if (!::root->isHeadless())
           ::root->mainWindow()->sidePanel->addProgressBar(operation.data());
       });
 
@@ -810,13 +814,15 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
     QObject::connect(
         process, &QProcess::errorOccurred, Root::instance(),
         [](QProcess::ProcessError error) {
-          QMessageBox(QMessageBox::Critical,
-                      "Error while processing command line arguments",
-                      QString() +
-                          "Error while processing command line arguments: " +
-                          QVariant::fromValue(error).toString(),
-                      QMessageBox::Ok)
-              .exec();
+          if (!voxieRoot().isHeadless()) {
+            QMessageBox(QMessageBox::Critical,
+                        "Error while processing command line arguments",
+                        QString() +
+                            "Error while processing command line arguments: " +
+                            QVariant::fromValue(error).toString(),
+                        QMessageBox::Ok)
+                .exec();
+          }
         });
 #endif
     QObject::connect(
@@ -835,14 +841,17 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
             QString scriptOutputString = *scriptOutput;
             if (scriptOutputString != "")
               scriptOutputString = "\n\nScript output:\n" + scriptOutputString;
-            QMessageBox(
-                QMessageBox::Critical,
-                "Error while processing command line arguments",
-                QString() + "Error while processing command line arguments: " +
-                    QVariant::fromValue(exitStatus).toString() + ", code = " +
-                    QString::number(exitCode) + scriptOutputString,
-                QMessageBox::Ok)
-                .exec();
+            if (!voxieRoot().isHeadless()) {
+              QMessageBox(
+                  QMessageBox::Critical,
+                  "Error while processing command line arguments",
+                  QString() +
+                      "Error while processing command line arguments: " +
+                      QVariant::fromValue(exitStatus).toString() + ", code = " +
+                      QString::number(exitCode) + scriptOutputString,
+                  QMessageBox::Ok)
+                  .exec();
+            }
           } else {
             if (batchMode) {
               qDebug() << "Quitting after processing command line arguments";
@@ -853,6 +862,7 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
             /*
             QString scriptOutputString = *scriptOutput;
             if (scriptOutputString != "") {
+            if (!voxieRoot().isHeadless()) {
               QMessageBox(
                   QMessageBox::Warning,
                   "Warnings while processing command line arguments",
@@ -861,6 +871,7 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
                       scriptOutputString,
                   QMessageBox::Ok)
                   .exec();
+            }
             }
             */
           }
@@ -939,7 +950,7 @@ void Root::loadPlugins(QString pluginDirectory) {
       }
 
       plugins_ << plugin;
-      if (this->mainWindow()) this->mainWindow()->insertPlugin(plugin);
+      if (!this->isHeadless()) this->mainWindow()->insertPlugin(plugin);
     } else {
       qDebug() << "Failed to load plugin '" + lib + "':"
                << pluginLoader->errorString();
@@ -1001,11 +1012,11 @@ bool Root::initOpenCL() {
 }
 
 void Root::registerVisualizer(VisualizerNode* visualizer) {
-  if (this->mainWindow()) this->mainWindow()->addVisualizer(visualizer);
+  if (!this->isHeadless()) this->mainWindow()->addVisualizer(visualizer);
 }
 
 void Root::registerSection(QWidget* section, bool closeable) {
-  if (this->mainWindow())
+  if (!this->isHeadless())
     this->mainWindow()->sidePanel->addSection(section, closeable);
 }
 
@@ -1091,7 +1102,7 @@ bool Root::exec(const QString& code, const QString& codeToPrint,
 }
 
 void Root::quit(bool askForConfirmation) {
-  if (askForConfirmation && this->mainWindow())
+  if (askForConfirmation && !this->isHeadless())
     this->mainWindow()->close();
   else
     QCoreApplication::instance()->quit();
@@ -1127,7 +1138,7 @@ void runTests() {
 }
 
 QVector2D Root::getGraphPosition(vx::Node* obj) {
-  if (!mainWindow()) {
+  if (isHeadless()) {
     qWarning() << "Calling Root::getGraphPosition() in headless mode";
     return QVector2D(0, 0);
   }
@@ -1143,7 +1154,7 @@ QVector2D Root::getGraphPosition(vx::Node* obj) {
 }
 
 void Root::setGraphPosition(vx::Node* obj, const QVector2D& pos) {
-  if (!mainWindow()) {
+  if (isHeadless()) {
     qWarning() << "Calling Root::setGraphPosition() in headless mode";
     return;
   }

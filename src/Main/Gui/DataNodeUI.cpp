@@ -26,7 +26,12 @@
 
 #include <Voxie/Gui/ErrorMessage.hpp>
 
+#include <Voxie/Node/DataNode.hpp>
+
 #include <Voxie/IO/SaveFileDialog.hpp>
+
+#include <VoxieBackend/Data/SharedMemory.hpp>
+
 #include <VoxieBackend/IO/Exporter.hpp>
 #include <VoxieBackend/IO/OperationResult.hpp>
 

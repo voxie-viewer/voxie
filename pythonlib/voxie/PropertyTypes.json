@@ -4,7 +4,7 @@
     "DBusSignature": "b",
     "DisplayName": "Boolean"
   },
-  "de.uni_stuttgart.Voxie.PropertyType.BoundingBox3D": {
+  "de.uni_stuttgart.Voxie.PropertyType.Box3DAxisAligned": {
     "DBusSignature": "((ddd)(ddd))",
     "DisplayName": "Bounding box (3D)"
   },

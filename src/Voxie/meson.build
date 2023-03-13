@@ -88,7 +88,6 @@ moc_files = qt5.preprocess(
 
     'IO/RunFilterOperation.hpp',
     'IO/SaveFileDialog.hpp',
-    'IO/SliceExporter.hpp',
 
     'Node/DataNode.hpp',
     'Node/FilterNode.hpp',
@@ -211,7 +210,6 @@ voxie = shared_library(
 
     'IO/RunFilterOperation.cpp',
     'IO/SaveFileDialog.cpp',
-    'IO/SliceExporter.cpp',
 
     'Node/DataNode.cpp',
     'Node/FilterNode.cpp',

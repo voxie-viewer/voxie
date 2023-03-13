@@ -37,6 +37,10 @@ class VolumeStructureAdaptorImpl : public VolumeStructureAdaptor {
   VolumeStructureAdaptorImpl(VolumeStructure* object)
       : VolumeStructureAdaptor(object), object(object) {}
   virtual ~VolumeStructureAdaptorImpl() {}
+
+  QString volumeStructureType() const override {
+    return object->volumeStructureType();
+  }
 };
 }  // namespace internal
 }  // namespace vx

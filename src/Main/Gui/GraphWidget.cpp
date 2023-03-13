@@ -35,9 +35,16 @@
 
 #include <Voxie/Node/Types.hpp>
 
-#include <QKeyEvent>
+#include <QtGui/QKeyEvent>
+
+#include <QtWidgets/QToolTip>
 
 using namespace vx::gui;
+
+// Note: One "pixel" in the graph widget is always assumed to be at 96 dpi, even
+// for High-DPI displays. (High-DPI displays use different scaling.)
+// This make the drawing code simpler and is also required because the pixel
+// positions are saved in the project files.
 
 /**
  * @brief Helper function to check if a QList of QSharedPointers contains a raw
@@ -62,11 +69,17 @@ GraphWidget::GraphWidget(vx::Root* root, vx::gui::SidePanel* sidePanel,
   setViewportUpdateMode(BoundingRectViewportUpdate);
   setRenderHint(QPainter::Antialiasing);
   setTransformationAnchor(AnchorUnderMouse);
-  scale(qreal(0.8), qreal(0.8));
+  scaleViewLog(0);
   setMouseTracking(true);
 
   this->edgeColor = QApplication::palette().text().color();
-  this->toolTip->setZValue(100);
+  if (false) {
+    // Use old tool tip implementation
+    // Note: This implementation has problems with the scenes bounding box being
+    // resized when tool tips are shown
+    this->toolTip = new QGraphicsTextItem;
+    this->toolTip->setZValue(100);
+  }
 
   this->sidePanel = sidePanel;
   this->root = root;
@@ -135,14 +148,15 @@ void GraphWidget::addNode(vx::Node* obj) {
     }
 
     bool placeIsFree = true;
+    int minDistY = 100;
     do {
       placeIsFree = true;
       for (QGraphicsItem* item : scene()->items()) {
         if (GraphNode* tnode = qgraphicsitem_cast<GraphNode*>(item)) {
           auto distanceVec = (tnode->pos() - spawnPlace);
           if (std::abs(distanceVec.x()) < 150 &&
-              std::abs(distanceVec.y()) < 50) {
-            spawnPlace.setY(spawnPlace.y() + 50);
+              std::abs(distanceVec.y()) < minDistY) {
+            spawnPlace.setY(spawnPlace.y() + minDistY);
             placeIsFree = false;
             break;
           }
@@ -515,7 +529,8 @@ void GraphWidget::connectNodes(OutputDot* srcDot, InputDot* dstDot) {
     }
     srcPropNode->addChildNode(dstPropNode, dstDot->slot());
 
-  } else if (srcDot->property().property->allowsAsValue(
+  } else if (srcDot->property().property &&
+             srcDot->property().property->allowsAsValue(
                  dstDot->graphNode()->modelNode()->prototype())) {
     srcPropNode->addChildNode(dstDot->graphNode()->modelNode(), -1);
 
@@ -593,23 +608,45 @@ void GraphWidget::mouseMoveEvent(QMouseEvent* pEvent) {
   QPointF MousePos = this->mapToScene(pEvent->pos());
 
   if (hoverInputDot && hoverInputDot->property().property) {
-    toolTip->setPos(QPointF(MousePos.x() + 10, MousePos.y() - 20));
-
-    this->toolTip->setHtml(QString(
-        "<div style='background:#ffffca;'>" +
-        hoverInputDot->property().property->displayName() + QString("</div>")));
-    if (!myScene->items().contains(toolTip)) myScene->addItem(toolTip);
-
+    if (this->toolTip) {
+      this->toolTip->setPos(QPointF(MousePos.x() + 10, MousePos.y() - 20));
+      this->toolTip->setHtml(
+          QString("<div style='background:#ffffca; font-size: 16px;'>" +
+                  hoverInputDot->property().property->displayName() +
+                  QString("</div>")));
+      if (!myScene->items().contains(toolTip)) myScene->addItem(toolTip);
+    } else {
+      // Force tooltip movement
+      QToolTip::showText(pEvent->globalPos(), "--", this, QRect(), 1);
+      QToolTip::showText(pEvent->globalPos(),
+                         hoverInputDot->property().property->displayName(),
+                         this, QRect(), 1000000000);
+    }
   } else if (hoverOutputDot && hoverOutputDot->property().property) {
-    toolTip->setPos(QPointF(MousePos.x() + 10, MousePos.y() - 20));
-    this->toolTip->setHtml(
-        QString("<div style='background:#ffffca;'>" +
-                hoverOutputDot->property().property->displayName() +
-                QString("</div>")));
-    if (!myScene->items().contains(toolTip)) myScene->addItem(toolTip);
+    if (this->toolTip) {
+      this->toolTip->setPos(QPointF(MousePos.x() + 10, MousePos.y() - 20));
+      this->toolTip->setHtml(
+          QString("<div style='background:#ffffca; font-size: 16px;'>" +
+                  hoverOutputDot->property().property->displayName() +
+                  QString("</div>")));
+      if (!myScene->items().contains(toolTip)) myScene->addItem(toolTip);
+    } else {
+      // Force tooltip movement
+      QToolTip::showText(pEvent->globalPos(), "--", this, QRect(), 1);
+      QToolTip::showText(pEvent->globalPos(),
+                         hoverOutputDot->property().property->displayName(),
+                         this, QRect(), 1000000000);
+    }
 
-  } else if (myScene->items().contains(toolTip))
-    myScene->removeItem(toolTip);
+  } else {
+    if (this->toolTip) {
+      if (myScene->items().contains(this->toolTip)) {
+        myScene->removeItem(this->toolTip);
+      }
+    } else {
+      QToolTip::showText(pEvent->globalPos(), "", this);
+    }
+  }
 
   Q_EMIT mousePosChanged(MousePos.toPoint());
   QGraphicsView::mouseMoveEvent(pEvent);
@@ -645,7 +682,7 @@ void GraphWidget::timerEvent(QTimerEvent* event) {
 }
 
 void GraphWidget::wheelEvent(QWheelEvent* event) {
-  scaleView(pow((double)2, event->delta() / 240.0));
+  scaleViewLog(event->delta() / 240.0);
 }
 
 void GraphWidget::drawBackground(QPainter* painter, const QRectF& rect) {
@@ -654,24 +691,22 @@ void GraphWidget::drawBackground(QPainter* painter, const QRectF& rect) {
                    Qt::SolidPattern));
 }
 
-void GraphWidget::scaleView(qreal scaleFactor) {
-  qreal factor = transform()
-                     .scale(scaleFactor, scaleFactor)
-                     .mapRect(QRectF(0, 0, 1, 1))
-                     .width();
-  if (factor < 0.07 || factor > 5) return;
+void GraphWidget::scaleViewLog(double step) {
+  // qDebug() << "scaleViewLog" << currentScaleStep << step;
+  currentScaleStep = std::min(std::max(currentScaleStep + step, -3.5), 2.5);
+  // qDebug() << "scaleViewLog new" << currentScaleStep;
 
-  scale(scaleFactor, scaleFactor);
+  qreal currentFactor = transform().mapRect(QRectF(0, 0, 1, 1)).width();
+
+  double scaleFactor =
+      0.8 / 96.0 * this->logicalDpiY() * pow(2.0, currentScaleStep);
+
+  scale(scaleFactor / currentFactor, scaleFactor / currentFactor);
 }
 
-qreal GraphWidget::scaleFactor() {
-  qreal factor = transform().scale(1, 1).mapRect(QRectF(0, 0, 1, 1)).width();
-  return factor;
-}
+void GraphWidget::zoomIn() { scaleViewLog(0.25); }
 
-void GraphWidget::zoomIn() { scaleView(qreal(1.2)); }
-
-void GraphWidget::zoomOut() { scaleView(1 / qreal(1.2)); }
+void GraphWidget::zoomOut() { scaleViewLog(-0.25); }
 
 static bool debug = false;
 

@@ -945,19 +945,21 @@ Node::Node(const QString& type, const QSharedPointer<NodePrototype>& prototype)
                      }
                    });
 
-  for (const auto& spSection_ : this->prototype()
-                                    ->rawJson()["UI"]
-                                    .toObject()["SidePanelSections"]
-                                    .toArray()) {
-    auto spSection = spSection_.toObject();
-    QString name = spSection["Name"].toString();
-    QString displayName = spSection["DisplayName"].toString();
-    // qDebug() << "Section:" << name << displayName;
+  if (!voxieRoot().isHeadless()) {
+    for (const auto& spSection_ : this->prototype()
+                                      ->rawJson()["UI"]
+                                      .toObject()["SidePanelSections"]
+                                      .toArray()) {
+      auto spSection = spSection_.toObject();
+      QString name = spSection["Name"].toString();
+      QString displayName = spSection["DisplayName"].toString();
+      // qDebug() << "Section:" << name << displayName;
 
-    auto section = new PropertySection(displayName);
-    this->addPropertySection(section);
+      auto section = new PropertySection(displayName);
+      this->addPropertySection(section);
 
-    sections << section;
+      sections << section;
+    }
   }
 }
 
@@ -977,6 +979,8 @@ void Node::initialize() {
 
 void Node::initializeReal() {
   // qDebug() << "CREATE" << prototype()->_name;
+
+  if (voxieRoot().isHeadless()) return;
 
   PropertySection* propSection = nullptr;
 

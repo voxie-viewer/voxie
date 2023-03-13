@@ -1,0 +1,18 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Surface.Stl.Import",
+            "DisplayName": "STL surface file",
+            "Patterns": [
+                "*.stl"
+            ],
+            "Properties": {
+                "de.uni_stuttgart.Voxie.FileFormat.Surface.Stl.Import.UnifyVertices": {
+                    "DisplayName": "Unify vertices",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
+                }
+            }
+        }
+    ]
+}

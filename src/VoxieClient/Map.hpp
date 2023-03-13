@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <VoxieClient/HmgVector.hpp>
 #include <VoxieClient/Matrix.hpp>
 
 #if defined(__clang__) || defined(__GNUC__)
@@ -61,13 +62,26 @@ class LinearMap {
     return LinearMap(matrix);
   }
 
-  vx::Vector<T, dstDim> map(const vx::Vector<T, srcDim>& v) const {
+  vx::Vector<T, dstDim> mapPoint(const vx::Vector<T, srcDim>& v) const {
     return linearMatrix() * v;
   }
-  // mapVector(v1 - v2) = map(v1) - map(v2)
+  vx::HmgVector<T, dstDim> mapPoint(const vx::HmgVector<T, srcDim>& v) const {
+    return vx::HmgVector<T, dstDim>(linearMatrix() * v.getVectorPart(), v.w());
+  }
+  // mapVector(v1 - v2) = mapPoint(v1) - mapPoint(v2)
   // Note that for LinearMap this means that mapVector(v) = map(v)
   vx::Vector<T, dstDim> mapVector(const vx::Vector<T, srcDim>& v) const {
     return linearMatrix() * v;
+  }
+  vx::HmgVector<T, dstDim> mapVector(const vx::HmgVector<T, srcDim>& v) const {
+    return vx::HmgVector<T, dstDim>(linearMatrix() * v.getVectorPart(), v.w());
+  }
+  // TODO: Remove map()?
+  vx::Vector<T, dstDim> map(const vx::Vector<T, srcDim>& v) const {
+    return mapPoint(v);
+  }
+  vx::HmgVector<T, dstDim> map(const vx::HmgVector<T, srcDim>& v) const {
+    return mapPoint(v);
   }
 
   friend bool operator==(const LinearMap& m1, const LinearMap& m2) {
@@ -123,10 +137,17 @@ LinearMap<T, dim> inverse(const LinearMap<T, dim>& m,
 }
 
 template <typename To, typename From, std::size_t srcDim, std::size_t dstDim>
-inline std::enable_if_t<std::is_convertible<From, To>::value,
+inline std::enable_if_t<IsConvertibleWithoutNarrowing<From, To>::value,
                         LinearMap<To, srcDim, dstDim>>
 mapCast(const LinearMap<From, srcDim, dstDim>& m) {
   return createLinearMap(matrixCast<To>(m.linearMatrix()));
+}
+
+template <typename To, typename From, std::size_t srcDim, std::size_t dstDim>
+inline std::enable_if_t<std::is_convertible<From, To>::value,
+                        LinearMap<To, srcDim, dstDim>>
+mapCastNarrow(const LinearMap<From, srcDim, dstDim>& m) {
+  return createLinearMap(matrixCastNarrow<To>(m.linearMatrix()));
 }
 
 // Affine map
@@ -174,12 +195,28 @@ class AffineMap {
     return AffineMap(matrix);
   }
 
-  vx::Vector<T, dstDim> map(const vx::Vector<T, srcDim>& v) const {
+  vx::Vector<T, dstDim> mapPoint(const vx::Vector<T, srcDim>& v) const {
     return affineMatrix() * concat(v, vx::Vector<T, 1>(1));
   }
-  // mapVector(v1 - v2) = map(v1) - map(v2)
+  vx::HmgVector<T, dstDim> mapPoint(const vx::HmgVector<T, srcDim>& v) const {
+    // TODO: Check whether this is correct
+    return vx::HmgVector<T, dstDim>(affineMatrix() * v.hmgVectorData(), v.w());
+  }
+  // mapVector(v1 - v2) = mapPoint(v1) - mapPoint(v2)
   vx::Vector<T, dstDim> mapVector(const vx::Vector<T, srcDim>& v) const {
     return discardTranslationLinearMatrix() * v;
+  }
+  vx::HmgVector<T, dstDim> mapVector(const vx::HmgVector<T, srcDim>& v) const {
+    // TODO: Check whether this is correct
+    return vx::HmgVector<T, dstDim>(
+        discardTranslationLinearMatrix() * v.getVectorPart(), v.w());
+  }
+  // TODO: Remove map()?
+  vx::Vector<T, dstDim> map(const vx::Vector<T, srcDim>& v) const {
+    return mapPoint(v);
+  }
+  vx::HmgVector<T, dstDim> map(const vx::HmgVector<T, srcDim>& v) const {
+    return mapPoint(v);
   }
 
   friend bool operator==(const AffineMap& m1, const AffineMap& m2) {
@@ -255,10 +292,17 @@ AffineMap<T, dim> inverse(const AffineMap<T, dim>& m,
 }
 
 template <typename To, typename From, std::size_t srcDim, std::size_t dstDim>
-inline std::enable_if_t<std::is_convertible<From, To>::value,
+inline std::enable_if_t<IsConvertibleWithoutNarrowing<From, To>::value,
                         AffineMap<To, srcDim, dstDim>>
 mapCast(const AffineMap<From, srcDim, dstDim>& m) {
   return createAffineMap(matrixCast<To>(m.affineMatrix()));
+}
+
+template <typename To, typename From, std::size_t srcDim, std::size_t dstDim>
+inline std::enable_if_t<std::is_convertible<From, To>::value,
+                        AffineMap<To, srcDim, dstDim>>
+mapCastNarrow(const AffineMap<From, srcDim, dstDim>& m) {
+  return createAffineMap(matrixCastNarrow<To>(m.affineMatrix()));
 }
 
 // Projective map
@@ -288,8 +332,10 @@ class ProjectiveMap {
 
   // This is a template to prevent it being instantiated for non-division-ring
   // types
+  // Note: Converting to a HmgVector before calling mapPoint() might avoid
+  // overflow if the result is not a finite vector
   template <typename AllowNonDivisionRing = std::false_type>
-  vx::Vector<T, dstDim> map(
+  vx::Vector<T, dstDim> mapPoint(
       const vx::Vector<T, srcDim>& v,
       AllowNonDivisionRing = AllowNonDivisionRing()) const {
     // Is needed for "T inv = 1 / res1(dstDim);"
@@ -306,8 +352,22 @@ class ProjectiveMap {
     for (std::size_t i = 0; i < dstDim; i++) res(i) = res1(i) * inv;
     return res;
   }
+  // Applying a ProjectiveMap to a HmgVector does not requires a division ring
+  vx::HmgVector<T, dstDim> mapPoint(const vx::HmgVector<T, srcDim>& v) const {
+    return createHmgVector(projectiveMatrix() * v.hmgVectorData());
+  }
   // There is no mapVector(): The result of transforming a vector with a
   // projective map depends on the position of the vector
+  // TODO: Remove map()?
+  template <typename AllowNonDivisionRing = std::false_type>
+  vx::Vector<T, dstDim> map(
+      const vx::Vector<T, srcDim>& v,
+      AllowNonDivisionRing = AllowNonDivisionRing()) const {
+    return mapPoint<AllowNonDivisionRing>(v);
+  }
+  vx::HmgVector<T, dstDim> map(const vx::HmgVector<T, srcDim>& v) const {
+    return mapPoint(v);
+  }
 
   friend bool operator==(const ProjectiveMap& m1, const ProjectiveMap& m2) {
     return m1.projectiveMatrix() == m2.projectiveMatrix();
@@ -392,10 +452,17 @@ ProjectiveMap<T, dim> inverse(const ProjectiveMap<T, dim>& m,
 }
 
 template <typename To, typename From, std::size_t srcDim, std::size_t dstDim>
-inline std::enable_if_t<std::is_convertible<From, To>::value,
+inline std::enable_if_t<IsConvertibleWithoutNarrowing<From, To>::value,
                         ProjectiveMap<To, srcDim, dstDim>>
 mapCast(const ProjectiveMap<From, srcDim, dstDim>& m) {
   return createProjectiveMap(matrixCast<To>(m.projectiveMatrix()));
+}
+
+template <typename To, typename From, std::size_t srcDim, std::size_t dstDim>
+inline std::enable_if_t<std::is_convertible<From, To>::value,
+                        ProjectiveMap<To, srcDim, dstDim>>
+mapCastNarrow(const ProjectiveMap<From, srcDim, dstDim>& m) {
+  return createProjectiveMap(matrixCastNarrow<To>(m.projectiveMatrix()));
 }
 
 }  // namespace vx

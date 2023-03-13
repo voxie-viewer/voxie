@@ -80,6 +80,11 @@ static void stripSuffix(const QString& text, const QString& unitSuffix,
     outPrefixValue = prefix.value;
   }
 
+  // Also strip space between number and prefix
+  while (matchLength < text2.length() &&
+         text2[text2.length() - matchLength - 1] == ' ')
+    matchLength++;
+
   outText = text2.left(text2.length() - matchLength);
 }
 

@@ -34,7 +34,9 @@ using namespace vx::io;
 FilenameFilter::FilenameFilter(const QString& description,
                                const QStringList& patterns)
     : description_(description), patterns_(patterns) {
-  filterString_ = this->description() + " (" + this->patterns().join(" ") + ")";
+  QString patternsStr = " (" + this->patterns().join(" ") + ")";
+  filterString_ = this->description() + patternsStr;
+  filterStringDouble_ = this->filterString_ + patternsStr;
 #if !defined(Q_OS_WIN)
   Qt::CaseSensitivity caseSensitivity = Qt::CaseInsensitive;
 #else

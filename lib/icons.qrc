@@ -2181,7 +2181,6 @@
         <file>icons/monitor-window-flow.png</file>
         <file>icons/monitor-window.png</file>
         <file>icons/monitor.png</file>
-        <file>icons/move-surface.png</file>
         <file>icons/mouse--arrow.png</file>
         <file>icons/mouse--exclamation.png</file>
         <file>icons/mouse--minus.png</file>
@@ -3571,6 +3570,5 @@
         <file>icons/zone.png</file>
         <file>icons/zones-stack.png</file>
         <file>icons/zones.png</file>
-        <file>icons/transparency_.png</file>
     </qresource>
 </RCC>

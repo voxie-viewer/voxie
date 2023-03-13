@@ -65,4 +65,4 @@ cd ../..
 
 export LD_LIBRARY_PATH="$VOXIE_BUILD_DIR/VoxieClient:$VOXIE_BUILD_DIR/Voxie:$VOXIE_BUILD_DIR/PluginFilter${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}"
 
-exec "$VOXIE_BUILD_DIR/Test/MC33UnitTest/mc33Test" "$@"
+exec "$VOXIE_BUILD_DIR/src/Test/MC33UnitTest/mc33Test" "$@"

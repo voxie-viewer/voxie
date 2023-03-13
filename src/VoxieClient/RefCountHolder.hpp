@@ -29,6 +29,8 @@
 
 namespace vx {
 class VOXIECLIENT_EXPORT RefCountHolder {
+  Q_DISABLE_COPY(RefCountHolder)
+
   QSharedPointer<de::uni_stuttgart::Voxie::Client> client_;
   QDBusObjectPath path_;
 

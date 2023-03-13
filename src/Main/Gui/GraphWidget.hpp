@@ -22,10 +22,15 @@
 
 #pragma once
 
-#include <QGraphicsView>
-#include <QtCore/QPointer>
+#include <Main/Gui/GraphNode.hpp>
+
 #include <Voxie/Node/NodeGroup.hpp>
-#include "Node.hpp"
+
+#include <QtWidgets/QGraphicsView>
+
+#include <QtCore/QPointer>
+
+class DataFlowScene;
 
 namespace vx {
 class Root;
@@ -62,7 +67,7 @@ class GraphWidget : public QGraphicsView {
    * graphical representation = nodes
    */
   QMap<vx::Node*, GraphNode*> map;
-  QGraphicsScene* myScene;
+  DataFlowScene* myScene;
   QPointF lastClickPos = QPointF();
 
   /**
@@ -146,12 +151,6 @@ class GraphWidget : public QGraphicsView {
   void requestContextMenu(QPoint pos);
 
   /**
-   * @brief scaleFactor return current zoom level of the graph widget
-   * @return
-   */
-  qreal scaleFactor();
-
-  /**
    * @brief Reorders all nodes in the graph based on the hierarchical algorithm
    * by Sugiyama and Kozo
    */
@@ -163,7 +162,7 @@ class GraphWidget : public QGraphicsView {
   GraphNode* hoverNode = nullptr;
   InputDot* hoverInputDot = nullptr;
   OutputDot* hoverOutputDot = nullptr;
-  QGraphicsTextItem* toolTip = new QGraphicsTextItem;
+  QGraphicsTextItem* toolTip = nullptr;
 
   const QColor dataNodeColor = QColor(76, 175, 80);
   const QColor filterNodeColor = QColor(33, 150, 243);
@@ -188,7 +187,7 @@ class GraphWidget : public QGraphicsView {
   void wheelEvent(QWheelEvent* event) override;
   void drawBackground(QPainter* painter, const QRectF& rect) override;
 
-  void scaleView(qreal scaleFactor);
+  void scaleViewLog(double step);
 
  private:
   int timerId;
@@ -197,6 +196,7 @@ class GraphWidget : public QGraphicsView {
   bool autoSort;
   QList<Node*> selectedNodes_;
   NodeGroup* currentNodeGroup_ = nullptr;
+  double currentScaleStep = 0;
 
   /**
    * @brief Helper function for the graph layouting algorithm

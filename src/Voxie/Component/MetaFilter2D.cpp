@@ -25,7 +25,9 @@
 using namespace vx::plugin;
 
 MetaFilter2D::MetaFilter2D(const QString& name)
-    : vx::plugin::Component(ComponentTypeInfo<MetaFilter2D>::name(), name) {}
+    // TODO: Pass json? (e.g. for TroveClassifiers)
+    : vx::plugin::Component(ComponentTypeInfo<MetaFilter2D>::name(), name, {}) {
+}
 
 MetaFilter2D::~MetaFilter2D() {}
 

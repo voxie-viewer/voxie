@@ -114,6 +114,8 @@ class VOXIECORESHARED_EXPORT IVoxie {
 
   virtual QWidget* mainWindow() const = 0;
 
+  virtual bool isHeadless() const = 0;
+
   /**
    * @brief Return the ScriptLauncher instance.
    */

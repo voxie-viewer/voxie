@@ -43,6 +43,8 @@ class RunMultipleFilterOperationBase : public vx::io::Operation {
   ~RunMultipleFilterOperationBase();
   void filterFinished();
 
+  static const bool debug = false;
+
  protected:
   void runFilters(QList<vx::FilterNode*> filterList, bool skipUnchanged);
 
@@ -93,11 +95,15 @@ class RunFilterNode : public QObject {
       return;
     }
 
+    if (RunMultipleFilterOperationBase::debug)
+      qDebug() << "Starting filter" << filter->getPath().path();
     QSharedPointer<RunFilterOperation> filterOp = filter->run();
 
     // when this filter is finished call operationFinished()
     filterOp->onFinished(
         this, [this](const QSharedPointer<Operation::ResultError>& error) {
+          if (RunMultipleFilterOperationBase::debug)
+            qDebug() << "Finished filter" << filter->getPath().path();
           this->operationFinished(error);
         });
     // TODO: This probably should not connect to QObject::destroyed but to some
@@ -112,6 +118,10 @@ class RunFilterNode : public QObject {
     for (QSharedPointer<RunFilterNode> child : children) {
       child->numParentsProcessed++;
       if (child->numParents == child->numParentsProcessed) {
+        if (RunMultipleFilterOperationBase::debug)
+          qDebug() << "Starting child" << child->filter->getPath().path()
+                   << "of" << this->filter->getPath().path() << "after all"
+                   << child->numParents << "parents are processed";
         child->startFilterIfNecessary(parentHasChanged);
       }
     }
@@ -216,6 +226,8 @@ class FilterGraph {
    */
   void runFilters(bool forceRerunAll) {
     for (QSharedPointer<RunFilterNode> node : root->children) {
+      if (RunMultipleFilterOperationBase::debug)
+        qDebug() << "Starting root child" << node->filter->getPath().path();
       node->startFilterIfNecessary(forceRerunAll);
     }
   }
@@ -247,6 +259,11 @@ class FilterGraph {
     nodeList.append(parentFilter->childNodes());
     while (nodeList.size() != 0) {
       vx::Node* obj = nodeList.takeLast();
+      /*
+      if (RunMultipleFilterOperationBase::debug)
+        qDebug() << "addChildren" << parentFilter->getPath().path()
+                 << obj->getPath().path() << nodeKindToString(obj->nodeKind());
+      */
       if (obj->nodeKind() == NodeKind::Filter) {
         childFilters.append(dynamic_cast<vx::FilterNode*>(obj));
       } else {
@@ -262,7 +279,7 @@ class FilterGraph {
         child->numParents++;
       }
       // check if the children of the child may need to be added to the graph
-      addChildren(nodeToAddTo, childFilter, filterList);
+      addChildren(child, childFilter, filterList);
     }
   }
 

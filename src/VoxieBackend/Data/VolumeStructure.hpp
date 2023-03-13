@@ -36,6 +36,9 @@ class VOXIEBACKEND_EXPORT VolumeStructure : public vx::DynamicObject {
   VolumeStructure();
 
   ~VolumeStructure();
+
+ public:
+  virtual QString volumeStructureType() = 0;
 };
 
 }  // namespace vx

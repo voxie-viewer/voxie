@@ -137,7 +137,7 @@ class MatrixTest : public QObject {
     // qDebug() << determinant(m3);
     // QVERIFY(determinant(vx::Matrix<int, 1>({55})) == 55);
 
-    auto m3D = vx::matrixCast<double>(m3);
+    auto m3D = vx::matrixCastNarrow<double>(m3);
     double det;
     auto m3DI = inverse(m3D, &det);
     // qDebug() << m3DI;
@@ -150,6 +150,17 @@ class MatrixTest : public QObject {
     QVERIFY(squaredNorm(m3DI_err2) < 1e-20);
   }
 };
+
+// See class MatrixBase
+void msvcTest1(const vx::Matrix<quint64, 3, 4>& value);
+void msvcTest1(const vx::Matrix<quint64, 3, 4>& value) {
+  auto lambda = []() {
+    vx::Matrix<quint64, 3, 4> mat;
+    mat(0, 1) = 0;
+  };
+  lambda();
+  (void)value(0, 2);
+}
 
 int execMatrixTest(int argc, char** argv);
 int execMatrixTest(int argc, char** argv) {

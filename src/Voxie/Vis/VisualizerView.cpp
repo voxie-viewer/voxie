@@ -44,7 +44,8 @@ using namespace vx::visualization;
 
 VisualizerView::VisualizerView(QWidget* parent, VisualizerNode* visualizer)
     : QWidget(parent), visualizer(visualizer) {
-  QImage image(":/icons/transparency_.png");
+  // TODO: High-DPI displays?
+  QImage image(":/icons-voxie/transparency_.png");
   b.setTextureImage(image);
   b.setStyle(Qt::TexturePattern);
   this->setFocusPolicy(Qt::WheelFocus);

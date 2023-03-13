@@ -45,8 +45,9 @@ GeometricPrimitiveType::GeometricPrimitiveType(
     const QString& name, const QString& displayName,
     const QMap<QString, QDBusSignature>& valueDBusSignatures,
     const CreateFunctionType& createFunction)
+    // TODO: Pass json (e.g. for TroveClassifiers)
     : vx::plugin::Component(ComponentTypeInfo<GeometricPrimitiveType>::name(),
-                            name),
+                            name, {}),
       displayName_(displayName),
       valueDBusSignatures_(valueDBusSignatures),
       createFunction_(createFunction) {

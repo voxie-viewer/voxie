@@ -60,7 +60,7 @@ class VectorTest : public QObject {
     std::array<int, 3> array1 = {1, 3, 3};
     vx::Vector<int, 3> vector4(vx::toVector(array1));
 
-    vx::Vector<double, 3> vector5 = vx::vectorCast<double>(vector2);
+    vx::Vector<double, 3> vector5 = vx::vectorCastNarrow<double>(vector2);
 
     vx::Vector<int, 0> vector6;
 
@@ -72,6 +72,11 @@ class VectorTest : public QObject {
 
     // qDebug() << toQString(vector7);
     QVERIFY(toQString(vector7) == "((3.4, 5.6, 1.2), (3.4, 5.6, 0.2))");
+
+    // Test const vectors
+    const auto vector8 = vector7;
+    auto x = vector8[0](1);
+    QVERIFY(toQString(x) == "5.6");
   }
 
   void testEqual() {
@@ -100,6 +105,9 @@ class VectorTest : public QObject {
     vx::Vector<int, 2> vector3 = {2, 5};
     vx::Vector<int, 2> vector2n = {-1, -3};
 
+    vx::Vector<qint64, 2> vectorLong = vx::vectorCast<qint64>(vector2n);
+    QVERIFY(vx::vectorCastNarrow<int>(vectorLong) == vector2n);
+
     QVERIFY(vector1 + vector2 == vector3);
     QVERIFY(vector2 + vector1 == vector3);
     auto vector4 = vector1 += vector2;
@@ -121,8 +129,8 @@ class VectorTest : public QObject {
     QVERIFY(vector2 == vector2n);
     QVERIFY(vector2 * (-1) == (-1) * vector2n);
     // QVERIFY(vector2 / (-1) == (-1) * vector2n);
-    QVERIFY(vx::vectorCast<double>(vector2) / (-1) ==
-            (-1) * vx::vectorCast<double>(vector2n));
+    QVERIFY(vx::vectorCastNarrow<double>(vector2) / (-1) ==
+            (-1) * vx::vectorCastNarrow<double>(vector2n));
   }
 
   void testConv() {
@@ -131,7 +139,7 @@ class VectorTest : public QObject {
     QVERIFY(vx::toVector(array1) == vector1);
 
     vx::Vector<double, 3> vector2 = {1, 2, 0};
-    QVERIFY(vx::vectorCast<double>(vector1) == vector2);
+    QVERIFY(vx::vectorCastNarrow<double>(vector1) == vector2);
   }
 
   void testCross() {
@@ -141,6 +149,17 @@ class VectorTest : public QObject {
     QVERIFY(crossProduct(v1, v2) == v3);
   }
 };
+
+// See class VectorBase
+void msvcTest1(const vx::Vector<quint64, 3>& value);
+void msvcTest1(const vx::Vector<quint64, 3>& value) {
+  auto lambda = []() {
+    vx::Vector<quint64, 3> vec;
+    vec[0] = 0;
+  };
+  lambda();
+  (void)value[0];
+}
 
 int execVectorTest(int argc, char** argv);
 int execVectorTest(int argc, char** argv) {

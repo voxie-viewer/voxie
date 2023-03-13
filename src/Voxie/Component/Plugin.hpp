@@ -69,7 +69,6 @@ class VOXIECORESHARED_EXPORT Plugin : public vx::ComponentContainer {
   QList<QSharedPointer<vx::plugin::MetaFilter2D>> allFilters2D;
   QList<QSharedPointer<vx::io::Importer>> allImporters;
   QList<QSharedPointer<vx::io::Exporter>> allExporters;
-  QList<QSharedPointer<vx::io::SliceExporter>> allSliceExporters;
 
   QSharedPointer<const QList<QSharedPointer<ComponentType>>> componentTypes_;
 
@@ -119,10 +118,6 @@ class VOXIECORESHARED_EXPORT Plugin : public vx::ComponentContainer {
 
   const QList<QSharedPointer<vx::io::Exporter>>& exporters() const {
     return this->allExporters;
-  }
-
-  const QList<QSharedPointer<vx::io::SliceExporter>>& sliceExporters() const {
-    return this->allSliceExporters;
   }
 
   const QList<QSharedPointer<vx::NodePrototype>>& objectPrototypes() const {

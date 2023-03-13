@@ -71,7 +71,7 @@ class MapTest : public QObject {
     };
     auto map1 = vx::createLinearMap(m1);
     // qDebug() << map1 << inverse(map1);
-    auto map2 = vx::mapCast<double>(map1);
+    auto map2 = vx::mapCastNarrow<double>(map1);
     auto map2i = inverse(map2);
     // qDebug() << map2 * map2i << map2i * map2;
     // qDebug() << squaredNorm((map2 * map2i).linearMatrix() -
@@ -121,7 +121,7 @@ class MapTest : public QObject {
     };
     auto map3 = createAffineMap(m3);
     // qDebug() << inverse(map3);
-    auto map4 = vx::mapCast<double>(map3);
+    auto map4 = vx::mapCastNarrow<double>(map3);
     // qDebug() << inverse(map4);
     auto map4i = inverse(map4);
     /*
@@ -147,10 +147,10 @@ class MapTest : public QObject {
         {5, 1, 5, 2},
     };
     auto map1 = createProjectiveMap(m1);
-    auto map2 = vx::mapCast<double>(map1);
+    auto map2 = vx::mapCastNarrow<double>(map1);
     // qDebug() << map1 << map2;
     vx::Vector<int, 3> v1 = {5, 6, 7};
-    auto v2 = vx::vectorCast<double>(v1);
+    auto v2 = vx::vectorCastNarrow<double>(v1);
     vx::Vector<double, 2> v3 = {0.61764706, 1.73529412};
     // qDebug() << map1.map(v1); // Should not work with integer values
     // qDebug() << map2.map(v2);

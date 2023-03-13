@@ -53,7 +53,7 @@ ExtensionFilterNode::ExtensionFilterNode(
     const QSharedPointer<vx::NodePrototype>& prototype,
     const QString& scriptFilename)
     : FilterNode(prototype), scriptFilename_(scriptFilename) {
-  debuggerSupportEnabled->show();
+  if (!voxieRoot().isHeadless()) debuggerSupportEnabled->show();
 
   connect(this, &ExtensionFilterNode::error, this,
           [](const Exception& e, const QSharedPointer<QString>& scriptOutput) {
@@ -67,13 +67,15 @@ ExtensionFilterNode::ExtensionFilterNode(
             // Delay calling QMessageBox::exec() until later to avoid having a
             // main loop in the event handler. TODO: This should probably not
             // use QMessageBox::exec().
-            enqueueOnMainThread([message] {
-              QMessageBox(QMessageBox::Critical,
-                          Root::instance()->mainWindow()->windowTitle(),
-                          QString("Error during filter: %1").arg(message),
-                          QMessageBox::Ok, Root::instance()->mainWindow())
-                  .exec();
-            });
+            if (!voxieRoot().isHeadless()) {
+              enqueueOnMainThread([message] {
+                QMessageBox(QMessageBox::Critical,
+                            Root::instance()->mainWindow()->windowTitle(),
+                            QString("Error during filter: %1").arg(message),
+                            QMessageBox::Ok, Root::instance()->mainWindow())
+                    .exec();
+              });
+            }
           });
   // TODO: Also display output of filter script when filter succeeds?
 
@@ -204,7 +206,7 @@ QSharedPointer<RunFilterOperation> ExtensionFilterNode::calculate() {
     throw Exception("de.uni_stuttgart.Voxie.InternalError",
                     "extension is nullptr in ExtensionFilterNode");
   }
-  if (debuggerSupportEnabled->isChecked())
+  if (debuggerSupportEnabled && debuggerSupportEnabled->isChecked())
     ext->startOperationDebug(exOp);
   else
     ext->startOperation(exOp);
@@ -362,16 +364,6 @@ ExternalOperationRunFilter::ExternalOperationRunFilter(
   connect(this, &ExternalOperation::error, this, [this](const Exception& err) {
     this->operation()->finish(createQSharedPointer<Operation::ResultError>(
         createQSharedPointer<Exception>(err)));
-  });
-
-  // TODO: Move to ExternalOperation
-  connect(this, &QObject::destroyed, this, [operation = this->operation()]() {
-    if (!operation->isFinished())
-      // Script called ClaimOperation() but neither Finish() nor
-      // FinishError()
-      operation->finish(createQSharedPointer<vx::io::Operation::ResultError>(
-          createQSharedPointer<Exception>("de.uni_stuttgart.Voxie.Error",
-                                          "Script failed to return any data")));
   });
 }
 ExternalOperationRunFilter::~ExternalOperationRunFilter() {}

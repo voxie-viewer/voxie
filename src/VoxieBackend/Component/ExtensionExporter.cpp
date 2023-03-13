@@ -71,8 +71,7 @@ QSharedPointer<OperationResult> ExtensionExporter::exportData(
   op->setDescription("Export " + fileName);
   OperationRegistry::instance()->addOperation(op);
 
-  auto exOp =
-      ExternalOperationExport::create(op, fileName, "Export " + fileName, data);
+  auto exOp = ExternalOperationExport::create(op, fileName, this->name(), data);
 
   auto ext = qSharedPointerDynamicCast<Extension>(this->container());
   // Should always be in an extension

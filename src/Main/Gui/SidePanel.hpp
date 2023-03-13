@@ -78,10 +78,9 @@ class SidePanel : public QWidget {
   /**
    * @brief showContextMenu shows the contextmenu for the selected node at the
    * given position
-   * @param obj Node which was pressed
    * @param pos position where the context menu should be shown
    */
-  void showContextMenu(Node* obj, QPoint& pos);
+  void showContextMenu(QPoint pos);
 
   bool isPoppedOut() { return sideBarPopout != nullptr; }
 
@@ -185,6 +184,7 @@ class SidePanel : public QWidget {
    public:
     PopoutWidget(SidePanel* sidePanel) {
       this->sidePanel = sidePanel;
+      // TODO: Is this size used anywhere?
       resize(1280, 720);
     }
 

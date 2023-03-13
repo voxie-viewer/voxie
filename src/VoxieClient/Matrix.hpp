@@ -40,10 +40,18 @@ namespace intern {
 // arguments
 template <typename T, std::size_t columnCount, typename... U>
 class MatrixBase {
-  static constexpr std::size_t rowCount = sizeof...(U);
+  // Note: This must not be called 'rowCount' because at least MSVC2017 and
+  // MSVC2019 don't like it if the template parameter for Matrix is called the
+  // same as the class member here (this would cause msvcTest1() in
+  // MatrixTest.cpp to fail with:
+  // error C2662: 'unknown-type
+  // &vx::Matrix<quint64,3,4>::asNestedArrayRowMajor(void)': cannot convert
+  // 'this' pointer from 'const vx::Matrix<quint64,3,4>' to
+  // 'vx::Matrix<quint64,3,4> &'
+  static constexpr std::size_t rowCount_ = sizeof...(U);
 
  protected:
-  std::array<std::array<T, columnCount>, rowCount> data_;
+  std::array<std::array<T, columnCount>, rowCount_> data_;
 
  public:
   MatrixBase() = default;
@@ -301,9 +309,20 @@ Matrix<T, count, count>& operator*=(Matrix<T, count, count>& m,
 
 template <typename To, typename From, std::size_t rowCount,
           std::size_t columnCount>
-inline std::enable_if_t<std::is_convertible<From, To>::value,
+inline std::enable_if_t<IsConvertibleWithoutNarrowing<From, To>::value,
                         Matrix<To, rowCount, columnCount>>
 matrixCast(const Matrix<From, rowCount, columnCount>& m) {
+  Matrix<To, rowCount, columnCount> ret;
+  for (size_t row = 0; row < rowCount; row++)
+    for (size_t col = 0; col < columnCount; col++) ret(row, col) = m(row, col);
+  return ret;
+}
+
+template <typename To, typename From, std::size_t rowCount,
+          std::size_t columnCount>
+inline std::enable_if_t<std::is_convertible<From, To>::value,
+                        Matrix<To, rowCount, columnCount>>
+matrixCastNarrow(const Matrix<From, rowCount, columnCount>& m) {
   Matrix<To, rowCount, columnCount> ret;
   for (size_t row = 0; row < rowCount; row++)
     for (size_t col = 0; col < columnCount; col++)

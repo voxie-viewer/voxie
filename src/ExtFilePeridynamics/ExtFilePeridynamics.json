@@ -1,0 +1,14 @@
+{
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Peridynamics.Export",
+            "DisplayName": "Peridynamics file",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.Volume"
+            ],
+            "Patterns": [
+                "*.peri3d"
+            ]
+        }
+    ]
+}

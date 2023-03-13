@@ -21,11 +21,16 @@
  */
 
 #include "DataFlowScene.hpp"
-#include <QDebug>
-#include <QGraphicsSceneMouseEvent>
-#include <QScrollBar>
+
+#include <Main/Gui/GraphNode.hpp>
+
 #include <Voxie/Node/Types.hpp>
-#include "Node.hpp"
+
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QGraphicsSceneMouseEvent>
+#include <QtWidgets/QScrollBar>
+
+#include <QtCore/QDebug>
 
 using namespace vx::gui;
 
@@ -180,8 +185,6 @@ void DataFlowScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
   this->graphWidget->setDragMode(QGraphicsView::NoDrag);
 
   if (event->button() == Qt::RightButton) {
-    graphWidget->requestContextMenu(
-        event->buttonDownScreenPos(Qt::RightButton));
   } else {
     // auto item = itemAt(event->scenePos(), QTransform()); // TODO?
 
@@ -238,14 +241,22 @@ void DataFlowScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
 }
 
 void DataFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+  this->clickIsHandled = false;
+
   if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton) {
     this->graphWidget->lastClickPos = QPointF();
     auto item = itemAt(event->scenePos(), QTransform());
+    // qDebug() << "Mouse press" << event->button() << "at item" << item;
     if (item == nullptr || !dynamic_cast<GraphNode*>(item)) {
       if (event->button() == Qt::RightButton) {
+        this->clickIsHandled = true;
         this->graphWidget->lastClickPos = event->scenePos();
-      } else {
-        this->graphWidget->setDragMode(QGraphicsView::ScrollHandDrag);
+        // TODO: Also do this for left mouse button? Clashes with scroll
+        // dragging
+        if (!(QApplication::keyboardModifiers() &
+              Qt::KeyboardModifier::ControlModifier)) {
+          this->graphWidget->setSelectedNodes({});
+        }
       }
     } else {
       this->dragStart = QPointF();
@@ -253,4 +264,24 @@ void DataFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
   }
 
   QGraphicsScene::mousePressEvent(event);
+
+  if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton) {
+    if (!clickIsHandled) {
+      // qDebug() << "Mouse press 2";
+      this->graphWidget->setDragMode(QGraphicsView::ScrollHandDrag);
+    }
+  }
+
+  if (event->button() == Qt::RightButton) {
+    graphWidget->requestContextMenu(
+        // event->buttonDownScreenPos(Qt::RightButton)
+        event->screenPos());
+  }
+}
+
+void DataFlowScene::helpEvent(QGraphicsSceneHelpEvent* helpEvent) {
+  // Do nothing here, only prevent QGraphicsScene::helpEvent() from overriding
+  // our tool tip (which will be shown in GraphWidget::mouseMoveEvent()
+  Q_UNUSED(helpEvent);
+  // qDebug() << "DataFlowScene::helpEvent" << helpEvent;
 }

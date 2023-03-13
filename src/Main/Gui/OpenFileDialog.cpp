@@ -59,20 +59,28 @@ OpenFileDialog::OpenFileDialog(Root* root, QWidget* parent)
   }
   supportedFilter += ")";
   filters << supportedFilter;
+  supportedFilter = "All supported files";
 
   for (auto importer : importers) {
     const QString& filterString = importer->filter().filterString();
     if (map.contains(filterString)) {
       qWarning() << "Got multiple importers with filter string" << filterString;
     } else {
-      filters << filterString;
+      // filters << filterString;
+      // Note: This will add a filter with the list of extensions twice. The
+      // second list of extension will be removed by the HideNameFilterDetails
+      // option. This is to done in order to hide the list of extensions for the
+      // "All supported files" filter (which would be too long).
+      filters << importer->filter().filterStringDouble();
       map[filterString] = importer;
     }
   }
 
-  this->setNameFilters(filters);
   this->setOption(QFileDialog::DontUseNativeDialog, true);
+  // Note: This has to be done before calling setNameFilters()
+  this->setOption(QFileDialog::HideNameFilterDetails, true);
   this->setFileMode(QFileDialog::ExistingFiles);
+  this->setNameFilters(filters);
 
   // if (this->exec() != QDialog::Accepted) return;
 

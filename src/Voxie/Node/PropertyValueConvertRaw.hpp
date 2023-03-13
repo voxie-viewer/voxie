@@ -33,6 +33,9 @@ class Color;
 class Node;
 class ColorizerEntry;
 enum class DataType;
+template <typename T, std::size_t dim>
+class Vector;
+class BoundingBox3D;
 
 template <typename Raw, typename Cooked>
 // Must not be marked with VOXIECORESHARED_EXPORT because it
@@ -85,10 +88,11 @@ struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
 
 template <>
 struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
-    std::tuple<uint64_t, uint64_t, uint64_t>, VectorSizeT3> {
-  static VectorSizeT3 fromRaw(
-      const std::tuple<uint64_t, uint64_t, uint64_t>& raw);
-  static std::tuple<uint64_t, uint64_t, uint64_t> toRaw(VectorSizeT3 cooked);
+    std::tuple<quint64, quint64, quint64>, vx::Vector<quint64, 3>> {
+  static vx::Vector<quint64, 3> fromRaw(
+      const std::tuple<quint64, quint64, quint64>& raw);
+  static std::tuple<quint64, quint64, quint64> toRaw(
+      const vx::Vector<quint64, 3>& cooked);
 };
 
 template <>
@@ -131,5 +135,14 @@ struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
       const QList<std::tuple<double, TupleVector<double, 4>, qint32>>& raw);
   static QList<std::tuple<double, TupleVector<double, 4>, qint32>> toRaw(
       const QList<ColorizerEntry>& cooked);
+};
+
+template <>
+struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
+    std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>, BoundingBox3D> {
+  static BoundingBox3D fromRaw(
+      const std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>& raw);
+  static std::tuple<TupleVector<double, 3>, TupleVector<double, 3>> toRaw(
+      const BoundingBox3D& cooked);
 };
 }  // namespace vx

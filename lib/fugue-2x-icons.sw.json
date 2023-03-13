@@ -1,0 +1,14 @@
+{
+    "Name": "fugue-2x-icons",
+    "Description": "The Fugue icon set, upscaled to 32x32.",
+    "GitRepository": [
+        "https://github.com/chrisjbillington/fugue-2x-icons",
+        "https://github.com/steffen-kiess/fugue-2x-icons"
+    ],
+    "GitCommit": "60b9f2dafa837a3ab6d10b7874544baf535a977a",
+    "FileFilter": [
+        "LICENSE-ICONS.md",
+        "icons-2x"
+    ],
+    "LicenseFilename": "LICENSE-ICONS.md"
+}

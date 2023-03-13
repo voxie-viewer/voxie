@@ -1,5 +1,7 @@
 # meson file containing instructions for building and installing the manual and for installing the DBus interface XML file and the wrapper script
 
+if get_option('main').enabled()
+
 # TODO: How to find the Qt framework path?
 set_qt_libdir = []
 if target_machine.system() == 'darwin'
@@ -72,6 +74,8 @@ install_subdir('../../doc/prototype', install_dir : doc_install_dir)
 install_subdir('../../lib/katex-0.11.1', install_dir : lib_install_dir)
 
 install_data('../../scripts/getAverage.py', install_dir : script_install_dir)
+
+endif
 
 if host_machine.system() == 'linux'
   custom_target(

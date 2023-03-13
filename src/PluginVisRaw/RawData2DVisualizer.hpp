@@ -94,7 +94,10 @@ class RawVisualizer : public vx::visualization::SimpleVisualizer {
    */
   QTimer _resizeTimer;
 
+ public:  // TODO
   QSharedPointer<RawImageCache> cache;
+
+ private:
   QSharedPointer<vx::ImageDataPixel> cachedImage;
 
   vx::InitializeColorizeWorker* initializeWorker;
@@ -162,11 +165,12 @@ class RawVisualizer : public vx::visualization::SimpleVisualizer {
   void rawDataChangedFinished();
   void rawDataDisplayNameChanged();
 
- private:
+ public:  // TODO
   static QRectF getProjectionArea(
       const QSharedPointer<vx::TomographyRawData2DAccessor>& data,
       const QString& stream, qint64 imageId,
       const QJsonObject& projectionGeometry);
 
+ private:
   void selectInitialImageKindAndList();
 };

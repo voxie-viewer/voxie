@@ -35,9 +35,12 @@
 #pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
 
+#include <VoxieClient/TypeTraits.hpp>
+
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <ostream>
 #include <type_traits>
 
@@ -59,10 +62,17 @@ namespace intern {
 // arguments
 template <typename T, typename... U>
 class VectorBase {
-  static constexpr std::size_t dim = sizeof...(U);
+  // Note: This must not be called 'dim' because at least MSVC2017 and MSVC2019
+  // don't like it if the template parameter for Vector is called the same as
+  // the class member here (this would cause msvcTest1() in VectorTest.cpp to
+  // fail with:
+  // error C2662: 'unknown-type &vx::Vector<quint64,3>::asArray(void)': cannot
+  // convert 'this' pointer from 'const vx::Vector<quint64,3>' to
+  // 'vx::Vector<quint64,3> &'
+  static constexpr std::size_t dim_ = sizeof...(U);
 
  protected:
-  std::array<T, dim> data_;
+  std::array<T, dim_> data_;
 
  public:
   VectorBase() = default;
@@ -231,8 +241,17 @@ inline Vector<T, dim> toVector(const std::array<T, dim>& array) {
 }
 
 template <typename To, typename From, std::size_t dim>
-inline std::enable_if_t<std::is_convertible<From, To>::value, Vector<To, dim>>
+inline std::enable_if_t<IsConvertibleWithoutNarrowing<From, To>::value,
+                        Vector<To, dim>>
 vectorCast(const Vector<From, dim>& v) {
+  Vector<To, dim> ret;
+  for (size_t i = 0; i < dim; i++) ret[i] = v[i];
+  return ret;
+}
+
+template <typename To, typename From, std::size_t dim>
+inline std::enable_if_t<std::is_convertible<From, To>::value, Vector<To, dim>>
+vectorCastNarrow(const Vector<From, dim>& v) {
   Vector<To, dim> ret;
   for (size_t i = 0; i < dim; i++) ret[i] = static_cast<To>(v[i]);
   return ret;
@@ -266,6 +285,14 @@ inline Vector<T, 3> crossProduct(const Vector<T, 3>& v1,
   return Vector<T, 3>{v1[1] * v2[2] - v1[2] * v2[1],
                       v1[2] * v2[0] - v1[0] * v2[2],
                       v1[0] * v2[1] - v1[1] * v2[0]};
+}
+
+template <typename T, std::size_t dim>
+inline Vector<T, dim> elementwiseProduct(const Vector<T, dim>& v1,
+                                         const Vector<T, dim>& v2) {
+  Vector<T, dim> result;
+  for (size_t i = 0; i < dim; i++) result[i] = v1[i] * v2[i];
+  return result;
 }
 
 template <typename T, std::size_t dim1, std::size_t dim2>

@@ -73,5 +73,5 @@ RunFilterOperation::createRunFilterOperation() {
 
 // TODO: remove
 void RunFilterOperation::emitFinished() {
-  this->finished(createQSharedPointer<ResultSuccess>());
+  this->finish(createQSharedPointer<ResultSuccess>());
 }

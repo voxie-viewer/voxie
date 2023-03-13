@@ -65,7 +65,8 @@ using namespace vx::io;
 SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
                      QWidget* parentWidget)
     : QWidget(parentWidget) {
-  this->setMinimumWidth(405);
+  // this->setMinimumWidth(405);
+  this->setMinimumWidth(405 / 96.0 * this->logicalDpiX());
 
   auto layout = new QVBoxLayout();
   layout->setMargin(0);
@@ -105,8 +106,8 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
         auto selectedFilter =
             dynamic_cast<vx::FilterNode*>(dataflowWidget->selectedNodes()[0]);
 
-        if (selectedFilter && selectedFilter->needsRecalculation()) {
-          selectedFilter->run();
+        if (selectedFilter) {
+          if (selectedFilter->needsRecalculation()) selectedFilter->run();
         } else {
           qWarning() << "Tried to run selected node as a filter even though"
                         " selected node is not of type FilterNode.";
@@ -421,10 +422,10 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
           // will be caught. In order to avoid warning spam the message will be
           // shown only once for each section.
           Q_UNUSED(event);
-          auto maxAllowed = 425;  // TODO: which value should be used here?
           // qDebug() << "resize" << event << visibleSections.size();
           for (auto section : visibleSections) {
             if (!section) continue;
+            auto maxAllowed = 425 / 96.0 * section->logicalDpiX();
             auto minSize = section->minimumSizeHint();
             auto minWidth = minSize.width();
             if (minWidth <= maxAllowed) continue;
@@ -543,7 +544,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
         QMap<Node*, QSharedPointer<Node>>();
 
     QList<Node*> oldSelectedNodes = selectedNodes();
-    dataflowWidget->clearSelectedNodes();
+    QList<Node*> newSelectedNodes;
     for (Node* node : oldSelectedNodes) {
       QSharedPointer<Node> newNode = node->prototype()->create(
           QVariantMap(), QList<Node*>(), QMap<QString, QDBusVariant>());
@@ -551,8 +552,9 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
       voxieRoot().setGraphPosition(
           newNode.data(),
           voxieRoot().getGraphPosition(node) + QVector2D(150, 0));
-      dataflowWidget->selectNode(newNode.data());
+      newSelectedNodes << newNode.data();
     }
+    dataflowWidget->setSelectedNodes(newSelectedNodes);
 
     for (Node* node : oldSelectedNodes) {
       // cloning of data nodes
@@ -706,15 +708,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
           [] { RunAllFilterOperation::create()->runAll(); });
 
   connect(dataflowWidget, &GraphWidget::contextMenuRequested, this,
-          [this](const QPoint& pos) {
-            auto globalPos = pos;
-            if (dataflowWidget->hoverNode == nullptr) {
-              this->showContextMenu(nullptr, globalPos);
-              return;
-            }
-            auto obj = dataflowWidget->hoverNode->modelNode();
-            this->showContextMenu(obj, globalPos);
-          });
+          &SidePanel::showContextMenu);
 
   // loads the custom UI on double-click object activation
   connect(dataflowWidget, &GraphWidget::nodeActivated, this,
@@ -823,74 +817,81 @@ void SidePanel::performNodeSelection() {
   }
 }
 
-void SidePanel::showContextMenu(Node* obj, QPoint& globalPos) {
-  currentNode = obj;
+void SidePanel::showContextMenu(QPoint globalPos) {
+  auto selectedNodes = dataflowWidget->selectedNodes();
 
-  if (obj == nullptr) {
-    dataflowWidget->clearSelectedNodes();
+  bool haveZeroNodes = selectedNodes.length() == 0;
+  bool haveOneNode = selectedNodes.length() == 1;
+  bool haveNodes = selectedNodes.length() != 0;
+
+  if (haveOneNode) {
+    currentNode = selectedNodes[0];
+  } else {
+    currentNode = nullptr;
   }
 
-  contextMenuActionDataNodeOpen->setVisible(!obj);
-  contextMenuActionDataNode->setVisible(!obj);
-  contextMenuActionFilterNode->setVisible(!obj);
-  contextMenuActionPropertyNode->setVisible(!obj);
-  contextMenuActionVisualizerNode->setVisible(!obj);
-  contextMenuActionObject3DNode->setVisible(!obj);
-  contextMenuActionRunFilters->setVisible(!obj);
-  contextMenuActionDelete->setVisible(obj);
-  contextMenuActionRename->setVisible(obj);
-  contextMenuActionDuplicate->setVisible(obj);
-  contextMenuActionMoveToNodeGroup->setVisible(obj);
-  contextMenuActionNodeGroup->setVisible(!obj);
+  contextMenuActionDataNodeOpen->setVisible(haveZeroNodes);
+  contextMenuActionDataNode->setVisible(haveZeroNodes);
+  contextMenuActionFilterNode->setVisible(haveZeroNodes);
+  contextMenuActionPropertyNode->setVisible(haveZeroNodes);
+  contextMenuActionVisualizerNode->setVisible(haveZeroNodes);
+  contextMenuActionObject3DNode->setVisible(haveZeroNodes);
+  contextMenuActionRunFilters->setVisible(haveZeroNodes);
+  contextMenuActionDelete->setVisible(haveNodes);
+  contextMenuActionRename->setVisible(haveNodes);
+  contextMenuActionDuplicate->setVisible(haveNodes);
+  contextMenuActionMoveToNodeGroup->setVisible(haveNodes);
+  contextMenuActionNodeGroup->setVisible(haveZeroNodes);
 
   contextMenuActionBringToFront->setVisible(false);
+  contextMenuActionSaveNodeGroup->setVisible(false);
 
-  contextMenuActionSaveNodeGroup->setVisible(selectedNodes().length() == 1 &&
-                                             selectedNodes()[0]->nodeKind() ==
-                                                 NodeKind::NodeGroup);
+  if (haveOneNode) {
+    auto node = selectedNodes.at(0);
 
-  if (obj && dataflowWidget->selectedNodes().length() == 1) {
+    contextMenuActionSaveNodeGroup->setVisible(node->nodeKind() ==
+                                               NodeKind::NodeGroup);
     contextMenuActionDataNode->setVisible(
-        obj->isCreatableChild(NodeKind::Data));
+        node->isCreatableChild(NodeKind::Data));
     contextMenuActionFilterNode->setVisible(
-        obj->isCreatableChild(NodeKind::Filter));
+        node->isCreatableChild(NodeKind::Filter));
     contextMenuActionPropertyNode->setVisible(
-        obj->isCreatableChild(NodeKind::Property));
+        node->isCreatableChild(NodeKind::Property));
     contextMenuActionVisualizerNode->setVisible(
-        obj->isCreatableChild(NodeKind::Visualizer));
+        node->isCreatableChild(NodeKind::Visualizer));
     contextMenuActionObject3DNode->setVisible(
-        obj->isCreatableChild(NodeKind::Object3D));
+        node->isCreatableChild(NodeKind::Object3D));
 
     contextMenuActionBringToFront->setVisible(
-        dynamic_cast<VisualizerNode*>(obj));
-  }
+        dynamic_cast<VisualizerNode*>(node));
 
-  // make "bring to front" context menu option visible if we have 1 node
-  // selected and it is a visualizer
-  if (obj && selectedNodes().length() == 1) {
+    // make "bring to front" context menu option visible if we have 1 node
+    // selected and it is a visualizer
     contextMenuActionBringToFront->setVisible(
-        dynamic_cast<VisualizerNode*>(obj));
+        dynamic_cast<VisualizerNode*>(node));
   }
 
   auto actions = contextMenu->actions();
-  if (obj) actions.append(obj->contextMenuActions());
-
-  // TODO: separator?
-
   QList<QObject*> objectsToDestroy;  // TODO: exception safety?
-  if (obj) {
+  if (haveOneNode) {
+    auto node = selectedNodes.at(0);
+
+    actions.append(node->contextMenuActions());
+
+    // TODO: separator?
+
     for (const auto& tool : vx::Root::instance()
                                 ->allComponents()
                                 ->listComponentsTyped<vx::Tool>()) {
       auto toolNode = qSharedPointerDynamicCast<ToolTargetNode>(tool);
       if (!toolNode) continue;
 
-      if (!toolNode->matches(obj->prototype())) continue;
+      if (!toolNode->matches(node->prototype())) continue;
 
       auto action = new QAction(tool->displayName(), this);
       objectsToDestroy << action;
-      QObject::connect(action, &QAction::triggered, obj,
-                       [obj, toolNode]() { toolNode->startNode(obj); });
+      QObject::connect(action, &QAction::triggered, node,
+                       [node, toolNode]() { toolNode->startNode(node); });
       actions << action;
     }
   }
@@ -1072,9 +1073,11 @@ void SidePanel::activateVisualizer(VisualizerNode* visualizer) {
 
 QString SidePanel::createColorExplanationString(QColor color,
                                                 QString explanation) {
+  // Don't use px for font size (is incorrect with High-DPI), use pt or em
+  // instead.
   return "<span style='color: rgb(" + QString::number(color.red()) + ", " +
          QString::number(color.green()) + ", " + QString::number(color.blue()) +
-         "); " + "font-size: 17px;'>&#9632;</span> " + explanation;
+         "); " + "font-size: 1.2em;'>&#9632;</span> " + explanation;
 }
 
 void SidePanel::reorderNodes() { dataflowWidget->reorderNodes(); }

@@ -40,6 +40,7 @@ class VOXIEBACKEND_EXPORT FilenameFilter {
   QList<QRegExp> compiledPatternsCaseInsensitive_;
 
   QString filterString_;
+  QString filterStringDouble_;
 
  public:
   FilenameFilter() {}
@@ -55,7 +56,10 @@ class VOXIEBACKEND_EXPORT FilenameFilter {
     return compiledPatternsCaseInsensitive_;
   }
 
+  // "Description (*.ext *.x)"
   const QString& filterString() const { return filterString_; }
+  // "Description (*.ext *.x) (*.ext *.x)"
+  const QString& filterStringDouble() const { return filterStringDouble_; }
 
   bool matches(const QString& filename) const;
   bool matchesCaseInsensitive(const QString& filename) const;

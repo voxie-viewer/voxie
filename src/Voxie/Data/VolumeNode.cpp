@@ -70,7 +70,8 @@ VolumeNode::VolumeNode()
   // are some null checks missing somewhere
   volumeDataPointer = VolumeDataVoxel::createVolume(1, 1, 1, DataType::Float32);
 
-  this->addPropertySection(new vx::gui::VolumeNodeView(this));
+  if (!voxieRoot().isHeadless())
+    this->addPropertySection(new vx::gui::VolumeNodeView(this));
 }
 
 VolumeNode::~VolumeNode() {}

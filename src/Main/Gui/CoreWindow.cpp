@@ -142,6 +142,7 @@ class GuiAdaptorImpl : public GuiAdaptor {
   virtual ~GuiAdaptorImpl() {}
 
   QList<QDBusObjectPath> selectedNodes() const override;
+  void setSelectedNodes(const QList<QDBusObjectPath>& list) override;
   QList<QDBusObjectPath> selectedObjects() const override;
 
   QDBusObjectPath activeVisualizer() const override;
@@ -224,6 +225,7 @@ Gui::Gui(CoreWindow* window)
     QList<QDBusObjectPath> value;
     for (const auto& obj : window->sidePanel->selectedNodes())
       value << ExportedObject::getPath(obj);
+    // qDebug() << "Selected nodes" << value;
     QDBusMessage signal = QDBusMessage::createSignal(
         window->getGuiDBusObject()->getPath().path(),
         "org.freedesktop.DBus.Properties", "PropertiesChanged");
@@ -250,6 +252,31 @@ QList<QDBusObjectPath> GuiAdaptorImpl::selectedNodes() const {
   } catch (Exception& e) {
     e.handle(object);
     return QList<QDBusObjectPath>();
+  }
+}
+void GuiAdaptorImpl::setSelectedNodes(const QList<QDBusObjectPath>& list) {
+  try {
+    QList<Node*> nodes;
+    for (const auto& path : list) {
+      if (path.path() == "/") {
+        throw Exception("de.uni_stuttgart.Voxie.Error",
+                        "Node list contains nullptr");
+      }
+      auto ptr = ExportedObject::lookupWeakObject(path);
+      if (!ptr) {
+        throw vx::Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                            "Object " + path.path() + " not found");
+      }
+      auto obj = dynamic_cast<Node*>(ptr);
+      if (!obj) {
+        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidObjectType",
+                            "Object " + path.path() + " is not a Node");
+      }
+      nodes.append(obj);
+    }
+    object->window->sidePanel->dataflowWidget->setSelectedNodes(nodes);
+  } catch (Exception& e) {
+    e.handle(object);
   }
 }
 QList<QDBusObjectPath> GuiAdaptorImpl::selectedObjects() const {
@@ -434,8 +461,8 @@ void CoreWindow::initMenu() {
   addNodeAction->setShortcut(QKeySequence("Ctrl+Shift+E"));
   connect(addNodeAction, &QAction::triggered, this, [this]() {
     auto globalPos = QCursor::pos();
-    Node* obj = nullptr;
-    sidePanel->showContextMenu(obj, globalPos);
+    sidePanel->dataflowWidget->setSelectedNodes({});
+    sidePanel->showContextMenu(globalPos);
   });
 
   QAction* addNodeActionAsChild =
@@ -443,9 +470,7 @@ void CoreWindow::initMenu() {
   addNodeActionAsChild->setShortcut(QKeySequence("Ctrl+E"));
   connect(addNodeActionAsChild, &QAction::triggered, this, [this]() {
     auto globalPos = QCursor::pos();
-    Node* obj = nullptr;
-    if (sidePanel->selectedNodes().size()) obj = sidePanel->selectedNodes()[0];
-    sidePanel->showContextMenu(obj, globalPos);
+    sidePanel->showContextMenu(globalPos);
   });
 
   fileMenu->addSeparator();
@@ -1005,6 +1030,7 @@ void CoreWindow::loadProject() {
 
 void CoreWindow::closeEvent(QCloseEvent* event) {
   // Skip the close dialog if there are no nodes
+  // TODO: Also skip the close dialog if there was no change since the last save
   if (vx::Root::instance()->nodes().size() > 0) {
     QMessageBox closeDialog;
     closeDialog.setText("Do you want to save your current project?");
@@ -1020,6 +1046,8 @@ void CoreWindow::closeEvent(QCloseEvent* event) {
           closeDialog.close();
           clearNodes();
           event->accept();
+          // Make sure the application quits if the main window is closed
+          QCoreApplication::instance()->quit();
         } else {
           event->ignore();
         }
@@ -1028,13 +1056,21 @@ void CoreWindow::closeEvent(QCloseEvent* event) {
         closeDialog.close();
         clearNodes();
         event->accept();
+        // Make sure the application quits if the main window is closed
+        QCoreApplication::instance()->quit();
         break;
       case QMessageBox::Cancel:
+        event->ignore();
+        break;
+      default:
+        qWarning() << "Unknown return value for closeEvent";
         event->ignore();
         break;
     }
 
   } else {
     event->accept();
+    // Make sure the application quits if the main window is closed
+    QCoreApplication::instance()->quit();
   }
 }

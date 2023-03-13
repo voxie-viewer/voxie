@@ -153,7 +153,7 @@ SelectNodeConnection::SelectNodeConnection(
   this->setWindowFlags(Qt::Dialog);
 
   this->listView = new QListWidget();
-  this->listView->setMinimumWidth(500);
+  this->listView->setMinimumWidth(500 / 96.0 * this->logicalDpiX());
 
   this->okButton = new QPushButton("&Ok");
   this->cancelButton = new QPushButton("&Cancel");

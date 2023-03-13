@@ -109,7 +109,7 @@ class VOXIECORESHARED_EXPORT FilterNode : public vx::Node {
 
  protected:
   QSharedPointer<WeakParameterCopy> runParameters;
-  QLabel* sourceCodeButton;
-  QCheckBox* debuggerSupportEnabled;
+  QLabel* sourceCodeButton = nullptr;
+  QCheckBox* debuggerSupportEnabled = nullptr;
 };
 }  // namespace vx

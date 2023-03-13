@@ -9,6 +9,9 @@ option('intern', type : 'feature', value : 'enabled')
 option('additional_licenses_file', type : 'string', value : '')
 
 # Allow disabling parts of the build
+option('lib', type : 'feature', value : 'enabled')
+option('libvoxieclient', type : 'feature', value : 'enabled')
+option('libvoxiebackend', type : 'feature', value : 'enabled')
 option('libvoxie', type : 'feature', value : 'enabled')
 option('main', type : 'feature', value : 'enabled')
 option('plugins', type : 'feature', value : 'enabled')

@@ -46,6 +46,8 @@ class VOXIEBACKEND_EXPORT VolumeStructureVoxel : public vx::VolumeStructure {
   const VectorSizeT3& arrayShape() const { return arrayShape_; }
 
   QList<QString> supportedDBusInterfaces() override;
+
+  QString volumeStructureType() override;
 };
 
 }  // namespace vx

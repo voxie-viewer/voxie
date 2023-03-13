@@ -20,16 +20,20 @@
  * THE SOFTWARE.
  */
 
+// QDBusConnection should be included as early as possible:
+// https://bugreports.qt.io/browse/QTBUG-48351
+#include <QtDBus/QDBusConnection>
+
 #include "InfoWidget.hpp"
 
+#include <VoxieBackend/Data/ImageDataPixel.hpp>
+#include <VoxieBackend/Data/ImageDataPixelInst.hpp>
 #include <VoxieBackend/Data/TomographyRawData2DAccessor.hpp>
 
+#include <PluginVisRaw/Prototypes.hpp>
 #include <PluginVisRaw/RawData2DVisualizer.hpp>
 
 #include <QtWidgets/QLabel>
-
-// TODO: Provide information about point under mouse? (See
-// src/PluginVisSlice/InfoWidget.cpp)
 
 InfoWidget::InfoWidget(RawVisualizer* rv, QWidget* parent)
     : QWidget(parent), rv(rv) {
@@ -49,6 +53,114 @@ InfoWidget::InfoWidget(RawVisualizer* rv, QWidget* parent)
   geometryInfo = new QLabel();
   this->layout->addWidget(geometryInfo);
   geometryInfo->setMinimumHeight(50);
+
+  auto labelPosMouse = new QLabel("");
+  this->layout->addWidget(labelPosMouse);
+
+  auto labelPos2D = new QLabel("");
+  this->layout->addWidget(labelPos2D);
+
+  auto labelPosPixel = new QLabel("");
+  this->layout->addWidget(labelPosPixel);
+
+  auto labelPosPixelRounded = new QLabel("");
+  this->layout->addWidget(labelPosPixelRounded);
+
+  auto labelValue = new QLabel("");
+  this->layout->addWidget(labelValue);
+
+  QObject::connect(
+      rv->view(), &vx::visualization::VisualizerView::forwardMouseMoveEvent,
+      this,
+      [this, labelPosMouse, labelPos2D, labelPosPixel, labelPosPixelRounded,
+       labelValue](QMouseEvent* e) {
+        // qDebug() << e;
+
+        auto width = this->rv->view()->width();
+        auto height = this->rv->view()->height();
+        auto area = this->rv->getCurrentPlaneArea(this->rv->properties,
+                                                  QSize(width, height));
+
+        double x = ((double)e->pos().x() + 0.5) / width;
+        double y = (height - 1 - (double)e->pos().y() + 0.5) / height;
+        double posX = area.x() + x * area.width();
+        double posY = area.y() + y * area.height();
+        // qDebug() << e->pos() << area << x << y << posX << posY;
+
+        labelPosMouse->setText(QString("Mouse position: %1 %2")
+                                   .arg(e->pos().x())
+                                   .arg(e->pos().y()));
+        labelPos2D->setText(
+            QString("Position on detector: %1 %2").arg(posX).arg(posY));
+
+        QSharedPointer<vx::TomographyRawData2DAccessor> data;
+        auto dataNode = qobject_cast<vx::TomographyRawDataNode*>(
+            this->rv->properties->rawData());
+        if (dataNode)
+          data = qSharedPointerDynamicCast<vx::TomographyRawData2DAccessor>(
+              dataNode->data());
+        if (data) {
+          QSharedPointer<vx::DataVersion> dataVersion;
+          QString stream;
+          qint64 imageId;
+          QJsonObject metadata;
+          QJsonObject imageKind;
+          QSharedPointer<vx::ImageDataPixel> rawImage;
+          std::tie(dataVersion, stream, imageId, metadata, imageKind,
+                   rawImage) = this->rv->cache->getMainImage();
+
+          if (!rawImage) {
+            labelPosPixel->setText("");
+            labelPosPixelRounded->setText("");
+            labelValue->setText("");
+          } else {
+            auto projArea = this->rv->getProjectionArea(
+                data, stream, imageId,
+                metadata["ProjectionGeometry"].toObject());
+
+            // TODO: Is this correct?
+            double posXPix =
+                (posX - projArea.x()) / projArea.width() * rawImage->width();
+            double posYPix =
+                (posY - projArea.y()) / projArea.height() * rawImage->height();
+            // TODO: Is this correct? Why is this needed? (Should not be needed
+            // I think)
+            posXPix += 0.5;
+            posYPix += 0.5;
+            // qDebug() << projArea << posXPix << posYPix;
+            int64_t posXPixRounded = std::floor(posXPix);
+            int64_t posYPixRounded = std::floor(posYPix);
+
+            labelPosPixel->setText(QString("Position on detector pixel: %1 %2")
+                                       .arg(posXPix)
+                                       .arg(posYPix));
+            labelPosPixelRounded->setText(
+                QString("Position on detector pixel (rounded): %1 %2")
+                    .arg(posXPixRounded)
+                    .arg(posYPixRounded));
+
+            if (posXPixRounded >= 0 &&
+                (quint64)posXPixRounded < rawImage->width() &&
+                posYPixRounded >= 0 &&
+                (quint64)posYPixRounded < rawImage->height()) {
+              // TODO: Different component count?
+              auto value = rawImage->performInGenericContextWithComponents<1>(
+                  [&](const auto& img) {
+                    return (double)std::get<0>(
+                        img->array()(posXPixRounded, posYPixRounded));
+                  });
+              labelValue->setText(QString("Value (nearest): %1").arg(value));
+
+            } else {
+              labelValue->setText("");
+            }
+          }
+        } else {
+          labelPosPixel->setText("");
+          labelPosPixelRounded->setText("");
+          labelValue->setText("");
+        }
+      });
 
   setCurrentStreamImageId(false,
                           QSharedPointer<vx::TomographyRawData2DAccessor>(), "",

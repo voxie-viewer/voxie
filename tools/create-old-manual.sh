@@ -27,6 +27,8 @@ POS="${0%/*}"; test "$POS" = "$0" && POS=.
 
 cd "$POS/.."
 
-tools/build.sh "$@" src/extra/old-manual.pdf
+export VOXIE_BUILD_DIR=build-manual
 
-cp build/src/extra/old-manual.pdf .
+tools/build.sh --only-manual "$@" src/extra/old-manual.pdf
+
+cp build-manual/src/extra/old-manual.pdf .

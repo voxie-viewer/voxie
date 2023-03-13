@@ -34,6 +34,13 @@
 template <typename T>
 class ArrayTypeInfo;
 
+// TODO: Use DataTypeExt instead of duplicating things here
+
+namespace half_float {
+// Defined in <half.hpp>
+class half;
+}  // namespace half_float
+
 #define T(tname, nm)                          \
   template <>                                 \
   class ArrayTypeInfo<tname> {                \
@@ -48,8 +55,9 @@ T(uint8_t, uint)
 T(uint16_t, uint)
 T(uint32_t, uint)
 T(uint64_t, uint)
+T(half_float::half, float)
 T(float, float)
-T(double, double)
+T(double, float)
 #undef T
 
 // TODO: This is copied from extern/util/C++/Core/CheckedCast.hpp and modified

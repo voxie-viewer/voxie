@@ -103,9 +103,15 @@ if target_machine.system() == 'darwin'
   bin_install_rpath = '@executable_path/../Frameworks'
 endif
 
-subdir('lib')
-subdir('VoxieClient')
-subdir('VoxieBackend')
+if get_option('lib').enabled()
+  subdir('lib')
+endif
+if get_option('libvoxieclient').enabled()
+  subdir('VoxieClient')
+endif
+if get_option('libvoxiebackend').enabled()
+  subdir('VoxieBackend')
+endif
 if get_option('libvoxie').enabled()
   subdir('Voxie')
 endif
@@ -188,6 +194,7 @@ if get_option('ext').enabled()
   subdir('ExtDataT3R')
   subdir('ExtFileVgi')
   subdir('ExtFilePly')
+  subdir('ExtFilePeridynamics')
   subdir('ExtFilterAddNormalAttribute')
   subdir('ExtFileVxEvl')
   subdir('ExtFilterEventListClustering')
@@ -207,6 +214,9 @@ if get_option('ext').enabled()
   subdir('ExtFilterVerifySurface')
   subdir('ExtFilterFloodFill')
   subdir('ExtSegmentationStepWatershed')
+  if get_option('hdf5').enabled()
+    subdir('ExtFileHdf5')
+  endif
 endif
 
 if get_option('test').enabled()
@@ -214,9 +224,6 @@ if get_option('test').enabled()
 endif
 
 if get_option('plugins').enabled()
-  if get_option('hdf5').enabled()
-    subdir('PluginHDF5')
-  endif
   if get_option('lapack').enabled()
     subdir('PluginFitting')
   endif

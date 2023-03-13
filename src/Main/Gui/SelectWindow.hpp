@@ -48,7 +48,8 @@ class SelectWindow : public QDialog {
   QPushButton* addButton;
   QPushButton* cancelButton;
   QLineEdit* searchBox;
-  QCheckBox* checkBox;
+  QCheckBox* showNonApplicableBox;
+  QCheckBox* showNonStableBox;
 
   /**
    * @brief Call this to add the currently selected item as child to its parent
@@ -66,7 +67,9 @@ class SelectWindow : public QDialog {
    */
   void filterNodes();
 
-  void toggleHiddenState(bool checked);
+ private:
+  QSet<int> getFilteredNodes(const QString& searchText, bool showNonApplicable,
+                             bool showNonStable);
 
  protected:
   bool eventFilter(QObject* object, QEvent* event) override;

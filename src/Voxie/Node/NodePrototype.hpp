@@ -81,7 +81,7 @@ class VOXIECORESHARED_EXPORT NodePrototype : public vx::plugin::Component {
 
   NodeKind _kind;
 
-  NodePrototype(const QString& name, NodeKind kind);
+  NodePrototype(const QJsonObject& json);
 
   /* human-readable name used fo displaying in the UI */
   QString _displayName;

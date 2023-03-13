@@ -10,5 +10,7 @@
         <file>icons-voxie/pause.png</file>
         <file>icons-voxie/skip-next.png</file>
         <file>icons-voxie/skip-previous.png</file>
+        <file>icons-voxie/move-surface.png</file>
+        <file>icons-voxie/transparency_.png</file>
     </qresource>
 </RCC>

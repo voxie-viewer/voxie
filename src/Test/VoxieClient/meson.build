@@ -9,6 +9,7 @@ qt5_dep_moc = dependency('qt5', modules : qt_modules)
 
 moc_files = qt5.preprocess(
   moc_sources : [
+    'HmgVectorTest.cpp', 
     'MapTest.cpp',
     'MatrixTest.cpp',
     'RotationTest.cpp', 
@@ -25,11 +26,13 @@ main = executable(
   [
     moc_files,
 
+    'HmgVectorTest.cpp',
     'Main.cpp',
     'MapTest.cpp',
     'MatrixTest.cpp',
     'RotationTest.cpp',
     'VectorTest.cpp',
+    'TypeTraitsTest.cpp',
   ],
   include_directories : [
     project_incdir,

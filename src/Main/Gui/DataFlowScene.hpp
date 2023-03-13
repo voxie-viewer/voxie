@@ -49,4 +49,9 @@ class DataFlowScene : public QGraphicsScene {
    * @param NewMousePos
    */
   void onMouseChanged(QPoint NewMousePos);
+
+  // TODO: Do this differently?
+  bool clickIsHandled = false;
+
+  void helpEvent(QGraphicsSceneHelpEvent* helpEvent) override;
 };

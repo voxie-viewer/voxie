@@ -25,7 +25,7 @@
 #include <Voxie/Gui/ErrorMessage.hpp>
 #include <Voxie/IVoxie.hpp>
 
-#include <VoxieBackend/Component/JsonUtil.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 
 #include <VoxieClient/Exception.hpp>
 

@@ -80,7 +80,7 @@ textFilenames = [
 ]
 textIgnoreDirs = [
     'lib',
-    'src/PluginHDF5/lib',
+    'src/ExtFileHdf5/lib',
     'intern/old',
 ]
 textIgnoreFiles = [

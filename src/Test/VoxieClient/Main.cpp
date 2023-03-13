@@ -24,6 +24,7 @@ int execMapTest(int argc, char** argv);
 int execMatrixTest(int argc, char** argv);
 int execRotationTest(int argc, char** argv);
 int execVectorTest(int argc, char** argv);
+int execHmgVectorTest(int argc, char** argv);
 
 int main(int argc, char** argv) {
   int status = 0;
@@ -32,6 +33,7 @@ int main(int argc, char** argv) {
   status |= execMatrixTest(argc, argv);
   status |= execRotationTest(argc, argv);
   status |= execVectorTest(argc, argv);
+  status |= execHmgVectorTest(argc, argv);
 
   return status;
 }

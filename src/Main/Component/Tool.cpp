@@ -32,7 +32,7 @@
 using namespace vx;
 
 Tool::Tool(const QJsonObject& json)
-    : Component(ComponentTypeInfo<Tool>::name(), json["Name"].toString()) {
+    : Component(ComponentTypeInfo<Tool>::name(), json) {
   name_ = json["Name"].toString();
   displayName_ = json["DisplayName"].toString();
   description_ = json["Description"].toString();
@@ -88,6 +88,14 @@ ToolTargetNode::ToolTargetNode(const QJsonObject& json) : Tool(json) {
           << "Got tool with 'TargetObjectNames' property, should be renamed to "
              "'TargetNodePrototypes'";
     for (const auto& name : json["TargetObjectNames"].toArray())
+      targetNodePrototypes_ << name.toString();
+  }
+  if (json.contains("TargetNodeNames")) {
+    if (Node::showWarningOnOldObjectNames())
+      qWarning()
+          << "Got tool with 'TargetNodeNames' property, should be renamed to "
+             "'TargetNodePrototypes'";
+    for (const auto& name : json["TargetNodeNames"].toArray())
       targetNodePrototypes_ << name.toString();
   }
   if (json.contains("TargetObjectKinds")) {

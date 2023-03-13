@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="icons">../../lib/fugue-2x-icons/icons-2x</file>
+    </qresource>
+</RCC>

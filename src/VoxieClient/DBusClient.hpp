@@ -24,6 +24,7 @@
 
 #include <VoxieClient/DBusProxies.hpp>
 #include <VoxieClient/Exception.hpp>
+#include <VoxieClient/QtUtil.hpp>
 #include <VoxieClient/RefCountHolder.hpp>
 #include <VoxieClient/VoxieClient.hpp>
 
@@ -71,13 +72,40 @@ class VOXIECLIENT_EXPORT DBusClient {
 // VOXIECLIENT_EXPORT
 template <typename IntfType>
 class RefObjWrapper {
-  RefCountHolder refCnt;
+  QSharedPointer<RefCountHolder> refCnt;
   QDBusObjectPath path_;
   IntfType interface_;
 
  public:
+  RefObjWrapper(const QDBusObjectPath& path, const QString& uniqueName,
+                const QDBusConnection& connection,
+                const QSharedPointer<RefCountHolder>& refCnt)
+      : refCnt(refCnt),
+        path_(path),
+        interface_(uniqueName, path.path(), connection) {
+    if (!interface_.isValid())
+      throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                          "Error while getting external object " + path.path() +
+                              ": " + interface_.lastError().name() + ": " +
+                              interface_.lastError().message());
+  }
+
+  // TODO: Allow this?
+  RefObjWrapper(const RefObjWrapper& o)
+      : refCnt(o.refCnt),
+        path_(o.path_),
+        interface_(o.interface_.service(), o.path_.path(),
+                   o.interface_.connection()) {
+    if (!interface_.isValid())
+      throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                          "Error while getting external object " +
+                              path().path() + ": " +
+                              interface_.lastError().name() + ": " +
+                              interface_.lastError().message());
+  }
+
   RefObjWrapper(DBusClient& client, const QDBusObjectPath& path)
-      : refCnt(client.client(), path),
+      : refCnt(createQSharedPointer<RefCountHolder>(client.client(), path)),
         path_(path),
         interface_(client.uniqueName(), path.path(), client.connection()) {
     if (!interface_.isValid())
@@ -86,11 +114,18 @@ class RefObjWrapper {
                               ": " + interface_.lastError().name() + ": " +
                               interface_.lastError().message());
   }
+
   ~RefObjWrapper() {}
 
   const QDBusObjectPath& path() const { return path_; }
 
   IntfType* interface() { return &interface_; }
   IntfType* operator->() { return interface(); }
+
+  template <typename IntfType2>
+  RefObjWrapper<IntfType2> castUnchecked() {
+    return RefObjWrapper<IntfType2>(path(), interface()->service(),
+                                    interface()->connection(), refCnt);
+  }
 };
 }  // namespace vx

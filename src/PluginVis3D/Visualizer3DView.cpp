@@ -168,7 +168,8 @@ Visualizer3DView::Visualizer3DView(
       view3d(view3d),
       mouseOperation(mouseOperation),
       axisFilter(axisFilter) {
-  this->resize(500, 400);
+  this->resize(500 / 96.0 * this->logicalDpiX(),
+               400 / 96.0 * this->logicalDpiY());
   setFocusPolicy(Qt::StrongFocus);
 
   connect(view3d, &vx::visualization::View3D::changed, this,
@@ -201,8 +202,7 @@ Visualizer3DView::Visualizer3DView(
             updateObjects(objects);
             updateMouseTracking();
 
-            updateBoundingBox(!zoomInitialized);
-            zoomInitialized = objects.size() != 0;
+            updateBoundingBox();
 
             this->update();
           });
@@ -266,7 +266,7 @@ void Visualizer3DView::updateObjects(const QList<vx::Node*>& objects) {
     if (!boundingBoxChangedConnections.contains(path)) {
       auto connection =
           QObject::connect(obj3D, &Object3DNode::boundingBoxChanged, this,
-                           [this]() { updateBoundingBox(false); });
+                           [this]() { updateBoundingBox(); });
       boundingBoxChangedConnections.insert(path, connection);
     }
     if (!setPointCalledConnections.contains(path)) {
@@ -384,15 +384,11 @@ void Visualizer3DView::setFixedAngle(QString direction) {
   view3d->setFixedAngle(direction);
 }
 
-bool Visualizer3DView::isOrtho() { return view3d->getIsOrtho(); }
-
-void Visualizer3DView::switchProjection() { view3d->switchProjection(); }
-
 void Visualizer3DView::drawAxisIndicators(const QMatrix4x4& matViewProj) {
   PrimitiveBuffer drawingBuffer;
   QVector3D center = this->view3d->getCenterPoint();
 
-  auto bb = this->getBoundingBox();
+  auto bb = this->getBoundingBoxWithDefault();
   auto diagonal = (bb.max() - bb.min()).length();
 
   // Draw view center
@@ -424,7 +420,7 @@ void Visualizer3DView::resizeGL(int w, int h) {
 }
 
 // TODO: cache bounding box?
-vx::BoundingBox3D Visualizer3DView::getBoundingBox() {
+vx::BoundingBox3D Visualizer3DView::getBoundingBoxReal() {
   auto boundingBox = BoundingBox3D::empty();
   for (const auto& obj : properties->objects()) {
     try {
@@ -440,18 +436,30 @@ vx::BoundingBox3D Visualizer3DView::getBoundingBox() {
           << obj << ":" << e.message();
     }
   }
-  if (boundingBox.isEmpty())  // Default bounding box
+  return boundingBox;
+}
+vx::BoundingBox3D Visualizer3DView::getBoundingBoxWithDefault(
+    bool* isDefaultOut) {
+  auto boundingBox = this->getBoundingBoxReal();
+  if (boundingBox.isEmpty()) {  // Default bounding box
     boundingBox = BoundingBox3D::point(QVector3D(-0.2, -0.2, -0.2)) +
                   BoundingBox3D::point(QVector3D(0.2, 0.2, 0.2));
+    if (isDefaultOut) *isDefaultOut = true;
+  } else {
+    if (isDefaultOut) *isDefaultOut = false;
+  }
   return boundingBox;
 }
 
-void Visualizer3DView::updateBoundingBox(bool changeCurrentZoom) {
-  // qDebug() << "updateBoundingBox()" << changeCurrentZoom;
+void Visualizer3DView::updateBoundingBox() {
+  // qDebug() << "updateBoundingBox()" << zoomInitialized;
   // TODO: also change centerPoint
-  auto boundingBox = getBoundingBox();
+  bool isDefault;
+  auto boundingBox = getBoundingBoxWithDefault(&isDefault);
   auto maxDiagonalSize = (boundingBox.max() - boundingBox.min()).length();
-  this->getView3D()->setStandardZoom(maxDiagonalSize, changeCurrentZoom);
+  // qDebug() << "new maxDiagonalSize" << maxDiagonalSize << isDefault;
+  this->getView3D()->setStandardZoom(maxDiagonalSize, !zoomInitialized);
+  zoomInitialized = !isDefault;
 }
 
 void Visualizer3DView::renderScreenshot(
@@ -1030,8 +1038,5 @@ void Visualizer3DView::wheelEvent(QWheelEvent* event) {
 }
 
 void Visualizer3DView::keyPressEvent(QKeyEvent* event) {
-  if (event->key() == Qt::Key_O) {
-    Q_EMIT projectionChanged();
-  }
   view3d->keyPressEvent(event, size());
 }

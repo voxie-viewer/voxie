@@ -15,8 +15,8 @@ Compiling from source on Linux
 
 First, install the packages required to run Voxie. On Ubuntu 20.04 this can be done using:
 
-    sudo apt-get install build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5
-    
+    sudo apt-get install build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git
+
 If you want to compile the old manual, you also have to install LaTeX:
 
     sudo apt-get install texlive-latex-extra

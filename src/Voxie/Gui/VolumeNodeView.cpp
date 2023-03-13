@@ -104,11 +104,17 @@ void VolumeNodeView::setValues(
   if (change) {
     this->filenameLabel->setParent(nullptr);
     this->tagLabel->setParent(nullptr);
-    delete form;
-    form = nullptr;
-    labels.clear();
 
-    form = new QFormLayout();
+    // https://doc.qt.io/qt-5/qlayout.html#takeAt
+    QLayoutItem* child;
+    // Add check for form->count() to avoid
+    // "QFormLayout::takeAt: Invalid index 0" warning
+    while (form->count() && (child = form->takeAt(0)) != nullptr) {
+      delete child->widget();  // delete the widget
+      delete child;            // delete the layout item
+    }
+
+    labels.clear();
 
     form->addRow("Filename", this->filenameLabel);
 
@@ -124,8 +130,6 @@ void VolumeNodeView::setValues(
     }
 
     form->addRow("Tags", this->tagLabel);
-
-    splitLayout->addLayout(form);
   }
 
   for (int i = 0; i < data.size(); i++) {
@@ -157,14 +161,14 @@ void VolumeNodeView::update() {
                       QString::number(data->origin().y(), 'g', precision) +
                       " x " +
                       QString::number(data->origin().z(), 'g', precision));
-  }
 
-  data->getVolumeInfo(fields);
+    data->getVolumeInfo(fields);
+  }
 
   auto dataObj = dynamic_cast<DataNode*>(dataSet);
 
   QList<QSharedPointer<NodeTag>> tagList;
-  if (dataSet) tagList = dataObj->getTags();
+  if (dataObj) tagList = dataObj->getTags();
   QString tooltip = "";
   for (QSharedPointer<NodeTag> tag : tagList) {
     tooltip.append("Name: " + tag->getName() + "\n");

@@ -80,7 +80,7 @@ class RotationTest : public QObject {
     QVERIFY(squaredNorm(rot4.map(v2) - map4.map(v2)) < 1e-20);
 
     float angleDeg = 15;
-    auto v3 = vx::vectorCast<float>(v0);
+    auto v3 = vx::vectorCastNarrow<float>(v0);
     auto rot_vx = rotationFromAxisAngleDeg(v3, angleDeg);
     auto rot_qt =
         vx::toRotation(QQuaternion::fromAxisAndAngle(toQVector(v3), angleDeg));

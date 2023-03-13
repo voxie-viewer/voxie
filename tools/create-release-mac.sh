@@ -23,7 +23,7 @@
 
 # TODO: Qt license (+ other licenses)
 
-# TODO: HDF5 / boost (for PluginHDF5)
+# TODO: HDF5 / boost (for ExtFileHdf5)
 # TODO: lapack? (for PluginFitting)
 
 # TODO: Download all files at the beginning?

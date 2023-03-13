@@ -1,0 +1,13 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Volume.BAMCT.Import",
+            "DisplayName": "BAM CT file format",
+            "Description": "Load data from BAM CT file format",
+            "Patterns": [
+                "*.bd",
+                "*.dd"
+            ]
+        }
+    ]
+}

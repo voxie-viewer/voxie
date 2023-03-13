@@ -43,7 +43,8 @@ namespace {
 class JsonInfoDialog : public QDialog {
  public:
   JsonInfoDialog(const QString& data) {
-    this->resize(500, 450);
+    this->resize(500 / 96.0 * this->logicalDpiX(),
+                 450 / 96.0 * this->logicalDpiY());
     QVBoxLayout* layout = new QVBoxLayout();
     this->setLayout(layout);
 

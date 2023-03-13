@@ -34,8 +34,11 @@
 #include <QtDBus/QDBusAbstractAdaptor>
 #include <QtDBus/QDBusObjectPath>
 
+class QProcess;
+
 namespace vx {
 class NodePrototype;
+class ProcessStatus;
 namespace io {
 class Operation;
 class RunFilterOperation;
@@ -53,6 +56,11 @@ class VOXIEBACKEND_EXPORT ExternalOperation : public vx::RefCountedObject {
 
   QSharedPointer<vx::io::Operation> operation_;
 
+  bool initialProcessSet = false;
+  QPointer<QProcess> initialProcess_;
+  QSharedPointer<QSharedPointer<ProcessStatus>> initialProcessStatusContainer_ =
+      createQSharedPointer<QSharedPointer<ProcessStatus>>();
+
  protected:
   // TODO: Get rid of this / replace it by operation()->isFinished()?
   bool isFinished = false;
@@ -66,6 +74,8 @@ class VOXIEBACKEND_EXPORT ExternalOperation : public vx::RefCountedObject {
       const QSharedPointer<vx::io::Operation>& operation);
   ~ExternalOperation() override;
 
+  void setInitialProcess(QProcess* process);
+
   QWeakPointer<QSharedPointer<ExternalOperation>> initialReference;
 
   virtual QString action() = 0;
@@ -74,6 +84,17 @@ class VOXIEBACKEND_EXPORT ExternalOperation : public vx::RefCountedObject {
 
   const QSharedPointer<vx::io::Operation>& operation() const {
     return operation_;
+  }
+
+  // Can return nullptr if there is no process associated with this
+  // ExternalOperation
+  QSharedPointer<ProcessStatus> initialProcessStatus() const {
+    return *initialProcessStatusContainer_;
+  }
+  // Can be used to avoid keeping a reference to the ExternalOperation alive
+  QSharedPointer<const QSharedPointer<ProcessStatus>>
+  initialProcessStatusContainer() const {
+    return initialProcessStatusContainer_;
   }
 
   bool isClaimed();

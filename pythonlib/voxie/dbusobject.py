@@ -175,9 +175,12 @@ def fake_arglist(realfunc, name, args, defValues={}, kwonlyArgs=[], makeKWOnlyAr
     check_id(name)
     args_checked_f = []
     args_checked = []
+    reserved_names = frozenset(['class'])
     for arg in args:
         s = str(arg)
         check_id(s)
+        if s in reserved_names:
+            s += '_'
         args_checked.append(s)
         if s in defValues:
             s = s + ' = ' + defValues[s]

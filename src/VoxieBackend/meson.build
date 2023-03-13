@@ -41,14 +41,12 @@ moc_files = qt5.preprocess(
     'Component/Extension.hpp',
     #'Component/ExtensionLauncher.hpp',
     'Component/ExternalOperation.hpp',
-    #'Component/JsonUtil.hpp',
 
     #'DBus/ClientWrapper.hpp',
     #'DBus/DBusTypes.hpp',
     'DBus/DynamicObject.hpp',
     #'DBus/ObjectWrapper.hpp',
 
-    #'Data/Bool8.hpp',
     'Data/Data.hpp',
     #'Data/DataChangedReason.hpp',
     #'Data/DataType.hpp',
@@ -122,14 +120,12 @@ voxiebackend = shared_library(
     'Component/ExtensionImporter.cpp',
     'Component/ExtensionLauncher.cpp',
     'Component/ExternalOperation.cpp',
-    'Component/JsonUtil.cpp',
 
     'DBus/ClientWrapper.cpp',
     'DBus/DBusTypes.cpp',
     'DBus/DynamicObject.cpp',
     'DBus/ObjectWrapper.cpp',
 
-    'Data/Bool8.cpp',
     'Data/Data.cpp',
     'Data/DataChangedReason.cpp',
     'Data/DataType.cpp',
@@ -184,7 +180,6 @@ voxiebackend = shared_library(
     qt5_dep,
     rt_dep,
     voxieclient_dep,
-    half_dep,
   ],
   cpp_args : [
     '-DVOXIEBACKEND_LIBRARY',
@@ -204,7 +199,6 @@ voxiebackend_dep = declare_dependency(
   ],
   dependencies : [
     voxieclient_dep,
-    half_dep,
   ],
   compile_args : additional_voxiebackend_pub_cpp_args,
 )

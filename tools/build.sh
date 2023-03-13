@@ -111,10 +111,13 @@ else
 fi
 
 if [ "$1" = "--only-lib" ]; then
-    MESON_OPT="$MESON_OPT -Dlibvoxie=disabled -Dmain=disabled -Dplugins=disabled -Dext=disabled -Dextra=disabled -Dtest=disabled"
+    MESON_OPT="$MESON_OPT -Dlib=enabled -Dlibvoxieclient=enabled -Dlibvoxiebackend=enabled -Dlibvoxie=disabled -Dmain=disabled -Dplugins=disabled -Dext=disabled -Dextra=disabled -Dtest=disabled"
+    shift
+elif [ "$1" = "--only-manual" ]; then
+    MESON_OPT="$MESON_OPT -Dlib=disabled -Dlibvoxieclient=disabled -Dlibvoxiebackend=disabled -Dlibvoxie=disabled -Dmain=disabled -Dplugins=disabled -Dext=disabled -Dextra=enabled -Dtest=disabled"
     shift
 else
-    MESON_OPT="$MESON_OPT -Dlibvoxie=enabled -Dmain=enabled -Dplugins=enabled -Dext=enabled -Dextra=enabled -Dtest=enabled"
+    MESON_OPT="$MESON_OPT -Dlib=enabled -Dlibvoxieclient=enabled -Dlibvoxiebackend=enabled -Dlibvoxie=enabled -Dmain=enabled -Dplugins=enabled -Dext=enabled -Dextra=enabled -Dtest=enabled"
 fi
 
 if [ "$1" = "--no-intern" ]; then

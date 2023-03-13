@@ -37,7 +37,8 @@ using namespace vx::gui;
 using namespace vx::plugin;
 
 PluginManagerWindow::PluginManagerWindow(QWidget* parent) : QDialog(parent) {
-  this->resize(500, 450);
+  this->resize(500 / 96.0 * this->logicalDpiX(),
+               450 / 96.0 * this->logicalDpiY());
   QVBoxLayout* layout = new QVBoxLayout();
   {
     QTreeWidget* tree = new QTreeWidget();
@@ -77,17 +78,6 @@ PluginManagerWindow::PluginManagerWindow(QWidget* parent) : QDialog(parent) {
                 new QTreeWidgetItem(importer_item);
             importer_child_item->setText(0, importer->objectName());
             importer_child_item->setText(1, importer->filter().filterString());
-          }
-        }
-        auto sliceExporters =
-            plugin->listComponentsTyped<vx::io::SliceExporter>();
-        if (sliceExporters.size() > 0) {
-          QTreeWidgetItem* exporter_item = new QTreeWidgetItem(plugin_item);
-          exporter_item->setText(0, "Slice Exporter");
-          for (auto exporter : sliceExporters) {
-            QTreeWidgetItem* exporter_child_item =
-                new QTreeWidgetItem(exporter_item);
-            exporter_child_item->setText(0, exporter->objectName());
           }
         }
         auto filters2d =

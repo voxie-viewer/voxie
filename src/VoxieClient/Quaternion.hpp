@@ -34,6 +34,8 @@
 #include <QtCore/QDebug>
 #endif
 
+#include <VoxieClient/Vector.hpp>
+
 namespace vx {
 template <typename T>
 class Quaternion {
@@ -156,8 +158,15 @@ class Quaternion {
 };
 
 template <typename To, typename From>
-inline std::enable_if_t<std::is_convertible<From, To>::value, Quaternion<To>>
+inline std::enable_if_t<IsConvertibleWithoutNarrowing<From, To>::value,
+                        Quaternion<To>>
 quaternionCast(const Quaternion<From>& q) {
+  return Quaternion<To>(q.a(), q.b(), q.c(), q.d());
+}
+
+template <typename To, typename From>
+inline std::enable_if_t<std::is_convertible<From, To>::value, Quaternion<To>>
+quaternionCastNarrow(const Quaternion<From>& q) {
   return Quaternion<To>(static_cast<To>(q.a()), static_cast<To>(q.b()),
                         static_cast<To>(q.c()), static_cast<To>(q.d()));
 }

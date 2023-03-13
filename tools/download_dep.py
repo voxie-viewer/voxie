@@ -33,7 +33,7 @@ import json
 import codecs
 import io
 
-DEP_SOURCE_URL = 'https://ipvs.informatik.uni-stuttgart.de/pas/src'
+DEP_SOURCE_URL = 'https://www.cis.iti.uni-stuttgart.de/files/src'
 DEP_SOURCE_URL_PUB = DEP_SOURCE_URL
 
 

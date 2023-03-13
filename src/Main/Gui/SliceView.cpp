@@ -26,8 +26,6 @@
 
 #include <Main/Gui/PlaneView.hpp>
 
-#include <Voxie/IO/SliceExporter.hpp>
-
 #include <Voxie/Component/Plugin.hpp>
 
 #include <QtCore/QDebug>
@@ -84,12 +82,6 @@ SliceView::SliceView(PlaneNode* slice, QWidget* parent)
     {
       QToolBar* toolbar = new QToolBar();
 
-      // Creates a button for the export of single slices
-      QToolButton* sliceExport = new QToolButton();
-      sliceExport->setIcon(QIcon(":/icons/disk.png"));
-      sliceExport->setText("Export Slice");
-      sliceExport->setPopupMode(QToolButton::InstantPopup);
-
       // Creates a button for selecting the Representation of the rotation
       QToolButton* rotationRepresentation = new QToolButton();
       rotationRepresentation->setIcon(QIcon(":/icons/ruler.png"));
@@ -107,24 +99,6 @@ SliceView::SliceView(PlaneNode* slice, QWidget* parent)
       pasteButt->setIcon(QIcon(":/icons/blue-document-import.png"));
       pasteButt->setText("Paste Content");
       pasteButt->setPopupMode(QToolButton::InstantPopup);
-
-      // Sets the Dropdown Elements and their behavior for the export of slices
-      QMenu* contextMenuSliceExporter = new QMenu(this);
-
-      // TODO: provide some new method to export slices?
-      /*
-      for (const auto& plugin : ::vx::Root::instance()->plugins()) {
-        if (plugin->sliceExporters().size() == 0) {
-          continue;
-        }
-        QMenu* pluginAction = contextMenuSliceExporter->addMenu(plugin->name());
-        for (SliceExporter* exporter : plugin->sliceExporters()) {
-          QAction* action = pluginAction->addAction(exporter->objectName());
-          connect(action, &QAction::triggered,
-                  [=]() -> void { exporter->exportGui(this->slice); });
-        }
-      }
-      */
 
       // Sets the Dropdown Elements and their behavior for the Representation of
       // Roatation
@@ -211,9 +185,6 @@ SliceView::SliceView(PlaneNode* slice, QWidget* parent)
       contextMenuPaste->addAction(pastePosAndRot);
 
       // Sets GUI elements
-      sliceExport->setMenu(contextMenuSliceExporter);
-      toolbar->addWidget(sliceExport);
-
       rotationRepresentation->setMenu(contextMenuRotationRepresentation);
       toolbar->addWidget(rotationRepresentation);
 

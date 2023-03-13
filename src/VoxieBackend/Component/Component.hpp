@@ -37,6 +37,8 @@ class VOXIEBACKEND_EXPORT Component : public vx::ExportedObject {
 
   QString componentType_;
   QString name_;
+  QList<QString> troveClassifiers_;
+  QSet<QString> troveClassifiersSet_;
 
   QWeakPointer<vx::ComponentContainer> container_;
   bool containerHasBeenSet_ = false;
@@ -44,12 +46,22 @@ class VOXIEBACKEND_EXPORT Component : public vx::ExportedObject {
   void setContainer(const QSharedPointer<vx::ComponentContainer>& container);
 
  public:
-  Component(const QString& componentType, const QString& name);
+  Component(const QString& componentType, const QJsonObject& json);
+  Component(const QString& componentType, const QString& name,
+            const QList<QString>& troveClassifiers);
   virtual ~Component();
 
   const QString& componentType() const { return componentType_; }
 
   const QString& name() const { return name_; }
+
+  // Set of trove classifiers, see https://pypi.org/project/trove-classifiers/
+  const QList<QString>& troveClassifiers() const { return troveClassifiers_; }
+  const QSet<QString>& troveClassifiersSet() const {
+    return troveClassifiersSet_;
+  }
+
+  bool isStable();
 
   virtual QList<QString> compatibilityNames();
 

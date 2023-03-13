@@ -1222,33 +1222,29 @@ class VOXIECLIENT_EXPORT ExternalOperationRunSegmentationStepAdaptor
 class VOXIECLIENT_EXPORT FilterNodeAdaptor : public QDBusAbstractAdaptor {
   Q_OBJECT
   Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.FilterNode")
-  Q_CLASSINFO(
-      "D-Bus Introspection",
-      ""
-      "  <interface name=\"de.uni_stuttgart.Voxie.FilterNode\">\n"
-      "    <property access=\"read\" type=\"b\" name=\"PreviewActive\"/>\n"
-      "    <property access=\"read\" type=\"(dddd)\" name=\"PreviewPoint\">\n"
-      "      <annotation value=\"VX_IDENTITY_TYPE((std::tuple&lt;double, "
-      "double, double, double&gt;))\" "
-      "name=\"org.qtproject.QtDBus.QtTypeName\"/>\n"
-      "    </property>\n"
-      "  </interface>\n"
-      "")
+  Q_CLASSINFO("D-Bus Introspection",
+              ""
+              "  <interface name=\"de.uni_stuttgart.Voxie.FilterNode\">\n"
+              "    <method name=\"RunFilter\">\n"
+              "      <arg direction=\"in\" type=\"o\" name=\"client\"/>\n"
+              "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+              "      <annotation value=\"const "
+              "VX_IDENTITY_TYPE((QMap&lt;QString, QDBusVariant&gt;))&amp;\" "
+              "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+              "      <arg direction=\"out\" type=\"o\"/>\n"
+              "    </method>\n"
+              "  </interface>\n"
+              "")
  public:
   FilterNodeAdaptor(QObject* parent) : QDBusAbstractAdaptor(parent) {}
   virtual ~FilterNodeAdaptor() {}
 
- public:  // PROPERTIES
-  Q_PROPERTY(bool PreviewActive READ previewActive)
-  virtual bool previewActive() const = 0;
-
-  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double, double>))
-                 PreviewPoint READ previewPoint)
-  virtual VX_IDENTITY_TYPE((std::tuple<double, double, double, double>))
-      previewPoint() const = 0;
-
+ public:          // PROPERTIES
  public Q_SLOTS:  // METHODS
- Q_SIGNALS:       // SIGNALS
+  virtual QDBusObjectPath RunFilter(
+      const QDBusObjectPath& client,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+ Q_SIGNALS:  // SIGNALS
 };
 
 /*
@@ -1412,7 +1408,7 @@ class VOXIECLIENT_EXPORT GuiAdaptor : public QDBusAbstractAdaptor {
       "      <annotation value=\"de.uni_stuttgart.Voxie.VisualizerNode\" "
       "name=\"de.uni_stuttgart.Voxie.Interface\"/>\n"
       "    </property>\n"
-      "    <property access=\"read\" type=\"ao\" name=\"SelectedNodes\">\n"
+      "    <property access=\"readwrite\" type=\"ao\" name=\"SelectedNodes\">\n"
       "      <annotation value=\"de.uni_stuttgart.Voxie.Node\" "
       "name=\"de.uni_stuttgart.Voxie.Interface\"/>\n"
       "    </property>\n"
@@ -1450,8 +1446,10 @@ class VOXIECLIENT_EXPORT GuiAdaptor : public QDBusAbstractAdaptor {
   virtual QString mdiViewMode() const = 0;
   virtual void setMdiViewMode(const QString& value) = 0;
 
-  Q_PROPERTY(QList<QDBusObjectPath> SelectedNodes READ selectedNodes)
+  Q_PROPERTY(QList<QDBusObjectPath> SelectedNodes READ selectedNodes WRITE
+                 setSelectedNodes)
   virtual QList<QDBusObjectPath> selectedNodes() const = 0;
+  virtual void setSelectedNodes(const QList<QDBusObjectPath>& value) = 0;
 
   Q_PROPERTY(QList<QDBusObjectPath> SelectedObjects READ selectedObjects)
   virtual QList<QDBusObjectPath> selectedObjects() const = 0;
@@ -3833,13 +3831,18 @@ class VOXIECLIENT_EXPORT VolumeStructureAdaptor : public QDBusAbstractAdaptor {
               "  <interface name=\"de.uni_stuttgart.Voxie.VolumeStructure\">\n"
               "    <annotation value=\"de.uni_stuttgart.Voxie.DynamicObject\" "
               "name=\"de.uni_stuttgart.Voxie.ParentInterface\"/>\n"
+              "    <property access=\"read\" type=\"s\" "
+              "name=\"VolumeStructureType\"/>\n"
               "  </interface>\n"
               "")
  public:
   VolumeStructureAdaptor(QObject* parent) : QDBusAbstractAdaptor(parent) {}
   virtual ~VolumeStructureAdaptor() {}
 
- public:          // PROPERTIES
+ public:  // PROPERTIES
+  Q_PROPERTY(QString VolumeStructureType READ volumeStructureType)
+  virtual QString volumeStructureType() const = 0;
+
  public Q_SLOTS:  // METHODS
  Q_SIGNALS:       // SIGNALS
 };

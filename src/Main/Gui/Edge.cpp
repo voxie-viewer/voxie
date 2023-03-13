@@ -21,11 +21,12 @@
  */
 
 #include "Edge.hpp"
-#include "GraphWidget.hpp"
-#include "Node.hpp"
 
-#include <qmath.h>
-#include <QPainter>
+#include <Main/Gui/GraphWidget.hpp>
+
+#include <QtGui/QPainter>
+
+#include <QtCore/qmath.h>
 
 #include <Voxie/Node/Types.hpp>
 

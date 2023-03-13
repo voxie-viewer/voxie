@@ -50,7 +50,8 @@ class PropertyTypeAdaptorImpl : public PropertyTypeAdaptor {
 
 PropertyType::PropertyType(const QString& name, const QString& displayName,
                            const QVariant& defaultValue)
-    : Component(ComponentTypeInfo<PropertyType>::name(), name),
+    // TODO: Pass json? (e.g. for TroveClassifiers)
+    : Component(ComponentTypeInfo<PropertyType>::name(), name, {}),
       name_(name),
       displayName_(displayName),
       defaultValue_(defaultValue) {

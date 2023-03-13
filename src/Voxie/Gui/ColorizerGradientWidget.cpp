@@ -28,7 +28,7 @@
 ColorizerGradientWidget::ColorizerGradientWidget(QWidget* parent)
     : QWidget(parent),
       colorizer(QSharedPointer<vx::Colorizer>::create()),
-      checkerboard(":/icons/transparency_.png"),
+      checkerboard(":/icons-voxie/transparency_.png"),
       contextMenu(new QMenu(this)) {
   setMinimumHeight(50);
   setMouseTracking(true);
@@ -122,6 +122,7 @@ void ColorizerGradientWidget::paintEvent(QPaintEvent* event) {
   painter.setRenderHint(QPainter::RenderHint(0));
 
   // Draw checkerboard background
+  // TODO: High-DPI displays?
   painter.setBrush(checkerboard);
   painter.drawRect(0, 0, width(), (height() - paddingBottom));
   painter.setBrush(Qt::NoBrush);

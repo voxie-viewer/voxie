@@ -356,16 +356,6 @@ ExternalOperationRunSegmentationStep::ExternalOperationRunSegmentationStep(
     this->operation()->finish(createQSharedPointer<Operation::ResultError>(
         createQSharedPointer<Exception>(err)));
   });
-
-  // TODO: Move to ExternalOperation
-  connect(this, &QObject::destroyed, this, [operation = this->operation()]() {
-    if (!operation->isFinished())
-      // Script called ClaimOperation() but neither Finish() nor
-      // FinishError()
-      operation->finish(createQSharedPointer<vx::io::Operation::ResultError>(
-          createQSharedPointer<Exception>("de.uni_stuttgart.Voxie.Error",
-                                          "Script failed to return any data")));
-  });
 }
 ExternalOperationRunSegmentationStep::~ExternalOperationRunSegmentationStep() {}
 

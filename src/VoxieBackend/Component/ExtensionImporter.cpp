@@ -95,7 +95,7 @@ QSharedPointer<OperationResultImport> ExtensionImporter::import(
   }
 
   auto exOp = ExternalOperationImport::create(op, absFileName, propertiesDBus,
-                                              "Import " + fileName);
+                                              this->name());
 
   auto ext = qSharedPointerDynamicCast<Extension>(this->container());
   // Should always be in an extension

@@ -2,75 +2,141 @@ stages:
   - build-manual
   - build
 
+
 build-manual:
   stage: build-manual
 
   tags:
-    - ubuntu-20.04
+    - docker
+
+  image: "debian:11.5"
+
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 git build-essential meson ninja-build texlive-latex-extra"
+    - "tools/create-old-manual.sh"
 
   artifacts:
     paths:
       - old-manual.pdf
-
-  script: "tools/create-old-manual.sh"
 
 
 check-formatting:
   stage: build
 
   tags:
-    - ubuntu-20.04
+    - docker
 
-  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
-  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
-  #script: "tools/check-formatting.py"
-  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/check-formatting.py )"
+  image: "debian:11.5"
 
-build-linux-1604:
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 git python3-pycodestyle"
+    - "tools/check-formatting.py"
+
+
+build-linux-11:
   stage: build
 
   tags:
-    - ubuntu-16.04
+    - docker
+
+  image: "debian:11.5"
+
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "tools/create-release.sh"
 
   artifacts:
     paths:
       - voxie*.tar.gz
 
-  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
-  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
-  #script: "tools/create-release.sh --unpack-meson --unpack-ninja --disable-help-browser"
-  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/create-release.sh --unpack-meson --unpack-ninja --disable-help-browser )"
-
-build-linux-1804:
+build-linux-11-nointern:
   stage: build
 
   tags:
-    - ubuntu-18.04
+    - docker
 
-  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
-  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
-  #script: "tools/create-release.sh --unpack-meson"
-  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/create-release.sh --unpack-meson )"
+  image: "debian:11.5"
 
-  artifacts:
-    paths:
-      - voxie*.tar.gz
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "tools/create-release.sh --no-intern"
+
 
 build-linux-2004:
   stage: build
 
   tags:
-    - ubuntu-20.04
+    - docker
 
-  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
-  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
-  #script: "tools/create-release.sh"
-  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/create-release.sh )"
+  image: "ubuntu:focal-20220826"
+
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "tools/create-release.sh"
 
   artifacts:
     paths:
       - voxie*.tar.gz
       - doc.tar.bz2
+
+build-linux-2004-onlylib:
+  stage: build
+
+  tags:
+    - docker
+
+  image: "ubuntu:focal-20220826"
+
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers"
+    - "tools/build.sh --only-lib"
+
+build-linux-2004-nointern:
+  stage: build
+
+  tags:
+    - docker
+
+  image: "ubuntu:focal-20220826"
+
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "tools/create-release.sh --no-intern"
+
+
+build-linux-1804:
+  stage: build
+
+  tags:
+    - docker
+
+  image: "ubuntu:bionic-20220902"
+
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "tools/create-release.sh --unpack-meson"
+
+  artifacts:
+    paths:
+      - voxie*.tar.gz
+
+
+build-linux-1604:
+  stage: build
+
+  tags:
+    - docker
+
+  image: "ubuntu:xenial-20210804"
+
+  artifacts:
+    paths:
+      - voxie*.tar.gz
+
+  script:
+    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra unzip
+    - tools/create-release.sh --unpack-meson --unpack-ninja --disable-help-browser
+
 
 build-windows-10:
   stage: build
@@ -90,9 +156,10 @@ build-windows-10:
   variables:
     VOXIEBUILD_PATH_VISUAL_STUDIO_VC: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build"
     VOXIEBUILD_PATH_QT: "c:\\Qt\\Qt5.6.3\\5.6.3\\msvc2015_64"
-    VOXIEBUILD_URL_QT_COPY: "https://ipvs.informatik.uni-stuttgart.de/pas/src/qt-everywhere-opensource-src-5.6.3.tar.xz"
+    VOXIEBUILD_URL_QT_COPY: "https://www.cis.iti.uni-stuttgart.de/files/src/qt-everywhere-opensource-src-5.6.3.tar.xz"
     VOXIEBUILD_USE_GIT: "1"
-    VOXIEBUILD_URL_BASE: "https://ipvs.informatik.uni-stuttgart.de/pas/src"
+    VOXIEBUILD_URL_BASE: "https://www.cis.iti.uni-stuttgart.de/files/src"
+
 
 build-macos:
   stage: build
@@ -105,25 +172,3 @@ build-macos:
   artifacts:
     paths:
       - voxie*.dmg
-
-build-linux-2004-onlylib:
-  stage: build
-
-  tags:
-    - ubuntu-20.04
-
-  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
-  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
-  #script: "tools/build.sh --only-lib"
-  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/build.sh --only-lib )"
-
-build-linux-2004-nointern:
-  stage: build
-
-  tags:
-    - ubuntu-20.04
-
-  # Due to some gitlab / gitlab-runner bug (probably related to different versions) sometimes the end of the log will be cut off, avoid that by waiting at the end
-  # https://forum.gitlab.com/t/this-job-does-not-have-a-trace/43597
-  #script: "tools/create-release.sh --no-intern"
-  script: "( trap 'echo Finishing...; sleep 3; echo Finished' EXIT && tools/create-release.sh --no-intern )"

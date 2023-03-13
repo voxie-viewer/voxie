@@ -1,0 +1,11 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Volume.VGL.Import",
+            "DisplayName": "VGL",
+            "Patterns": [
+                "*.vgl"
+            ]
+        }
+    ]
+}

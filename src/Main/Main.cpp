@@ -140,6 +140,9 @@ int main(int argc, char* argv[]) {
   // set
   bool headless = parser.isSet("output-help-directory");
 
+  if (parser.isSet("main-window") && parser.value("main-window") == "headless")
+    headless = true;
+
   QScopedPointer<QCoreApplication> app(
       headless ? new QCoreApplication(qtOptionsArgc, qtOptionsChar.data())
                : new QApplication(qtOptionsArgc, qtOptionsChar.data()));

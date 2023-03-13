@@ -55,13 +55,18 @@ SelectWindow::SelectWindow(
   this->setWindowFlags(Qt::Dialog);
 
   this->listView = new QListWidget();
-  this->listView->setFixedWidth(270);
+  this->listView->setFixedWidth(270 / 96.0 * this->logicalDpiX());
+  this->listView->setMinimumHeight(270 / 96.0 * this->logicalDpiY());
   this->description = new QLabel();
-  this->description->setFixedWidth(300);
+  this->description->setFixedWidth(300 / 96.0 * this->logicalDpiX());
   this->description->setWordWrap(true);
   this->listView->setSortingEnabled(true);
 
-  this->checkBox = new QCheckBox("&Show only applicable");
+  this->showNonApplicableBox = new QCheckBox("Always show non-&applicable");
+  this->showNonApplicableBox->setChecked(true);
+  this->showNonStableBox = new QCheckBox("Always show non-&stable");
+  // TODO: Set default to false?
+  this->showNonStableBox->setChecked(true);
   this->addButton = new QPushButton("&Add");
   this->cancelButton = new QPushButton("&Cancel");
   this->searchBox = new QLineEdit();
@@ -88,12 +93,15 @@ SelectWindow::SelectWindow(
   QVBoxLayout* vBox = new QVBoxLayout();
   vBox->addWidget(searchBox);
   vBox->addLayout(hBox);
-  vBox->addWidget(checkBox);
+  vBox->addWidget(showNonApplicableBox);
+  vBox->addWidget(showNonStableBox);
   vBox->addLayout(buttons);
 
   this->setLayout(vBox);
-  connect(this->checkBox, &QCheckBox::toggled, this,
-          &SelectWindow::toggleHiddenState);
+  connect(this->showNonApplicableBox, &QCheckBox::toggled, this,
+          &SelectWindow::filterNodes);
+  connect(this->showNonStableBox, &QCheckBox::toggled, this,
+          &SelectWindow::filterNodes);
   connect(this->cancelButton, &QPushButton::released, this, &QDialog::reject);
   connect(this->addButton, &QPushButton::released, this,
           &SelectWindow::addNewNode);
@@ -121,8 +129,14 @@ SelectWindow::SelectWindow(
       newItem->setData(Qt::UserRole, QVariant::fromValue(prototype));
       // if the "Select filter" dialog was opened via the context menu of a data
       // node and tags mismatch
-      if (currentNode && !(dynamic_cast<DataNode*>(currentNode))
-                              ->hasMatchingTags(prototype.data())) {
+      auto currentDataNode = dynamic_cast<DataNode*>(currentNode);
+      bool grayedOut = false;
+      if (currentDataNode &&
+          !currentDataNode->hasMatchingTags(prototype.data()))
+        grayedOut = true;
+      // TODO: Gray out / mark non-stable prototypes in some way?
+      // if (!prototype->isStable()) grayedOut = true;
+      if (grayedOut) {
         newItem->setForeground(this->listView->palette().color(
             QPalette::Disabled, QPalette::Text));
       }
@@ -143,11 +157,19 @@ SelectWindow::SelectWindow(
 }
 
 void SelectWindow::filterNodes() {
+  QSet<int> shown = getFilteredNodes(this->searchBox->text(),
+                                     this->showNonApplicableBox->isChecked(),
+                                     this->showNonStableBox->isChecked());
+  // If there is no result, try without filters
+  // TODO: Show this in the windows somehow?
+  if (shown.size() == 0)
+    shown = getFilteredNodes(this->searchBox->text(), true, true);
+
   this->listView->setCurrentItem(nullptr);
-  QString searchText = this->searchBox->text();
+
   for (int index = this->listView->count() - 1; 0 <= index; index--) {
     auto item = this->listView->item(index);
-    if (item->text().contains(searchText, Qt::CaseInsensitive)) {
+    if (shown.contains(index)) {
       this->listView->setRowHidden(index, false);
       this->listView->setCurrentItem(item);
     } else {
@@ -156,25 +178,27 @@ void SelectWindow::filterNodes() {
   }
 }
 
-void SelectWindow::toggleHiddenState(bool checked) {
-  this->listView->setCurrentItem(nullptr);
+QSet<int> SelectWindow::getFilteredNodes(const QString& searchText,
+                                         bool showNonApplicable,
+                                         bool showNonStable) {
+  QSet<int> res;
   for (int index = this->listView->count() - 1; 0 <= index; index--) {
     auto item = this->listView->item(index);
     QSharedPointer<NodePrototype> prototype =
         item->data(Qt::UserRole).value<QSharedPointer<NodePrototype>>();
-    if (checked) {
-      if (currentNode && (dynamic_cast<DataNode*>(currentNode))
-                             ->hasMatchingTags(prototype.data())) {
-        this->listView->setRowHidden(index, false);
-        this->listView->setCurrentItem(item);
-      } else {
-        this->listView->setRowHidden(index, true);
-      }
-    } else {
-      this->listView->setRowHidden(index, false);
-      this->listView->setCurrentItem(item);
+
+    bool show = item->text().contains(searchText, Qt::CaseInsensitive);
+    if (show && !showNonStable && !prototype->isStable()) show = false;
+    if (show && !showNonApplicable && currentNode) {
+      auto dataNode = dynamic_cast<DataNode*>(currentNode);
+      if (dataNode && !dataNode->hasMatchingTags(prototype.data()))
+        show = false;
     }
+
+    if (show)
+      res << index;
   }
+  return res;
 }
 
 bool SelectWindow::eventFilter(QObject* object, QEvent* event) {

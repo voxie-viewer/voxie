@@ -33,7 +33,7 @@ class half;
 
 namespace vx {
 
-// Defined in <VoxieBackend/Data/Bool8.hpp>
+// Defined in <VoxieClient/Bool8.hpp>
 class Bool8;
 
 enum class DataType {

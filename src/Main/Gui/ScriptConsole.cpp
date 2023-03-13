@@ -40,7 +40,8 @@ using namespace vx::gui;
 ScriptConsole::ScriptConsole(QWidget* parent, const QString& title)
     : QDialog(parent), snippetEdit(nullptr), scriptLog(nullptr) {
   this->setWindowTitle(title);
-  this->resize(800, 500);
+  this->resize(800 / 96.0 * this->logicalDpiX(),
+               500 / 96.0 * this->logicalDpiY());
 
   this->scriptLog = new QTextEdit(this);
   this->scriptLog->setReadOnly(true);

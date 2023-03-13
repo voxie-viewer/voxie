@@ -34,8 +34,6 @@
 
 #include <Voxie/Component/MetaFilter2D.hpp>
 
-#include <Voxie/IO/SliceExporter.hpp>
-
 #include <Main/Component/ExtensionNodePrototype.hpp>
 #include <Main/Component/Tool.hpp>
 
@@ -58,8 +56,6 @@ vx::getComponentTypes() {
                   ComponentType::create<Tool>()),
               createQSharedPointer<ComponentType>(
                   ComponentType::createNoExt<MetaFilter2D>()),
-              createQSharedPointer<ComponentType>(
-                  ComponentType::createNoExt<SliceExporter>()),
               createQSharedPointer<ComponentType>(
                   ComponentType::createNoExt<PropertyType>()),
               createQSharedPointer<ComponentType>(

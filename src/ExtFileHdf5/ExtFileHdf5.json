@@ -1,0 +1,42 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Hdf5.Import",
+            "DisplayName": "HDF5 file",
+            "Patterns": [
+                "*.hdf5",
+                "*.h5"
+            ]
+        }
+    ],
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Hdf5.ExportVolume",
+            "DisplayName": "HDF5 file",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.Volume"
+            ],
+            "Patterns": [
+                "*.hdf5",
+                "*.h5"
+            ]
+        },
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Hdf5.ExportRaw",
+            "DisplayName": "HDF5 file",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.TomographyRawData"
+            ],
+            "Patterns": [
+                "*.hdf5",
+                "*.h5"
+            ],
+            "TODO_Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImageKind": {
+                    "DisplayName": "Image kind",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageKind"
+                }
+            }
+        }
+    ]
+}

@@ -20,6 +20,10 @@
  * THE SOFTWARE.
  */
 
+// QDBusConnection should be included as early as possible:
+// https://bugreports.qt.io/browse/QTBUG-48351
+#include <QtDBus/QDBusConnection>
+
 #include "VisRawPlugin.hpp"
 
 #include <PluginVisRaw/RawData2DVisualizer.hpp>

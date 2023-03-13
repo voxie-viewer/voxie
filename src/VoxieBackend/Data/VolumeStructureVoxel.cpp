@@ -61,4 +61,8 @@ QList<QString> VolumeStructureVoxel::supportedDBusInterfaces() {
   };
 }
 
+QString VolumeStructureVoxel::volumeStructureType() {
+  return "de.uni_stuttgart.Voxie.VolumeStructureType.Voxel";
+}
+
 #include "VolumeStructureVoxel.moc"

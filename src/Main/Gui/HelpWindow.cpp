@@ -62,7 +62,7 @@ HelpWindow::HelpWindow(QWidget* parent)
   this->setLayout(layout);
   this->setWindowFlags(Qt::Window);
 
-  resize(1280, 720);
+  resize(1280 / 96.0 * this->logicalDpiX(), 720 / 96.0 * this->logicalDpiY());
 }
 
 void HelpWindow::openHelpForUri(const QString& uri) {

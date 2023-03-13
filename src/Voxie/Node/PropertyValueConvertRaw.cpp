@@ -25,9 +25,12 @@
 #include <VoxieClient/ObjectExport/ExportedObject.hpp>
 
 #include <VoxieClient/JsonDBus.hpp>
+#include <VoxieClient/Vector.hpp>
 
+#include <Voxie/Data/BoundingBox3D.hpp>
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
+
 #include <VoxieBackend/Data/DataType.hpp>
 
 #include <VoxieBackend/DBus/DBusTypes.hpp>
@@ -143,15 +146,17 @@ PropertyValueConvertRaw<std::tuple<double, double, double, double>,
   return std::make_tuple(cooked.scalar(), cooked.x(), cooked.y(), cooked.z());
 }
 
-VectorSizeT3 PropertyValueConvertRaw<std::tuple<uint64_t, uint64_t, uint64_t>,
-                                     VectorSizeT3>::
-    fromRaw(const std::tuple<uint64_t, uint64_t, uint64_t>& raw) {
-  return VectorSizeT3(std::get<0>(raw), std::get<1>(raw), std::get<2>(raw));
+vx::Vector<quint64, 3> PropertyValueConvertRaw<
+    std::tuple<quint64, quint64, quint64>, vx::Vector<quint64, 3>>::
+    fromRaw(const std::tuple<quint64, quint64, quint64>& raw) {
+  return vx::Vector<quint64, 3>(std::get<0>(raw), std::get<1>(raw),
+                                std::get<2>(raw));
 }
-std::tuple<uint64_t, uint64_t, uint64_t>
-PropertyValueConvertRaw<std::tuple<uint64_t, uint64_t, uint64_t>,
-                        VectorSizeT3>::toRaw(VectorSizeT3 cooked) {
-  return std::make_tuple(cooked.x, cooked.y, cooked.z);
+std::tuple<quint64, quint64, quint64> PropertyValueConvertRaw<
+    std::tuple<quint64, quint64, quint64>,
+    vx::Vector<quint64, 3>>::toRaw(const vx::Vector<quint64, 3>& cooked) {
+  return std::make_tuple(cooked.access<0>(), cooked.access<1>(),
+                         cooked.access<2>());
 }
 
 DataType PropertyValueConvertRaw<
@@ -250,4 +255,25 @@ PropertyValueConvertRaw<
     result.append(std::make_tuple(entry.value(), entry.color().asTuple(),
                                   (int)entry.interpolator().getType()));
   return result;
+}
+
+BoundingBox3D PropertyValueConvertRaw<
+    std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>,
+    BoundingBox3D>::fromRaw(const std::tuple<TupleVector<double, 3>,
+                                             TupleVector<double, 3>>& raw) {
+  return BoundingBox3D(
+      QVector3D(std::get<0>(std::get<0>(raw)), std::get<1>(std::get<0>(raw)),
+                std::get<2>(std::get<0>(raw))),
+      QVector3D(std::get<0>(std::get<1>(raw)), std::get<1>(std::get<1>(raw)),
+                std::get<2>(std::get<1>(raw))));
+}
+std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>
+PropertyValueConvertRaw<
+    std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>,
+    BoundingBox3D>::toRaw(const BoundingBox3D& cooked) {
+  return std::make_tuple(
+      TupleVector<double, 3>(cooked.min().x(), cooked.min().y(),
+                             cooked.min().z()),
+      TupleVector<double, 3>(cooked.max().x(), cooked.max().y(),
+                             cooked.max().z()));
 }

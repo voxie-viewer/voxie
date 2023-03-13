@@ -39,6 +39,8 @@ View3DPropertiesConnection::View3DPropertiesConnection(
 
   QObject::connect(this->view3d, &View3D::changed, this,
                    &View3DPropertiesConnection::updateFromView);
+  QObject::connect(this->view3d, &View3D::zoomChanged, this,
+                   &View3DPropertiesConnection::updateFromView);
 
   QObject::connect(
       this->properties, &View3DProperties::fieldOfViewChanged, this,

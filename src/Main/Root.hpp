@@ -75,6 +75,7 @@ class Root : public QObject, public IVoxie {
 
  private:
   gui::CoreWindow* coreWindow;
+  bool isHeadless_;
   gui::HelpWindow* helpWindow_ = nullptr;
   QScriptEngine jsEngine;
   ScriptWrapper scriptWrapper;
@@ -196,6 +197,8 @@ class Root : public QObject, public IVoxie {
    * @return
    */
   gui::CoreWindow* mainWindow() const override { return this->coreWindow; }
+
+  bool isHeadless() const override { return isHeadless_; }
 
   /**
    * @brief Returns the help window. If the help window does not yet exist, it

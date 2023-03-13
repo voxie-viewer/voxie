@@ -116,7 +116,7 @@ DataNode::DataNode(const QString& type,
                                                         reason);
                    });
 
-  vx::voxieRoot().createDataNodeUI(this);
+  if (!vx::voxieRoot().isHeadless()) vx::voxieRoot().createDataNodeUI(this);
 }
 
 QList<QString> DataNode::supportedDBusInterfaces() {
@@ -195,6 +195,8 @@ bool DataNode::doTagsMatch(QSharedPointer<NodeProperty> property) {
  * input tags or if there are no input tags.
  */
 bool DataNode::hasMatchingTags(NodePrototype* childPrototype) {
+  // TODO: doTagsMatch() should only be called if the property can be used to
+  // connect this to childPrototype.
   bool allEmpty = true;
   for (QSharedPointer<NodeProperty> prop : childPrototype->nodeProperties()) {
     if (!prop->inTags().empty()) {

@@ -91,17 +91,24 @@ gitVersionLibrary = static_library(
 )
 
 additional_collect_licenses_args += files(
-  '../../lib/icons.sw.json',
+  '../../lib/fugue-2x-icons.sw.json',
 )
 
 if not is_variable('additional_main_resources')
    additional_main_resources = []
 endif
+if not is_variable('additional_main_cpp_args')
+   additional_main_cpp_args = []
+endif
+if not is_variable('additional_main_sources')
+   additional_main_sources = []
+endif
 moc_files = qt5.preprocess(
   qresources : [
     'cl_kernels.qrc',
     'help.qrc',
-    '../../lib/icons.qrc',
+    # '../../lib/icons.qrc',
+    'fugue-2x-icons.qrc',
     'icons-voxie.qrc',
     'tags.qrc',
   ] + additional_main_resources,
@@ -133,9 +140,9 @@ moc_files = qt5.preprocess(
     #'Gui/DataFlowScene.hpp',
     #'Gui/DataNodeUI.hpp',
     #'Gui/Edge.hpp',
+    #'Gui/GraphNode.hpp',
     'Gui/GraphWidget.hpp',
     'Gui/HelpWindow.hpp',
-    #'Gui/Node.hpp',
     'Gui/OpenFileDialog.hpp',
     'Gui/PlaneView.hpp',
     'Gui/PluginManagerWindow.hpp',
@@ -208,9 +215,9 @@ main = executable(
     'Gui/DataFlowScene.cpp',
     'Gui/DataNodeUI.cpp',
     'Gui/Edge.cpp',
+    'Gui/GraphNode.cpp',
     'Gui/GraphWidget.cpp',
     'Gui/HelpWindow.cpp',
-    'Gui/Node.cpp',
     'Gui/OpenFileDialog.cpp',
     'Gui/PlaneView.cpp',
     'Gui/PluginManagerWindow.cpp',
@@ -252,6 +259,8 @@ main = executable(
     'Help/HelpPageSourceIndex.cpp',
     'Help/HelpPageSourcePrototype.cpp',
     'Help/HelpPageSourceTopic.cpp',
+
+    additional_main_sources,
   ],
   include_directories : [
     project_incdir,
@@ -259,6 +268,9 @@ main = executable(
     cmark_incdir,
   ],
   implicit_include_directories : false,
+  cpp_args: [
+    additional_main_cpp_args,
+  ],
   dependencies : [
     qt5_dep,
     libvoxie_dep,

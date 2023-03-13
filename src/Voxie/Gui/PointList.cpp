@@ -211,12 +211,11 @@ void PointList::fillUI() {
 
   suppressMeasurementPointChanged = false;
 
-  int unitIndex =
-      unit == metres
-          ? 0
-          : unit == decimetres
-                ? 1
-                : unit == centimetres ? 2 : unit == millimetres ? 3 : 4;
+  int unitIndex = unit == metres        ? 0
+                  : unit == decimetres  ? 1
+                  : unit == centimetres ? 2
+                  : unit == millimetres ? 3
+                                        : 4;
   ui->unitComboBox->setCurrentIndex(unitIndex);
 }
 

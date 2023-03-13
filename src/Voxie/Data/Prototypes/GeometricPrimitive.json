@@ -2,7 +2,7 @@
     "NodePrototype": [
         {
             "Description": "A set of geometric primitives (points etc.)",
-            "DisplayName": "Geometric primitive collection object",
+            "DisplayName": "Geometric primitive collection",
             "Name": "de.uni_stuttgart.Voxie.Data.GeometricPrimitive",
             "CompatibilityNames": [
                 "de.uni_stuttgart.Voxie.GeometricPrimitiveObject"

@@ -30,6 +30,8 @@
 
 #include <VoxieBackend/Component/ComponentContainer.hpp>
 
+#include <VoxieClient/JsonUtil.hpp>
+
 using namespace vx::plugin;
 
 namespace vx {
@@ -96,14 +98,24 @@ static QString getShortType(const QString& componentType) {
     return componentType.mid(index + 1);
 }
 
-Component::Component(const QString& componentType, const QString& name)
+Component::Component(const QString& componentType, const QString& name,
+                     const QList<QString>& troveClassifiers)
     : ExportedObject("Component/" + getShortType(componentType)),
       componentType_(componentType),
       name_(name),
+      troveClassifiers_(troveClassifiers),
       container_() {
   new ComponentAdaptorImpl(this);
   new DynamicObjectAdaptorImplComponent(this);
+
+  for (const auto& classifier : troveClassifiers_)
+    troveClassifiersSet_.insert(classifier);
 }
+Component::Component(const QString& componentType, const QJsonObject& json)
+    : Component(componentType, expectString(json["Name"]),
+                json.contains("TroveClassifiers")
+                    ? expectStringList(json["TroveClassifiers"])
+                    : QList<QString>()) {}
 Component::~Component() {}
 
 void Component::setContainer(
@@ -129,6 +141,13 @@ QSharedPointer<vx::ComponentContainer> Component::container() {
                           "Container object is already destroyed");
   }
   return ext;
+}
+
+bool Component::isStable() {
+  return this->troveClassifiersSet().contains(
+             "Development Status :: 5 - Production/Stable") ||
+         this->troveClassifiersSet().contains(
+             "Development Status :: 6 - Mature");
 }
 
 // TODO: Implement compatibilityNames for components other than NodePrototype

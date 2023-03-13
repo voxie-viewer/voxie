@@ -26,12 +26,12 @@
 
 #include <Voxie/Node/ParameterCopy.hpp>
 
-#include <QPainter>
-#include <QPen>
-#include <QPicture>
-#include <QPoint>
+#include <QtGui/QPainter>
+#include <QtGui/QPen>
+#include <QtGui/QPicture>
 
-#include <qmath.h>
+#include <QtCore/qmath.h>
+#include <QtCore/QPoint>
 
 using namespace vx;
 

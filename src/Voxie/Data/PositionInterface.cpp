@@ -32,6 +32,8 @@ using namespace vx::internal;
 PositionInterface::PositionInterface(
     const QString& type, const QSharedPointer<NodePrototype>& prototype)
     : DataNode(type, prototype) {
+  if (voxieRoot().isHeadless()) return;
+
   auto objProp = new ObjectProperties();
 
   objProp->setObjectName("Property Widget");

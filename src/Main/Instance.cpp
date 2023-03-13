@@ -45,6 +45,7 @@
 #include <Voxie/Data/ContainerData.hpp>
 #include <Voxie/Data/TableData.hpp>
 
+#include <Voxie/Node/DataNode.hpp>
 #include <Voxie/Node/Types.hpp>
 
 #include <Voxie/Component/Plugin.hpp>
@@ -66,6 +67,10 @@
 #include <QtDBus/QDBusAbstractAdaptor>
 #include <QtDBus/QDBusArgument>
 
+#if defined(INSTANCE_CPP_ADDITIONAL_INCLUDE)
+#include INSTANCE_CPP_ADDITIONAL_INCLUDE
+#endif
+
 using namespace vx;
 using namespace vx::io;
 using namespace vx::gui;
@@ -78,6 +83,10 @@ Instance::Instance(Root* root)
   new InstanceAdaptorImpl(this);
 
   this->utilities_ = makeSharedQObject<Utilities>(root);
+
+#if defined(INSTANCE_ADDITIONAL)
+  INSTANCE_ADDITIONAL
+#endif
 }
 Instance::~Instance() {}
 
@@ -86,7 +95,10 @@ InstanceAdaptorImpl::InstanceAdaptorImpl(Instance* object)
 InstanceAdaptorImpl::~InstanceAdaptorImpl() {}
 
 QDBusObjectPath InstanceAdaptorImpl::gui() const {
-  return ExportedObject::getPath(root->mainWindow()->getGuiDBusObject());
+  if (root->mainWindow())
+    return ExportedObject::getPath(root->mainWindow()->getGuiDBusObject());
+  else
+    return QDBusObjectPath("/");
 }
 
 QDBusObjectPath InstanceAdaptorImpl::utilities() const {

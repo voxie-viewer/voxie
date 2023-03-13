@@ -40,7 +40,8 @@ using namespace vx::gui;
 class JsonInfoDialog : public QDialog {
  public:
   JsonInfoDialog(const QString& data) {
-    this->resize(500, 450);
+    this->resize(500 / 96.0 * this->logicalDpiX(),
+                 450 / 96.0 * this->logicalDpiY());
     QVBoxLayout* layout = new QVBoxLayout();
     this->setLayout(layout);
 
@@ -64,9 +65,9 @@ TomographyRawDataNodeView::TomographyRawDataNodeView(
   form->addRow("Dimension", this->dimension = new QLabel());
 
   form->addRow("Number of Images", this->numberOfImages = new QLabel());
-  form->addRow("Distance of the source axis",
+  form->addRow("Distance Source-Axis",
                this->distanceSourceAxis = new QLabel());
-  form->addRow("Distance Source/Detector",
+  form->addRow("Distance Source-Detector",
                this->distanceSourceDetector = new QLabel());
 
   form->addRow("Detector pixel size", this->detectorPixelSize = new QLabel());

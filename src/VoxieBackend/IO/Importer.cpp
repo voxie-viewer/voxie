@@ -173,7 +173,8 @@ QList<QDBusObjectPath> ImporterAdaptorImpl::ListProperties(
 
 Importer::Importer(const QString& name, const FilenameFilter& filter,
                    const QList<QSharedPointer<PropertyBase>>& properties)
-    : vx::plugin::Component(ComponentTypeInfo<Importer>::name(), name),
+    // TODO: Pass json (e.g. for TroveClassifiers)
+    : vx::plugin::Component(ComponentTypeInfo<Importer>::name(), name, {}),
       filter_(filter),
       properties_(properties) {
   new ImporterAdaptorImpl(this);

@@ -134,9 +134,6 @@ class VOXIEBACKEND_EXPORT Operation : public vx::RefCountedObject {
 
   // Only used for extension operations
 
-  // TODO: Make private
-  QPointer<QProcess> process;
-
   // The output from the script. The string is updated in the main thread.
   // TODO: Should this be here?
   const QSharedPointer<QString>& scriptOutput() const { return scriptOutput_; }

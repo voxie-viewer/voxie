@@ -240,6 +240,7 @@ class NodePrototypeImplementation : public NodePrototype {
       const QMap<QString, QDBusVariant>&, vx::NodePrototype*, bool)>
       constructor;
 
+ public:
   static NodeKind getNodeKindFromJson(const QJsonObject& json) {
     if (json.contains("NodeKind"))
       return parseNodeKind(json["NodeKind"].toString());
@@ -255,14 +256,13 @@ class NodePrototypeImplementation : public NodePrototype {
                         "Did not find 'NodeKind' key");
   }
 
- public:
   NodePrototypeImplementation(
       const QJsonObject& json,
       const SharedFunPtr<QSharedPointer<Node>(
           const QMap<QString, QVariant>&, const QList<Node*>&,
           const QMap<QString, QDBusVariant>&, vx::NodePrototype*, bool)>&
           customNodeClassConstructor)
-      : NodePrototype(json["Name"].toString(), getNodeKindFromJson(json)) {
+      : NodePrototype(json) {
     constructor = customNodeClassConstructor;
 
     rawJson_ = createQSharedPointer<QJsonObject>(json);
@@ -343,6 +343,13 @@ class NodePrototypeImplementation : public NodePrototype {
                               const QList<Node*>& inputs,
                               const QMap<QString, QDBusVariant>& options,
                               bool registerNode) override {
+    // Note: At least currently visualizers cannot be created in headless mode
+    if (this->nodeKind() == NodeKind::Visualizer &&
+        vx::voxieRoot().isHeadless())
+      throw vx::Exception(
+          "de.uni_stuttgart.Voxie.NotSupportedHeadless",
+          "Creating visualizers is not supported in headless mode");
+
     return constructor(properties, inputs, options, this, registerNode);
   }
 };
@@ -610,8 +617,9 @@ class NodePrototypeAdaptorImpl : public NodePrototypeAdaptor,
   }
 };
 
-NodePrototype::NodePrototype(const QString& name, NodeKind kind)
-    : Component(ComponentTypeInfo<NodePrototype>::name(), name), _kind(kind) {
+NodePrototype::NodePrototype(const QJsonObject& json)
+    : Component(ComponentTypeInfo<NodePrototype>::name(), json),
+      _kind(NodePrototypeImplementation::getNodeKindFromJson(json)) {
   new NodePrototypeAdaptorImpl(this);
 
   rawJson_ = createQSharedPointer<QJsonObject>();  // TODO

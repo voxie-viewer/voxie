@@ -2,7 +2,7 @@
     "NodePrototype": [
         {
             "Description": "A 3D triangular mesh representing a 3D surface.",
-            "DisplayName": "Surface node",
+            "DisplayName": "Surface",
             "Name": "de.uni_stuttgart.Voxie.Data.Surface",
             "CompatibilityNames": [
                 "de.uni_stuttgart.Voxie.SurfaceObject"

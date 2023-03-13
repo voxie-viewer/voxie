@@ -30,6 +30,8 @@ class Color;
 class ColorizerEntry;
 class BoundingBox3D;
 enum class DataType;
+template <typename T, std::size_t dim>
+class Vector;
 
 // specify segmentation type which is used for the label volume. Implicitly sets
 // the number of available labels, defined by type >> 1 as the upper bit is used

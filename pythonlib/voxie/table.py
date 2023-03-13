@@ -83,7 +83,7 @@ class TableColumn:
             return ((float(value[0][0]), float(value[0][1]), float(value[0][2])),
                     (float(value[1][0]), float(value[1][1]), float(value[1][2])))
 
-        return cls('de.uni_stuttgart.Voxie.PropertyType.BoundingBox3D', '((ddd)(ddd))', name, label, unit, toFloatBBox3,
+        return cls('de.uni_stuttgart.Voxie.PropertyType.Box3DAxisAligned', '((ddd)(ddd))', name, label, unit, toFloatBBox3,
                    ((inf, inf, inf), (-inf, -inf, -inf)))
 
 

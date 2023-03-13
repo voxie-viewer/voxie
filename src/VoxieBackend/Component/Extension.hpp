@@ -38,6 +38,36 @@ template <typename T>
 class SharedFunPtr;
 class PropertyBase;
 
+// TODO: Clean up process handling / deletion to avoid having to copy the status
+// here?
+class ProcessStatus : public QObject {
+  bool isStarted_ = false;
+  bool isExited_ = false;
+  bool isFailed_ = false;
+
+  // Only valid if isFailed_ is true
+  QProcess::ProcessError error_;
+
+  // Only valid if isExited_ is true
+  int exitCode_;
+  QProcess::ExitStatus exitStatus_;
+
+ public:
+  ProcessStatus(QProcess* process);
+
+  bool isStarted() const { return isStarted_; }
+  bool isExited() const { return isExited_; }
+  bool isFailed() const { return isFailed_; }
+
+  QProcess::ProcessError error() const;
+
+  int exitCode() const;
+  QProcess::ExitStatus exitStatus() const;
+};
+
+VOXIEBACKEND_EXPORT QString processErrorToString(QProcess::ProcessError error);
+VOXIEBACKEND_EXPORT QString exitStatusToString(QProcess::ExitStatus status);
+
 class VOXIEBACKEND_EXPORT Extension : public vx::ComponentContainer {
   Q_OBJECT
   REFCOUNTEDOBJ_DECL(Extension)

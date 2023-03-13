@@ -1130,21 +1130,16 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieFilterNodeInterface
 
   ~DeUni_stuttgartVoxieFilterNodeInterface();
 
-  Q_PROPERTY(bool PreviewActive READ previewActive)
-  inline bool previewActive() const {
-    return qvariant_cast<bool>(property("PreviewActive"));
-  }
-
-  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double, double>))
-                 PreviewPoint READ previewPoint)
-  inline VX_IDENTITY_TYPE((std::tuple<double, double, double, double>))
-      previewPoint() const {
-    return qvariant_cast<VX_IDENTITY_TYPE((
-        std::tuple<double, double, double, double>))>(property("PreviewPoint"));
-  }
-
  public Q_SLOTS:  // METHODS
- Q_SIGNALS:       // SIGNALS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath> RunFilter(
+      const QDBusObjectPath& client,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(client) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("RunFilter"), argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
 };
 
 /*
@@ -1305,9 +1300,13 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieGuiInterface
     setProperty("MdiViewMode", QVariant::fromValue(value));
   }
 
-  Q_PROPERTY(QList<QDBusObjectPath> SelectedNodes READ selectedNodes)
+  Q_PROPERTY(QList<QDBusObjectPath> SelectedNodes READ selectedNodes WRITE
+                 setSelectedNodes)
   inline QList<QDBusObjectPath> selectedNodes() const {
     return qvariant_cast<QList<QDBusObjectPath>>(property("SelectedNodes"));
+  }
+  inline void setSelectedNodes(const QList<QDBusObjectPath>& value) {
+    setProperty("SelectedNodes", QVariant::fromValue(value));
   }
 
   Q_PROPERTY(QList<QDBusObjectPath> SelectedObjects READ selectedObjects)
@@ -3368,6 +3367,11 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeStructureInterface
       const QDBusConnection& connection, QObject* parent = nullptr);
 
   ~DeUni_stuttgartVoxieVolumeStructureInterface();
+
+  Q_PROPERTY(QString VolumeStructureType READ volumeStructureType)
+  inline QString volumeStructureType() const {
+    return qvariant_cast<QString>(property("VolumeStructureType"));
+  }
 
  public Q_SLOTS:  // METHODS
  Q_SIGNALS:       // SIGNALS

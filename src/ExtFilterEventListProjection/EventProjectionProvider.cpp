@@ -190,7 +190,7 @@ class TomographyRawData2DAccessorOperationsAdaptorImpl
       region.width = std::get<0>(regionSize);
       region.height = std::get<1>(regionSize);
 
-      ExportedObject::checkOptions(options);
+      ExportedObject::checkOptions(options, "AllowIncompleteData");
 
       auto allowIncompleteData = ExportedObject::getOptionValueOrDefault<bool>(
           options, "AllowIncompleteData", false);

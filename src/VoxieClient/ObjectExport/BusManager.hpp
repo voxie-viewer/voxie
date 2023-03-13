@@ -89,16 +89,17 @@ class VOXIECLIENT_EXPORT BusManager : public QObject {
   Q_OBJECT
 
   QList<std::tuple<QString, QPointer<ExportedObject>,
-                   QDBusConnection::RegisterOptions>>
+                   QDBusConnection::RegisterOptions, bool>>
       entries;
   QList<QSharedPointer<BusConnection>> connections;
+  quint64 nonSingletonObjects = 0;
 
  public:
   BusManager();
 
   void addConnection(const QSharedPointer<BusConnection>& connection);
 
-  void registerObject(ExportedObject* object,
+  void registerObject(ExportedObject* object, bool isSingleton,
                       QDBusConnection::RegisterOptions options =
                           QDBusConnection::ExportAdaptors);
 
@@ -108,6 +109,13 @@ class VOXIECLIENT_EXPORT BusManager : public QObject {
 
   QSharedPointer<BusConnection> findConnection(
       const QDBusConnection& connection);
+
+  bool haveNonSingletonObjects();
+
+ Q_SIGNALS:
+  // This will be emitted when haveNonSingletonObjects() was true and changes
+  // its value to false
+  void allNonSingletonObjectsDestroyed();
 };
 
 // TODO: Move to Root class?

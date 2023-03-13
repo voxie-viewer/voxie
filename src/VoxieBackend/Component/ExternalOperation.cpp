@@ -31,6 +31,8 @@
 #include <VoxieClient/Exception.hpp>
 #include <VoxieClient/VoxieDBus.hpp>
 
+#include <VoxieBackend/Component/Extension.hpp>
+
 #include <VoxieBackend/IO/Operation.hpp>
 #include <VoxieBackend/IO/OperationImport.hpp>
 
@@ -82,6 +84,45 @@ ExternalOperation::ExternalOperation(
 
   connect(operation.data(), &Operation::cancelled, adapter,
           [adapter]() { adapter->Cancelled(vx::emptyOptions()); });
+
+  // Note: This cannot use this->initialProcessStatus() because the process is
+  // not set yet.
+  connect(
+      this, &QObject::destroyed, this,
+      [operation = this->operation(),
+       initialProcessStatusContainer =
+           this->initialProcessStatusContainer()]() {
+        if (!operation->isFinished()) {
+          // Script called ClaimOperation() but neither Finish() nor
+          // FinishError()
+
+          auto initialProcessStatus = *initialProcessStatusContainer;
+          QString additionalError;
+          if (!initialProcessStatus) {
+            // No process information
+            additionalError = "";
+          } else if (!initialProcessStatus->isStarted()) {
+            // Should not happen, because there should be no one to claim the
+            // operation in this case.
+            additionalError = " Initial process failed to start (?).";
+          } else if (!initialProcessStatus->isExited()) {
+            additionalError = " Initial process still running.";
+          } else {
+            additionalError =
+                QString(
+                    " Initial process exited with exit status %1 / exit code "
+                    "%2.")
+                    .arg(exitStatusToString(initialProcessStatus->exitStatus()))
+                    .arg(initialProcessStatus->exitCode());
+          }
+
+          operation->finish(
+              createQSharedPointer<vx::io::Operation::ResultError>(
+                  createQSharedPointer<Exception>(
+                      "de.uni_stuttgart.Voxie.Error",
+                      "Script failed to return any data." + additionalError)));
+        }
+      });
 }
 
 ExternalOperation::~ExternalOperation() {
@@ -92,6 +133,27 @@ ExternalOperationAdaptorImpl::ExternalOperationAdaptorImpl(
     ExternalOperation* object)
     : ExternalOperationAdaptor(object), object(object) {}
 ExternalOperationAdaptorImpl::~ExternalOperationAdaptorImpl() {}
+
+void ExternalOperation::setInitialProcess(QProcess* process) {
+  vx::checkOnMainThread("ExternalOperation::setInitialProcess()");
+
+  if (!process) {
+    qWarning() << "ExternalOperation::setInitialProcess() called with nullptr";
+    return;
+  }
+
+  if (this->initialProcessSet) {
+    qWarning()
+        << "ExternalOperation::setInitialProcess() called multiple times";
+    return;
+  }
+
+  this->initialProcessSet = true;
+  this->initialProcess_ = process;
+
+  *this->initialProcessStatusContainer_ =
+      makeSharedQObject<ProcessStatus>(process);
+}
 
 void ExternalOperation::checkClient() {
   if (!client)
@@ -239,16 +301,6 @@ ExternalOperationImport::ExternalOperationImport(
     this->operation()->finish(createQSharedPointer<Operation::ResultError>(
         createQSharedPointer<Exception>(err)));
   });
-
-  // TODO: Move to ExternalOperation
-  connect(this, &QObject::destroyed, this, [operation = this->operation()]() {
-    if (!operation->isFinished())
-      // Script called ClaimOperation() but neither Finish() nor
-      // FinishError()
-      operation->finish(createQSharedPointer<vx::io::Operation::ResultError>(
-          createQSharedPointer<Exception>("de.uni_stuttgart.Voxie.Error",
-                                          "Script failed to return any data")));
-  });
 }
 
 ExternalOperationImport::~ExternalOperationImport() {}
@@ -347,16 +399,6 @@ ExternalOperationExport::ExternalOperationExport(
   connect(this, &ExternalOperation::error, this, [this](const Exception& err) {
     this->operation()->finish(createQSharedPointer<Operation::ResultError>(
         createQSharedPointer<Exception>(err)));
-  });
-
-  // TODO: Move to ExternalOperation
-  connect(this, &QObject::destroyed, this, [operation = this->operation()]() {
-    if (!operation->isFinished())
-      // Script called ClaimOperation() but neither Finish() nor
-      // FinishError()
-      operation->finish(createQSharedPointer<vx::io::Operation::ResultError>(
-          createQSharedPointer<Exception>("de.uni_stuttgart.Voxie.Error",
-                                          "Script failed to return any data")));
   });
 }
 ExternalOperationExport::~ExternalOperationExport() {}

@@ -30,6 +30,7 @@
 
 #include <Voxie/Component/HelpCommon.hpp>
 
+#include <Voxie/Data/BoundingBox3D.hpp>
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorInterpolator.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
@@ -950,32 +951,92 @@ class Position3DUI : public PropertyUIImplBase<vx::types::Position3D> {
   QWidget* widget() override { return posWidget; }
 };
 
-// TODO
-class SizeInteger3DUI : public PropertyUI {
+class SizeInteger3DUI : public PropertyUIImplBase<vx::types::SizeInteger3D> {
  public:
-  QLabel* todo;
+  QWidget* widget_;
+  Int64SpinBox* entry[3];
 
   SizeInteger3DUI(const QSharedPointer<NodeProperty>& property, Node* node)
-      : PropertyUI(property, node) {
-    todo = new QLabel("TODO");
-    QObject::connect(this, &QObject::destroyed, todo, &QObject::deleteLater);
+      : PropertyUIImplBase(property, node) {
+    widget_ = new QWidget();
+    auto layout = new QHBoxLayout();
+    widget_->setLayout(layout);
+    QObject::connect(this, &QObject::destroyed, widget_, &QObject::deleteLater);
+    for (int i = 0; i < 3; i++) {
+      entry[i] = new Int64SpinBox();
+      layout->addWidget(entry[i], 1);
+      entry[i]->setRange(0, std::numeric_limits<qint64>::max());
+      QObject::connect(
+          entry[i],
+          //(void (QSpinBox::*)(int)) & QSpinBox::valueChanged, this,
+          (void (Int64SpinBox::*)(qint64)) & Int64SpinBox::valueChanged, this,
+          [this, i](int value) {
+            // qDebug() << "valueChanged" << i << value;
+            if (value < 0) {
+              qWarning() << "SizeInteger3DUI: Got negative value";
+              return;
+            }
+
+            vx::Vector<quint64, 3> vec;
+            try {
+              vec = getValue();
+            } catch (Exception& e) {
+              qCritical() << "Error while reading property value:" << e.what();
+              return;
+            }
+            vec[i] = value;
+            setValueChecked(vec);
+          });
+    }
   }
 
-  QWidget* widget() override { return todo; }
+  void updateUIValue(const vx::Vector<quint64, 3>& value) override {
+    // qDebug() << "updateUIValue" << value << suppressUpdate;
+    for (int i = 0; i < 3; i++) entry[i]->setValue(value[i]);
+  }
+
+  QWidget* widget() override { return widget_; }
 };
 
-// TODO
-class BoundingBox3DUI : public PropertyUI {
+class Box3DAxisAlignedUI
+    : public PropertyUIImplBase<vx::types::Box3DAxisAligned> {
  public:
-  QLabel* todo;
+  QWidget* widget_;
+  ObjectProperties* posWidgetMin;
+  ObjectProperties* posWidgetMax;
 
-  BoundingBox3DUI(const QSharedPointer<NodeProperty>& property, Node* node)
-      : PropertyUI(property, node) {
-    todo = new QLabel("TODO");
-    QObject::connect(this, &QObject::destroyed, todo, &QObject::deleteLater);
+  Box3DAxisAlignedUI(const QSharedPointer<NodeProperty>& property, Node* node)
+      : PropertyUIImplBase(property, node) {
+    widget_ = new QWidget();
+    QObject::connect(this, &QObject::destroyed, widget_, &QObject::deleteLater);
+    auto layout = new QVBoxLayout(widget_);
+
+    posWidgetMin = new ObjectProperties(nullptr, true, false);
+    layout->addWidget(posWidgetMin);
+    posWidgetMax = new ObjectProperties(nullptr, true, false);
+    layout->addWidget(posWidgetMax);
+
+    connect(posWidgetMin, &ObjectProperties::positionChanged, this,
+            [this](QVector3D pos) {
+              // qDebug() << "min" << pos;
+              auto old = getValue();
+              setValueChecked(BoundingBox3D(pos, old.max()));
+            });
+    connect(posWidgetMax, &ObjectProperties::positionChanged, this,
+            [this](QVector3D pos) {
+              // qDebug() << "max" << pos;
+              auto old = getValue();
+              setValueChecked(BoundingBox3D(old.min(), pos));
+            });
   }
 
-  QWidget* widget() override { return todo; }
+  void updateUIValue(const BoundingBox3D& value) override {
+    // qDebug() << "updateUIValue" << value << suppressUpdate;
+    posWidgetMin->setPosition(value.min());
+    posWidgetMax->setPosition(value.max());
+  }
+
+  QWidget* widget() override { return widget_; }
 };
 
 class Orientation3DUI : public PropertyUIImplBase<vx::types::Orientation3D> {

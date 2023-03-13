@@ -54,7 +54,7 @@ bool TableUtils::isComparableType(
 bool TableUtils::isPolyNumericType(const vx::PropertyType& type) {
   static QSet<QString> polyNumericTypes = {
       vx::types::Position3DType()->name(),
-      vx::types::BoundingBox3DType()->name(),
+      vx::types::Box3DAxisAlignedType()->name(),
   };
 
   return isNumericType(type) || polyNumericTypes.contains(type.name());
@@ -100,9 +100,9 @@ TableUtils::NumberExtractor TableUtils::getNumberExtractor(
     };
   }
 
-  if (type.name() == vx::types::BoundingBox3DType()->name()) {
+  if (type.name() == vx::types::Box3DAxisAlignedType()->name()) {
     return [](const QVariant& value) {
-      auto box = value.value<vx::types::BoundingBox3D::RawType>();
+      auto box = value.value<vx::types::Box3DAxisAligned::RawType>();
       NumberArray array;
       array.append(std::get<0>(std::get<0>(box)));
       array.append(std::get<1>(std::get<0>(box)));
@@ -135,9 +135,9 @@ TableUtils::NumberManipulator TableUtils::getNumberManipulator(
     };
   }
 
-  if (type.name() == vx::types::BoundingBox3DType()->name()) {
+  if (type.name() == vx::types::Box3DAxisAlignedType()->name()) {
     return [](const QVariant& value, const NumberFunction& function) {
-      auto box = value.value<vx::types::BoundingBox3D::RawType>();
+      auto box = value.value<vx::types::Box3DAxisAligned::RawType>();
       auto tuple = std::make_tuple(
           std::make_tuple(function(std::get<0>(std::get<0>(box))),
                           function(std::get<1>(std::get<0>(box))),

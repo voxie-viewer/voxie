@@ -230,13 +230,13 @@ types = {
     'de.uni_stuttgart.Voxie.PropertyType.SizeInteger3D': {
         'DisplayName': 'Size (integer)',
         'DBusSignature': '(ttt)',
-        'QtType': 'vx::VectorSizeT3',
+        'QtType': 'Vector<quint64, 3>',
         'DefaultValueExpression': 'vx::TupleVector<quint64, 3>(0, 0, 0)',
         # 'CompareFunction': 'defaultValueCompare',  # TODO: allow comparison?
     },
 
-    # The axis-aligned bounding box of an object in three-dimensional space, specified by the minimum and maximum extents
-    'de.uni_stuttgart.Voxie.PropertyType.BoundingBox3D': {
+    # The axis-aligned bounding box of an object in three-dimensional space, specified by the minimum and maximum position
+    'de.uni_stuttgart.Voxie.PropertyType.Box3DAxisAligned': {
         'DisplayName': 'Bounding box (3D)',
         'DBusSignature': '((ddd)(ddd))',
         'QtType': 'vx::BoundingBox3D',
@@ -252,6 +252,8 @@ types = {
         'DefaultValueExpression': 'vx::TupleVector<double, 4>(1, 0, 0, 0)',
         # 'CompareFunction': 'defaultValueCompare',  # TODO: allow comparison?
     },
+
+    # TODO: Add a type which consists of a Position3D, a SizeInteger3D, a Orientation3D and a (ddd) to describe the position and size of a voxel grid in 3D space?
 
     # A data type for storing numerical data
     'de.uni_stuttgart.Voxie.PropertyType.DataType': {

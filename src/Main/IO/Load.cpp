@@ -151,11 +151,16 @@ void Load::registerCreateNode(
         }
         obj->setData(data);
 
-        // set the parent node group of this new node to the current node group
-        // the user is in
-        obj->setParentNodeGroup(
-            ((gui::CoreWindow*)voxieRoot().mainWindow())
-                ->sidePanel->dataflowWidget->currentNodeGroup());
+        if (!voxieRoot().isHeadless()) {
+          // TODO: Even without headless mode, this should only be done if this
+          // is triggered by the user, not if this is triggered by some script
+
+          // set the parent node group of this new node to the current node
+          // group the user is in
+          obj->setParentNodeGroup(
+              ((gui::CoreWindow*)voxieRoot().mainWindow())
+                  ->sidePanel->dataflowWidget->currentNodeGroup());
+        }
 
         res2->setDataNode(obj.data(), obj->getPath());
         obj->setFileInfo(QFileInfo(fileName), importer, properties);

@@ -30,9 +30,13 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFile>
 
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
+
 #include <QtWebEngineCore/QWebEngineUrlRequestJob>
 
 #include <QtWebEngineWidgets/QWebEngineProfile>
+#include <QtWebEngineWidgets/QWebEngineSettings>
 
 using namespace vx;
 
@@ -109,6 +113,41 @@ HelpBrowserBackendViewImpl::HelpBrowserBackendViewImpl() {
   auto profile = new QWebEngineProfile;
   QObject::connect(this, &QObject::destroyed, profile, &QObject::deleteLater);
   // profile->installUrlSchemeHandler("voxie", handler);
+
+  // Automatically scale font sizes for High-DPI displays
+  // https://doc.qt.io/qt-5.15/qtwebengine-overview.html#high-dpi-support
+  // suggests to set Qt::AA_EnableHighDpiScaling, but this will cause problems
+  // in other parts of voxie. Instead, change the default font sizes. Note that
+  // this will not change the size of the scroll bars.
+
+  if (0)
+    qDebug()
+        << "Font Sizes default"
+        << profile->settings()->fontSize(QWebEngineSettings::MinimumFontSize)
+        << profile->settings()->fontSize(
+               QWebEngineSettings::MinimumLogicalFontSize)
+        << profile->settings()->fontSize(QWebEngineSettings::DefaultFontSize)
+        << profile->settings()->fontSize(
+               QWebEngineSettings::DefaultFixedFontSize);
+  double scaleFactor =
+      1.0 / 96.0 * QGuiApplication::primaryScreen()->logicalDotsPerInchY();
+  profile->settings()->setFontSize(QWebEngineSettings::MinimumFontSize,
+                                   0 * scaleFactor);
+  profile->settings()->setFontSize(QWebEngineSettings::MinimumLogicalFontSize,
+                                   6 * scaleFactor);
+  profile->settings()->setFontSize(QWebEngineSettings::DefaultFontSize,
+                                   16 * scaleFactor);
+  profile->settings()->setFontSize(QWebEngineSettings::DefaultFixedFontSize,
+                                   13 * scaleFactor);
+  if (0)
+    qDebug()
+        << "Font Sizes"
+        << profile->settings()->fontSize(QWebEngineSettings::MinimumFontSize)
+        << profile->settings()->fontSize(
+               QWebEngineSettings::MinimumLogicalFontSize)
+        << profile->settings()->fontSize(QWebEngineSettings::DefaultFontSize)
+        << profile->settings()->fontSize(
+               QWebEngineSettings::DefaultFixedFontSize);
 
   auto page = new HelpWebPage(profile);
   QObject::connect(this, &QObject::destroyed, page, &QObject::deleteLater);

@@ -58,14 +58,13 @@ const QCommandLineOption& DBusClient::voxiePeerAddressOption() {
 const QList<QCommandLineOption>& DBusClient::options() { return optionsValue; }
 
 DBusClient::DBusClient(const QCommandLineParser& options)
-    : connection_(
-          options.isSet(voxieBusAddressOption())
-              ? QDBusConnection::connectToBus(
-                    options.value(voxieBusAddressOption()), "voxie")
-              : options.isSet(voxiePeerAddressOption())
-                    ? QDBusConnection::connectToPeer(
-                          options.value(voxiePeerAddressOption()), "voxie")
-                    : QDBusConnection::sessionBus()) {
+    : connection_(options.isSet(voxieBusAddressOption())
+                      ? QDBusConnection::connectToBus(
+                            options.value(voxieBusAddressOption()), "voxie")
+                  : options.isSet(voxiePeerAddressOption())
+                      ? QDBusConnection::connectToPeer(
+                            options.value(voxiePeerAddressOption()), "voxie")
+                      : QDBusConnection::sessionBus()) {
   // qDebug() << "CONN1" << connection_.connectionCapabilities();
   setupPeerDBusConnection(connection_);
   // qDebug() << "CONN2" << connection_.connectionCapabilities();

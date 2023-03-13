@@ -41,7 +41,8 @@ using namespace vx::plugin;
 using namespace vx::gui::preferences;
 
 PreferencesWindow::PreferencesWindow(QWidget* parent) : QDialog(parent) {
-  this->resize(500, 450);
+  this->resize(500 / 96.0 * this->logicalDpiX(),
+               450 / 96.0 * this->logicalDpiY());
   QVBoxLayout* layout = new QVBoxLayout();
   {
     QTabWidget* tabs = new QTabWidget(this);

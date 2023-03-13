@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include <VoxieBackend/Component/JsonUtil.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 
 #include <QtCore/QDebug>
 #include <QtCore/QDir>

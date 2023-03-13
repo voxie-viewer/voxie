@@ -33,6 +33,10 @@
 
 #include <VoxieClient/DBusAdaptors.hpp>
 
+#include <VoxieClient/ObjectExport/Client.hpp>
+
+#include <VoxieBackend/IO/OperationResult.hpp>
+
 #include <Voxie/Data/VolumeNode.hpp>
 
 #include <Voxie/Node/FilterNode.hpp>
@@ -79,6 +83,29 @@ class FilterNodeAdaptorImpl : public FilterNodeAdaptor,
     // TODO: Handle better.
     return vx::TupleVector<double, 4>(0, 0, 0, 0);
   }
+
+  QDBusObjectPath RunFilter(
+      const QDBusObjectPath& client,
+      const QMap<QString, QDBusVariant>& options) override {
+    try {
+      ExportedObject::checkOptions(options);
+
+      Client* clientPtr =
+          qobject_cast<Client*>(ExportedObject::lookupWeakObject(client));
+      if (!clientPtr) {
+        throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                        "Cannot find client object");
+      }
+
+      auto op = object->run();
+      auto result = OperationResult::create(op);
+
+      clientPtr->incRefCount(result);
+      return ExportedObject::getPath(result);
+    } catch (Exception& e) {
+      return e.handle(object);
+    }
+  }
 };
 }  // namespace
 }  // namespace vx
@@ -86,6 +113,9 @@ class FilterNodeAdaptorImpl : public FilterNodeAdaptor,
 FilterNode::FilterNode(const QSharedPointer<NodePrototype>& prototype)
     : Node("FilterNode", prototype) {
   new FilterNodeAdaptorImpl(this);
+
+  if (voxieRoot().isHeadless()) return;
+
   this->calculateButton = new QPushButton("Calculate");
   this->calculateButton->setEnabled(false);
   this->stopProcessButton = new QToolButton();
@@ -164,8 +194,11 @@ FilterNode::~FilterNode() {
   QObject::disconnect(this, nullptr, this, nullptr);
 }
 
-// TODO: add an interface for FilterNode for triggering updates etc.
-QList<QString> FilterNode::supportedDBusInterfaces() { return {}; }
+QList<QString> FilterNode::supportedDBusInterfaces() {
+  return {
+      "de.uni_stuttgart.Voxie.FilterNode",
+  };
+}
 
 bool FilterNode::isAllowedChild(NodeKind kind) {
   return kind == NodeKind::Data;

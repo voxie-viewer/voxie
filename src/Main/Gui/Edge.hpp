@@ -23,8 +23,8 @@
 #pragma once
 
 #include <QGraphicsItem>
-#include "Edge.hpp"
-#include "Node.hpp"
+
+#include <Main/Gui/GraphNode.hpp>
 
 namespace vx {
 namespace gui {

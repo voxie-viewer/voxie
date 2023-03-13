@@ -133,7 +133,9 @@ void VisualizerContainer::moveToNewMdiChild() {
   }
 
   this->window = this->container->addSubWindow(this);
-  this->window->move(10, 10);
+  // TODO: Choose position for new MDI childs differently?
+  this->window->move(10 / 96.0 * this->logicalDpiX(),
+                     10 / 96.0 * this->logicalDpiY());
   this->window->setWindowIcon(icon);
   this->window->show();
 

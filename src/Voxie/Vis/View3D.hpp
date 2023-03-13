@@ -50,7 +50,9 @@ class VOXIECORESHARED_EXPORT View3D : public QObject {
   float zoomMin, zoomMax;
 
   /**
-   * @brief Field of view in y direction in rad (does not change)
+   * @brief Field of view in y direction in rad.
+   *
+   * Note that 0 indicates an orthographic projection.
    */
   float fieldOfView;
 
@@ -77,11 +79,6 @@ class VOXIECORESHARED_EXPORT View3D : public QObject {
   QQuaternion rotation;
 
   float factor;
-
-  /**
-   * @brief whether perspective or orthographic projection is used
-   */
-  bool isOrtho;
 
   QSharedPointer<MouseOperation> mouseOperation;
 
@@ -118,8 +115,6 @@ class VOXIECORESHARED_EXPORT View3D : public QObject {
   void registerSpaceNavVisualizer(vx::spnav::SpaceNavVisualizer* sn);
 
   const QVector3D& getCenterPoint() const { return centerPoint; }
-
-  bool getIsOrtho() const { return isOrtho; }
 
   float viewSize() const { return viewSizeStandard; }
 

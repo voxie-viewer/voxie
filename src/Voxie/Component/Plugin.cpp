@@ -27,6 +27,8 @@
 
 #include "Plugin.hpp"
 
+#include <Voxie/Node/NodePrototype.hpp>
+
 #include <VoxieBackend/Component/ComponentType.hpp>
 
 #include <VoxieBackend/IO/Exporter.hpp>
@@ -200,12 +202,6 @@ void Plugin::initialize() {
     this->allExporters = exporterPlugin->exporters();
   }
 
-  ISliceExportPlugin* sliceExportPlugin =
-      qobject_cast<ISliceExportPlugin*>(plugin);
-  if (sliceExportPlugin) {
-    this->allSliceExporters = sliceExportPlugin->sliceExporters();
-  }
-
   auto objectPrototypePlugin = qobject_cast<IObjectPrototypePlugin*>(plugin);
   if (objectPrototypePlugin)
     this->allObjectPrototypes = objectPrototypePlugin->objectPrototypes();
@@ -218,7 +214,6 @@ void Plugin::initialize() {
   addObjects("Filter2DPrototype", this->allFilters2D);
   addObjects("Importer", this->allImporters);
   addObjects("Exporter", this->allExporters);
-  addObjects("SliceExporter", this->allSliceExporters);
   addObjects("NodePrototype", this->allObjectPrototypes);
   addObjects("Tool", QList<QSharedPointer<Component>>());
   // TODO: Support these as plugin members?

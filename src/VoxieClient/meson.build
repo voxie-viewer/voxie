@@ -20,7 +20,9 @@ moc_files = qt5.preprocess(
   moc_headers : [
     #'Array.hpp',
     #'ArrayInfo.hpp',
+    #'Bool8.hpp',
     'ClaimedOperation.hpp',
+    #'DataTypeExt.hpp',
     'DBusAdaptors.hpp',
     #'DBusAsJSON.hpp',
     #'DBusClient.hpp',
@@ -31,7 +33,9 @@ moc_files = qt5.preprocess(
     #'DBusUtil.hpp',
     #'Exception.hpp',
     #'Exceptions.hpp',
+    #'HmgVector.hpp',
     #'JsonDBus.hpp',
+    #'JsonUtil.hpp',
     #'MappedBuffer.hpp',
     #'Map.hpp',
     #'Matrix.hpp',
@@ -41,6 +45,7 @@ moc_files = qt5.preprocess(
     #'RefCountHolder.hpp',
     #'Rotation.hpp',
     #'SharedFunPtr.hpp',
+    #'TypeTraits.hpp',
     #'Vector.hpp',
     #'VoxieClient.hpp',
     #'VoxieDBus.hpp',
@@ -65,7 +70,9 @@ voxieclient = shared_library(
 
     'Array.cpp',
     'ArrayInfo.cpp',
+    'Bool8.cpp',
     'ClaimedOperation.cpp',
+    'DataTypeExt.cpp',
     'DBusAsJSON.cpp',
     'DBusClient.cpp',
     'DBusConnectionUtil.cpp',
@@ -75,7 +82,9 @@ voxieclient = shared_library(
     'DBusUtil.cpp',
     'Exception.cpp',
     'Exceptions.cpp',
+    'HmgVector.cpp',
     'JsonDBus.cpp',
+    'JsonUtil.cpp',
     'Map.cpp',
     'MappedBuffer.cpp',
     'Matrix.cpp',
@@ -85,6 +94,7 @@ voxieclient = shared_library(
     'RefCountHolder.cpp',
     'Rotation.cpp',
     'SharedFunPtr.cpp',
+    'TypeTraits.cpp',
     'Vector.cpp',
     'VoxieDBus.cpp',
     'ObjectExport/BusManager.cpp',
@@ -95,7 +105,10 @@ voxieclient = shared_library(
   ] + additional_voxieclient_sources,
   include_directories : [ project_incdir ],
   implicit_include_directories : false,
-  dependencies : qt5_dep,
+  dependencies : [
+    qt5_dep,
+    half_dep,
+  ],
   cpp_args : [ '-DVOXIECLIENT_LIBRARY' ],
   install : true,
   install_dir : lib_install_dir,
@@ -107,6 +120,9 @@ voxieclient_dep = declare_dependency(
   ],
   link_with : [
     voxieclient,
+  ],
+  dependencies : [
+    half_dep,
   ],
 )
 

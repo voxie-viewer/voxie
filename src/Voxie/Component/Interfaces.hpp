@@ -22,10 +22,10 @@
 
 #pragma once
 
-#include <Voxie/IO/SliceExporter.hpp>
+#include <Voxie/Component/MetaFilter2D.hpp>
+
 #include <VoxieBackend/IO/Importer.hpp>
 
-#include <Voxie/Component/MetaFilter2D.hpp>
 #include <VoxieBackend/Component/Component.hpp>
 
 #include <QtCore/QList>
@@ -34,9 +34,10 @@
 #include <QtWidgets/QAction>
 
 namespace vx {
+class NodePrototype;
 namespace io {
 class Exporter;
-}
+}  // namespace io
 namespace plugin {
 
 // TODO: Remove most of these interfaces, use PluginInstance instead
@@ -77,12 +78,6 @@ class IExporterPlugin {
   virtual QList<QSharedPointer<vx::io::Exporter>> exporters() = 0;
 };
 
-class ISliceExportPlugin {
- public:
-  virtual ~ISliceExportPlugin() {}
-  virtual QList<QSharedPointer<vx::io::SliceExporter>> sliceExporters() = 0;
-};
-
 class IObjectPrototypePlugin {
  public:
   virtual ~IObjectPrototypePlugin() {}
@@ -109,8 +104,6 @@ V_DECLARE_INTERFACE(IImporterPlugin,
                     "de.uni_stuttgart.Voxie.Plugin.IImporterPlugin")
 V_DECLARE_INTERFACE(IExporterPlugin,
                     "de.uni_stuttgart.Voxie.Plugin.IExporterPlugin")
-V_DECLARE_INTERFACE(ISliceExportPlugin,
-                    "de.uni_stuttgart.Voxie.Plugin.ISliceExportPlugin")
 V_DECLARE_INTERFACE(IObjectPrototypePlugin,
                     "de.uni_stuttgart.Voxie.Plugin.IObjectPrototypePlugin")
 

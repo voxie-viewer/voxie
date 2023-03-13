@@ -73,11 +73,6 @@ class Visualizer3D : public vx::VisualizerNode {
 
   // Render Settings Widget
   QComboBox* culling;
-  /**
-   * @brief orthoProjectionBox Checkbox that indicates whether or not
-   * orthographic projection is currently used
-   */
-  QCheckBox* orthoProjectionBox;
 
   QPointer<QObject> osvrDisplay = nullptr;
 
@@ -118,11 +113,6 @@ class Visualizer3D : public vx::VisualizerNode {
  private Q_SLOTS:
   void handleViewChange(QString direction);
   void preferedMouseActionChanged();
-  /**
-   * @brief updateOrthoBox Changes the status of the checkmark depending on
-   * whether orthographic projection is on or off
-   */
-  void updateOrthoBox();
 
   void axisFilterChanged();
 
