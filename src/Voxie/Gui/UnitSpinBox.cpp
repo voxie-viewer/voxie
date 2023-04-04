@@ -105,6 +105,10 @@ QValidator::State UnitSpinBox::validate(QString& text, int& pos) const {
   int realPos = pos > textNumber.length() ? pos : -1;
   textNumber += this->suffix();
   auto state = QDoubleSpinBox::validate(textNumber, pos);
+  // TODO: Handle this properly. If there is a SI prefix, the minimum / maximum
+  // values will not be handled properly by QDoubleSpinBox::validate()
+  if (prefixValue != 1 && state == QValidator::Invalid)
+    state = QValidator::Intermediate;
   if (pos == textNumber.length() && realPos != -1) pos = realPos;
   // TODO: forward changes of textNumber to text?
 

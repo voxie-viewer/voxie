@@ -291,8 +291,11 @@ static const char _prototype_FitPlane_[] = {
     63,  34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101,
     46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
     86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 67,
-    111, 110, 100, 105, 116, 105, 111, 110, 46,  65,  110, 100, 34,  125, 125,
-    0};
+    111, 110, 100, 105, 116, 105, 111, 110, 46,  65,  110, 100, 34,  125, 44,
+    32,  34,  84,  114, 111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105,
+    101, 114, 115, 34,  58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112,
+    109, 101, 110, 116, 32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,
+    52,  32,  45,  32,  66,  101, 116, 97,  34,  93,  125, 0};
 const char* FitPlaneProperties::_getPrototypeJson() {
   return _prototype_FitPlane_;
 }
@@ -309,8 +312,13 @@ QDBusObjectPath FitPlaneProperties::geometricPrimitiveRaw() {
       "de.uni_stuttgart.Voxie.Filter.FitPlane.GeometricPrimitive");
 }
 QSharedPointer<NodeProperty> FitPlaneProperties::geometricPrimitiveProperty() {
-  return _node->prototype()->getProperty(
+  return FitPlaneProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.FitPlane.GeometricPrimitive", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+FitPlaneProperties::geometricPrimitivePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(
+      geometricPrimitiveProperty());
 }
 void FitPlaneProperties::setGeometricPrimitive(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -327,8 +335,12 @@ double FitPlaneProperties::maximumDistanceRaw() {
       "de.uni_stuttgart.Voxie.Filter.FitPlane.MaximumDistance");
 }
 QSharedPointer<NodeProperty> FitPlaneProperties::maximumDistanceProperty() {
-  return _node->prototype()->getProperty(
+  return FitPlaneProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.FitPlane.MaximumDistance", false);
+}
+NodePropertyTyped<vx::types::Float>
+FitPlaneProperties::maximumDistancePropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(maximumDistanceProperty());
 }
 void FitPlaneProperties::setMaximumDistance(double value) {
   _node->setNodePropertyTyped<double>(
@@ -345,8 +357,12 @@ quint64 FitPlaneProperties::point1Raw() {
       "de.uni_stuttgart.Voxie.Filter.FitPlane.Point1");
 }
 QSharedPointer<NodeProperty> FitPlaneProperties::point1Property() {
-  return _node->prototype()->getProperty(
+  return FitPlaneProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.FitPlane.Point1", false);
+}
+NodePropertyTyped<vx::types::GeometricPrimitive>
+FitPlaneProperties::point1PropertyTyped() {
+  return NodePropertyTyped<vx::types::GeometricPrimitive>(point1Property());
 }
 void FitPlaneProperties::setPoint1(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
@@ -363,8 +379,12 @@ quint64 FitPlaneProperties::point2Raw() {
       "de.uni_stuttgart.Voxie.Filter.FitPlane.Point2");
 }
 QSharedPointer<NodeProperty> FitPlaneProperties::point2Property() {
-  return _node->prototype()->getProperty(
+  return FitPlaneProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.FitPlane.Point2", false);
+}
+NodePropertyTyped<vx::types::GeometricPrimitive>
+FitPlaneProperties::point2PropertyTyped() {
+  return NodePropertyTyped<vx::types::GeometricPrimitive>(point2Property());
 }
 void FitPlaneProperties::setPoint2(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
@@ -381,8 +401,12 @@ quint64 FitPlaneProperties::point3Raw() {
       "de.uni_stuttgart.Voxie.Filter.FitPlane.Point3");
 }
 QSharedPointer<NodeProperty> FitPlaneProperties::point3Property() {
-  return _node->prototype()->getProperty(
+  return FitPlaneProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.FitPlane.Point3", false);
+}
+NodePropertyTyped<vx::types::GeometricPrimitive>
+FitPlaneProperties::point3PropertyTyped() {
+  return NodePropertyTyped<vx::types::GeometricPrimitive>(point3Property());
 }
 void FitPlaneProperties::setPoint3(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
@@ -399,8 +423,12 @@ QDBusObjectPath FitPlaneProperties::surfaceRaw() {
       "de.uni_stuttgart.Voxie.Filter.FitPlane.Surface");
 }
 QSharedPointer<NodeProperty> FitPlaneProperties::surfaceProperty() {
-  return _node->prototype()->getProperty(
+  return FitPlaneProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.FitPlane.Surface", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+FitPlaneProperties::surfacePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(surfaceProperty());
 }
 void FitPlaneProperties::setSurface(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(

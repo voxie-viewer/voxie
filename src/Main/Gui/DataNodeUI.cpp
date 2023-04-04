@@ -22,6 +22,7 @@
 
 #include "DataNodeUI.hpp"
 
+#include <Voxie/Component/HelpCommon.hpp>
 #include <Voxie/Component/Plugin.hpp>
 
 #include <Voxie/Gui/ErrorMessage.hpp>
@@ -218,4 +219,12 @@ void vx::createDataNodeUI(vx::DataNode* obj) {
                  data ? data->currentVersion() : QSharedPointer<DataVersion>(),
                  DataChangedReason::Initialized);
   });
+
+  auto helpLabel = new QLabel();
+  layout->addWidget(helpLabel);
+  voxieRoot().connectLinkHandler(helpLabel);
+  helpLabel->setText(
+      "<a href=\"" +
+      vx::help::uriForPrototype(obj->prototype()).toHtmlEscaped() +
+      "\">Help</a>");
 }

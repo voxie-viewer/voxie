@@ -138,9 +138,6 @@ class InstanceAdaptorImpl : public InstanceAdaptor {
 
   void Quit(const QMap<QString, QDBusVariant>& options) override;
 
-  QDBusVariant ExecuteQScriptCode(
-      const QString& code, const QMap<QString, QDBusVariant>& options) override;
-
   QDBusObjectPath OpenFile(const QString& file,
                            const QMap<QString, QDBusVariant>& options) override;
   QDBusObjectPath Import(const QDBusObjectPath& client, const QString& fileName,
@@ -150,6 +147,11 @@ class InstanceAdaptorImpl : public InstanceAdaptor {
 
   QDBusObjectPath RunAllFilters(
       const QDBusObjectPath& client,
+      const QMap<QString, QDBusVariant>& options) override;
+
+  QDBusObjectPath GetDebugOption(
+      const QString& name, const QMap<QString, QDBusVariant>& options) override;
+  QList<QDBusObjectPath> ListDebugOptions(
       const QMap<QString, QDBusVariant>& options) override;
 };
 

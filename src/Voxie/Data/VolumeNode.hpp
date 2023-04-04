@@ -87,6 +87,7 @@ class VOXIECORESHARED_EXPORT VolumeNode : public PositionInterface {
   QVector3D volumeCenter() const;
   float diagonalSize() const;
 
+  // TODO: Rename to boundingBoxGlobal and consider object rotation and movement
   BoundingBox3D boundingBox();
 
   /**
@@ -113,5 +114,8 @@ class VOXIECORESHARED_EXPORT VolumeNode : public PositionInterface {
   // changed handler for both properties.
   void rotationChanged(QQuaternion value);
   void translationChanged(QVector3D value);
+
+  // TODO: Rename to boundingBoxGlobal and consider object rotation and movement
+  void boundingBoxChanged();
 };
 }  // namespace vx

@@ -38,8 +38,6 @@
 #include <Main/Gui/AboutDialogWindow.hpp>
 #include <Main/Gui/ButtonLabel.hpp>
 #include <Main/Gui/OpenFileDialog.hpp>
-#include <Main/Gui/PluginManagerWindow.hpp>
-#include <Main/Gui/PreferencesWindow.hpp>
 #include <Main/Gui/ScriptConsole.hpp>
 #include <Main/Gui/SidePanel.hpp>
 #include <Main/Gui/SliceView.hpp>
@@ -48,14 +46,13 @@
 #include <Main/DirectoryManager.hpp>
 #include <Main/Root.hpp>
 
+#include <Main/Component/ScriptLauncher.hpp>
 #include <Main/Component/SessionManager.hpp>
+#include <Voxie/Component/Tool.hpp>
 
 #include <Main/Help/HelpLinkHandler.hpp>
 
-#include <Main/Component/ScriptLauncher.hpp>
-
 #include <Voxie/Component/HelpCommon.hpp>
-#include <Voxie/Component/Plugin.hpp>
 
 #include <Voxie/Node/NodePrototype.hpp>
 
@@ -102,7 +99,6 @@
 using namespace vx::io;
 using namespace vx::gui;
 using namespace vx;
-using namespace vx::plugin;
 using namespace vx::visualization;
 using namespace vx;
 
@@ -342,18 +338,6 @@ CoreWindow::CoreWindow(vx::Root* root, QWidget* parent)
 }
 CoreWindow::~CoreWindow() { isBeginDestroyed = true; }
 
-void CoreWindow::insertPlugin(const QSharedPointer<Plugin>& plugin) {
-  if (plugin->uiCommands().size() > 0) {
-    QMenu* pluginEntry = this->pluginsMenu->addMenu(plugin->name());
-    // Insert UI Actions
-    QList<QAction*> pluginActions;
-    for (QAction* action : plugin->uiCommands()) {
-      pluginActions.append(action);
-    }
-    pluginEntry->addActions(pluginActions);
-  }
-}
-
 void CoreWindow::addVisualizer(VisualizerNode* visualizer) {
   if (visualizer == nullptr) {
     return;
@@ -368,8 +352,10 @@ void CoreWindow::addVisualizer(VisualizerNode* visualizer) {
     this->visualizers.removeAll(container);
   });
 
-  QAction* windowEntry =
-      this->windowMenu->addAction(visualizer->icon(), container->windowTitle());
+  QAction* windowEntry = this->windowMenu->addAction(visualizer->icon(),
+                                                     visualizer->displayName());
+  connect(visualizer, &Node::displayNameChanged, windowEntry,
+          &QAction::setText);
   connect(windowEntry, &QAction::triggered, container,
           &VisualizerContainer::activate);
   connect(container, &QWidget::destroyed, windowEntry, &QAction::deleteLater);
@@ -414,17 +400,16 @@ void CoreWindow::addVisualizer(VisualizerNode* visualizer) {
 VisualizerNode* CoreWindow::getActiveVisualizer() { return activeVisualizer; }
 
 void CoreWindow::initMenu() {
-  QMenuBar* menu = new QMenuBar(this);
+  this->menuBar = new QMenuBar(this);
 
-  QMenu* fileMenu = menu->addMenu("&File");
-  this->pluginsMenu = menu->addMenu("Plu&gins");
-  this->scriptsMenu = menu->addMenu("&Scripts");
+  QMenu* fileMenu = this->menuBar->addMenu("&File");
+  this->scriptsMenu = this->menuBar->addMenu("&Scripts");
   {
     connect(scriptsMenu, &QMenu::aboutToShow, this,
             &CoreWindow::populateScriptsMenu);
   }
-  this->windowMenu = menu->addMenu("&Window");
-  QMenu* helpMenu = menu->addMenu("&Help");
+  this->windowMenu = this->menuBar->addMenu("&Window");
+  QMenu* helpMenu = this->menuBar->addMenu("&Help");
 
   // Lets the user begin a new session by destroying all data nodes
   QAction* newAction =
@@ -473,6 +458,7 @@ void CoreWindow::initMenu() {
     sidePanel->showContextMenu(globalPos);
   });
 
+  /*
   fileMenu->addSeparator();
   QAction* preferencesAction =
       fileMenu->addAction(QIcon(":/icons/gear.png"), "&Preferences…");
@@ -481,39 +467,14 @@ void CoreWindow::initMenu() {
     preferences->setAttribute(Qt::WA_DeleteOnClose);
     preferences->exec();
   });
+  */
 
   QAction* quitAction =
       fileMenu->addAction(QIcon(":/icons/cross.png"), "E&xit");
   quitAction->setShortcut(QKeySequence("Ctrl+Q"));
   connect(quitAction, &QAction::triggered, this, &QMainWindow::close);
 
-  QAction* pluginManagerAction = this->pluginsMenu->addAction(
-      QIcon(":/icons/plug.png"), "&Plugin Manager…");
-  connect(pluginManagerAction, &QAction::triggered, this, [this]() -> void {
-    PluginManagerWindow* pluginmanager = new PluginManagerWindow(this);
-    pluginmanager->setAttribute(Qt::WA_DeleteOnClose);
-    pluginmanager->exec();
-  });
-  this->pluginsMenu->addSeparator();
-
   scriptsMenuStaticSize = 0;
-
-  QAction* scriptConsoleAction = this->scriptsMenu->addAction(
-      QIcon(":/icons/application-terminal.png"), "&JS Console…");
-  scriptsMenuStaticSize++;
-  connect(scriptConsoleAction, &QAction::triggered, this, [this]() -> void {
-    ScriptConsole* console = new ScriptConsole(this, "Voxie - JS Console");
-    console->setAttribute(Qt::WA_DeleteOnClose);
-    connect(console, &ScriptConsole::executeCode, this,
-            [console](const QString& code) -> void {
-              Root::instance()->exec(code, code,
-                                     [console](const QString& text) {
-                                       console->appendLine(text);
-                                     });
-            });
-    console->show();
-    console->activateWindow();
-  });
 
   QAction* pythonConsoleAction = this->scriptsMenu->addAction(
       QIcon(":/icons/application-terminal.png"), "&Python Console…");
@@ -760,17 +721,6 @@ void CoreWindow::initMenu() {
     Root::instance()->helpLinkHandler()->handleLink(
         vx::help::uriForHelp("index"));
   });
-  QAction* oldManualAction =
-      helpMenu->addAction(QIcon(":/icons/book-question.png"), "&Old manual…");
-  connect(oldManualAction, &QAction::triggered, this, [this]() -> void {
-    auto oldManualFile = Root::instance()->directoryManager()->oldManualFile();
-    if (oldManualFile == "")
-      QMessageBox(QMessageBox::Warning, this->windowTitle(),
-                  "Old manual file not found.", QMessageBox::Ok, this)
-          .exec();
-    else
-      QDesktopServices::openUrl(QUrl::fromLocalFile(oldManualFile));
-  });
   QAction* homepageAction = helpMenu->addAction("&Homepage…");
   connect(homepageAction, &QAction::triggered, []() -> void {
     QDesktopServices::openUrl(
@@ -784,7 +734,7 @@ void CoreWindow::initMenu() {
     aboutwindow->exec();
   });
 
-  this->setMenuBar(menu);
+  this->setMenuBar(this->menuBar);
 }
 
 void CoreWindow::initStatusBar() {
@@ -821,36 +771,39 @@ void CoreWindow::initWidgets(vx::Root* root) {
   this->setCentralWidget(container);
 }
 
+void CoreWindow::updateExtensions() {
+  if (this->toolMenu) {
+    auto actions = this->toolMenu->actions();
+    for (int i = this->toolMenuStaticSize; i < actions.size(); i++) {
+      this->toolMenu->removeAction(actions.at(i));
+    }
+  } else {
+    this->toolMenu = new QMenu("&Tool");
+    this->menuBar->insertMenu(this->scriptsMenu->menuAction(), this->toolMenu);
+  }
+
+  int count = 0;
+  for (const auto& tool :
+       vx::Root::instance()->allComponents()->listComponentsTyped<vx::Tool>()) {
+    auto toolGlobal = qSharedPointerDynamicCast<vx::ToolGlobal>(tool);
+    if (!toolGlobal) continue;
+
+    QAction* action = this->toolMenu->addAction(tool->displayName());
+    QObject::connect(action, &QAction::triggered, this,
+                     [toolGlobal]() { toolGlobal->startGlobal(); });
+    count++;
+  }
+  if (count == 0) {
+    delete this->toolMenu;
+    this->toolMenu = nullptr;
+  }
+}
+
 void CoreWindow::populateScriptsMenu() {
   QList<QAction*> actions = this->scriptsMenu->actions();
   for (int i = this->scriptsMenuStaticSize; i < actions.size(); i++) {
     this->scriptsMenu->removeAction(actions.at(i));
   }
-
-  for (auto scriptDirectory :
-       Root::instance()->directoryManager()->scriptPath()) {
-    QDir scriptDir = QDir(scriptDirectory);
-    QStringList scripts =
-        scriptDir.entryList(QStringList("*.js"), QDir::Files | QDir::Readable);
-    for (QString script : scripts) {
-      if (script.endsWith("~")) continue;
-      QString scriptFile = scriptDirectory + "/" + script;
-
-      if (QFileInfo(scriptFile).isExecutable()) continue;
-
-      QString baseName = scriptFile;
-      if (baseName.endsWith(".exe"))
-        baseName = scriptFile.left(scriptFile.length() - 4);
-      if (QFile::exists(baseName + ".json")) continue;
-
-      QAction* action = this->scriptsMenu->addAction(
-          QIcon(":/icons/script-attribute-j.png"), script);
-      connect(action, &QAction::triggered, this, [scriptFile]() -> void {
-        Root::instance()->execFile(scriptFile);
-      });
-    }
-  }
-  this->scriptsMenu->addSeparator();
 
   for (auto scriptDirectory :
        Root::instance()->directoryManager()->scriptPath()) {
@@ -880,19 +833,7 @@ void CoreWindow::populateScriptsMenu() {
   {
     QStringList fileTypes;
 
-    Root::instance()->settings()->beginGroup("scripting");
-    int sizeExternals =
-        Root::instance()->settings()->beginReadArray("externals");
-    for (int i = 0; i < sizeExternals; ++i) {
-      Root::instance()->settings()->setArrayIndex(i);
-      fileTypes.append(Root::instance()
-                           ->settings()
-                           ->value("extension")
-                           .toString()
-                           .split(';'));
-    }
-    Root::instance()->settings()->endArray();
-    Root::instance()->settings()->endGroup();
+    // TODO: Load supported script types from settings
     if (!fileTypes.contains("*.py")) fileTypes << "*.py";
 
     for (auto scriptDirectory :
@@ -915,32 +856,8 @@ void CoreWindow::populateScriptsMenu() {
             QIcon(":/icons/script-attribute-p.png"), script);
         connect(
             action, &QAction::triggered, this, [this, scriptFile]() -> void {
-              Root::instance()->settings()->beginGroup("scripting");
-              int size =
-                  Root::instance()->settings()->beginReadArray("externals");
               bool found = false;
-              for (int i = 0; i < size; ++i) {
-                Root::instance()->settings()->setArrayIndex(i);
-                QString executable = Root::instance()
-                                         ->settings()
-                                         ->value("executable")
-                                         .toString();
-                for (const QString& ext : Root::instance()
-                                              ->settings()
-                                              ->value("extension")
-                                              .toString()
-                                              .split(';')) {
-                  QRegExp regexp(ext, Qt::CaseInsensitive,
-                                 QRegExp::WildcardUnix);
-                  if (regexp.exactMatch(scriptFile) == false) continue;
-
-                  Root::instance()->scriptLauncher()->startScript(scriptFile,
-                                                                  &executable);
-                  found = true;
-                  break;
-                }
-                if (found) break;
-              }
+              // TODO: Load supported script types from settings
               if (!found && scriptFile.endsWith(".py")) {
                 // startScript will handle python files
                 Root::instance()->scriptLauncher()->startScript(scriptFile);
@@ -952,8 +869,6 @@ void CoreWindow::populateScriptsMenu() {
                                     scriptFile),
                             QMessageBox::Ok, this)
                     .exec();
-              Root::instance()->settings()->endArray();
-              Root::instance()->settings()->endGroup();
             });
       }
     }

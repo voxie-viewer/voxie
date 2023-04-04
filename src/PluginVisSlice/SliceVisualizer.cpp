@@ -25,11 +25,14 @@
 #include <PluginVisSlice/ColorizerWorker.hpp>
 #include <PluginVisSlice/ImagePaintWidget.hpp>
 
+#include <PluginVisSlice/DefaultTool.hpp>
+#include <PluginVisSlice/GeometricPrimitiveLayer.hpp>
 #include <PluginVisSlice/Ruler.hpp>
-#include <PluginVisSlice/SliceAdjustmentTool.hpp>
+#include <PluginVisSlice/SliceCenterLayer.hpp>
 #include <PluginVisSlice/SurfaceVisualizerTool.hpp>
 #include <PluginVisSlice/ToolSelection.hpp>
-#include <PluginVisSlice/ToolZoom.hpp>
+#include <PluginVisSlice/View3DPropertiesConnection.hpp>
+#include <PluginVisSlice/ViewCenterLayer.hpp>
 #include <PluginVisSlice/VolumeGrid.hpp>
 
 #include <PluginVisSlice/InfoWidget.hpp>
@@ -41,6 +44,9 @@
 #include <Voxie/Data/GeometricPrimitiveObject.hpp>
 #include <Voxie/Data/Prototypes.hpp>
 #include <Voxie/Data/VolumeNode.hpp>
+
+#include <Voxie/Vis/View3D.hpp>
+
 #include <VoxieBackend/Data/HistogramProvider.hpp>
 #include <VoxieBackend/Data/ImageDataPixelInst.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxel.hpp>
@@ -79,10 +85,33 @@ SliceVisualizer::SliceVisualizer()
   qRegisterMetaType<QVector<float>>();
   qRegisterMetaType<vx::HistogramProvider::DataPtr>();
 
+  View3DValues initial;
+  initial.setFieldOfView(0);       // orthogonal
+  initial.setViewSizeUnzoomed(1);  // is kept constant
+  view3d_ = makeSharedQObject<View3D>(
+      this,
+      vx::visualization::View3DProperty::LookAt |
+          vx::visualization::View3DProperty::Orientation |
+          vx::visualization::View3DProperty::ZoomLog,
+      initial);
+  // Slow down panning with mouse wheel a lot (default is currently 3)
+  view3d()->wheelPanFactor = 0.3;
+  // Same for key panning
+  view3d()->keyPanFactor = 0.0125;
+  // Keep Z values when resetting view
+  view3d()->resetKeepViewZ = true;
+
+  new vx::vis_slice::View3DPropertiesConnection(this, this->properties,
+                                                view3d().data());
+
   connect(properties, &SliceProperties::centerPointChanged, this,
           &SliceVisualizer::signalRequestSliceImageUpdate);
   connect(properties, &SliceProperties::verticalSizeChanged, this,
           &SliceVisualizer::signalRequestSliceImageUpdate);
+
+  forwardSignalFromPropertyOnReconnect(this, properties->volumePropertyTyped(),
+                                       &VolumeNode::boundingBoxChanged, this,
+                                       &SliceVisualizer::updateBoundingBox);
 
   forwardSignalFromPropertyNodeOnReconnect(
       properties, &SliceProperties::geometricPrimitive,
@@ -140,8 +169,6 @@ SliceVisualizer::SliceVisualizer()
       this, &SliceVisualizer::labelContainerChangedFinished);
 
   this->view = new QWidget();
-  connect(this, &Node::displayNameChanged, this->view,
-          &QWidget::setWindowTitle);
   this->setAutomaticDisplayName("Slice Visualizer");
 
   connect(properties, &SliceProperties::volumeChanged, this,
@@ -233,25 +260,18 @@ SliceVisualizer::SliceVisualizer()
   imageLayer->setObjectName(this->imageLayerName);
   this->layers_.append(imageLayer);
 
-  this->sliceAdjustmentTool = new SliceAdjustmentTool(view, this);
-  this->sliceAdjustmentTool->setObjectName("SliceAdjustmentTool");
-  this->_tools.append(this->sliceAdjustmentTool);
-  auto sal = SliceAdjustmentLayer::create(this);
-  this->layers_.append(sal);
-
-  ToolZoom* tz = new ToolZoom(view, this);
-  tz->setObjectName("ToolZoom");
-  this->_tools.append(tz);
+  this->defaultTool = new DefaultTool(view, this);
+  this->defaultTool->setObjectName("DefaultTool");
+  this->_tools.append(this->defaultTool);
+  this->layers_.append(SliceCenterLayer::create(this));
+  this->layers_.append(ViewCenterLayer::create(this));
 
   auto sv = SurfaceVisualizerTool::create(this);
   sv->setObjectName("SurfaceVisualizerTool");
   this->layers_.append(sv);  // only elements in layers_ will be visible over
                              // slice
 
-  GeometricAnalysisTool* gat = new GeometricAnalysisTool(view, this);
-  gat->setObjectName("GeometricAnalysisTool");
-  this->_tools.append(gat);
-  auto gal = GeometricAnalysisLayer::create(this);
+  auto gal = GeometricPrimitiveLayer::create(this);
   this->layers_.append(gal);
 
   this->selectionTool = new ToolSelection(view, this);
@@ -394,7 +414,7 @@ SliceVisualizer::SliceVisualizer()
   _pointListWidget->setWindowTitle(name);
   this->dynamicSections().append(_pointListWidget);
   connect(_pointListWidget, &PointProperties::newVisibility, gal.data(),
-          &GeometricAnalysisLayer::newVisibility);
+          &GeometricPrimitiveLayer::newVisibility);
 
   //**** Grid ***
   auto grid = Grid::create(this);
@@ -578,7 +598,6 @@ void SliceVisualizer::switchToolTo(Visualizer2DTool* tool) {
   }
   if (this->_currentTool != i) data[_currentTool]->deactivateTool();
   this->_currentTool = i;
-  this->emitCustomPropertyChanged(this->properties->showSliceCenterProperty());
   data[_currentTool]->activateTool();
   this->_imageDisplayingWidget->setFocus();
 }
@@ -647,11 +666,6 @@ QVariant SliceVisualizer::getNodePropertyCustom(QString key) {
     else
       return QVariant::fromValue<vx::TupleVector<double, 3>>(
           vx::TupleVector<double, 3>(0, 0, 0));
-  } else if (key == "de.uni_stuttgart.Voxie.Visualizer.Slice.ShowSliceCenter") {
-    // TODO: remove the concept of "current tool" and make this a normal
-    // property
-    return QVariant::fromValue<bool>(
-        dynamic_cast<SliceAdjustmentTool*>(this->currentTool()));
   } else {
     return VisualizerNode::getNodePropertyCustom(key);
   }
@@ -675,19 +689,6 @@ void SliceVisualizer::setNodePropertyCustom(QString key, QVariant value) {
       this->_slice->setOrigin(
           PropertyValueConvertRaw<vx::TupleVector<double, 3>, QVector3D>::
               fromRaw(Node::parseVariant<vx::TupleVector<double, 3>>(value)));
-  } else if (key == "de.uni_stuttgart.Voxie.Visualizer.Slice.ShowSliceCenter") {
-    // TODO: remove the concept of "current tool" and make this a normal
-    // property
-    auto val = Node::parseVariant<bool>(value);
-    bool cval = dynamic_cast<SliceAdjustmentTool*>(currentTool());
-    if (val == cval) return;
-    for (const auto& tool : tools()) {
-      bool isSliceAdjustment = dynamic_cast<SliceAdjustmentTool*>(tool);
-      if ((val && isSliceAdjustment) || (!val && !isSliceAdjustment)) {
-        this->switchToolTo(tool);
-        return;
-      }
-    }
   } else {
     VisualizerNode::setNodePropertyCustom(key, value);
   }
@@ -878,8 +879,8 @@ void SliceVisualizer::activateBrushSelectionTool() {
 
 void SliceVisualizer::deactivateBrushSelectionTool() {
   if (this->currentTool()->objectName() == this->brushSelectionName) {
-    if (this->sliceAdjustmentTool) {
-      switchToolTo(this->sliceAdjustmentTool);
+    if (this->defaultTool) {
+      switchToolTo(this->defaultTool);
     }
   }
 }
@@ -890,8 +891,8 @@ void SliceVisualizer::activateLassoSelectionTool() {
 
 void SliceVisualizer::deactivateLassoSelectionTool() {
   if (this->currentTool()->objectName() == this->lassoSelectionName) {
-    if (this->sliceAdjustmentTool) {
-      switchToolTo(this->sliceAdjustmentTool);
+    if (this->defaultTool) {
+      switchToolTo(this->defaultTool);
     }
   }
 }
@@ -1094,6 +1095,18 @@ void SliceVisualizer::originChanged(QVector3D origin) {
 bool SliceVisualizer::isAllowedParent(vx::NodeKind object) {
   return object == NodeKind::Data || object == NodeKind::Property ||
          object == NodeKind::Filter;
+}
+
+void SliceVisualizer::updateBoundingBox() {
+  BoundingBox3D bb = BoundingBox3D::empty();
+  auto volume = dynamic_cast<VolumeNode*>(this->properties->volume());
+  if (volume) bb = volume->boundingBox();
+  if (bb.isEmpty())
+    // Default BB
+    bb = BoundingBox3D::point(QVector3D(-0.2, -0.2, -0.2)) +
+         BoundingBox3D::point(QVector3D(0.2, 0.2, 0.2));
+
+  this->view3d()->setBoundingBox(bb);
 }
 
 NODE_PROTOTYPE_IMPL_2(Slice, Visualizer)

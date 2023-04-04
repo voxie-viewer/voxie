@@ -79,6 +79,19 @@ class RotationTest : public QObject {
     QVERIFY(squaredNorm(rot3.map(v2) - map3.map(v2)) < 1e-20);
     QVERIFY(squaredNorm(rot4.map(v2) - map4.map(v2)) < 1e-20);
 
+    auto unused = map2 * rot2;
+    unused = rot2 * map2;
+    auto unused2 = map3 * rot2;
+    unused2 = rot2 * map3;
+    auto unused3 = map4 * rot2;
+    unused3 = rot2 * map4;
+    (void)unused;
+    (void)unused2;
+    (void)unused3;
+    map2 *= rot2;
+    map3 *= rot2;
+    map4 *= rot2;
+
     float angleDeg = 15;
     auto v3 = vx::vectorCastNarrow<float>(v0);
     auto rot_vx = rotationFromAxisAngleDeg(v3, angleDeg);
@@ -87,6 +100,29 @@ class RotationTest : public QObject {
     // TODO: What should the accuracy here be?
     // qDebug() << angularDifference(rot_vx, rot_qt);
     QVERIFY(angularDifference(rot_vx, rot_qt) < 1e-4);
+
+    vx::Vector<float, 3> vectors[] = {
+        {0, 0, 0},           {0, 0, 3e-23},
+        {5e-23, 0, 3e-23},   {3e-23, 0, 3e-23},
+        {0, 0, 5e-23},       {0, 0, 1e-22},
+        {0, 2.5e-22, 1e-22}, {1.2e-22, 2.5e-22, 1e-22},
+        {3, 4, 5},
+    };
+    for (const auto& vec : vectors) {
+      auto rot_0 = rotationFromAxisAngle(vec, 0.0f);
+      auto rot_1 = rotationFromAxisAngle(vec, 1.0f);
+      // qDebug() << vec << rot_0 << rot_1;
+      QVERIFY(!std::isnan(rot_0.asQuaternion().a()));
+      QVERIFY(!std::isnan(rot_0.asQuaternion().b()));
+      QVERIFY(!std::isnan(rot_0.asQuaternion().c()));
+      QVERIFY(!std::isnan(rot_0.asQuaternion().d()));
+      QVERIFY(!std::isnan(rot_1.asQuaternion().a()));
+      QVERIFY(!std::isnan(rot_1.asQuaternion().b()));
+      QVERIFY(!std::isnan(rot_1.asQuaternion().c()));
+      QVERIFY(!std::isnan(rot_1.asQuaternion().d()));
+      QVERIFY(rot_0.asQuaternion() ==
+              (vx::Quaternion<float>{1.0f, 0.0f, 0.0f, 0.0f}));
+    }
   }
 };
 

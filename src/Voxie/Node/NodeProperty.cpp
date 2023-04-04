@@ -25,6 +25,7 @@
 #include <VoxieClient/DBusAdaptors.hpp>
 #include <VoxieClient/Exception.hpp>
 #include <VoxieClient/JsonDBus.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 
 #include <VoxieBackend/Component/ComponentContainer.hpp>
 
@@ -342,6 +343,24 @@ QSharedPointer<PropertyConditionHasValue> PropertyConditionHasValue::parseChild(
   return createQSharedPointer<PropertyConditionHasValue>(prop, values);
 }
 
+PropertyConnectionPriority vx::parseConnectionPriority(const QString& str) {
+  if (str == "Normal") return PropertyConnectionPriority::Normal;
+  if (str == "HideNew") return PropertyConnectionPriority::HideNew;
+  throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                      "Unknown value for ConnectionPriority: " + str);
+}
+QString vx::connectionPriorityToString(PropertyConnectionPriority priority) {
+  switch (priority) {
+    case PropertyConnectionPriority::Normal:
+      return "Normal";
+    case PropertyConnectionPriority::HideNew:
+      return "HideNew";
+    default:
+      throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
+                          "Invalid PropertyConnectionPriority value");
+  }
+}
+
 // TODO: Stuff from rawJson?
 QJsonValue NodeProperty::toJson() {
   QJsonObject obj;
@@ -407,6 +426,11 @@ QJsonValue NodeProperty::toJson() {
   if (uiPosition() != -1) obj["UIPosition"] = uiPosition();
   if (callSetOrder() != 0) obj["CallSetOrder"] = callSetOrder();
   if (hasPatterns()) obj["Patterns"] = QJsonArray::fromStringList(patterns());
+
+  if (connectionPriority() != PropertyConnectionPriority::Normal)
+    obj["ConnectionPriority"] =
+        connectionPriorityToString(connectionPriority());
+
   return obj;
 }
 
@@ -610,6 +634,12 @@ NodeProperty::NodeProperty(
     hasPatterns_ = false;
   }
 
+  if (data.contains("ConnectionPriority"))
+    this->connectionPriority_ =
+        parseConnectionPriority(expectString(data["ConnectionPriority"]));
+  else
+    this->connectionPriority_ = PropertyConnectionPriority::Normal;
+
   if (data.contains("UIPosition"))
     uiPosition_ = data["UIPosition"].toInt();
   else
@@ -699,4 +729,13 @@ NodeProperty::NodeProperty(
   }
 
   new NodePropertyAdaptorImpl(this);
+}
+
+void NodeProperty::throwIfTypeIsNot(const QSharedPointer<PropertyType>& type) {
+  if (this->type() != type) {
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Attempting to case property " + this->name() +
+                            " to type " + type->name() + " but has type " +
+                            this->type()->name());
+  }
 }

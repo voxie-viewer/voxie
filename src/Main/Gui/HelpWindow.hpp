@@ -54,6 +54,8 @@ class HelpWindow : public QDialog {
 
   help::HelpLinkHandler linkHandler;
   help::HelpPageGenerator pageGenerator;
+
+  QString lastUri;
 };
 
 }  // namespace gui

@@ -55,8 +55,8 @@ class HelpPageSourceAll : public HelpPageSource {
     auto anchorName = QString(QUrl::toPercentEncoding(info->url()));
 
     auto anchor = vx::cmark::Node::newNode(CMARK_NODE_CUSTOM_BLOCK);
-    anchor->setOnEnter("<a name=\"" + anchorName.toHtmlEscaped() + "\">");
-    // anchorName->setOnExit("");
+    anchor->setOnEnter("<a name=\"" + anchorName.toHtmlEscaped() + "\"></a>");
+    // anchor->setOnExit("");
     node->appendChild(anchor);
 
     addHeading(node, level, info->title());
@@ -92,7 +92,8 @@ class HelpPageSourceAll : public HelpPageSource {
       QString url = childNode->getUrl();
       if (QUrl(url).isRelative())
         // TODO: This is a hack, try to get rid of per-page baseFileName()?
-        childNode->setUrl(QFileInfo(page->baseFileName()).dir().path() + "/" +
+        // TODO: exportHelpPage() does not work well with absolute URIs
+        childNode->setUrl(QFileInfo(page->baseFileName()).dir().path() + "/./" +
                           url);
       // qDebug() << "url" << url << childNode->getUrl() <<
       // page->baseFileName();
@@ -152,9 +153,7 @@ class HelpPageSourceAll : public HelpPageSource {
       }
     }
 
-    return createQSharedPointer<HelpPage>(
-        doc, "/",  // TODO: What should be the base directory?
-        "All in one page");
+    return createQSharedPointer<HelpPage>(doc, "All in one page");
   }
 };
 }  // namespace help

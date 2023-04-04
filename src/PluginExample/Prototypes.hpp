@@ -12,6 +12,7 @@
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
 #include <Voxie/Node/Node.hpp>
+#include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
 
 namespace vx {
@@ -83,12 +84,14 @@ class TheSphereGeneratorProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   TheSphereGeneratorProperties(vx::Node* parent);
   ~TheSphereGeneratorProperties();
 
   qint64 seed() override final;
   qint64 seedRaw() override final;
-  QSharedPointer<NodeProperty> seedProperty();
+  static QSharedPointer<NodeProperty> seedProperty();
+  static NodePropertyTyped<vx::types::Int> seedPropertyTyped();
   void setSeed(qint64 value);
  Q_SIGNALS:
   void seedChanged(qint64 value);
@@ -98,7 +101,8 @@ class TheSphereGeneratorProperties : public QObject,
 
   qint64 size() override final;
   qint64 sizeRaw() override final;
-  QSharedPointer<NodeProperty> sizeProperty();
+  static QSharedPointer<NodeProperty> sizeProperty();
+  static NodePropertyTyped<vx::types::Int> sizePropertyTyped();
   void setSize(qint64 value);
  Q_SIGNALS:
   void sizeChanged(qint64 value);
@@ -108,7 +112,9 @@ class TheSphereGeneratorProperties : public QObject,
 
   vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
-  QSharedPointer<NodeProperty> outputProperty();
+  static QSharedPointer<NodeProperty> outputProperty();
+  static NodePropertyTyped<vx::types::OutputNodeReference>
+  outputPropertyTyped();
   void setOutput(vx::Node* value);
  Q_SIGNALS:
   void outputChanged(vx::Node* value);
@@ -143,6 +149,7 @@ class RandomChartProperties : public QObject, public RandomChartPropertiesBase {
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   RandomChartProperties(vx::Node* parent);
   ~RandomChartProperties();
 };

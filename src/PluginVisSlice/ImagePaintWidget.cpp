@@ -32,6 +32,8 @@
 
 #include <PluginVisSlice/SliceVisualizer.hpp>
 
+#include <Voxie/Vis/View3D.hpp>
+
 #include <QtCore/QDebug>
 #include <QtCore/QList>
 
@@ -54,39 +56,59 @@ ImagePaintWidget::ImagePaintWidget(SliceVisualizer* sv, QWidget* parent)
 
 ImagePaintWidget::~ImagePaintWidget() {}
 
-void ImagePaintWidget::wheelEvent(QWheelEvent* e) {
-  sv->currentTool()->toolWheelEvent(e);
+void ImagePaintWidget::wheelEvent(QWheelEvent* event) {
+  sv->view3d()->wheelEvent(event, size());
+
+  sv->currentTool()->toolWheelEvent(event);
 }
 
-void ImagePaintWidget::mousePressEvent(QMouseEvent* e) {
+void ImagePaintWidget::mousePressEvent(QMouseEvent* event) {
   // qDebug() << "click";
-  sv->currentTool()->toolMousePressEvent(e);
+
+  sv->view3d()->mousePressEvent(mouseLast, event, size());
+
+  sv->currentTool()->toolMousePressEvent(event);
+
+  this->mouseLast = event->pos();
 }
 
-void ImagePaintWidget::mouseReleaseEvent(QMouseEvent* e) {
-  sv->currentTool()->toolMouseReleaseEvent(e);
+void ImagePaintWidget::mouseReleaseEvent(QMouseEvent* event) {
+  sv->view3d()->mouseReleaseEvent(mouseLast, event, size());
+
+  sv->currentTool()->toolMouseReleaseEvent(event);
+
+  this->mouseLast = event->pos();
 }
 
-void ImagePaintWidget::keyPressEvent(QKeyEvent* e) {
+void ImagePaintWidget::keyPressEvent(QKeyEvent* event) {
+  sv->view3d()->keyPressEvent(event, size());
+
   // quick tool switching with 1 ~ 9 & 0
   // qDebug() << "ImagePaintWidget::keyPressEvent" << e->key();
+  // Note: Switching with keys causes problems when layes like
+  // BrushSelectionTool which do not expect to be activated by the user are
+  // activated
+  /*
   int tool;
-  if (e->key() >= Qt::Key_0 &&
-      e->key() <= Qt::Key_9) {  // might want to exclude modifiers here
-    tool = (e->key() - 0x30 - 1) % 10;
+  if (event->key() >= Qt::Key_0 && event->key() <= Qt::Key_9 &&
+      (event->modifiers() & Qt::KeypadModifier) ==
+          0) {  // might want to exclude modifiers here
+    tool = (event->key() - 0x30 - 1) % 10;
     if (tool >= 0 && tool < sv->tools().size()) {
       sv->switchToolTo(sv->tools().at(tool));
     }
-  } else {
-    sv->currentTool()->toolKeyPressEvent(e);
-  }
+  } else
+  */
+  sv->currentTool()->toolKeyPressEvent(event);
 }
 
-void ImagePaintWidget::keyReleaseEvent(QKeyEvent* e) {
-  sv->currentTool()->toolKeyReleaseEvent(e);
+void ImagePaintWidget::keyReleaseEvent(QKeyEvent* event) {
+  sv->currentTool()->toolKeyReleaseEvent(event);
 }
 
-void ImagePaintWidget::mouseMoveEvent(QMouseEvent* e) {
+void ImagePaintWidget::mouseMoveEvent(QMouseEvent* event) {
+  sv->view3d()->mouseMoveEvent(mouseLast, event, size());
+
   // TODO: only calculate values when needed?
   bool doValueLookup =
       false;  // TODO: currently this triggers a race condition ("what():
@@ -95,8 +117,8 @@ void ImagePaintWidget::mouseMoveEvent(QMouseEvent* e) {
 
   auto& imgUnf = this->sv->sliceImage();
   auto& imgFilt = this->sv->filteredSliceImage();
-  const auto& pos = e->pos();
-  auto planePoint = imgUnf.pixelToPlanePoint(e->pos(), true);
+  const auto& pos = event->pos();
+  auto planePoint = imgUnf.pixelToPlanePoint(event->pos(), true);
   auto slice = this->sv->slice();
   auto threeDPoint = slice ? slice->getCuttingPlane().get3DPoint(planePoint.x(),
                                                                  planePoint.y())
@@ -127,10 +149,12 @@ void ImagePaintWidget::mouseMoveEvent(QMouseEvent* e) {
     }
     // TODO: Non-voxel datasets
   }
-  Q_EMIT this->sv->imageMouseMove(e, planePoint, threeDPoint, valUnf, valFilt,
-                                  valNearest, valLinear);
+  Q_EMIT this->sv->imageMouseMove(event, planePoint, threeDPoint, valUnf,
+                                  valFilt, valNearest, valLinear);
 
-  sv->currentTool()->toolMouseMoveEvent(e);
+  sv->currentTool()->toolMouseMoveEvent(event);
+
+  this->mouseLast = event->pos();
 }
 
 void ImagePaintWidget::leaveEvent(QEvent* e) {

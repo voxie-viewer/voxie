@@ -65,4 +65,5 @@ class ImagePaintWidget : public QLabel {
  private:
   QBrush b;
   SliceVisualizer* sv;
+  QPoint mouseLast;
 };

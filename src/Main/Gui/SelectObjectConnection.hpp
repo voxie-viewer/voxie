@@ -96,9 +96,13 @@ class ConnectNodesImplInputObject3D : public ConnectNodesImpl {
   QPointer<Node> getVal() override { return this->val; }
 };
 
-QList<QSharedPointer<ConnectNodesImpl>> getPossibleConnections(Node* parent,
-                                                               Node* child);
-bool canBeChildOf(Node* parent, NodePrototype* childPrototype);
+QList<QSharedPointer<ConnectNodesImpl>> getPossibleConnections(
+    Node* parent, Node* child,
+    PropertyConnectionPriority minPriority =
+        PropertyConnectionPriority::HideNew);
+bool canBeChildOf(Node* parent, NodePrototype* childPrototype,
+                  PropertyConnectionPriority minPriority =
+                      PropertyConnectionPriority::HideNew);
 
 class SelectNodeConnection : public QDialog {
   Q_OBJECT

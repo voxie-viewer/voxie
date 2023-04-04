@@ -292,6 +292,16 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
                        const QVariant& value);
   void setNodeProperty(const QString& key, const QVariant& value);
 
+  template <typename T>
+  typename T::QtType getNodeProperty(const NodePropertyTyped<T>& property) {
+    return getNodePropertyTyped<typename T::QtType>(property.property());
+  }
+  template <typename T>
+  void setNodeProperty(const NodePropertyTyped<T>& property,
+                       const typename T::QtType& value) {
+    setNodePropertyTyped<typename T::QtType>(property.property(), value);
+  }
+
   /**
    * Set multiple properties at once.
    *

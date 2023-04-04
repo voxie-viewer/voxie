@@ -10,6 +10,9 @@
                 "de.uni_stuttgart.Voxie.EventListDataAccessor"
             ],
             "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.EventList.Json.Export",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {}
         }
     ]

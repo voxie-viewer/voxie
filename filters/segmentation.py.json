@@ -6,13 +6,13 @@
             "Name": "de.uni_stuttgart.Voxie.Filter.BinarySegmentation",
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
             "Icon": ":/icons/contrast.png",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Input": {
                     "AllowedNodePrototypes": [
                         "de.uni_stuttgart.Voxie.Data.Volume"
-                    ],
-                    "RequiredTags": [
-                        "de.uni_stuttgart.Voxie.Tags.Volume.Float"
                     ],
                     "DisplayName": "Input",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
@@ -22,7 +22,7 @@
                         "de.uni_stuttgart.Voxie.Data.Volume"
                     ],
                     "OutputTags": [
-                        "de.uni_stuttgart.Voxie.Tags.Volume.Segmented"
+                        "de.uni_stuttgart.Voxie.Tags.Volume.Mask"
                     ],
                     "DisplayName": "Output",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"

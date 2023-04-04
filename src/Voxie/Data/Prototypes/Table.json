@@ -13,6 +13,9 @@
                 "de.uni_stuttgart.Voxie.TableData"
             ],
             "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.Table.Json.Export",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {}
         }
     ]

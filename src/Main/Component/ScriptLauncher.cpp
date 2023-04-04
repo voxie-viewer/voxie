@@ -164,7 +164,7 @@ QProcess* ScriptLauncher::startScript(const QString& scriptFile,
       std::function<void(int, QProcess::ExitStatus)>(
           [process, id](int exitCode, QProcess::ExitStatus exitStatus) -> void {
             Root::instance()->log(
-                QString("Script %1 finished with exit status %2 / exit code %3")
+                QString("Process %1 finished with exit status %2 / exit code %3")
                     .arg(id)
                     .arg(exitStatusToString(exitStatus))
                     .arg(exitCode));
@@ -200,7 +200,7 @@ QProcess* ScriptLauncher::startScript(const QString& scriptFile,
       [this, process, id, buffer, output]() -> void {
         this->printBufferToConsole(process, id, buffer, output);
         if (*buffer != "") {
-          Root::instance()->log(QString("Script %1: %2").arg(id).arg(*buffer));
+          Root::instance()->log(QString("Process %1: %2").arg(id).arg(*buffer));
           buffer->clear();
         }
       });
@@ -222,7 +222,7 @@ void ScriptLauncher::printBufferToConsole(
   for (;;) {
     int index = data.indexOf('\n', pos);
     if (index == -1) break;
-    Root::instance()->log(QString("Script %1: %2%3")
+    Root::instance()->log(QString("Process %1: %2%3")
                               .arg(id)
                               .arg(*buffer)
                               .arg(data.mid(pos, index - pos)));

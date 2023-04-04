@@ -136,6 +136,21 @@ DeUni_stuttgartVoxieDataVersionInterface::
     ~DeUni_stuttgartVoxieDataVersionInterface() {}
 
 /*
+ * Implementation of interface class DeUni_stuttgartVoxieDebugOptionInterface
+ */
+
+DeUni_stuttgartVoxieDebugOptionInterface::
+    DeUni_stuttgartVoxieDebugOptionInterface(const QString& service,
+                                             const QString& path,
+                                             const QDBusConnection& connection,
+                                             QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieDebugOptionInterface::
+    ~DeUni_stuttgartVoxieDebugOptionInterface() {}
+
+/*
  * Implementation of interface class DeUni_stuttgartVoxieDynamicObjectInterface
  */
 

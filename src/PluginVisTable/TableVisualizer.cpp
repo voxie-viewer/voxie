@@ -231,7 +231,6 @@ void TableVisualizer::updateTable() {
     properties->setSortColumn(currentSortColumn);
   }
 
-  viewRoot->setWindowTitle(title);
   setAutomaticDisplayName(title);
 }
 

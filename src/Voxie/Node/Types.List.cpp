@@ -2232,7 +2232,7 @@ class PropertyTypeValueColorMapping : public PropertyType {
                                     0),
                     std::make_tuple(0, vx::TupleVector<double, 4>(0, 0, 0, 1),
                                     0),
-                    std::make_tuple(1, vx::TupleVector<double, 4>(1, 1, 1, 1),
+                    std::make_tuple(50, vx::TupleVector<double, 4>(1, 1, 1, 1),
                                     0)})) {}
   ~PropertyTypeValueColorMapping() {}
 

@@ -191,7 +191,8 @@ QVector3D ObjectProperties::getPosition() {
 
 QQuaternion ObjectProperties::getRotation() {
   return QQuaternion(getWRotation(), getXRotation(), getYRotation(),
-                     getZRotation());
+                     getZRotation())
+      .normalized();
 }
 
 void ObjectProperties::on_rotationModeComboBox_currentTextChanged(
@@ -253,7 +254,8 @@ void ObjectProperties::on_rotationWLineEdit_textChanged(const QString& text) {
   float value;
   if (getFloat(text, &value)) {
     this->objectRotation =
-        QQuaternion(value, getXRotation(), getYRotation(), getZRotation());
+        QQuaternion(value, getXRotation(), getYRotation(), getZRotation())
+            .normalized();
 
     if (this->objectRotation.isNull()) {
       qWarning() << "QQuaternion in object properties cant be (0,0,0,0)";
@@ -276,11 +278,13 @@ void ObjectProperties::on_rotationXLineEdit_textChanged(const QString& text) {
   if (getFloat(text, &value)) {
     if (mode == "quaternion") {
       this->objectRotation =
-          QQuaternion(getWRotation(), value, getYRotation(), getZRotation());
+          QQuaternion(getWRotation(), value, getYRotation(), getZRotation())
+              .normalized();
 
     } else if (mode == "euler") {
       this->objectRotation =
-          QQuaternion::fromEulerAngles(value, getYRotation(), getZRotation());
+          QQuaternion::fromEulerAngles(value, getYRotation(), getZRotation())
+            .normalized();
     } else {
       qWarning() << "No Rotationmode detected RotX";
     }
@@ -308,11 +312,13 @@ void ObjectProperties::on_rotationYLineEdit_textChanged(const QString& text) {
   if (getFloat(text, &value)) {
     if (mode == "quaternion") {
       this->objectRotation =
-          QQuaternion(getWRotation(), getXRotation(), value, getZRotation());
+          QQuaternion(getWRotation(), getXRotation(), value, getZRotation())
+              .normalized();
 
     } else if (mode == "euler") {
       this->objectRotation =
-          QQuaternion::fromEulerAngles(getXRotation(), value, getZRotation());
+          QQuaternion::fromEulerAngles(getXRotation(), value, getZRotation())
+              .normalized();
     } else {
       qWarning() << "No Rotationmode detected: RotY";
     }
@@ -339,11 +345,13 @@ void ObjectProperties::on_rotationZLineEdit_textChanged(const QString& text) {
   if (getFloat(text, &value)) {
     if (mode == "quaternion") {
       this->objectRotation =
-          QQuaternion(getWRotation(), getXRotation(), getYRotation(), value);
+          QQuaternion(getWRotation(), getXRotation(), getYRotation(), value)
+              .normalized();
 
     } else if (mode == "euler") {
       this->objectRotation =
-          QQuaternion::fromEulerAngles(getXRotation(), getYRotation(), value);
+          QQuaternion::fromEulerAngles(getXRotation(), getYRotation(), value)
+              .normalized();
     } else {
       qWarning() << "No Rotationmode detected: RotZ";
     }

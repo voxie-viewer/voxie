@@ -31,6 +31,7 @@ namespace vx {
 class NodePrototype;
 
 namespace help {
+class HelpPageDependencies;
 
 class HelpPageRegistry {
  public:
@@ -47,13 +48,6 @@ class HelpPageRegistry {
   void registerHelpPageDirectory(QDir directory);
 
   /**
-   * Registers a help page with the specified name. The second parameter is
-   * expected to contain the source code of a valid Markdown document.
-   */
-  void registerHelpPage(QString name, QString sourceFile,
-                        QString markdownSource);
-
-  /**
    * Registers a help page with the specified name, loading the help content
    * from a filename. The second parameter is expected to contain the name of a
    * file containing source code of a valid Markdown document.
@@ -65,13 +59,14 @@ class HelpPageRegistry {
    * markdown source code associated with the specified help page name, or an
    * empty string if no help content was found for the specified name.
    */
-  std::tuple<QString, QString> lookUpHelpPage(QString name);
-  std::tuple<QString, QString> lookUpHelpPage(
-      const QSharedPointer<vx::NodePrototype> prototype);
+  std::tuple<QString, QSharedPointer<HelpPageDependencies>, QString>
+  lookUpHelpPage(QString name);
+  std::tuple<QString, QSharedPointer<HelpPageDependencies>, QString>
+  lookUpHelpPage(const QSharedPointer<vx::NodePrototype> prototype);
 
  private:
   QList<QDir> helpPageDirectories;
-  QMap<QString, std::tuple<QString, QString>> helpPages;
+  QMap<QString, QList<QString>> helpPagesAdditionalFiles;
 };
 
 }  // namespace help

@@ -22,6 +22,8 @@
 
 #include "HelpPageRegistry.hpp"
 
+#include <Main/Help/HelpPage.hpp>
+
 #include <Voxie/Node/NodePrototype.hpp>
 
 #include <QFile>
@@ -35,35 +37,49 @@ void vx::help::HelpPageRegistry::registerHelpPageDirectory(QDir directory) {
   helpPageDirectories.append(directory);
 }
 
-void vx::help::HelpPageRegistry::registerHelpPage(QString name,
-                                                  QString sourceFile,
-                                                  QString markdownSource) {
-  helpPages.insert(name, std::make_tuple(sourceFile, markdownSource));
-}
-
 void HelpPageRegistry::registerHelpPageFile(QString name, QString sourceFile) {
-  QFile file(sourceFile);
-  if (file.open(QFile::ReadOnly | QFile::Text)) {
-    registerHelpPage(name, sourceFile, QString::fromUtf8(file.readAll()));
-  }
+  this->helpPagesAdditionalFiles[name] << sourceFile;
 }
 
-std::tuple<QString, QString> vx::help::HelpPageRegistry::lookUpHelpPage(
-    QString name) {
-  if (helpPages.contains(name)) {
-    return helpPages[name];
-  } else {
-    for (auto directory : helpPageDirectories) {
-      QString fileName = directory.filePath(name + ".md");
+std::tuple<QString, QSharedPointer<HelpPageDependencies>, QString>
+vx::help::HelpPageRegistry::lookUpHelpPage(QString name) {
+  QList<std::tuple<QString, QDateTime>> files;
+
+  if (helpPagesAdditionalFiles.contains(name)) {
+    for (const auto& fileName : helpPagesAdditionalFiles[name]) {
+      QFileInfo info(fileName);
+      auto lastModified = info.lastModified();
+      files << std::make_tuple(fileName, lastModified);
+
       QFile helpFile(fileName);
       if (helpFile.open(QFile::ReadOnly | QFile::Text)) {
-        return std::make_tuple(fileName, QString::fromUtf8(helpFile.readAll()));
+        return std::make_tuple(
+            fileName, createQSharedPointer<HelpPageDependencies>(files),
+            QString::fromUtf8(helpFile.readAll()));
       }
     }
-    return std::make_tuple("", "");
   }
+
+  for (auto directory : helpPageDirectories) {
+    QString fileName = directory.filePath(name + ".md");
+
+    QFileInfo info(fileName);
+    auto lastModified = info.lastModified();
+    files << std::make_tuple(fileName, lastModified);
+
+    QFile helpFile(fileName);
+    if (helpFile.open(QFile::ReadOnly | QFile::Text)) {
+      return std::make_tuple(fileName,
+                             createQSharedPointer<HelpPageDependencies>(files),
+                             QString::fromUtf8(helpFile.readAll()));
+    }
+  }
+
+  return std::make_tuple("", createQSharedPointer<HelpPageDependencies>(files),
+                         "");
 }
-std::tuple<QString, QString> vx::help::HelpPageRegistry::lookUpHelpPage(
+std::tuple<QString, QSharedPointer<HelpPageDependencies>, QString>
+vx::help::HelpPageRegistry::lookUpHelpPage(
     const QSharedPointer<vx::NodePrototype> prototype) {
   return lookUpHelpPage(prototype->name());
 }

@@ -54,12 +54,6 @@ class IScriptExtensionPlugin {
   virtual QList<QSharedPointer<Component>> scriptExtensions() = 0;
 };
 
-class IUICommandPlugin {
- public:
-  virtual ~IUICommandPlugin() {}
-  virtual QList<QAction*> uiCommands() = 0;
-};
-
 class IFilter2DPlugin {
  public:
   virtual ~IFilter2DPlugin() {}
@@ -96,8 +90,6 @@ V_DECLARE_INTERFACE(IPreferencesPlugin,
                     "de.uni_stuttgart.Voxie.Plugin.IPreferencesPlugin")
 V_DECLARE_INTERFACE(IScriptExtensionPlugin,
                     "de.uni_stuttgart.Voxie.Plugin.IScriptExtensionPlugin")
-V_DECLARE_INTERFACE(IUICommandPlugin,
-                    "de.uni_stuttgart.Voxie.Plugin.IUICommandPlugin")
 V_DECLARE_INTERFACE(IFilter2DPlugin,
                     "de.uni_stuttgart.Voxie.Plugin.IFilter2DPlugin")
 V_DECLARE_INTERFACE(IImporterPlugin,

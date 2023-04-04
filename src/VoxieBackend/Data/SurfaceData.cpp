@@ -27,6 +27,8 @@
 
 #include "SurfaceData.hpp"
 
+#include <VoxieBackend/DebugOptions.hpp>
+
 #include <QPushButton>
 
 #include <QtWidgets/QAction>
@@ -448,7 +450,8 @@ void SurfaceDataTriangleIndexed::setMinMax() {
   this->origin_.setY(minY);
   this->origin_.setZ(minZ);
 
-  qDebug() << "setMinMax()" << this->origin_ << this->size_;
+  if (vx::debug_option::Log_SurfaceBoundingBox()->get())
+    qDebug() << "Surface: Got bounding box:" << this->origin_ << this->size_;
 }
 
 SurfaceDataTriangleIndexed::~SurfaceDataTriangleIndexed() {}

@@ -66,6 +66,10 @@ VolumeNode::VolumeNode()
   QObject::connect(properties, &VolumeProperties::translationChanged, this,
                    &VolumeNode::translationChanged);
 
+  // TODO: This should only be triggered if the bounding box actually changes
+  QObject::connect(this, &DataNode::dataChangedFinished, this,
+                   &VolumeNode::boundingBoxChanged);
+
   // TODO: This should be created with a nullptr volumeData, but there probably
   // are some null checks missing somewhere
   volumeDataPointer = VolumeDataVoxel::createVolume(1, 1, 1, DataType::Float32);

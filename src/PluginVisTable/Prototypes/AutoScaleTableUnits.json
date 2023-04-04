@@ -6,6 +6,9 @@
             "Name": "de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits",
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
             "Icon": ":/icons/edit-scale.png",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits.Table": {
                     "AllowedNodePrototypes": [

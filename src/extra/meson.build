@@ -76,15 +76,3 @@ install_subdir('../../lib/katex-0.11.1', install_dir : lib_install_dir)
 install_data('../../scripts/getAverage.py', install_dir : script_install_dir)
 
 endif
-
-if host_machine.system() == 'linux'
-  custom_target(
-    'old-manual',
-    input : files('../../doc/old-manual/2d.tex', '../../doc/old-manual/3d.tex', '../../doc/old-manual/appendix.tex', '../../doc/old-manual/intro.tex', '../../doc/old-manual/manual.tex', '../../doc/old-manual/overview.tex', '../../doc/old-manual/plugins.tex', '../../doc/old-manual/raw.tex', '../../doc/old-manual/ui.tex', '../../doc/old-manual/visualizer.tex', '../../doc/old-manual/img/adddataset_dialog.png', '../../doc/old-manual/img/adddataset.png', '../../doc/old-manual/img/cuttingplane_cube.png', '../../doc/old-manual/img/cuttingplane_modes.png', '../../doc/old-manual/img/file-dialog.png', '../../doc/old-manual/img/hdf5-dialog.png', '../../doc/old-manual/img/isosurface.png', '../../doc/old-manual/img/iso_voxel_slice.png', '../../doc/old-manual/img/mainwindow.png', '../../doc/old-manual/img/missing.jpg', '../../doc/old-manual/img/preferences-cl.png', '../../doc/old-manual/img/preferences-script.png', '../../doc/old-manual/img/save-dialog.png', '../../doc/old-manual/img/script-console.png', '../../doc/old-manual/img/selecteddataset.png', '../../doc/old-manual/img/window-cascade.png', '../../doc/old-manual/img/window-fill.png', '../../doc/old-manual/img/window-tabbed.png', '../../doc/old-manual/img/window-tile.png', '../../doc/old-manual/img/x-ray.png', '../../doc/old-manual/img/zoomCopyAndPaste.PNG', '../../doc/old-manual/img/zoomdefault.png', '../../doc/old-manual/img/zoomMaximum.png', '../../doc/old-manual/img/zoomMinimum.png', '../../doc/old-manual/img/2d/2dfilter.png', '../../doc/old-manual/img/2d/3dslice.png', '../../doc/old-manual/img/2d/colorizer.png', '../../doc/old-manual/img/2d/geometricAnalysis.png', '../../doc/old-manual/img/2d/grid.png', '../../doc/old-manual/img/2d/histogram.PNG', '../../doc/old-manual/img/2d/histosettings.png', '../../doc/old-manual/img/2d/ruler.PNG', '../../doc/old-manual/img/2d/sliceviewGridRuler.PNG', '../../doc/old-manual/img/2d/sliceview.png'),
-    output : 'old-manual.pdf',
-    command : [ 'sh', '-c', 'INDIR="$(readlink -f "${2%/*}")" && cd "$1" && rm -rf doc-build && mkdir doc-build && cp -R "$INDIR"/*.tex "$INDIR"/img doc-build/ && cd doc-build && : | pdflatex manual.tex > manual.1.log && : | pdflatex manual.tex > manual.2.log && : | pdflatex manual.tex > manual.3.log && cp manual.pdf ../old-manual.pdf', '', '@OUTDIR@', '@INPUT0@' ],
-    build_by_default : true,
-    install : true,
-    install_dir : doc_install_dir,
-  )
-endif

@@ -45,10 +45,47 @@ from .refcountingcontext import RefCountingContext
 timeoutValue = 2000000
 
 
+class DebugOptionsImpl:
+    def __init__(self, instance):
+        self.__list = instance.ListDebugOptions()
+        self.__opt_dict = {}
+        for entry in self.__list:
+            name = entry.Name
+            dbusSig = entry.DBusSignature
+            name = name.replace('.', '_')
+            data = {
+                'Name': name,
+                'Signature': dbusSig,
+                'Object': entry,
+            }
+            if data['Name'] in self.__opt_dict:
+                raise Exception('Duplicate debug option name: {!r}'.format(data['Name']))
+            self.__opt_dict[data['Name']] = data
+            # For tab completion
+            object.__setattr__(self, data['Name'], None)
+
+    def __getattribute__(self, name):
+        if name.startswith('_'):
+            return object.__getattribute__(self, name)
+        if name not in self.__opt_dict:
+            raise Exception('Could not find debug option {!r}'.format(name))
+        entry = self.__opt_dict[name]
+        return entry['Object'].GetValue().getValue(entry['Signature'])
+
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            return object.__setattr__(self, name, value)
+        if name not in self.__opt_dict:
+            raise Exception('Could not find debug option {!r}'.format(name))
+        entry = self.__opt_dict[name]
+        entry['Object'].SetValue(voxie.Variant(entry['Signature'], value))
+
+
 class InstanceImpl(voxie.DBusObject):
     def __init__(self, obj, interfaces, context=None, referenceCountingObject=None):
         voxie.DBusObject.__init__(
             self, obj, interfaces, context=context, referenceCountingObject=referenceCountingObject)
+        self.__DebugOptions = None
 
     def GetPrototype(self, name, options={}):
         # TODO: Drop ObjectPrototype here? Might break compatibility with old scripts
@@ -91,6 +128,13 @@ class InstanceImpl(voxie.DBusObject):
             # TODO: More details in error message
             print('Error while opening file: ' + str(e), file=sys.stderr)
             return None
+
+    @property
+    def DebugOptions(self):
+        if self.__DebugOptions is not None:
+            return self.__DebugOptions
+        self.__DebugOptions = DebugOptionsImpl(self)
+        return self.__DebugOptions
 
 
 class DynamicObjectImpl(voxie.DBusObject):

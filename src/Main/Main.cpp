@@ -22,11 +22,57 @@
 
 #include <Main/Root.hpp>
 
+#include <Main/AllDebugOptions.hpp>
+
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 
 #include <QtWidgets/QApplication>
+
+static void setupDebugOptions(const QList<QString>& commandLineValues) {
+  auto debugOptionList = vx::allDebugOptions();
+  QMap<QString, vx::DebugOption*> debugOptions;
+  for (const auto& option : *debugOptionList) {
+    if (debugOptions.contains(option->name()))
+      throw vx::Exception(
+          "de.uni_stuttgart.Voxie.InternalError",
+          QString() + "Got duplicate debug option name: " + option->name());
+    debugOptions[option->name()] = option;
+  }
+
+  QList<QString> values;
+  values << QString::fromUtf8(qgetenv("VOXIE_DEBUG_OPTIONS"));
+  values << commandLineValues;
+
+  for (const auto& str1 : values) {
+    for (const auto& str2 : str1.split(":")) {
+      if (str2 == "") continue;
+
+      QString name, value;
+      bool haveValue;
+      int pos = str2.indexOf('=');
+      if (pos == -1) {
+        name = str2;
+        haveValue = false;
+      } else {
+        name = str2.left(pos);
+        value = str2.mid(pos + 1);
+        haveValue = true;
+      }
+
+      if (!debugOptions.contains(name)) {
+        qWarning() << "Unknown debug option" << name;
+        continue;
+      }
+      vx::DebugOption* option = debugOptions[name];
+      if (haveValue)
+        option->setValueString(value);
+      else
+        option->setValueStringEmpty();
+    }
+  }
+}
 
 int main(int argc, char* argv[]) {
 #ifdef QT_DEBUG
@@ -57,8 +103,12 @@ int main(int argc, char* argv[]) {
   QCommandLineOption noOpenGLOption("no-opengl", "Disable usage of OpenGL");
   parser.addOption(noOpenGLOption);
 
-  QCommandLineOption noOpenCLOption("no-opencl", "Disable usage of OpenCL");
+  QCommandLineOption noOpenCLOption(
+      "no-opencl", "Disable usage of OpenCL (currently default)");
   parser.addOption(noOpenCLOption);
+
+  QCommandLineOption openCLOption("opencl", "Enable usage of OpenCL");
+  parser.addOption(openCLOption);
 
   QCommandLineOption newInstanceOption(
       "new-instance",
@@ -106,6 +156,10 @@ int main(int argc, char* argv[]) {
                                       "How to show the main window", "option");
   parser.addOption(mainWindowOption);
 
+  QCommandLineOption debugOptionOption("debug-option", "Set a debug option",
+                                       "option=value");
+  parser.addOption(debugOptionOption);
+
   QStringList args;
   for (char** arg = argv; *arg; arg++) args.push_back(*arg);
 
@@ -121,6 +175,8 @@ int main(int argc, char* argv[]) {
     // Note: This causes problems when OpenGL is not supported
     if (!parser.isSet("no-opengl"))
       app0.setAttribute(Qt::AA_ShareOpenGLContexts, true);
+
+    setupDebugOptions(parser.values(debugOptionOption));
   }
 
   QStringList qtOptionsList = parser.values(qtOptionOption);

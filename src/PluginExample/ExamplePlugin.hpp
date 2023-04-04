@@ -23,18 +23,17 @@
 #pragma once
 
 #include <Voxie/Component/Interfaces.hpp>
+#include <Voxie/Component/Plugin.hpp>
 
 #include <QtCore/QList>
 
 #include <QtGui/QGenericPlugin>
 
-class ExamplePlugin : public QGenericPlugin,
-                      public vx::plugin::IUICommandPlugin,
+class ExamplePlugin : public vx::PluginInstance,
                       public vx::plugin::IObjectPrototypePlugin,
                       public vx::plugin::IImporterPlugin,
                       public vx::plugin::IPreferencesPlugin {
   Q_OBJECT
-  Q_INTERFACES(vx::plugin::IUICommandPlugin)
   Q_INTERFACES(vx::plugin::IObjectPrototypePlugin)
   Q_INTERFACES(vx::plugin::IImporterPlugin)
   Q_INTERFACES(vx::plugin::IPreferencesPlugin)
@@ -44,16 +43,14 @@ class ExamplePlugin : public QGenericPlugin,
                     "Example.json")
 
  public:
-  ExamplePlugin(QObject* parent = 0);
-
-  virtual QObject* create(const QString& key,
-                          const QString& specification) override;
-
-  virtual QList<QAction*> uiCommands() override;
+  ExamplePlugin();
 
   virtual QList<QSharedPointer<vx::NodePrototype>> objectPrototypes() override;
 
   virtual QList<QSharedPointer<vx::io::Importer>> importers() override;
 
   virtual QWidget* preferencesWidget() override;
+
+ protected:
+  QList<QSharedPointer<vx::Component>> createComponents() override;
 };

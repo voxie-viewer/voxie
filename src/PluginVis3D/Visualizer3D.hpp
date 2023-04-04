@@ -24,9 +24,7 @@
 
 #include <PluginVis3D/Visualizer3DView.hpp>
 
-#include <PluginVis3D/CamProperties.hpp>
 #include <PluginVis3D/Data/AxisFilter.hpp>
-#include <PluginVis3D/Helper/IsosurfaceMouseOperation.hpp>
 #include <PluginVis3D/Helper/NotifyingLinkedList.hpp>
 #include <PluginVis3D/PlanePropertiesUi.hpp>
 #include <PluginVis3D/Prototypes.hpp>
@@ -60,6 +58,8 @@ class Visualizer3D : public vx::VisualizerNode {
   Visualizer3DView* view;
   PlanePropertiesUi* planeWidget;
 
+  QWidget* control3DSettings;
+
   // Mouse Operation Widget:
   QPushButton* moveSurfaceButton;
   QPushButton* rotateSurfaceButton;
@@ -75,8 +75,6 @@ class Visualizer3D : public vx::VisualizerNode {
   QComboBox* culling;
 
   QPointer<QObject> osvrDisplay = nullptr;
-
-  const QSharedPointer<IsosurfaceMouseOperation> mouseOperation;
 
   AxisFilter axisFilter;
   bool movePlane;
@@ -101,21 +99,15 @@ class Visualizer3D : public vx::VisualizerNode {
 
  private:
   QWidget* createObjectWidget();
-  QWidget* createMouseOperationWidget();
-
-  /**
-   * @brief settingUpCamProperties contains the name setting and connections
-   * for CameraProperties
-   * @param camProp
-   */
-  void settingUpCamProperties(CamProperties* camProp);
 
  private Q_SLOTS:
   void handleViewChange(QString direction);
-  void preferedMouseActionChanged();
 
   void axisFilterChanged();
 
  public:
   vx::SharedFunPtr<RenderFunction> getRenderFunction() override;
+
+ protected:
+  QWidget* getCustomPropertySectionContent(const QString& name) override;
 };

@@ -71,7 +71,7 @@ VOXIE_REF="$(git rev-parse HEAD)"
 VOXIE_REF_SHORT="$(git rev-parse --short=10 "$VOXIE_REF")"
 VOXIE_TAG="$VOXIE_REF"
 
-rm -rf build/release/install build/release/*-lin*.tar.gz voxie-*lin*.tar.gz old-manual.pdf
+rm -rf build/release/install build/release/*-lin*.tar.gz voxie-*lin*.tar.gz
 
 tools/build.sh $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" "$@"
 DESTDIR=$(pwd)/build/release/install tools/build.sh $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" "$@" install
@@ -101,7 +101,6 @@ s<%VOXIE_COMMIT%<$VOXIE_REF<g
 tar czf build/release/"$TAG-lin64.tar.gz" -C build/release/install "$TAG"
 
 cp build/release/"$TAG-lin64.tar.gz" .
-#cp build/extra/old-manual.pdf .
 
 # Build documentation
 echo "Building documentation..."

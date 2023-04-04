@@ -24,8 +24,6 @@
 
 #include <Voxie/SpNav/SpaceNavVisualizer.hpp>
 
-#include <Voxie/Vis/SimpleMouseOperation.hpp>
-
 #include <VoxieBackend/Data/VolumeDataVoxelInst.hpp>
 
 #include <VoxieBackend/OpenCL/CLInstance.hpp>
@@ -74,9 +72,6 @@ VolumeRenderingVisualizer::VolumeRenderingVisualizer()
   this->objProp = new ObjectProperties(view);
   this->settingUpObjectProperties();
 
-  CamProperties* camProp = new CamProperties(view);
-  this->settingUpCameraProperties(camProp);
-
   this->lightSrcProp = new LightSourceProperties(view);
   this->settingUpLightSourceProperties();
 
@@ -88,7 +83,6 @@ VolumeRenderingVisualizer::VolumeRenderingVisualizer()
   view->view3d->registerSpaceNavVisualizer(sn);
 
   this->dynamicSections().append(objProp);
-  this->dynamicSections().append(camProp);
   this->dynamicSections().append(lightSrcProp);
   this->dynamicSections().append(view->sidePanel);
   this->dynamicSections().append(renderImpl);
@@ -173,7 +167,7 @@ void VolumeRenderingVisualizer::setVolumeScale(int scale) {
 VolumeRenderingView::VolumeRenderingView(VolumeRenderingVisualizer* visualizer)
     : visualizer(visualizer),
       view3d(new vx::visualization::View3D(
-          this, SimpleMouseOperation::create(true))) {
+          this, vx::visualization::View3DProperty::All)) {
   if (!CLInstance::getDefaultInstance()->isValid()) {
     qWarning()
         << "OpenCL support not available. CPU implementation used instead";
@@ -286,9 +280,6 @@ VolumeRenderingView::VolumeRenderingView(VolumeRenderingVisualizer* visualizer)
 
   connect(view3d, &vx::visualization::View3D::changed, this,
           [this] { this->update(); });
-
-  connect(this->visualizer, &Node::displayNameChanged, this,
-          &QWidget::setWindowTitle);
 }
 
 VolumeRenderingView::~VolumeRenderingView() {
@@ -298,7 +289,8 @@ VolumeRenderingView::~VolumeRenderingView() {
 
 void VolumeRenderingView::dataSetChanged() {
   auto data = this->data();
-  this->view3d->setStandardZoom(data->volumeSize().length());
+  // TODO: Will this be properly updated if the data set changes?
+  this->view3d->setBoundingBox(dataSet()->boundingBox());
 
   double maxValue;
   if (auto dataVoxel = qSharedPointerDynamicCast<vx::VolumeDataVoxel>(data)) {
@@ -353,10 +345,11 @@ void VolumeRenderingView::paintEvent(QPaintEvent* event) {
       Q_EMIT lightSourceListRequest();
     }
 
-    QMatrix4x4 invViewProjectionMatrix =
-        (view3d->projectionMatrix(this->image.width(), this->image.height()) *
-         view3d->viewMatrix())
-            .inverted();
+    QMatrix4x4 invViewProjectionMatrix = toQMatrix4x4(matrixCastNarrow<float>(
+        inverse(view3d->projectionMatrix(this->image.width(),
+                                         this->image.height()) *
+                view3d->viewMatrix())
+            .projectiveMatrix()));
 
     signed long quality = 32;
     if (this->radioQ1->isChecked()) quality = 64;
@@ -651,6 +644,11 @@ void VolumeRenderingView::mouseMoveEvent(QMouseEvent* event) {
   this->mouseLast = event->pos();
 }
 
+void VolumeRenderingView::mouseReleaseEvent(QMouseEvent* event) {
+  view3d->mouseReleaseEvent(mouseLast, event, size());
+  this->mouseLast = event->pos();
+}
+
 void VolumeRenderingView::wheelEvent(QWheelEvent* event) {
   view3d->wheelEvent(event, size());
 }
@@ -682,31 +680,6 @@ void RandomNumberGenerationTask::run() {
 }
 
 // #### Visualizer ####
-
-void VolumeRenderingVisualizer::settingUpCameraProperties(
-    CamProperties* camProp) {
-  camProp->setObjectName("Propertie Widget");
-  camProp->setWindowTitle("Camera Properties");
-
-  // connect CamProperties with View3D
-  connect(camProp, &CamProperties::rotationRequest, this->view->view3d,
-          &vx::visualization::View3D::cameraRotationRequested);
-  connect(camProp, &CamProperties::zoomRequest, this->view->view3d,
-          &vx::visualization::View3D::zoomRequested);
-  connect(camProp, &CamProperties::rotationChanged, this->view->view3d,
-          &vx::visualization::View3D::setRotation);
-  connect(camProp, &CamProperties::zoomChanged, this->view->view3d,
-          &vx::visualization::View3D::setZoom);
-
-  // connect View3D with CamProperties
-  connect(this->view->view3d, &vx::visualization::View3D::changed, camProp,
-          &CamProperties::rotationRequest);
-  connect(this->view->view3d, &vx::visualization::View3D::zoomChanged, camProp,
-          &CamProperties::setZoom);
-  connect(this->view->view3d, &vx::visualization::View3D::cameraRotationChanged,
-          camProp, &CamProperties::setRotation);
-  camProp->init();
-}
 
 void VolumeRenderingVisualizer::settingUpObjectProperties() {
   objProp->setObjectName("Property Widget");

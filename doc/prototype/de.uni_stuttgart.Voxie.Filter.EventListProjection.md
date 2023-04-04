@@ -1,7 +1,7 @@
 ## Description
 
 This filter accepts a clustered event stream produced by the
-[voxie:///help/prototype/de.uni_stuttgart.Voxie.Filter.EventListClustering](Event List Clustering Filter).
+[Event List Clustering Filter](voxie:///help/prototype/de.uni_stuttgart.Voxie.Filter.EventListClustering).
 
 It transforms this event stream into a Raw Tomography Data object, a stack of 2D images, each representing a distinct stream within the imported `.timepixraw.json` file.
 

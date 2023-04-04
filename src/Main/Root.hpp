@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include <Main/ScriptWrapper.hpp>
-
 #include <Main/Gui/CoreWindow.hpp>
 
 #include <Main/DirectoryManager.hpp>
@@ -39,9 +37,6 @@
 #include <VoxieClient/ObjectExport/ExportedObject.hpp>
 
 #include <QtCore/QCommandLineParser>
-#include <QtCore/QSettings>
-
-#include <QtScript/QScriptEngine>
 
 #include <QtWidgets/QWidget>
 
@@ -77,8 +72,6 @@ class Root : public QObject, public IVoxie {
   gui::CoreWindow* coreWindow;
   bool isHeadless_;
   gui::HelpWindow* helpWindow_ = nullptr;
-  QScriptEngine jsEngine;
-  ScriptWrapper scriptWrapper;
 
   // TODO: remove, use components() instead?
   QList<QSharedPointer<vx::Plugin>> plugins_;
@@ -92,8 +85,6 @@ class Root : public QObject, public IVoxie {
 
   vx::DirectoryManager* directoryManager_;
   QSharedPointer<vx::ScriptLauncher> scriptLauncher_;
-
-  QSettings* settings_;
 
   QSharedPointer<DBusService> mainDBusService_;
 
@@ -115,6 +106,9 @@ class Root : public QObject, public IVoxie {
   QSharedPointer<vx::help::HelpLinkHandler> helpLinkHandler_;
 
   QSharedPointer<ComponentContainerList> components_;
+
+  QObject* debugEventFilter = nullptr;
+  QMetaObject::Connection focusChangedDebugHandler;
 
   explicit Root(bool headless);
 
@@ -164,7 +158,12 @@ class Root : public QObject, public IVoxie {
   /**
    * @brief Return the QSettings instance.
    */
-  QSettings* settings() const { return settings_; }
+  // TODO: Create a new settings system which
+  // - Can store values for extensions (probably based on Property mechanism,
+  // store as JSON)
+  // - Can store additional interpreters (especially for windows)
+  // - Can store information about which OpenCL device to use
+  // QSettings* settings() const { return settings_; }
 
   /**
    * @brief Registers a visualizer.
@@ -185,12 +184,6 @@ class Root : public QObject, public IVoxie {
                                bool closeable = false) override;
 
   void registerNode(const QSharedPointer<vx::Node>& obj) override;
-
-  /**
-   * @brief Gets the global script engine.
-   * @return
-   */
-  QScriptEngine& scriptEngine();
 
   /**
    * @brief Gets the main window.
@@ -280,24 +273,9 @@ class Root : public QObject, public IVoxie {
 
   /**
    * @brief Logs a value.
-   * @param value Any script value that can be logged.
+   * @param str The string to be logged.
    */
-  void log(QScriptValue value);
-
-  /**
-   * @brief Executes a JavaScript file.
-   * @param fileName The file to be executed.
-   * @return True on success.
-   */
-  bool execFile(const QString& fileName);
-
-  /**
-   * @brief Executes a JavaScript snippet.
-   * @param code The snippet to be executed.
-   * @return True on success.
-   */
-  bool exec(const QString& code, const QString& codeToPrint,
-            const std::function<void(const QString&)>& print);
+  void log(const QString& str);
 
   // throws Exception
   QSharedPointer<vx::Plugin> getPluginByName(const QString& name);

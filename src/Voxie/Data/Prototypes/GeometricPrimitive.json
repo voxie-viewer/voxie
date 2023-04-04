@@ -13,6 +13,9 @@
                 "de.uni_stuttgart.Voxie.GeometricPrimitiveData"
             ],
             "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.GeometricPrimitive.Json.Export",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.SelectedPrimitive": {
                     "CompatibilityNames": [

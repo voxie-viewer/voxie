@@ -270,7 +270,7 @@ types = {
         'DisplayName': 'Color mapping',
         'DBusSignature': 'a(d(dddd)i)',
         'QtType': 'QList<vx::ColorizerEntry>',
-        'DefaultValueExpression': 'QList<std::tuple<double, vx::TupleVector<double, 4>, qint32>>{std::make_tuple(NAN, vx::TupleVector<double, 4>(0, 0, 0, 0), 0), std::make_tuple(0, vx::TupleVector<double, 4>(0, 0, 0, 1), 0), std::make_tuple(1, vx::TupleVector<double, 4>(1, 1, 1, 1), 0)}',
+        'DefaultValueExpression': 'QList<std::tuple<double, vx::TupleVector<double, 4>, qint32>>{std::make_tuple(NAN, vx::TupleVector<double, 4>(0, 0, 0, 0), 0), std::make_tuple(0, vx::TupleVector<double, 4>(0, 0, 0, 1), 0), std::make_tuple(50, vx::TupleVector<double, 4>(1, 1, 1, 1), 0)}',
         'VerifyFunction': 'verifyValueColorMapping',
         'JSONParseFunction': None,
         # No comparison
@@ -410,6 +410,11 @@ types = {
     #     'JSONParseFunction': None,
     # },
 }
+
+for key in types:
+    if 'Name' in types[key]:
+        raise Exception("if 'Name' in types[key]")
+    types[key]['Name'] = key
 
 typesWithCompat = dict(types)
 for key in types:

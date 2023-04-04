@@ -500,8 +500,4 @@ void vx::vis3d::Plane::getClippingPlanes(QList<ClippingPlane>& planes) {
   }
 }
 
-namespace vx {
-namespace vis3d {
-NODE_PROTOTYPE_IMPL_SEP(object3d_prop::Plane, Plane)
-}
-}  // namespace vx
+NODE_PROTOTYPE_IMPL_SEP(object3d_prop::Plane, vis3d::Plane)

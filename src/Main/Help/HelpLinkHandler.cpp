@@ -135,11 +135,17 @@ void HelpLinkHandler::openHelp(QString uri) {
   // Enqueue this for later to avoid problems if this is called as a link
   // handler
   if (!this->window) {
-    enqueueOnMainThread(
-        [uri]() { Root::instance()->helpWindow()->openHelpForUri(uri); });
+    enqueueOnMainThread([uri]() {
+      auto window = Root::instance()->helpWindow();
+      window->openHelpForUri(uri);
+      // Raise and activate the window to make sure the help is visible
+      // window->raise();
+      window->activateWindow();
+    });
   } else {
     // Use the help window where the link was clicked (if there are multiple
     // help windows at some point)
+    // Note: There should be no need to raise/activate the window
     QPointer<vx::gui::HelpWindow> helpWin = window;
     enqueueOnMainThread([uri, helpWin]() {
       if (helpWin) helpWin->openHelpForUri(uri);

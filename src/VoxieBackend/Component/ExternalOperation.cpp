@@ -120,7 +120,8 @@ ExternalOperation::ExternalOperation(
               createQSharedPointer<vx::io::Operation::ResultError>(
                   createQSharedPointer<Exception>(
                       "de.uni_stuttgart.Voxie.Error",
-                      "Script failed to return any data." + additionalError)));
+                      "Extension process failed to return any data." +
+                          additionalError)));
         }
       });
 }

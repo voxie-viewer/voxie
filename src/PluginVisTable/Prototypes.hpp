@@ -12,6 +12,7 @@
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
 #include <Voxie/Node/Node.hpp>
+#include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
 
 namespace vx {
@@ -222,12 +223,14 @@ class AutoScaleTableUnitsProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   AutoScaleTableUnitsProperties(vx::Node* parent);
   ~AutoScaleTableUnitsProperties();
 
   vx::Node* table() override final;
   QDBusObjectPath tableRaw() override final;
-  QSharedPointer<NodeProperty> tableProperty();
+  static QSharedPointer<NodeProperty> tableProperty();
+  static NodePropertyTyped<vx::types::NodeReference> tablePropertyTyped();
   void setTable(vx::Node* value);
  Q_SIGNALS:
   void tableChanged(vx::Node* value);
@@ -237,7 +240,9 @@ class AutoScaleTableUnitsProperties : public QObject,
 
   vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
-  QSharedPointer<NodeProperty> outputProperty();
+  static QSharedPointer<NodeProperty> outputProperty();
+  static NodePropertyTyped<vx::types::OutputNodeReference>
+  outputPropertyTyped();
   void setOutput(vx::Node* value);
  Q_SIGNALS:
   void outputChanged(vx::Node* value);
@@ -315,12 +320,14 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   HistogramProperties(vx::Node* parent);
   ~HistogramProperties();
 
   qint64 bucketCount() override final;
   qint64 bucketCountRaw() override final;
-  QSharedPointer<NodeProperty> bucketCountProperty();
+  static QSharedPointer<NodeProperty> bucketCountProperty();
+  static NodePropertyTyped<vx::types::Int> bucketCountPropertyTyped();
   void setBucketCount(qint64 value);
  Q_SIGNALS:
   void bucketCountChanged(qint64 value);
@@ -332,7 +339,9 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
   QList<vx::ColorizerEntry> colorMap() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   colorMapRaw() override final;
-  QSharedPointer<NodeProperty> colorMapProperty();
+  static QSharedPointer<NodeProperty> colorMapProperty();
+  static NodePropertyTyped<vx::types::ValueColorMapping>
+  colorMapPropertyTyped();
   void setColorMap(QList<vx::ColorizerEntry> value);
  Q_SIGNALS:
   void colorMapChanged(QList<vx::ColorizerEntry> value);
@@ -343,7 +352,8 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
 
   QString column() override final;
   QString columnRaw() override final;
-  QSharedPointer<NodeProperty> columnProperty();
+  static QSharedPointer<NodeProperty> columnProperty();
+  static NodePropertyTyped<vx::types::String> columnPropertyTyped();
   void setColumn(QString value);
  Q_SIGNALS:
   void columnChanged(QString value);
@@ -353,7 +363,8 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
 
   bool logarithmicX() override final;
   bool logarithmicXRaw() override final;
-  QSharedPointer<NodeProperty> logarithmicXProperty();
+  static QSharedPointer<NodeProperty> logarithmicXProperty();
+  static NodePropertyTyped<vx::types::Boolean> logarithmicXPropertyTyped();
   void setLogarithmicX(bool value);
  Q_SIGNALS:
   void logarithmicXChanged(bool value);
@@ -364,7 +375,8 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
 
   bool logarithmicY() override final;
   bool logarithmicYRaw() override final;
-  QSharedPointer<NodeProperty> logarithmicYProperty();
+  static QSharedPointer<NodeProperty> logarithmicYProperty();
+  static NodePropertyTyped<vx::types::Boolean> logarithmicYPropertyTyped();
   void setLogarithmicY(bool value);
  Q_SIGNALS:
   void logarithmicYChanged(bool value);
@@ -375,7 +387,8 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
 
   double lowerBoundXFraction() override final;
   double lowerBoundXFractionRaw() override final;
-  QSharedPointer<NodeProperty> lowerBoundXFractionProperty();
+  static QSharedPointer<NodeProperty> lowerBoundXFractionProperty();
+  static NodePropertyTyped<vx::types::Float> lowerBoundXFractionPropertyTyped();
   void setLowerBoundXFraction(double value);
  Q_SIGNALS:
   void lowerBoundXFractionChanged(double value);
@@ -386,7 +399,8 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
 
   vx::Node* table() override final;
   QDBusObjectPath tableRaw() override final;
-  QSharedPointer<NodeProperty> tableProperty();
+  static QSharedPointer<NodeProperty> tableProperty();
+  static NodePropertyTyped<vx::types::NodeReference> tablePropertyTyped();
   void setTable(vx::Node* value);
  Q_SIGNALS:
   void tableChanged(vx::Node* value);
@@ -396,7 +410,8 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
 
   double upperBoundXFraction() override final;
   double upperBoundXFractionRaw() override final;
-  QSharedPointer<NodeProperty> upperBoundXFractionProperty();
+  static QSharedPointer<NodeProperty> upperBoundXFractionProperty();
+  static NodePropertyTyped<vx::types::Float> upperBoundXFractionPropertyTyped();
   void setUpperBoundXFraction(double value);
  Q_SIGNALS:
   void upperBoundXFractionChanged(double value);
@@ -489,13 +504,16 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   ScatterPlotProperties(vx::Node* parent);
   ~ScatterPlotProperties();
 
   QList<vx::ColorizerEntry> colorMap() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   colorMapRaw() override final;
-  QSharedPointer<NodeProperty> colorMapProperty();
+  static QSharedPointer<NodeProperty> colorMapProperty();
+  static NodePropertyTyped<vx::types::ValueColorMapping>
+  colorMapPropertyTyped();
   void setColorMap(QList<vx::ColorizerEntry> value);
  Q_SIGNALS:
   void colorMapChanged(QList<vx::ColorizerEntry> value);
@@ -506,7 +524,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   QString columnColor() override final;
   QString columnColorRaw() override final;
-  QSharedPointer<NodeProperty> columnColorProperty();
+  static QSharedPointer<NodeProperty> columnColorProperty();
+  static NodePropertyTyped<vx::types::String> columnColorPropertyTyped();
   void setColumnColor(QString value);
  Q_SIGNALS:
   void columnColorChanged(QString value);
@@ -517,7 +536,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   QString columnX() override final;
   QString columnXRaw() override final;
-  QSharedPointer<NodeProperty> columnXProperty();
+  static QSharedPointer<NodeProperty> columnXProperty();
+  static NodePropertyTyped<vx::types::String> columnXPropertyTyped();
   void setColumnX(QString value);
  Q_SIGNALS:
   void columnXChanged(QString value);
@@ -528,7 +548,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   QString columnY() override final;
   QString columnYRaw() override final;
-  QSharedPointer<NodeProperty> columnYProperty();
+  static QSharedPointer<NodeProperty> columnYProperty();
+  static NodePropertyTyped<vx::types::String> columnYPropertyTyped();
   void setColumnY(QString value);
  Q_SIGNALS:
   void columnYChanged(QString value);
@@ -539,7 +560,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   bool logarithmicX() override final;
   bool logarithmicXRaw() override final;
-  QSharedPointer<NodeProperty> logarithmicXProperty();
+  static QSharedPointer<NodeProperty> logarithmicXProperty();
+  static NodePropertyTyped<vx::types::Boolean> logarithmicXPropertyTyped();
   void setLogarithmicX(bool value);
  Q_SIGNALS:
   void logarithmicXChanged(bool value);
@@ -550,7 +572,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   bool logarithmicY() override final;
   bool logarithmicYRaw() override final;
-  QSharedPointer<NodeProperty> logarithmicYProperty();
+  static QSharedPointer<NodeProperty> logarithmicYProperty();
+  static NodePropertyTyped<vx::types::Boolean> logarithmicYPropertyTyped();
   void setLogarithmicY(bool value);
  Q_SIGNALS:
   void logarithmicYChanged(bool value);
@@ -561,7 +584,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   qint64 pointLimit() override final;
   qint64 pointLimitRaw() override final;
-  QSharedPointer<NodeProperty> pointLimitProperty();
+  static QSharedPointer<NodeProperty> pointLimitProperty();
+  static NodePropertyTyped<vx::types::Int> pointLimitPropertyTyped();
   void setPointLimit(qint64 value);
  Q_SIGNALS:
   void pointLimitChanged(qint64 value);
@@ -572,7 +596,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   double pointScale() override final;
   double pointScaleRaw() override final;
-  QSharedPointer<NodeProperty> pointScaleProperty();
+  static QSharedPointer<NodeProperty> pointScaleProperty();
+  static NodePropertyTyped<vx::types::Float> pointScalePropertyTyped();
   void setPointScale(double value);
  Q_SIGNALS:
   void pointScaleChanged(double value);
@@ -583,7 +608,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   vx::Node* table() override final;
   QDBusObjectPath tableRaw() override final;
-  QSharedPointer<NodeProperty> tableProperty();
+  static QSharedPointer<NodeProperty> tableProperty();
+  static NodePropertyTyped<vx::types::NodeReference> tablePropertyTyped();
   void setTable(vx::Node* value);
  Q_SIGNALS:
   void tableChanged(vx::Node* value);
@@ -593,7 +619,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   double viewMargin() override final;
   double viewMarginRaw() override final;
-  QSharedPointer<NodeProperty> viewMarginProperty();
+  static QSharedPointer<NodeProperty> viewMarginProperty();
+  static NodePropertyTyped<vx::types::Float> viewMarginPropertyTyped();
   void setViewMargin(double value);
  Q_SIGNALS:
   void viewMarginChanged(double value);
@@ -604,7 +631,8 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
 
   double viewPercentile() override final;
   double viewPercentileRaw() override final;
-  QSharedPointer<NodeProperty> viewPercentileProperty();
+  static QSharedPointer<NodeProperty> viewPercentileProperty();
+  static NodePropertyTyped<vx::types::Float> viewPercentilePropertyTyped();
   void setViewPercentile(double value);
  Q_SIGNALS:
   void viewPercentileChanged(double value);
@@ -659,12 +687,14 @@ class TableProperties : public QObject, public TablePropertiesBase {
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   TableProperties(vx::Node* parent);
   ~TableProperties();
 
   qint64 rowLimit() override final;
   qint64 rowLimitRaw() override final;
-  QSharedPointer<NodeProperty> rowLimitProperty();
+  static QSharedPointer<NodeProperty> rowLimitProperty();
+  static NodePropertyTyped<vx::types::Int> rowLimitPropertyTyped();
   void setRowLimit(qint64 value);
  Q_SIGNALS:
   void rowLimitChanged(qint64 value);
@@ -675,7 +705,8 @@ class TableProperties : public QObject, public TablePropertiesBase {
 
   QString sortColumn() override final;
   QString sortColumnRaw() override final;
-  QSharedPointer<NodeProperty> sortColumnProperty();
+  static QSharedPointer<NodeProperty> sortColumnProperty();
+  static NodePropertyTyped<vx::types::String> sortColumnPropertyTyped();
   void setSortColumn(QString value);
  Q_SIGNALS:
   void sortColumnChanged(QString value);
@@ -686,7 +717,8 @@ class TableProperties : public QObject, public TablePropertiesBase {
 
   QString sortOrder() override final;
   QString sortOrderRaw() override final;
-  QSharedPointer<NodeProperty> sortOrderProperty();
+  static QSharedPointer<NodeProperty> sortOrderProperty();
+  static NodePropertyTyped<vx::types::Enumeration> sortOrderPropertyTyped();
   void setSortOrder(QString value);
  Q_SIGNALS:
   void sortOrderChanged(QString value);
@@ -697,7 +729,8 @@ class TableProperties : public QObject, public TablePropertiesBase {
 
   vx::Node* table() override final;
   QDBusObjectPath tableRaw() override final;
-  QSharedPointer<NodeProperty> tableProperty();
+  static QSharedPointer<NodeProperty> tableProperty();
+  static NodePropertyTyped<vx::types::NodeReference> tablePropertyTyped();
   void setTable(vx::Node* value);
  Q_SIGNALS:
   void tableChanged(vx::Node* value);

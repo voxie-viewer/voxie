@@ -68,9 +68,14 @@ class HelpPageSourceTopic : public HelpPageSource {
 
       if (name.endsWith(".md")) name = name.left(name.length() - 3);
 
+      // TODO: Use content of first top-level heading in file as title instead
+      // of name
       list << createQSharedPointer<HelpPageInfo>(uriForHelpTopic(name), name,
                                                  "");
     }
+
+    std::sort(list.begin(), list.end(),
+              [](auto hp1, auto hp2) { return hp1->title() < hp2->title(); });
 
     return list;
   }
@@ -82,6 +87,8 @@ class HelpPageSourceTopic : public HelpPageSource {
     auto fileName = Root::instance()->directoryManager()->docTopicPath() + "/" +
                     suffix + ".md";
 
+    auto dependencies = HelpPageDependencies::fromSingleFile(fileName);
+
     QFile helpFile(fileName);
     if (!helpFile.open(QFile::ReadOnly | QFile::Text)) {
       qWarning() << "Failed to open file" << fileName;
@@ -91,7 +98,8 @@ class HelpPageSourceTopic : public HelpPageSource {
     auto rootNode =
         vx::cmark::Node::parseDocument(QString::fromUtf8(helpFile.readAll()));
 
-    return createQSharedPointer<HelpPage>(rootNode, fileName, title);
+    return createQSharedPointer<HelpPage>(rootNode, fileName, dependencies,
+                                          title);
   }
 };
 }  // namespace help

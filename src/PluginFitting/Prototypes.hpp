@@ -12,6 +12,7 @@
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
 #include <Voxie/Node/Node.hpp>
+#include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
 
 namespace vx {
@@ -123,12 +124,15 @@ class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   FitPlaneProperties(vx::Node* parent);
   ~FitPlaneProperties();
 
   vx::Node* geometricPrimitive() override final;
   QDBusObjectPath geometricPrimitiveRaw() override final;
-  QSharedPointer<NodeProperty> geometricPrimitiveProperty();
+  static QSharedPointer<NodeProperty> geometricPrimitiveProperty();
+  static NodePropertyTyped<vx::types::NodeReference>
+  geometricPrimitivePropertyTyped();
   void setGeometricPrimitive(vx::Node* value);
  Q_SIGNALS:
   void geometricPrimitiveChanged(vx::Node* value);
@@ -139,7 +143,8 @@ class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
 
   double maximumDistance() override final;
   double maximumDistanceRaw() override final;
-  QSharedPointer<NodeProperty> maximumDistanceProperty();
+  static QSharedPointer<NodeProperty> maximumDistanceProperty();
+  static NodePropertyTyped<vx::types::Float> maximumDistancePropertyTyped();
   void setMaximumDistance(double value);
  Q_SIGNALS:
   void maximumDistanceChanged(double value);
@@ -150,7 +155,8 @@ class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
 
   quint64 point1() override final;
   quint64 point1Raw() override final;
-  QSharedPointer<NodeProperty> point1Property();
+  static QSharedPointer<NodeProperty> point1Property();
+  static NodePropertyTyped<vx::types::GeometricPrimitive> point1PropertyTyped();
   void setPoint1(quint64 value);
  Q_SIGNALS:
   void point1Changed(quint64 value);
@@ -160,7 +166,8 @@ class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
 
   quint64 point2() override final;
   quint64 point2Raw() override final;
-  QSharedPointer<NodeProperty> point2Property();
+  static QSharedPointer<NodeProperty> point2Property();
+  static NodePropertyTyped<vx::types::GeometricPrimitive> point2PropertyTyped();
   void setPoint2(quint64 value);
  Q_SIGNALS:
   void point2Changed(quint64 value);
@@ -170,7 +177,8 @@ class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
 
   quint64 point3() override final;
   quint64 point3Raw() override final;
-  QSharedPointer<NodeProperty> point3Property();
+  static QSharedPointer<NodeProperty> point3Property();
+  static NodePropertyTyped<vx::types::GeometricPrimitive> point3PropertyTyped();
   void setPoint3(quint64 value);
  Q_SIGNALS:
   void point3Changed(quint64 value);
@@ -180,7 +188,8 @@ class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
 
   vx::Node* surface() override final;
   QDBusObjectPath surfaceRaw() override final;
-  QSharedPointer<NodeProperty> surfaceProperty();
+  static QSharedPointer<NodeProperty> surfaceProperty();
+  static NodePropertyTyped<vx::types::NodeReference> surfacePropertyTyped();
   void setSurface(vx::Node* value);
  Q_SIGNALS:
   void surfaceChanged(vx::Node* value);

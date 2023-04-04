@@ -28,7 +28,6 @@
 #include <QtGui/QMouseEvent>
 
 #include <QtOpenGL/QGLFormat>
-#include <Voxie/Vis/SimpleMouseOperation.hpp>
 
 using namespace vx::gui;
 using namespace vx;
@@ -37,9 +36,14 @@ PlaneView::PlaneView(Slice* slice, QWidget* parent)
     : OpenGLDrawWidget(parent),
       slice(slice),
       view3d(new vx::visualization::View3D(
-          this, SimpleMouseOperation::create(false))) {
-  this->view3d->setStandardZoom(this->slice->getDataset()->diagonalSize(), true,
-                                0.3f, 1.0f);
+          this, vx::visualization::View3DProperty::Orientation |
+                    vx::visualization::View3DProperty::ZoomLog)) {
+  // TODO: Handle changes of the bounding box
+  this->view3d->setBoundingBox(this->slice->getDataset()->boundingBox());
+  this->view3d->resetView();
+  // TODO: Values?
+  this->view3d->setZoomLogMinMax(this->view3d->zoomLog() - 2,
+                                 this->view3d->zoomLog() + 1);
   this->setMinimumHeight(150);
   QMetaObject::Connection conni =
       connect(this->slice, &QObject::destroyed,
@@ -66,7 +70,8 @@ void PlaneView::mouseMoveEvent(QMouseEvent* event) {
 
     QQuaternion src = this->slice->rotation();
 
-    QMatrix4x4 matView = view3d->viewMatrix();
+    QMatrix4x4 matView = toQMatrix4x4(
+        matrixCastNarrow<float>(view3d->viewMatrix().projectiveMatrix()));
     matView.setRow(3, QVector4D(0, 0, 0, 1));  // Remove translation
 
     QQuaternion quatX = QQuaternion::fromAxisAndAngle(
@@ -82,6 +87,11 @@ void PlaneView::mouseMoveEvent(QMouseEvent* event) {
   } else {
     view3d->mouseMoveEvent(mouseLast, event, size());
   }
+  this->mouseLast = event->pos();
+}
+
+void PlaneView::mouseReleaseEvent(QMouseEvent* event) {
+  view3d->mouseReleaseEvent(mouseLast, event, size());
   this->mouseLast = event->pos();
 }
 
@@ -105,9 +115,10 @@ void PlaneView::paint() {
 
   PrimitiveBuffer buffer;
 
-  QMatrix4x4 matViewProj =
-      view3d->projectionMatrix(this->width(), this->height()) *
-      view3d->viewMatrix();
+  QMatrix4x4 matViewProj = toQMatrix4x4(matrixCastNarrow<float>(
+      (view3d->projectionMatrix(this->width(), this->height()) *
+       view3d->viewMatrix())
+          .projectiveMatrix()));
 
   QMatrix4x4 transformVolumeObject = matViewProj;
   transformVolumeObject.translate(origin);

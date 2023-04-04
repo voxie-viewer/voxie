@@ -287,6 +287,8 @@ void GeometricPrimitive::setGpo(GeometricPrimitiveNode* gpo) {
   properties->setGeometricPrimitive(gpo);
 }
 
-NODE_PROTOTYPE_IMPL_SEP(object3d_prop::GeometricPrimitive, GeometricPrimitive)
 }  // namespace vis3d
 }  // namespace vx
+
+NODE_PROTOTYPE_IMPL_SEP(object3d_prop::GeometricPrimitive,
+                        vis3d::GeometricPrimitive)

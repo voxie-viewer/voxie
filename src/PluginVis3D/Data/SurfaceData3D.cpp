@@ -25,6 +25,9 @@
 #include <VoxieBackend/Data/SurfaceAttribute.hpp>
 #include <VoxieBackend/Data/SurfaceData.hpp>
 
+// #include <PluginVis3D/DebugOptions.hpp>
+#include <Voxie/DebugOptions.hpp>
+
 using namespace vx;
 
 void SurfaceData3D::setVisibility(bool isVisible) {
@@ -258,9 +261,10 @@ SurfaceData3D::createSurfaceModified() {
   surfaceMod_ =
       reorderVertices(makeControllingVertexUnique(getSurface().data()));
 
-  qDebug() << "Modified surface has" << surfaceMod_->vertices().size()
-           << "vertices instead of" << getSurface()->vertices().size() << "and"
-           << surfaceMod_->triangles().size() << "triangles";
+  if (vx::debug_option::Log_Vis3D_CreateModifiedSurface()->enabled())
+    qDebug() << "Modified surface has" << surfaceMod_->vertices().size()
+             << "vertices instead of" << getSurface()->vertices().size()
+             << "and" << surfaceMod_->triangles().size() << "triangles";
 
   return surfaceMod_;
 }

@@ -34,10 +34,8 @@
  */
 
 class VisTablePlugin : public QGenericPlugin,
-                       public vx::plugin::IUICommandPlugin,
                        public vx::plugin::IObjectPrototypePlugin {
   Q_OBJECT
-  Q_INTERFACES(vx::plugin::IUICommandPlugin)
   Q_INTERFACES(vx::plugin::IObjectPrototypePlugin)
 
   Q_PLUGIN_METADATA(IID
@@ -49,8 +47,6 @@ class VisTablePlugin : public QGenericPlugin,
 
   virtual QObject* create(const QString& key,
                           const QString& specification) override;
-
-  virtual QList<QAction*> uiCommands() override;
 
   virtual QList<QSharedPointer<vx::NodePrototype>> objectPrototypes() override;
 };

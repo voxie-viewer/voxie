@@ -47,7 +47,6 @@ moc_files = qt5.preprocess(
     additional_pluginvis3d_resources,
   ],
   ui_files : [
-    'CamProperties.ui',
     'Grid3DWidget.ui',
     'LightSourceListElement.ui',
     'LightSourceProperties.ui',
@@ -57,7 +56,6 @@ moc_files = qt5.preprocess(
   moc_sources : [
   ],
   moc_headers : [
-    'CamProperties.hpp',
     'GeometricPrimitive.hpp',
     'Grid.hpp',
     'Grid3D.hpp',
@@ -87,7 +85,6 @@ moc_files = qt5.preprocess(
     'Data/SurfaceData3D.hpp',
     'Data/Texture.hpp',
 
-    'Helper/IsosurfaceMouseOperation.hpp',
     #'Helper/NotifyingLinkedList.hpp',
     'Helper/NotifyingList.hpp',
     #'Helper/PlaneShader.hpp',
@@ -103,7 +100,6 @@ plugin = shared_library(
   [
     moc_files,
 
-    'CamProperties.cpp',
     'GeometricPrimitive.cpp',
     'Grid.cpp',
     'Grid3D.cpp',
@@ -128,7 +124,6 @@ plugin = shared_library(
 
     'Data/SurfaceData3D.cpp',
 
-    'Helper/IsosurfaceMouseOperation.cpp',
     'Helper/NotifyingLinkedList.cpp',
     'Helper/NotifyingList.cpp',
     'Helper/PlaneShader.cpp',

@@ -46,7 +46,6 @@ class DirectoryManager : public QObject, public IDirectoryManager {
   QString docTopicPath_;
   QString licensesPath_;
   QString katexPath_;
-  QString oldManualFile_;
 
  public:
   DirectoryManager(QObject* parent = nullptr);
@@ -70,8 +69,6 @@ class DirectoryManager : public QObject, public IDirectoryManager {
   const QString& docTopicPath() const override { return docTopicPath_; }
   const QString& licensesPath() const override { return licensesPath_; }
   const QString& katexPath() const override { return katexPath_; }
-
-  const QString& oldManualFile() const { return oldManualFile_; }
 
   void dump() const;
 };

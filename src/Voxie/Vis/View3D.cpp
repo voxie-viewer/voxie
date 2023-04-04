@@ -25,80 +25,377 @@
 #include <VoxieClient/ObjectExport/ExportedObject.hpp>
 
 #include <Voxie/SpNav/SpaceNavVisualizer.hpp>
-#include <Voxie/Vis/MouseOperation.hpp>
+
+#include <Voxie/DebugOptions.hpp>
+#include <Voxie/MathQt.hpp>
 
 #include <QtCore/QSharedPointer>
 #include <QtCore/QTimer>
 
-#include <QtGui/QMatrix4x4>
-#include <QtGui/QVector3D>
-
 using namespace vx::visualization;
 
-View3D::View3D(QObject* parent,
-               const QSharedPointer<MouseOperation> mouseOperation)
-    : QObject(parent),
-      // Note: For the 3D visualizer these initial values will be overwritten
-      // with values from the properties
-      fieldOfView(40 / 180.0 * M_PI),
-      centerPoint(0, 0, 0),
-      rotation(1, 0, 0, 0),
-      mouseOperation(mouseOperation) {
-  this->viewSizeStandard = 0.25;
-  this->setStandardZoom(1);
+// Give a mouse position / window size, return a vector with x, y in [-1;1]
+static vx::Vector<double, 3> toVector(const QPoint& pos, const QSize& size) {
+  return vx::Vector<double, 3>(2.0 * (pos.x() + 0.5) / size.width() - 1.0,
+                               1.0 - 2.0 * (pos.y() + 0.5) / size.height(), 0);
 }
 
-void View3D::setStandardZoom(float diagonalSize, bool changeCurrentZoom,
-                             float zoomMin, float zoomMax) {
-  this->factor = 0.25 / diagonalSize;
-  if (changeCurrentZoom) {
-    this->zoom = factor;
+// Information about arcball:
+// https://en.wikibooks.org/w/index.php?title=OpenGL_Programming/Modern_OpenGL_Tutorial_Arcball&oldid=2356903
+static vx::Vector<double, 3> getArcballVector(const QPoint& pos,
+                                              const QSize& size) {
+  vx::Vector<double, 3> p = toVector(pos, size);
+  if (squaredNorm(p) < 1)
+    p.access<2>() = std::sqrt(1 - squaredNorm(p));  // Pythagore
+  else
+    p = normalize(p);  // nearest point
+  return p;
+}
+
+namespace vx {
+namespace visualization {
+View3DValues::View3DValues()
+    : valid(View3DProperty::None),
+      lookAt({std::numeric_limits<double>::quiet_NaN(),
+              std::numeric_limits<double>::quiet_NaN(),
+              std::numeric_limits<double>::quiet_NaN()}),
+      orientation({1, 0, 0, 0}),
+      zoomLog(std::numeric_limits<double>::quiet_NaN()),
+      viewSizeUnzoomed(std::numeric_limits<double>::quiet_NaN()),
+      fieldOfView(std::numeric_limits<double>::quiet_NaN()) {}
+
+void View3DValues::setLookAt(const vx::Vector<double, 3>& value) {
+  valid |= View3DProperty::LookAt;
+  this->lookAt = value;
+}
+void View3DValues::setOrientation(const vx::Rotation<double, 3>& value) {
+  valid |= View3DProperty::Orientation;
+  this->orientation = value;
+}
+void View3DValues::setZoomLog(double value) {
+  valid |= View3DProperty::ZoomLog;
+  this->zoomLog = value;
+}
+void View3DValues::setViewSizeUnzoomed(double value) {
+  valid |= View3DProperty::ViewSizeUnzoomed;
+  this->viewSizeUnzoomed = value;
+}
+void View3DValues::setFieldOfView(double value) {
+  valid |= View3DProperty::FieldOfView;
+  this->fieldOfView = value;
+}
+
+void View3DValues::updateFrom(const View3DValues& values,
+                              View3DProperty toCopy) {
+  if ((~values.valid & toCopy) != View3DProperty::None) {
+    qWarning() << "View3DValues::updateFrom: Copying invalid values"
+               << (uint32_t)values.valid << (uint32_t)toCopy;
   }
-  this->zoomMin = zoomMin * factor;
-  this->zoomMax = zoomMax * factor;
-  Q_EMIT zoomChanged(this->zoom, this->zoomMin, this->zoomMax);
+
+  if ((toCopy & View3DProperty::LookAt) == View3DProperty::LookAt)
+    this->setLookAt(values.lookAt);
+  if ((toCopy & View3DProperty::Orientation) == View3DProperty::Orientation)
+    this->setOrientation(values.orientation);
+  if ((toCopy & View3DProperty::ZoomLog) == View3DProperty::ZoomLog)
+    this->setZoomLog(values.zoomLog);
+  if ((toCopy & View3DProperty::ViewSizeUnzoomed) ==
+      View3DProperty::ViewSizeUnzoomed)
+    this->setViewSizeUnzoomed(values.viewSizeUnzoomed);
+  if ((toCopy & View3DProperty::FieldOfView) == View3DProperty::FieldOfView)
+    this->setFieldOfView(values.fieldOfView);
+}
+void View3DValues::updateFrom(const View3DValues& values) {
+  this->updateFrom(values, values.valid);
 }
 
-QMatrix4x4 View3D::viewMatrix() {
-  QMatrix4x4 matView;
-  matView.scale(zoom);
-  matView.rotate(QQuaternion(rotation.scalar(), -rotation.vector()));
-  matView.translate(-centerPoint);
+class MouseAction {
+  View3D* view_;
+  QPoint pressEventPos_;
+  QSize pressWindowSize_;
+
+  View3DValues origValues;
+
+ public:
+  MouseAction(View3D* view, QMouseEvent* pressEvent,
+              const QSize& pressWindowSize)
+      : view_(view),
+        pressEventPos_(pressEvent->pos()),
+        pressWindowSize_(pressWindowSize) {}
+  virtual ~MouseAction() {}
+
+  static QSharedPointer<MouseAction> create(View3D* view,
+                                            QMouseEvent* pressEvent,
+                                            const QSize& pressWindowSize);
+
+  const View3D* view() { return view_; }
+  const QPoint& pressEventPos() { return pressEventPos_; }
+  const QSize& pressWindowSize() { return pressWindowSize_; }
+
+  void finish() {}
+
+  void revert() {
+    // qDebug() << "MouseAction::revert()";
+    view_->update(origValues);
+  }
+
+  virtual void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
+                              const QSize& windowSize) = 0;
+
+ protected:
+  // TODO: Check whether the action was finished / reverted?
+  void update(const View3DValues& values) {
+    auto toBackup = values.valid & ~origValues.valid;
+    origValues.updateFrom(view_->values(), toBackup);
+
+    view_->update(values);
+  }
+
+  // Convinience functions
+  void setLookAt(const vx::Vector<double, 3>& value) {
+    View3DValues upd;
+    upd.setLookAt(value);
+    this->update(upd);
+  }
+  void setOrientation(const vx::Rotation<double, 3>& value) {
+    View3DValues upd;
+    upd.setOrientation(value);
+    this->update(upd);
+  }
+  void setZoomLog(double value) {
+    View3DValues upd;
+    upd.setZoomLog(value);
+    this->update(upd);
+  }
+};
+
+class MouseActionPan : public MouseAction {
+ public:
+  MouseActionPan(View3D* view, QMouseEvent* pressEvent,
+                 const QSize& pressWindowSize)
+      : MouseAction(view, pressEvent, pressWindowSize) {}
+
+  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
+                      const QSize& windowSize) override {
+    // qDebug() << "Pan mouseMoveEvent" << mouseLast << event;
+
+    double factor = 1.0;
+    if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
+
+    int dxInt = event->x() - mouseLast.x();
+    int dyInt = event->y() - mouseLast.y();
+
+    if (dxInt == 0 && dyInt == 0) return;
+
+    double dx = dxInt * factor;
+    double dy = dyInt * factor;
+
+    vx::Vector<double, 3> move(dx, -dy, 0);
+    move *= view()->pixelSize(windowSize);
+    auto rotation = view()->orientation();
+    auto offset = rotation.map(move);
+    auto lookAt = view()->lookAt();
+    lookAt -= offset;
+    this->setLookAt(lookAt);
+  }
+  };  // namespace vx
+
+class MouseActionPanZ : public MouseAction {
+ public:
+  MouseActionPanZ(View3D* view, QMouseEvent* pressEvent,
+                  const QSize& pressWindowSize)
+      : MouseAction(view, pressEvent, pressWindowSize) {}
+
+  // TODO: Combine code with wheel pan code?
+  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
+                      const QSize& windowSize) override {
+    // qDebug() << "Pan mouseMoveEvent" << mouseLast << event;
+
+    double factor = 1.0;
+    if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
+
+    int dyInt = event->y() - mouseLast.y();
+
+    if (dyInt == 0) return;
+
+    double dy = dyInt * factor;
+
+    // Choose direction so that object under the mouse stays the same
+    // Calculate projection*view matrix
+    vx::ProjectiveMap<double, 3> projectionView =
+        view()->projectionMatrix(pressWindowSize().width(),
+                                 pressWindowSize().height()) *
+        view()->viewMatrix();
+    // Invert matrix
+    vx::ProjectiveMap<double, 3> projectionViewInv = inverse(projectionView);
+    // Invert vector from mouse pos into the direction -1 in Z direction
+    vx::Vector<double, 3> mousePos =
+        toVector(pressEventPos(), pressWindowSize());
+    vx::Vector<double, 3> mousePos2 =
+        mousePos + vx::Vector<double, 3>(0, 0, -1);
+    vx::Vector<double, 3> direction = normalize(
+        projectionViewInv.map(mousePos2) - projectionViewInv.map(mousePos));
+    vx::Vector<double, 3> move = direction * -dy;
+
+    move *= view()->pixelSize(windowSize);
+    auto lookAt = view()->lookAt();
+    lookAt -= move;
+    this->setLookAt(lookAt);
+  }
+};
+
+class MouseActionRotate : public MouseAction {
+ public:
+  MouseActionRotate(View3D* view, QMouseEvent* pressEvent,
+                    const QSize& pressWindowSize)
+      : MouseAction(view, pressEvent, pressWindowSize) {}
+
+  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
+                      const QSize& windowSize) override {
+    // qDebug() << "Rotate mouseMoveEvent" << mouseLast << event;
+
+    double factor = 1.0;
+    if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
+
+    vx::Vector<double, 3> va = getArcballVector(mouseLast, windowSize);
+    vx::Vector<double, 3> vb = getArcballVector(event->pos(), windowSize);
+    double angle = std::acos(std::min(1.0, dotProduct(va, vb)));
+    vx::Vector<double, 3> axis = crossProduct(va, vb);
+    angle = angle * factor;
+    auto rotation = view()->orientation();
+    rotation *= vx::rotationFromAxisAngle(axis, -angle);
+    this->setOrientation(rotation);
+  }
+};
+
+class MouseActionZoom : public MouseAction {
+ public:
+  MouseActionZoom(View3D* view, QMouseEvent* pressEvent,
+                  const QSize& pressWindowSize)
+      : MouseAction(view, pressEvent, pressWindowSize) {}
+
+  // TODO: Combine code with wheel zoom code?
+  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
+                      const QSize& windowSize) override {
+    // qDebug() << "Rotate mouseMoveEvent" << mouseLast << event;
+
+    double factor = 1.0;
+    if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
+
+    int dyInt = event->y() - mouseLast.y();
+
+    if (dyInt == 0) return;
+
+    double dy = dyInt * factor;
+
+    double zoomLogNew =
+        view()->limitZoomLog(view()->zoomLog() + view()->mouseActionZoomFactor *
+                                                     -dy / windowSize.height());
+
+    View3DValues upd;
+    // Change lookAt so that the object under the mouse when the button was
+    // pressed stays the same while zooming
+    if (true) {
+      vx::Vector<double, 3> p(pressEventPos().x(), -pressEventPos().y(), 0);
+      p -= vx::Vector<double, 3>(pressWindowSize().width(),
+                                 -pressWindowSize().height(), 0) /
+           2;
+      p *= view()->pixelSize(pressWindowSize());
+      auto lookAt = view()->lookAt();
+      lookAt += view()->orientation().map(
+          p * (1 - std::exp(view()->zoomLog() - zoomLogNew)));
+      upd.setLookAt(lookAt);
+    }
+
+    upd.setZoomLog(zoomLogNew);
+    this->update(upd);
+  }
+};
+
+QSharedPointer<MouseAction> MouseAction::create(View3D* view,
+                                                QMouseEvent* pressEvent,
+                                                const QSize& pressWindowSize) {
+  auto modifiers =
+      pressEvent->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier);
+
+  if (modifiers == Qt::NoModifier)
+    return createQSharedPointer<MouseActionPan>(view, pressEvent,
+                                                pressWindowSize);
+  else if (modifiers == Qt::ShiftModifier)
+    return createQSharedPointer<MouseActionRotate>(view, pressEvent,
+                                                   pressWindowSize);
+  else if (modifiers == Qt::ControlModifier)
+    return createQSharedPointer<MouseActionZoom>(view, pressEvent,
+                                                 pressWindowSize);
+  else if (modifiers == (Qt::ShiftModifier | Qt::ControlModifier))
+    return createQSharedPointer<MouseActionPanZ>(view, pressEvent,
+                                                 pressWindowSize);
+  return QSharedPointer<MouseAction>();
+}
+}  // namespace visualization
+}  // namespace vx
+
+View3D::View3D(QObject* parent, View3DProperty changable,
+               const View3DValues& initial)
+    : QObject(parent), changable_(changable) {
+  this->setZoomLogUnlimited();
+
+  // Note: For the 3D visualizer these initial values will be overwritten
+  // with values from the properties
+  values_.valid = View3DProperty::All;
+  values_.fieldOfView = 40 / 180.0 * M_PI;
+  values_.lookAt = {0, 0, 0};
+  values_.orientation = vx::identityRotation<double>();
+  values_.viewSizeUnzoomed = 0.25;
+  values_.zoomLog = 0;
+
+  // TODO: What should be the default here?
+  this->setBoundingBox(BoundingBox3D::point({-1, -1, -1}) +
+                       BoundingBox3D::point({1, 1, 1}));
+
+  // Note: This will also overwrite values which are not changable
+  values_.updateFrom(initial);
+}
+
+vx::AffineMap<double, 3> View3D::viewMatrix() const {
+  auto matView = vx::createScaling<3>(std::exp(this->zoomLog())) *
+                 inverse(this->orientation()) *
+                 vx::createTranslation(-this->lookAt());
   // qDebug() << "matView" << matView;
   return matView;
 }
 
-QMatrix4x4 View3D::projectionMatrix(float fWidth, float fHeight) {
-  QMatrix4x4 matProj;
+vx::ProjectiveMap<double, 3> View3D::projectionMatrix(double fWidth,
+                                                      double fHeight) const {
+  auto matProj = vx::Matrix<double, 4>::zero();
 
   // Near and far plane should be at most 1000 times the view size
-  float near = -1000 * viewSizeStandard;
-  float far = 1000 * viewSizeStandard;
+  double near = -1000 * this->viewSizeUnzoomed();
+  double far = 1000 * this->viewSizeUnzoomed();
 
   // Calculate perspective projection, but allow fieldOfView to be 0 (which
   // will be the same as orthographic projection)
 
   // TODO: handle negative fieldOfView values?
 
-  float sine = std::sin(fieldOfView / 2.0f);
-  float cosine = std::cos(fieldOfView / 2.0f);
+  double sine = std::sin(this->fieldOfView() / 2.0);
+  double cosine = std::cos(this->fieldOfView() / 2.0);
 
-  // Distance from centerPoint to camera
-  float distanceCameraCenterSine = 0.5f * viewSize() * cosine;
+  // Distance from lookAt to camera
+  double distanceCameraCenterSine = 0.5 * viewSizeUnzoomed() * cosine;
 
   // near plane is at least 1/10 of camera <-> center distance
-  // near = std::max(near, distanceCameraCenter * 0.1f -
+  // near = std::max(near, distanceCameraCenter * 0.1 -
   // distanceCameraCenter);
   // Because distanceCameraCenterSine should be positive this condition should
   // never be true if sine is 0
-  if (near * sine < distanceCameraCenterSine * 0.1f - distanceCameraCenterSine)
-    near = (distanceCameraCenterSine * 0.1f - distanceCameraCenterSine) / sine;
+  if (near * sine < distanceCameraCenterSine * 0.1 - distanceCameraCenterSine)
+    near = (distanceCameraCenterSine * 0.1 - distanceCameraCenterSine) / sine;
 
-  // matProj.perspective(fieldOfView / M_PI * 180, fWidth / fHeight, near +
-  // distanceCameraCenterSine/sine, far + distanceCameraCenterSine/sine);
+  // matProj.perspective(this->fieldOfView() / M_PI * 180, fWidth / fHeight,
+  // near + distanceCameraCenterSine/sine, far + distanceCameraCenterSine/sine);
   // matProj.translate(0, 0, -distanceCameraCenter);
   // qDebug() << "A" << matProj;
-  float clip = far - near;
+  double clip = far - near;
   // Same as matrix produced by QMatrix4x4::perspective(), but with a
   // translate by (0, 0, -distanceCameraCenter) before it and the entire
   // matrix multiplied with sine
@@ -106,159 +403,159 @@ QMatrix4x4 View3D::projectionMatrix(float fWidth, float fHeight) {
   matProj(1, 1) = cosine;
   matProj(2, 2) =
       -(near * sine + far * sine + 2 * distanceCameraCenterSine) / clip;
-  // matProj(2, 3) = -(2.0f * near + distanceCameraCenter * far +
+  // matProj(2, 3) = -(2.0 * near + distanceCameraCenter * far +
   // distanceCameraCenter) / clip * sine;
   /*
   matProj(2, 3) = (-distanceCameraCenterSine) *
                       (-(near + far + 2 * distanceCameraCenter) / clip) +
-                  -(2.0f * (near * sine + distanceCameraCenterSine) *
+                  -(2.0 * (near * sine + distanceCameraCenterSine) *
                     (far + distanceCameraCenter)) /
                       clip;
   */
-  matProj(2, 3) = (-2.0f * near * far * sine - near * distanceCameraCenterSine -
+  matProj(2, 3) = (-2.0 * near * far * sine - near * distanceCameraCenterSine -
                    far * distanceCameraCenterSine) /
                   clip;
-  matProj(3, 2) = -1.0f * sine;
-  // matProj(3, 3) = 0.0f * sine;
-  matProj(3, 3) = (-distanceCameraCenterSine) * (-1.0f);
+  matProj(3, 2) = -1.0 * sine;
+  // matProj(3, 3) = 0.0 * sine;
+  matProj(3, 3) = (-distanceCameraCenterSine) * (-1.0);
   // qDebug() << "B" << matProj;
 
   // matProj /= matProj.row(3).length();
 
-  // qDebug() << near / viewSizeStandard << far / viewSizeStandard;
+  // qDebug() << near / this->viewSizeUnzoomed() << far /
+  // this->viewSizeUnzoomed();
   // qDebug() << matProj;
   // qDebug() << matProj / matProj.row(3).length();
-  return matProj;
+  return createProjectiveMap(matProj);
 }
 
-QVector4D View3D::getCameraPosition() {
-  // Distance from centerPoint to camera
-  float sine = std::sin(fieldOfView / 2.0f);
-  float cosine = std::cos(fieldOfView / 2.0f);
-  float distanceCameraCenterSine = 0.5f * viewSize() * cosine;
+double View3D::limitZoomLog(double zoomLog) const {
+  // TODO: Set zoomLogMin based on bounding box? (This would mean that the zoom
+  // might be updated when the bounding box is changed)
 
-  QVector3D cameraOffset =
-      (rotation * QVector3D(0, 0, distanceCameraCenterSine));
-
-  return QVector4D(centerPoint * (zoom * sine) + cameraOffset, (zoom * sine));
+  return std::min(this->zoomLogMax(), std::max(this->zoomLogMin(), zoomLog));
 }
 
-// Give a mouse position / window size, return a vector with x, y in [-1;1]
-static QVector3D toVector(const QPoint& pos, const QSize& size) {
-  return QVector3D(2.0 * (pos.x() + 0.5) / size.width() - 1.0,
-                   1.0 - 2.0 * (pos.y() + 0.5) / size.height(), 0);
-}
+vx::HmgVector<double, 3> View3D::getCameraPosition() {
+  // Distance from lookAt to camera
+  double sine = std::sin(this->fieldOfView() / 2.0);
+  double cosine = std::cos(this->fieldOfView() / 2.0);
+  double distanceCameraCenterSine = 0.5 * viewSizeUnzoomed() * cosine;
 
-// Information about arcball:
-// https://en.wikibooks.org/w/index.php?title=OpenGL_Programming/Modern_OpenGL_Tutorial_Arcball&oldid=2356903
-static QVector3D getArcballVector(const QPoint& pos, const QSize& size) {
-  QVector3D p = toVector(pos, size);
-  if (p.lengthSquared() < 1)
-    p.setZ(std::sqrt(1 - p.lengthSquared()));  // Pythagore
-  else
-    p.normalize();  // nearest point
-  return p;
+  vx::Vector<double, 3> cameraOffset = (this->orientation().map(
+      vx::Vector<double, 3>(0, 0, distanceCameraCenterSine)));
+
+  return vx::HmgVector<double, 3>(
+      this->lookAt() * (std::exp(this->zoomLog()) * sine) + cameraOffset,
+      (std::exp(this->zoomLog()) * sine));
 }
 
 void View3D::mousePressEvent(const QPoint& mouseLast, QMouseEvent* event,
                              const QSize& windowSize) {
   Q_UNUSED(mouseLast);
-  Q_UNUSED(event);
   Q_UNUSED(windowSize);
+
+  // qDebug() << "mousePressEvent" << event;
+
+  // Ignore all non-middle button presses
+  if (event->button() != Qt::MiddleButton) return;
+
+  // Ignore all button presses if another button is already pressed
+  if ((event->buttons() & (Qt::LeftButton | Qt::RightButton)) != Qt::NoButton)
+    return;
+
+  // qDebug() << "Got mouse press" << modifiers;
+
+  if (currentMouseAction_) {
+    // Should not happen
+    qWarning() << "Got mouse action replacing current mouse action";
+    currentMouseAction_->finish();
+    currentMouseAction_.reset();
+  }
+  currentMouseAction_ = MouseAction::create(this, event, windowSize);
 }
+
 void View3D::mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
                             const QSize& windowSize) {
-  float factor = 1.0f;
-  if (event->modifiers().testFlag(Qt::ShiftModifier)) factor = 0.1f;
+  // qDebug() << "mouseMoveEvent" << event;
 
-  int dxInt = event->x() - mouseLast.x();
-  int dyInt = event->y() - mouseLast.y();
-
-  if (dxInt == 0 && dyInt == 0) return;
-
-  float dx = dxInt * factor;
-  float dy = dyInt * factor;
-
-  auto action = mouseOperation->decideAction(event);
-
-  switch (action) {
-    case MouseOperation::Action::RotateObject: {
-      // Todo: Use arcball vector
-      auto matView = viewMatrix();
-      QQuaternion quatX = QQuaternion::fromAxisAndAngle(
-          (QVector4D(0, 1, 0, 0) * matView).toVector3D(), dx * 0.15);
-      QQuaternion quatY = QQuaternion::fromAxisAndAngle(
-          (QVector4D(1, 0, 0, 0) * matView).toVector3D(), dy * 0.15);
-      Q_EMIT objectRotationChangeRequested(quatX * quatY);
-      break;
-    }
-    case MouseOperation::Action::RotateView: {
-      QVector3D va = getArcballVector(mouseLast, windowSize);
-      QVector3D vb = getArcballVector(event->pos(), windowSize);
-      float angle = std::acos(std::min(1.0f, QVector3D::dotProduct(va, vb)));
-      QVector3D axis = QVector3D::crossProduct(va, vb);
-      angle = angle * factor;
-      rotation *= QQuaternion::fromAxisAndAngle(axis, -angle / M_PI * 180);
-      rotation.normalize();
-      Q_EMIT changed();
-      break;
-    }
-    case MouseOperation::Action::MoveView:
-    case MouseOperation::Action::MoveObject: {
-      QVector3D move(dx, -dy, 0);
-      move *= pixelSize(windowSize);
-      auto offset = rotation.rotatedVector(move);
-      if (action == MouseOperation::Action::MoveObject) {
-        Q_EMIT objectPositionChangeRequested(offset);
-        break;
-      }
-      centerPoint -= offset;
-      Q_EMIT changed();
-      break;
-    }
-
-    default:
-      break;
+  if (currentMouseAction_) {
+    currentMouseAction_->mouseMoveEvent(mouseLast, event, windowSize);
   }
 }
-void View3D::wheelEvent(QWheelEvent* event, const QSize& windowSize) {
-  float mult = 2;
-  if (event->modifiers().testFlag(Qt::ShiftModifier)) mult = 0.2;
-  if (event->modifiers().testFlag(Qt::ControlModifier)) {
-    if (mouseOperation->canMoveView()) {
-      // QVector3D direction(0, 0, 1);
-      // Choose direction so that object under the mouse stays the same
-      QVector3D direction =
-          -(projectionMatrix(windowSize.width(), windowSize.height())
-                .inverted() *
-            toVector(event->pos(), windowSize))
-               .normalized();
-      float distance = mult * 10.0f * event->angleDelta().y() / 120.0f;
-      QVector3D move = direction * distance;
-      move *= pixelSize(windowSize);
-      centerPoint -= rotation.rotatedVector(move);
-    }
-  } else {
-    float zoomNew =
-        this->zoom * std::exp(mult * 0.1f * event->angleDelta().y() / 120.0f);
-    zoomNew = std::min(zoomMax, std::max(zoomMin, zoomNew));
+void View3D::mouseReleaseEvent(const QPoint& mouseLast, QMouseEvent* event,
+                               const QSize& windowSize) {
+  Q_UNUSED(mouseLast);
+  Q_UNUSED(windowSize);
 
-    // Change centerPoint so that the object under the mouse stays the same
+  if (currentMouseAction_ && event->button() == Qt::MiddleButton) {
+    currentMouseAction_->finish();
+    currentMouseAction_.reset();
+  }
+}
+
+void View3D::wheelEvent(QWheelEvent* event, const QSize& windowSize) {
+  // Ignore wheel events while the middle mouse button is pressed
+  if ((event->buttons() & Qt::MiddleButton) != 0) {
+    return;
+  }
+
+  double wheelAngle;
+  double mult = 1;
+
+  if (event->modifiers().testFlag(Qt::AltModifier)) {
+    mult = 0.1;
+    wheelAngle = event->angleDelta().x() / 8.0;
+  } else {
+    wheelAngle = event->angleDelta().y() / 8.0;
+  }
+  // qDebug() << "wheelEvent" << event->angleDelta() << wheelAngle
+  //          << event->modifiers();
+
+  if (event->modifiers().testFlag(Qt::ShiftModifier)) {
+    double distance =
+        mult * wheelPanFactor * wheelAngle / 360 * viewSizeZoomed()
+;
+    // Choose direction so that object under the mouse stays the same
+    // Calculate projection*view matrix
+    vx::ProjectiveMap<double, 3> projectionView =
+        this->projectionMatrix(windowSize.width(), windowSize.height()) *
+        this->viewMatrix();
+    // Invert matrix
+    vx::ProjectiveMap<double, 3> projectionViewInv = inverse(projectionView);
+    // Invert vector from mouse pos into the direction -1 in Z direction
+    vx::Vector<double, 3> mousePos = toVector(event->pos(), windowSize);
+    vx::Vector<double, 3> mousePos2 =
+        mousePos + vx::Vector<double, 3>(0, 0, -1);
+    vx::Vector<double, 3> direction = normalize(
+        projectionViewInv.map(mousePos2) - projectionViewInv.map(mousePos));
+    vx::Vector<double, 3> move = direction * distance;
+
+    // move *= this->pixelSize(windowSize);
+    auto lookAt = this->lookAt();
+    lookAt -= move;
+    this->setLookAt(lookAt);
+  } else {
+    double zoomLogNew = this->limitZoomLog(
+        this->zoomLog() + mult * wheelZoomFactor * wheelAngle / 360);
+
+    View3DValues upd;
+    // Change lookAt so that the object under the mouse stays the same
     // while zooming
     if (true) {
-      if (mouseOperation->canMoveView()) {
-        QVector3D p(event->pos().x(), -event->pos().y(), 0);
-        p -= QVector3D(windowSize.width(), -windowSize.height(), 0) / 2;
-        p *= pixelSize(windowSize);
-        centerPoint += rotation.rotatedVector(p * (1 - this->zoom / zoomNew));
-      }
+      vx::Vector<double, 3> p(event->pos().x(), -event->pos().y(), 0);
+      p -= vx::Vector<double, 3>(windowSize.width(), -windowSize.height(), 0) /
+           2;
+      p *= pixelSize(windowSize);
+      upd.setLookAt(this->lookAt() +
+                    this->orientation().map(
+                        p * (1 - std::exp(this->zoomLog() - zoomLogNew))));
     }
 
-    this->zoom = zoomNew;
+    upd.setZoomLog(zoomLogNew);
 
-    Q_EMIT zoomChanged(this->zoom, this->zoomMin, this->zoomMax);
+    this->update(upd);
   }
-  Q_EMIT changed();
 }
 
 /**
@@ -272,10 +569,21 @@ void View3D::wheelEvent(QWheelEvent* event, const QSize& windowSize) {
 void View3D::keyPressEvent(QKeyEvent* event, const QSize& windowSize) {
   Q_UNUSED(windowSize);
 
+  // qDebug() << event->key() << event->modifiers();
+  bool isKeypad = (event->modifiers() & Qt::KeypadModifier) != 0;
+  bool hasShift = (event->modifiers() & Qt::ShiftModifier) != 0;
+  bool hasCtrl = (event->modifiers() & Qt::ControlModifier) != 0;
+
+  double factor = 1.0;
+  if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
+
+  // Note: move() will apply the zoom later on
+  double panDistance = viewSizeUnzoomed() * keyPanFactor * factor;
+
   // Front/Back View
-  if (event->key() == Qt::Key_1) {
+  if (isKeypad && (event->key() == Qt::Key_1 || event->key() == Qt::Key_End)) {
     // Use the Ctrl key to toggle between both sides (front and back)
-    if (event->modifiers() & Qt::ControlModifier) {
+    if (hasCtrl) {
       setFixedAngle("back");
     } else {
       setFixedAngle("front");
@@ -283,8 +591,9 @@ void View3D::keyPressEvent(QKeyEvent* event, const QSize& windowSize) {
   }
 
   // Right/Left View
-  if (event->key() == Qt::Key_3) {
-    if (event->modifiers() & Qt::ControlModifier) {
+  if (isKeypad &&
+      (event->key() == Qt::Key_3 || event->key() == Qt::Key_PageDown)) {
+    if (hasCtrl) {
       setFixedAngle("left");
     } else {
       setFixedAngle("right");
@@ -292,105 +601,235 @@ void View3D::keyPressEvent(QKeyEvent* event, const QSize& windowSize) {
   }
 
   // Top/Bottom View
-  if (event->key() == Qt::Key_7) {
-    if (event->modifiers() & Qt::ControlModifier) {
+  if (isKeypad && (event->key() == Qt::Key_7 || event->key() == Qt::Key_Home)) {
+    if (hasCtrl) {
       setFixedAngle("bottom");
     } else {
       setFixedAngle("top");
     }
   }
 
-  // This rotates the view in 22.5 degree increments
-  if (event->key() == Qt::Key_4) {
-    QVector3D rotate = rotation.toEulerAngles();
-    rotate.setY(rotate.y() - 22.5f);
-    rotation = rotation.fromEulerAngles(rotate);
-    Q_EMIT changed();
-  } else if (event->key() == Qt::Key_6) {
-    QVector3D rotate = rotation.toEulerAngles();
-    rotate.setY(rotate.y() + 22.5f);
-    rotation = rotation.fromEulerAngles(rotate);
-    Q_EMIT changed();
-  } else if (event->key() == Qt::Key_2) {
-    QVector3D rotate = rotation.toEulerAngles();
-    rotate.setX(rotate.x() + 22.5f);
-    rotation = rotation.fromEulerAngles(rotate);
-    Q_EMIT changed();
-  } else if (event->key() == Qt::Key_8) {
-    QVector3D rotate = rotation.toEulerAngles();
-    rotate.setX(rotate.x() - 22.5f);
-    rotation = rotation.fromEulerAngles(rotate);
-    Q_EMIT changed();
+  if (!hasCtrl) {
+    // This rotates the view in keyRotateAmountDeg degree increments
+    if (isKeypad &&
+        (event->key() == Qt::Key_4 || event->key() == Qt::Key_Left)) {
+      if (!hasShift) {
+        this->setOrientation(this->orientation() *
+                             vx::rotationFromAxisAngleDeg(
+                                 {0, -1, 0}, keyRotateAmountDeg * factor));
+      } else {
+        this->setOrientation(this->orientation() *
+                             vx::rotationFromAxisAngleDeg(
+                                 {0, 0, -1}, keyRotateAmountDeg * factor));
+      }
+    } else if (isKeypad &&
+               (event->key() == Qt::Key_6 || event->key() == Qt::Key_Right)) {
+      if (!hasShift) {
+        this->setOrientation(this->orientation() *
+                             vx::rotationFromAxisAngleDeg(
+                                 {0, 1, 0}, keyRotateAmountDeg * factor));
+      } else {
+        this->setOrientation(this->orientation() *
+                             vx::rotationFromAxisAngleDeg(
+                                 {0, 0, 1}, keyRotateAmountDeg * factor));
+      }
+    } else if (isKeypad &&
+               (event->key() == Qt::Key_2 || event->key() == Qt::Key_Down)) {
+      if (!hasShift) {
+        this->setOrientation(this->orientation() *
+                             vx::rotationFromAxisAngleDeg(
+                                 {1, 0, 0}, keyRotateAmountDeg * factor));
+      }
+    } else if (isKeypad &&
+               (event->key() == Qt::Key_8 || event->key() == Qt::Key_Up)) {
+      if (!hasShift) {
+        this->setOrientation(this->orientation() *
+                             vx::rotationFromAxisAngleDeg(
+                                 {-1, 0, 0}, keyRotateAmountDeg * factor));
+      }
+    }
+  } else {
+    // Pan view
+    vx::Vector<double, 3> move(0, 0, 0);
+    if (isKeypad &&
+        (event->key() == Qt::Key_4 || event->key() == Qt::Key_Left)) {
+      if (!hasShift) {
+        move = {panDistance, 0, 0};
+      } else {
+      }
+    } else if (isKeypad &&
+               (event->key() == Qt::Key_6 || event->key() == Qt::Key_Right)) {
+      if (!hasShift) {
+        move = vx::Vector<double, 3>(-panDistance, 0, 0);
+      } else {
+      }
+    } else if (isKeypad &&
+               (event->key() == Qt::Key_2 || event->key() == Qt::Key_Down)) {
+      if (!hasShift) {
+        move = vx::Vector<double, 3>(0, panDistance, 0);
+      }
+    } else if (isKeypad &&
+               (event->key() == Qt::Key_8 || event->key() == Qt::Key_Up)) {
+      if (!hasShift) {
+        move = vx::Vector<double, 3>(0, -panDistance, 0);
+      }
+    }
+
+    if (move != vx::Vector<double, 3>(0, 0, 0)) {
+      this->move(move);
+    }
   }
 
-  if (event->key() == Qt::Key_O) {
+  if ((event->key() == Qt::Key_O) ||
+      (isKeypad &&
+       (event->key() == Qt::Key_5 || event->key() == Qt::Key_Clear))) {
     switchProjection();
+  }
+
+  if ((!isKeypad && event->key() == Qt::Key_Home) ||
+      (isKeypad &&
+       (event->key() == Qt::Key_0 || event->key() == Qt::Key_Insert))) {
+    // Move to center and reset zoom
+    this->resetView(View3DProperty::LookAt | View3DProperty::ZoomLog);
+  }
+
+  if (isKeypad &&
+      (event->key() == Qt::Key_9 || event->key() == Qt::Key_PageUp)) {
+    this->setOrientation(this->orientation() *
+                         vx::rotationFromAxisAngleDeg({0, 1, 0}, 180.0));
+  }
+
+  if (isKeypad && (event->key() == Qt::Key_Plus)) {
+    if (!hasCtrl) {
+      this->setZoomLog(limitZoomLog(this->zoomLog() + keyZoomAmount * factor));
+    } else {
+      this->move({0, 0, panDistance});
+    }
+  }
+  if (isKeypad && (event->key() == Qt::Key_Minus)) {
+    if (!hasCtrl) {
+      this->setZoomLog(
+          this->limitZoomLog(this->zoomLog() - keyZoomAmount * factor));
+    } else {
+      this->move({0, 0, -panDistance});
+    }
+  }
+
+  if (event->key() == Qt::Key_Escape) {
+    if (currentMouseAction_) {
+      currentMouseAction_->revert();
+      currentMouseAction_.reset();
+    }
   }
 }
 
 void View3D::setFixedAngle(QString direction) {
   if (direction == "front") {
-    rotation = QQuaternion(1, 0, 0, 0);
+    this->setOrientation(vx::Rotation<double, 3>({1, 0, 0, 0}));
   } else if (direction == "back") {
-    rotation = QQuaternion(0, 0, 1, 0);
+    this->setOrientation(vx::Rotation<double, 3>({0, 0, 1, 0}));
   } else if (direction == "right") {
-    rotation = QQuaternion(0.707f, 0, 0.707f, 0);
+    this->setOrientation(vx::Rotation<double, 3>({0.707, 0, 0.707, 0}));
   } else if (direction == "left") {
-    rotation = QQuaternion(0.707f, 0, -0.707f, 0);
+    this->setOrientation(vx::Rotation<double, 3>({0.707, 0, -0.707, 0}));
   } else if (direction == "top") {
-    rotation = QQuaternion(0.707f, -0.707f, 0, 0);
+    this->setOrientation(vx::Rotation<double, 3>({0.707, -0.707, 0, 0}));
   } else if (direction == "bottom") {
-    rotation = QQuaternion(0.707f, 0.707f, 0, 0);
+    this->setOrientation(vx::Rotation<double, 3>({0.707, 0.707, 0, 0}));
   }
-
-  this->zoom = 0.5 * factor;
-  centerPoint = QVector3D(0, 0, 0);
-  Q_EMIT changed();
 }
 
 void View3D::switchProjection() {
-  if (fieldOfView == 0)
-    fieldOfView = 40 / 180.0 * M_PI;
+  if (this->fieldOfView() == 0)
+    this->setFieldOfView(40 / 180.0 * M_PI);
   else
-    fieldOfView = 0;
-  Q_EMIT changed();
+    this->setFieldOfView(0);
 }
 
-void View3D::move(QVector3D vectorViewSpace) {
-  if (!mouseOperation->canMoveView()) return;
-
-  // centerPoint -= rotation.rotatedVector(vectorViewSpace / this->zoom);
-  centerPoint -= viewMatrix().inverted().mapVector(vectorViewSpace);
-
-  Q_EMIT changed();
+void View3D::move(const vx::Vector<double, 3>& vectorViewSpace) {
+  // lookAt -= this->orientation().map(vectorViewSpace / this->zoom);
+  this->setLookAt(this->lookAt() -
+                  inverse(viewMatrix()).mapVector(vectorViewSpace));
 }
 
-void View3D::rotate(QQuaternion rotation) {
-  this->rotation =
-      this->rotation * QQuaternion(rotation.scalar(), -rotation.vector());
-  this->rotation.normalize();
-
-  Q_EMIT changed();
+void View3D::rotate(vx::Rotation<double, 3> rotation) {
+  this->setOrientation(this->orientation() * inverse(rotation));
 }
 
-void View3D::moveZoom(float value) {
-  float zoomNew = this->zoom * std::exp(value);
-  zoomNew = std::min(zoomMax, std::max(zoomMin, zoomNew));
-  this->zoom = zoomNew;
-
-  Q_EMIT changed();
+void View3D::moveZoom(double value) {
+  this->setZoomLog(this->limitZoomLog(this->zoomLog() + value));
 }
 
-void View3D::setZoom(float zoom) {
-  this->zoom = zoom;
-  Q_EMIT changed();
+void View3D::setBoundingBox(const vx::BoundingBox3D& boundingBox) {
+  // TODO: handle empty bounding boxes?
+  this->boundingBox_ = boundingBox;
+
+  // TODO: If there is a minimum zoom depending on the boundingBox then the zoom
+  // value might have to be updated here
 }
 
-void View3D::resetView() {
-  this->zoom = 1.0 * factor;
-  centerPoint = QVector3D(0, 0, 0);
-  rotation = QQuaternion(1, 0, 0, 0);
-  Q_EMIT changed();
+void View3D::setZoomLogMinMax(double zoomLogMin, double zoomLogMax) {
+  if (zoomLogMax < zoomLogMin) {
+    qWarning() << "View3D::setZoomLogMinMax: zoomLogMax < zoomLogMin";
+    return;
+  }
+  // Above outside -70..70 std::exp(zoomLog) might overflow in single precision
+  zoomLogMin_ = std::max(-70.0, zoomLogMin);
+  zoomLogMax_ = std::min(70.0, zoomLogMax);
+}
+void View3D::setZoomLogUnlimited() {
+  this->setZoomLogMinMax(-std::numeric_limits<double>::infinity(),
+                         +std::numeric_limits<double>::infinity());
+}
+
+void View3D::resetView(View3DProperty toReset) {
+  View3DValues upd;
+
+  if ((toReset & View3DProperty::Orientation) == View3DProperty::Orientation)
+    upd.setOrientation(vx::Rotation<double, 3>({1, 0, 0, 0}));
+
+  if ((toReset & (View3DProperty::ZoomLog | View3DProperty::LookAt)) !=
+      View3DProperty::None) {
+    auto bb = boundingBox();
+    if (bb.isEmpty()) {
+      qWarning() << "View3D::resetView(): empty bounding box";
+    } else {
+      auto size = bb.max() - bb.min();
+      auto diag = size.length();
+      if ((toReset & View3DProperty::ZoomLog) == View3DProperty::ZoomLog)
+        // Set zoom value so that the view size is the same as the diagonal of
+        // the bounding box
+        // qDebug() << bb.min() << bb.max() << size << diag <<
+        // this->viewSizeUnzoomed();
+        upd.setZoomLog(
+            this->limitZoomLog(-std::log(diag / this->viewSizeUnzoomed())));
+      if ((toReset & View3DProperty::LookAt) == View3DProperty::LookAt) {
+        auto pos = vectorCast<double>(toVector((bb.max() + bb.min()) / 2));
+        if (resetKeepViewZ) {
+          auto orient = this->orientation();
+          if ((upd.valid & View3DProperty::Orientation) ==
+              View3DProperty::Orientation)
+            orient = upd.orientation;
+          auto posViewOld = inverse(orient).map(this->lookAt());
+          auto posView = inverse(orient).map(pos);
+          posView[2] = posViewOld[2];
+          if (true) {
+            // Make sure z value is inside bounding box
+            auto bbView = BoundingBox3D::empty();
+            for (const auto& corner : bb.corners())
+              bbView += BoundingBox3D::pointV(inverse(orient).map(corner));
+            posView[2] =
+                std::max((double)bbView.min()[2],
+                         std::min((double)bbView.max()[2], posView[2]));
+          }
+          pos = orient.map(posView);
+        }
+        upd.setLookAt(pos);
+      }
+    }
+  }
+
+  this->update(upd);
 }
 
 void View3D::registerSpaceNavVisualizer(vx::spnav::SpaceNavVisualizer* sn) {
@@ -407,26 +846,27 @@ void View3D::registerSpaceNavVisualizer(vx::spnav::SpaceNavVisualizer* sn) {
 
   connect(zoomTimer, &QTimer::timeout, this, [this, interval, zoomButton] {
     // qDebug() << "timeout";
-    float scale = 1;
-    scale *= interval / 1000.0f;
+    double scale = 1;
+    scale *= interval / 1000.0;
     if (*zoomButton == 0)
       moveZoom(-scale);
     else if (*zoomButton == 1)
       moveZoom(scale);
   });
 
-  connect(
-      sn, &vx::spnav::SpaceNavVisualizer::motionEvent, this,
-      [this, zoomButton](vx::spnav::SpaceNavMotionEvent* ev) {
-        // qDebug() << "Event" << this << ev->translation() << ev->rotation();
+  connect(sn, &vx::spnav::SpaceNavVisualizer::motionEvent, this,
+          [this, zoomButton](vx::spnav::SpaceNavMotionEvent* ev) {
+            // qDebug() << "Event" << this << ev->translation() <<
+            // ev->rotation();
 
-        move(ev->translation() * 2e-5f);
+            move(vectorCast<double>(toVector(ev->translation())) * 2e-5);
 
-        QVector3D rotation = ev->rotation() * 1e-4f;
-        auto angle = rotation.length();
-        if (angle > 1e-4)
-          rotate(QQuaternion::fromAxisAndAngle(rotation, angle / M_PI * 180));
-      });
+            vx::Vector<double, 3> rotation =
+                vectorCast<double>(toVector(ev->rotation())) * 1e-4;
+            auto angle = sqrt(squaredNorm(rotation));
+            if (angle > 1e-4)
+              rotate(vx::rotationFromAxisAngle(rotation, angle));
+          });
   connect(sn, &vx::spnav::SpaceNavVisualizer::buttonPressEvent, this,
           [zoomButton, zoomTimer](vx::spnav::SpaceNavButtonPressEvent* ev) {
             // qDebug() << "Button Press Event" << this << ev->button();
@@ -456,31 +896,48 @@ void View3D::registerSpaceNavVisualizer(vx::spnav::SpaceNavVisualizer* sn) {
           });
 }
 
-void View3D::setFieldOfView(float value) {
-  this->fieldOfView = value;
-  Q_EMIT changed();
+void View3D::setLookAt(const vx::Vector<double, 3>& value) {
+  View3DValues upd;
+  upd.setLookAt(value);
+  this->update(upd);
 }
 
-void View3D::setViewSizeStandard(float value) {
-  this->viewSizeStandard = value;
-  Q_EMIT changed();
+void View3D::setOrientation(const vx::Rotation<double, 3>& value) {
+  View3DValues upd;
+  upd.setOrientation(value);
+  this->update(upd);
 }
 
-void View3D::setCenterPoint(const QVector3D& value) {
-  this->centerPoint = value;
-  Q_EMIT changed();
+void View3D::setZoomLog(double value) {
+  View3DValues upd;
+  upd.setZoomLog(value);
+  this->update(upd);
 }
 
-void View3D::cameraRotationRequested() {
-  this->rotation.normalize();
-  Q_EMIT cameraRotationChanged(this->rotation);
+void View3D::setViewSizeUnzoomed(double value) {
+  View3DValues upd;
+  upd.setViewSizeUnzoomed(value);
+  this->update(upd);
 }
 
-void View3D::zoomRequested() {
-  Q_EMIT zoomChanged(this->zoom, this->zoomMin, this->zoomMax);
+void View3D::setFieldOfView(double value) {
+  View3DValues upd;
+  upd.setFieldOfView(value);
+  this->update(upd);
 }
 
-void View3D::setRotation(QQuaternion rot) {
-  this->rotation = rot;
-  Q_EMIT changed();
+void View3D::update(const View3DValues& values) {
+  View3DValues copy(values);
+  copy.valid &= this->changable();
+
+  if (copy.valid == View3DProperty::None) return;
+
+  this->values_.updateFrom(copy);
+
+  if (vx::debug_option::Log_View3DUpdates()->get())
+    qDebug() << "View3D::update" << (uint32_t)copy.valid << this->values_.lookAt
+             << this->values_.orientation << this->values_.zoomLog
+             << this->values_.viewSizeUnzoomed << this->values_.fieldOfView;
+
+  Q_EMIT changed(copy);
 }

@@ -1,7 +1,7 @@
 {
     "NodePrototype": [
         {
-            "Description": "TODO",
+            "Description": "Display a slice of a volume.",
             "DisplayName": "Slice Visualizer",
             "Icon": ":/icons/layers.png",
             "Name": "de.uni_stuttgart.Voxie.Visualizer.Slice",
@@ -9,6 +9,9 @@
                 "de.uni_stuttgart.Voxie.SliceVisualizer"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane": {
                     "CompatibilityNames": [
@@ -378,8 +381,7 @@
                         "de.uni_stuttgart.Voxie.SliceVisualizer.ShowSliceCenter"
                     ],
                     "DisplayName": "Show slice center",
-                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
-                    "IsCustomStorage": true
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean"
                 },
                 "de.uni_stuttgart.Voxie.Visualizer.Slice.Show2DFilterMask": {
                     "CompatibilityNames": [
@@ -388,6 +390,11 @@
                     "DisplayName": "Show 2D filter mask",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
                     "DefaultValue": 0
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.ShowViewCenter": {
+                    "DisplayName": "Show view center",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
                 }
             },
             "UI": {

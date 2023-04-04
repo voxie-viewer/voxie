@@ -29,7 +29,7 @@
 #include <Main/Gui/NodeGroupSelectWindow.hpp>
 #include <Main/Gui/SelectWindow.hpp>
 
-#include <Main/Component/Tool.hpp>
+#include <Voxie/Component/Tool.hpp>
 #include <VoxieBackend/Component/Extension.hpp>
 
 #include <Main/IO/RunAllFilterOperation.hpp>
@@ -382,7 +382,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
             this->dataflowWidget->visualizerNodeColor, "Visualizer") +
         " " +
         this->createColorExplanationString(
-            this->dataflowWidget->object3DNodeColor, "3D Node")));
+            this->dataflowWidget->object3DNodeColor, "3D Object")));
   }
 
   splitter->addWidget(dataflowContainer);
@@ -1031,6 +1031,11 @@ void SidePanel::addProgressBar(Operation* operation) {
   widget->setLayout(layout);
   connect(operation, &QObject::destroyed, widget,
           [widget] { widget->deleteLater(); });
+  operation->onFinished(
+      widget, [widget](const QSharedPointer<Operation::ResultError>& result) {
+        Q_UNUSED(result);
+        widget->deleteLater();
+      });
   bottomLayout->addWidget(widget);
 
   auto hbox = new QWidget();

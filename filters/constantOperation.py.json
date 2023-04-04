@@ -9,6 +9,9 @@
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
             "Icon": ":/icons/processor.png",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Filter.ConstantOperation.Operation": {
                     "CompatibilityNames": [

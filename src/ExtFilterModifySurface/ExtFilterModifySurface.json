@@ -8,6 +8,9 @@
                 "de.uni_stuttgart.Voxie.ModifySurfaceCPP.TaubinFiltering"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Filter.Surface.TaubinFiltering.TaubinIterations": {
                     "CompatibilityNames": [
@@ -51,6 +54,9 @@
                 "de.uni_stuttgart.Voxie.Filter.SurfaceMeanNormalFiltering"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Filter.Surface.MeanNormalFiltering.MeanIterations": {
                     "CompatibilityNames": [
@@ -85,6 +91,9 @@
                 "de.uni_stuttgart.Voxie.ModifySurfaceCPP.BilateralFiltering"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Filter.Surface.BilateralFiltering.BilateralSigmaSpacial": {
                     "CompatibilityNames": [
@@ -128,6 +137,9 @@
                 "de.uni_stuttgart.Voxie.ModifySurfaceCPP.FastEffectiveDPFilter"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Filter.Surface.FastEffectiveDPFilter.FEDThreshold": {
                     "CompatibilityNames": [
@@ -171,6 +183,9 @@
                 "de.uni_stuttgart.Voxie.ModifySurfaceCPP.FeatureConvincedDenoising"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Filter.Surface.FeatureConvincedDenoising.FCDExtensions": {
                     "CompatibilityNames": [
@@ -205,6 +220,9 @@
                 "de.uni_stuttgart.Voxie.ModifySurfaceCPP.ProgressiveMeshDecimation"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Filter.Surface.ProgressiveMeshDecimation.PMDReduction": {
                     "CompatibilityNames": [

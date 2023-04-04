@@ -223,23 +223,26 @@ def serializeNode(instance, file, serializedNodes, obj, oname):
             propertiesExpr2 += '}'
             print('%s = instance.Components.GetComponent(\'de.uni_stuttgart.Voxie.ComponentType.Importer\', %s).CastTo(\'de.uni_stuttgart.Voxie.Importer\').ImportNode(%s, {\'Properties\': voxie.Variant(\'a{sv}\', %s)}) # %s' %
                   (oname, repr(importerName), repr(filename), propertiesExpr2, repr(obj.prototypeName)), file=file)
-        print('%s.SetPropertiesChecked(%s)' %
+        print('if %s is not None:' % (oname), file=file)
+        print('    %s.SetPropertiesChecked(%s)' %
               (oname, propertiesExpr), file=file)
     else:
         print('%s = instance.CreateNodeChecked(%s, %s)' %
               (oname, repr(obj.prototypeName), propertiesExpr), file=file)
-    print('%s.ManualDisplayName = %s' %
-          (oname, obj.obj.ManualDisplayName), file=file)
-    print('%s.GraphPosition = %s' % (oname, obj.obj.GraphPosition), file=file)
+    print('if %s is not None:' % (oname), file=file)
+    mdn = obj.obj.ManualDisplayName
+    if mdn != (False, ''):
+        print('    %s.ManualDisplayName = %s' % (oname, mdn), file=file)
+    print('    %s.GraphPosition = %s' % (oname, obj.obj.GraphPosition), file=file)
     if obj.kind == 'de.uni_stuttgart.Voxie.NodeKind.Visualizer':
         visObj = voxie.cast(
             obj.obj, ['de.uni_stuttgart.Voxie.VisualizerNode'])
         if instance.Gui.MdiViewMode == 'de.uni_stuttgart.Voxie.MdiViewMode.SubWindow' or not visObj.IsAttached:
-            print('%s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').IsAttached = %s' % (
+            print('    %s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').IsAttached = %s' % (
                 oname, visObj.IsAttached), file=file)
-            print('%s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').VisualizerPosition = %s' % (
+            print('    %s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').VisualizerPosition = %s' % (
                 oname, visObj.VisualizerPosition), file=file)
-            print('%s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').VisualizerSize = %s' % (
+            print('    %s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').VisualizerSize = %s' % (
                 oname, visObj.VisualizerSize), file=file)
 
 

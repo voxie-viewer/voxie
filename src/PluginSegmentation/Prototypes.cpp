@@ -123,7 +123,11 @@ static const char _prototype_Segmentation_[] = {
     101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
     46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121,
     84,  121, 112, 101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101,
-    110, 99,  101, 76,  105, 115, 116, 34,  125, 125, 125, 0};
+    110, 99,  101, 76,  105, 115, 116, 34,  125, 125, 44,  32,  34,  84,  114,
+    111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,
+    58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116,
+    32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  52,  32,  45,  32,
+    66,  101, 116, 97,  34,  93,  125, 0};
 const char* SegmentationProperties::_getPrototypeJson() {
   return _prototype_Segmentation_;
 }
@@ -140,8 +144,12 @@ QDBusObjectPath SegmentationProperties::inputRaw() {
       "de.uni_stuttgart.Voxie.Filter.Segmentation.Input");
 }
 QSharedPointer<NodeProperty> SegmentationProperties::inputProperty() {
-  return _node->prototype()->getProperty(
+  return SegmentationProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.Segmentation.Input", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+SegmentationProperties::inputPropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(inputProperty());
 }
 void SegmentationProperties::setInput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -158,8 +166,12 @@ QDBusObjectPath SegmentationProperties::outputRaw() {
       "de.uni_stuttgart.Voxie.Filter.Segmentation.Output");
 }
 QSharedPointer<NodeProperty> SegmentationProperties::outputProperty() {
-  return _node->prototype()->getProperty(
+  return SegmentationProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.Segmentation.Output", false);
+}
+NodePropertyTyped<vx::types::OutputNodeReference>
+SegmentationProperties::outputPropertyTyped() {
+  return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
 }
 void SegmentationProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -176,8 +188,12 @@ QList<QDBusObjectPath> SegmentationProperties::stepListRaw() {
       "de.uni_stuttgart.Voxie.Filter.Segmentation.StepList");
 }
 QSharedPointer<NodeProperty> SegmentationProperties::stepListProperty() {
-  return _node->prototype()->getProperty(
+  return SegmentationProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.Segmentation.StepList", false);
+}
+NodePropertyTyped<vx::types::NodeReferenceList>
+SegmentationProperties::stepListPropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReferenceList>(stepListProperty());
 }
 void SegmentationProperties::setStepList(QList<vx::Node*> value) {
   _node->setNodePropertyTyped<QList<QDBusObjectPath>>(
@@ -332,8 +348,12 @@ qint64 AssignmentStepProperties::labelIDRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.AssignmentStep.LabelID");
 }
 QSharedPointer<NodeProperty> AssignmentStepProperties::labelIDProperty() {
-  return _node->prototype()->getProperty(
+  return AssignmentStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.AssignmentStep.LabelID", false);
+}
+NodePropertyTyped<vx::types::Int>
+AssignmentStepProperties::labelIDPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(labelIDProperty());
 }
 void AssignmentStepProperties::setLabelID(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -677,10 +697,15 @@ BrushSelectionStepProperties::brushEraseCentersWithRadiusRaw() {
 }
 QSharedPointer<NodeProperty>
 BrushSelectionStepProperties::brushEraseCentersWithRadiusProperty() {
-  return _node->prototype()->getProperty(
+  return BrushSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
       "BrushEraseCentersWithRadius",
       false);
+}
+NodePropertyTyped<vx::types::ListPosition3DDoubleTuple>
+BrushSelectionStepProperties::brushEraseCentersWithRadiusPropertyTyped() {
+  return NodePropertyTyped<vx::types::ListPosition3DDoubleTuple>(
+      brushEraseCentersWithRadiusProperty());
 }
 void BrushSelectionStepProperties::setBrushEraseCentersWithRadius(
     QList<std::tuple<QVector3D, double>> value) {
@@ -711,10 +736,15 @@ BrushSelectionStepProperties::brushSelectCentersWithRadiusRaw() {
 }
 QSharedPointer<NodeProperty>
 BrushSelectionStepProperties::brushSelectCentersWithRadiusProperty() {
-  return _node->prototype()->getProperty(
+  return BrushSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
       "BrushSelectCentersWithRadius",
       false);
+}
+NodePropertyTyped<vx::types::ListPosition3DDoubleTuple>
+BrushSelectionStepProperties::brushSelectCentersWithRadiusPropertyTyped() {
+  return NodePropertyTyped<vx::types::ListPosition3DDoubleTuple>(
+      brushSelectCentersWithRadiusProperty());
 }
 void BrushSelectionStepProperties::setBrushSelectCentersWithRadius(
     QList<std::tuple<QVector3D, double>> value) {
@@ -743,10 +773,15 @@ BrushSelectionStepProperties::planeOrientationRaw() {
 }
 QSharedPointer<NodeProperty>
 BrushSelectionStepProperties::planeOrientationProperty() {
-  return _node->prototype()->getProperty(
+  return BrushSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
       "PlaneOrientation",
       false);
+}
+NodePropertyTyped<vx::types::Orientation3D>
+BrushSelectionStepProperties::planeOrientationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Orientation3D>(
+      planeOrientationProperty());
 }
 void BrushSelectionStepProperties::setPlaneOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -769,9 +804,13 @@ BrushSelectionStepProperties::planeOriginRaw() {
 }
 QSharedPointer<NodeProperty>
 BrushSelectionStepProperties::planeOriginProperty() {
-  return _node->prototype()->getProperty(
+  return BrushSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.PlaneOrigin",
       false);
+}
+NodePropertyTyped<vx::types::Position3D>
+BrushSelectionStepProperties::planeOriginPropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(planeOriginProperty());
 }
 void BrushSelectionStepProperties::setPlaneOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -796,10 +835,15 @@ BrushSelectionStepProperties::volumeOrientationRaw() {
 }
 QSharedPointer<NodeProperty>
 BrushSelectionStepProperties::volumeOrientationProperty() {
-  return _node->prototype()->getProperty(
+  return BrushSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
       "VolumeOrientation",
       false);
+}
+NodePropertyTyped<vx::types::Orientation3D>
+BrushSelectionStepProperties::volumeOrientationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Orientation3D>(
+      volumeOrientationProperty());
 }
 void BrushSelectionStepProperties::setVolumeOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -823,9 +867,13 @@ BrushSelectionStepProperties::volumeOriginRaw() {
 }
 QSharedPointer<NodeProperty>
 BrushSelectionStepProperties::volumeOriginProperty() {
-  return _node->prototype()->getProperty(
+  return BrushSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.VolumeOrigin",
       false);
+}
+NodePropertyTyped<vx::types::Position3D>
+BrushSelectionStepProperties::volumeOriginPropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(volumeOriginProperty());
 }
 void BrushSelectionStepProperties::setVolumeOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -846,9 +894,13 @@ BrushSelectionStepProperties::voxelSizeRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.VoxelSize");
 }
 QSharedPointer<NodeProperty> BrushSelectionStepProperties::voxelSizeProperty() {
-  return _node->prototype()->getProperty(
+  return BrushSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.VoxelSize",
       false);
+}
+NodePropertyTyped<vx::types::Position3D>
+BrushSelectionStepProperties::voxelSizePropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(voxelSizeProperty());
 }
 void BrushSelectionStepProperties::setVoxelSize(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -1301,10 +1353,15 @@ LassoSelectionStepProperties::planeOrientationRaw() {
 }
 QSharedPointer<NodeProperty>
 LassoSelectionStepProperties::planeOrientationProperty() {
-  return _node->prototype()->getProperty(
+  return LassoSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
       "PlaneOrientation",
       false);
+}
+NodePropertyTyped<vx::types::Orientation3D>
+LassoSelectionStepProperties::planeOrientationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Orientation3D>(
+      planeOrientationProperty());
 }
 void LassoSelectionStepProperties::setPlaneOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -1327,9 +1384,13 @@ LassoSelectionStepProperties::planeOriginRaw() {
 }
 QSharedPointer<NodeProperty>
 LassoSelectionStepProperties::planeOriginProperty() {
-  return _node->prototype()->getProperty(
+  return LassoSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.PlaneOrigin",
       false);
+}
+NodePropertyTyped<vx::types::Position3D>
+LassoSelectionStepProperties::planeOriginPropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(planeOriginProperty());
 }
 void LassoSelectionStepProperties::setPlaneOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -1354,9 +1415,13 @@ LassoSelectionStepProperties::polygonNodesRaw() {
 }
 QSharedPointer<NodeProperty>
 LassoSelectionStepProperties::polygonNodesProperty() {
-  return _node->prototype()->getProperty(
+  return LassoSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.PolygonNodes",
       false);
+}
+NodePropertyTyped<vx::types::ListPosition3D>
+LassoSelectionStepProperties::polygonNodesPropertyTyped() {
+  return NodePropertyTyped<vx::types::ListPosition3D>(polygonNodesProperty());
 }
 void LassoSelectionStepProperties::setPolygonNodes(QList<QVector3D> value) {
   _node->setNodePropertyTyped<QList<std::tuple<double, double, double>>>(
@@ -1381,10 +1446,15 @@ LassoSelectionStepProperties::volumeOrientationRaw() {
 }
 QSharedPointer<NodeProperty>
 LassoSelectionStepProperties::volumeOrientationProperty() {
-  return _node->prototype()->getProperty(
+  return LassoSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
       "VolumeOrientation",
       false);
+}
+NodePropertyTyped<vx::types::Orientation3D>
+LassoSelectionStepProperties::volumeOrientationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Orientation3D>(
+      volumeOrientationProperty());
 }
 void LassoSelectionStepProperties::setVolumeOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -1408,9 +1478,13 @@ LassoSelectionStepProperties::volumeOriginRaw() {
 }
 QSharedPointer<NodeProperty>
 LassoSelectionStepProperties::volumeOriginProperty() {
-  return _node->prototype()->getProperty(
+  return LassoSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.VolumeOrigin",
       false);
+}
+NodePropertyTyped<vx::types::Position3D>
+LassoSelectionStepProperties::volumeOriginPropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(volumeOriginProperty());
 }
 void LassoSelectionStepProperties::setVolumeOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -1431,9 +1505,13 @@ LassoSelectionStepProperties::voxelSizeRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.VoxelSize");
 }
 QSharedPointer<NodeProperty> LassoSelectionStepProperties::voxelSizeProperty() {
-  return _node->prototype()->getProperty(
+  return LassoSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.VoxelSize",
       false);
+}
+NodePropertyTyped<vx::types::Position3D>
+LassoSelectionStepProperties::voxelSizePropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(voxelSizeProperty());
 }
 void LassoSelectionStepProperties::setVoxelSize(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -1677,9 +1755,13 @@ QList<qint64> ManualSelectionStepProperties::labelIdsRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.ManualSelectionStep.LabelIds");
 }
 QSharedPointer<NodeProperty> ManualSelectionStepProperties::labelIdsProperty() {
-  return _node->prototype()->getProperty(
+  return ManualSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.ManualSelectionStep.LabelIds",
       false);
+}
+NodePropertyTyped<vx::types::IntList>
+ManualSelectionStepProperties::labelIdsPropertyTyped() {
+  return NodePropertyTyped<vx::types::IntList>(labelIdsProperty());
 }
 void ManualSelectionStepProperties::setLabelIds(QList<qint64> value) {
   _node->setNodePropertyTyped<QList<qint64>>(
@@ -1971,8 +2053,11 @@ std::tuple<double, double, double, double> MetaStepProperties::colorRaw() {
           "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Color");
 }
 QSharedPointer<NodeProperty> MetaStepProperties::colorProperty() {
-  return _node->prototype()->getProperty(
+  return MetaStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Color", false);
+}
+NodePropertyTyped<vx::types::Color> MetaStepProperties::colorPropertyTyped() {
+  return NodePropertyTyped<vx::types::Color>(colorProperty());
 }
 void MetaStepProperties::setColor(vx::Color value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -1990,8 +2075,12 @@ QString MetaStepProperties::descriptionRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Description");
 }
 QSharedPointer<NodeProperty> MetaStepProperties::descriptionProperty() {
-  return _node->prototype()->getProperty(
+  return MetaStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Description", false);
+}
+NodePropertyTyped<vx::types::String>
+MetaStepProperties::descriptionPropertyTyped() {
+  return NodePropertyTyped<vx::types::String>(descriptionProperty());
 }
 void MetaStepProperties::setDescription(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -2008,8 +2097,11 @@ qint64 MetaStepProperties::labelIDRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.LabelID");
 }
 QSharedPointer<NodeProperty> MetaStepProperties::labelIDProperty() {
-  return _node->prototype()->getProperty(
+  return MetaStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.LabelID", false);
+}
+NodePropertyTyped<vx::types::Int> MetaStepProperties::labelIDPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(labelIDProperty());
 }
 void MetaStepProperties::setLabelID(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -2026,9 +2118,13 @@ QString MetaStepProperties::modificationKindRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.ModificationKind");
 }
 QSharedPointer<NodeProperty> MetaStepProperties::modificationKindProperty() {
-  return _node->prototype()->getProperty(
+  return MetaStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.ModificationKind",
       false);
+}
+NodePropertyTyped<vx::types::Enumeration>
+MetaStepProperties::modificationKindPropertyTyped() {
+  return NodePropertyTyped<vx::types::Enumeration>(modificationKindProperty());
 }
 void MetaStepProperties::setModificationKind(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -2045,8 +2141,11 @@ QString MetaStepProperties::nameRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Name");
 }
 QSharedPointer<NodeProperty> MetaStepProperties::nameProperty() {
-  return _node->prototype()->getProperty(
+  return MetaStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Name", false);
+}
+NodePropertyTyped<vx::types::String> MetaStepProperties::namePropertyTyped() {
+  return NodePropertyTyped<vx::types::String>(nameProperty());
 }
 void MetaStepProperties::setName(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -2063,8 +2162,12 @@ bool MetaStepProperties::visibilityRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Visibility");
 }
 QSharedPointer<NodeProperty> MetaStepProperties::visibilityProperty() {
-  return _node->prototype()->getProperty(
+  return MetaStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Visibility", false);
+}
+NodePropertyTyped<vx::types::Boolean>
+MetaStepProperties::visibilityPropertyTyped() {
+  return NodePropertyTyped<vx::types::Boolean>(visibilityProperty());
 }
 void MetaStepProperties::setVisibility(bool value) {
   _node->setNodePropertyTyped<bool>(
@@ -2271,66 +2374,67 @@ static const char _prototype_MultiThresholdStep_[] = {
     98,  121, 32,  115, 101, 116, 116, 105, 110, 103, 32,  109, 117, 108, 116,
     105, 112, 108, 101, 32,  116, 104, 114, 101, 115, 104, 111, 108, 100, 115,
     34,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101,
-    34,  58,  32,  34,  34,  44,  32,  34,  73,  99,  111, 110, 34,  58,  32,
-    34,  58,  47,  105, 99,  111, 110, 115, 47,  99,  104, 97,  114, 116, 45,
-    112, 105, 101, 45,  115, 101, 112, 97,  114, 97,  116, 101, 46,  112, 110,
-    103, 34,  44,  32,  34,  73,  115, 83,  112, 101, 99,  105, 97,  108, 83,
-    116, 101, 112, 34,  58,  32,  102, 97,  108, 115, 101, 44,  32,  34,  78,
-    97,  109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
-    116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
-    83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101,
-    112, 46,  77,  117, 108, 116, 105, 84,  104, 114, 101, 115, 104, 111, 108,
-    100, 83,  116, 101, 112, 34,  44,  32,  34,  78,  111, 100, 101, 75,  105,
-    110, 100, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
-    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  78,
-    111, 100, 101, 75,  105, 110, 100, 46,  83,  101, 103, 109, 101, 110, 116,
-    97,  116, 105, 111, 110, 83,  116, 101, 112, 34,  44,  32,  34,  80,  114,
-    111, 112, 101, 114, 116, 105, 101, 115, 34,  58,  32,  123, 34,  100, 101,
-    46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
-    86,  111, 120, 105, 101, 46,  83,  101, 103, 109, 101, 110, 116, 97,  116,
-    105, 111, 110, 83,  116, 101, 112, 46,  77,  117, 108, 116, 105, 84,  104,
-    114, 101, 115, 104, 111, 108, 100, 83,  116, 101, 112, 46,  84,  104, 114,
-    101, 115, 104, 111, 108, 100, 76,  105, 115, 116, 34,  58,  32,  123, 34,
-    68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,
-    84,  104, 114, 101, 115, 104, 111, 108, 100, 32,  76,  105, 115, 116, 34,
-    44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  84,  104, 114, 101,
-    115, 104, 111, 108, 100, 76,  105, 115, 116, 34,  44,  32,  34,  84,  121,
-    112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
-    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
-    114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  84,  104, 114,
-    101, 115, 104, 111, 108, 100, 76,  97,  98,  101, 108, 77,  97,  112, 112,
-    105, 110, 103, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,
-    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
-    46,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116,
-    101, 112, 46,  77,  117, 108, 116, 105, 84,  104, 114, 101, 115, 104, 111,
-    108, 100, 83,  116, 101, 112, 46,  86,  111, 108, 117, 109, 101, 34,  58,
-    32,  123, 34,  65,  108, 108, 111, 119, 101, 100, 78,  111, 100, 101, 84,
-    121, 112, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105,
-    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
-    101, 46,  68,  97,  116, 97,  46,  86,  111, 108, 117, 109, 101, 34,  93,
-    44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,
-    58,  32,  34,  73,  110, 112, 117, 116, 34,  44,  32,  34,  84,  121, 112,
+    34,  58,  32,  34,  77,  117, 108, 116, 105, 45,  84,  104, 114, 101, 115,
+    104, 111, 108, 100, 32,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105,
+    111, 110, 34,  44,  32,  34,  73,  99,  111, 110, 34,  58,  32,  34,  58,
+    47,  105, 99,  111, 110, 115, 47,  99,  104, 97,  114, 116, 45,  112, 105,
+    101, 45,  115, 101, 112, 97,  114, 97,  116, 101, 46,  112, 110, 103, 34,
+    44,  32,  34,  73,  115, 83,  112, 101, 99,  105, 97,  108, 83,  116, 101,
+    112, 34,  58,  32,  102, 97,  108, 115, 101, 44,  32,  34,  78,  97,  109,
     101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
-    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114,
-    111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  78,  111, 100, 101,
-    82,  101, 102, 101, 114, 101, 110, 99,  101, 34,  125, 125, 44,  32,  34,
-    83,  116, 97,  114, 116, 115, 82,  117, 110, 65,  117, 116, 111, 109, 97,
-    116, 105, 99,  34,  58,  32,  102, 97,  108, 115, 101, 44,  32,  34,  83,
-    116, 101, 112, 75,  105, 110, 100, 34,  58,  32,  34,  76,  97,  98,  101,
-    108, 83,  116, 101, 112, 34,  44,  32,  34,  83,  116, 101, 112, 84,  105,
-    112, 34,  58,  32,  34,  77,  117, 108, 116, 105, 45,  84,  104, 114, 101,
-    115, 104, 111, 108, 100, 32,  83,  101, 103, 109, 101, 110, 116, 97,  116,
-    105, 111, 110, 34,  44,  32,  34,  85,  73,  34,  58,  32,  123, 34,  83,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  83,  101,
+    103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101, 112, 46,
+    77,  117, 108, 116, 105, 84,  104, 114, 101, 115, 104, 111, 108, 100, 83,
+    116, 101, 112, 34,  44,  32,  34,  78,  111, 100, 101, 75,  105, 110, 100,
+    34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
+    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  78,  111, 100,
+    101, 75,  105, 110, 100, 46,  83,  101, 103, 109, 101, 110, 116, 97,  116,
+    105, 111, 110, 83,  116, 101, 112, 34,  44,  32,  34,  80,  114, 111, 112,
+    101, 114, 116, 105, 101, 115, 34,  58,  32,  123, 34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111,
+    110, 83,  116, 101, 112, 46,  77,  117, 108, 116, 105, 84,  104, 114, 101,
+    115, 104, 111, 108, 100, 83,  116, 101, 112, 46,  84,  104, 114, 101, 115,
+    104, 111, 108, 100, 76,  105, 115, 116, 34,  58,  32,  123, 34,  68,  105,
+    115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  84,  104,
+    114, 101, 115, 104, 111, 108, 100, 32,  76,  105, 115, 116, 34,  44,  32,
+    34,  78,  97,  109, 101, 34,  58,  32,  34,  84,  104, 114, 101, 115, 104,
+    111, 108, 100, 76,  105, 115, 116, 34,  44,  32,  34,  84,  121, 112, 101,
+    34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
+    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111,
+    112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  84,  104, 114, 101, 115,
+    104, 111, 108, 100, 76,  97,  98,  101, 108, 77,  97,  112, 112, 105, 110,
+    103, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
+    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  83,
     101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101, 112,
-    85,  73,  69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,  123, 34,
-    78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
-    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
-    46,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116,
-    101, 112, 46,  77,  117, 108, 116, 105, 84,  104, 114, 101, 115, 104, 111,
-    108, 100, 83,  116, 101, 112, 46,  77,  117, 108, 116, 105, 84,  104, 114,
-    101, 115, 87,  105, 100, 103, 101, 116, 34,  44,  32,  34,  84,  121, 112,
-    101, 34,  58,  32,  34,  67,  117, 115, 116, 111, 109, 34,  125, 93,  125,
-    125, 0};
+    46,  77,  117, 108, 116, 105, 84,  104, 114, 101, 115, 104, 111, 108, 100,
+    83,  116, 101, 112, 46,  86,  111, 108, 117, 109, 101, 34,  58,  32,  123,
+    34,  65,  108, 108, 111, 119, 101, 100, 78,  111, 100, 101, 84,  121, 112,
+    101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115,
+    116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
+    68,  97,  116, 97,  46,  86,  111, 108, 117, 109, 101, 34,  93,  44,  32,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  73,  110, 112, 117, 116, 34,  44,  32,  34,  84,  121, 112, 101, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112,
+    101, 114, 116, 121, 84,  121, 112, 101, 46,  78,  111, 100, 101, 82,  101,
+    102, 101, 114, 101, 110, 99,  101, 34,  125, 125, 44,  32,  34,  83,  116,
+    97,  114, 116, 115, 82,  117, 110, 65,  117, 116, 111, 109, 97,  116, 105,
+    99,  34,  58,  32,  102, 97,  108, 115, 101, 44,  32,  34,  83,  116, 101,
+    112, 75,  105, 110, 100, 34,  58,  32,  34,  76,  97,  98,  101, 108, 83,
+    116, 101, 112, 34,  44,  32,  34,  83,  116, 101, 112, 84,  105, 112, 34,
+    58,  32,  34,  77,  117, 108, 116, 105, 45,  84,  104, 114, 101, 115, 104,
+    111, 108, 100, 32,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111,
+    110, 34,  44,  32,  34,  85,  73,  34,  58,  32,  123, 34,  83,  101, 103,
+    109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101, 112, 85,  73,
+    69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,  123, 34,  78,  97,
+    109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
+    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  83,
+    101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101, 112,
+    46,  77,  117, 108, 116, 105, 84,  104, 114, 101, 115, 104, 111, 108, 100,
+    83,  116, 101, 112, 46,  77,  117, 108, 116, 105, 84,  104, 114, 101, 115,
+    87,  105, 100, 103, 101, 116, 34,  44,  32,  34,  84,  121, 112, 101, 34,
+    58,  32,  34,  67,  117, 115, 116, 111, 109, 34,  125, 93,  125, 125, 0};
 const char* MultiThresholdStepProperties::_getPrototypeJson() {
   return _prototype_MultiThresholdStep_;
 }
@@ -2358,10 +2462,15 @@ MultiThresholdStepProperties::thresholdListRaw() {
 }
 QSharedPointer<NodeProperty>
 MultiThresholdStepProperties::thresholdListProperty() {
-  return _node->prototype()->getProperty(
+  return MultiThresholdStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep."
       "ThresholdList",
       false);
+}
+NodePropertyTyped<vx::types::ThresholdLabelMapping>
+MultiThresholdStepProperties::thresholdListPropertyTyped() {
+  return NodePropertyTyped<vx::types::ThresholdLabelMapping>(
+      thresholdListProperty());
 }
 void MultiThresholdStepProperties::setThresholdList(
     QList<
@@ -2387,9 +2496,13 @@ QDBusObjectPath MultiThresholdStepProperties::volumeRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep.Volume");
 }
 QSharedPointer<NodeProperty> MultiThresholdStepProperties::volumeProperty() {
-  return _node->prototype()->getProperty(
+  return MultiThresholdStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep.Volume",
       false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+MultiThresholdStepProperties::volumePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(volumeProperty());
 }
 void MultiThresholdStepProperties::setVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -2533,9 +2646,13 @@ QList<qint64> RemoveLabelStepProperties::labelIDsRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.RemoveLabelStep.LabelIDs");
 }
 QSharedPointer<NodeProperty> RemoveLabelStepProperties::labelIDsProperty() {
-  return _node->prototype()->getProperty(
+  return RemoveLabelStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.RemoveLabelStep.LabelIDs",
       false);
+}
+NodePropertyTyped<vx::types::IntList>
+RemoveLabelStepProperties::labelIDsPropertyTyped() {
+  return NodePropertyTyped<vx::types::IntList>(labelIDsProperty());
 }
 void RemoveLabelStepProperties::setLabelIDs(QList<qint64> value) {
   _node->setNodePropertyTyped<QList<qint64>>(
@@ -2648,8 +2765,12 @@ qint64 SubtractStepProperties::labelIdRaw() {
       "de.uni_stuttgart.Voxie.SegmentationStep.SubtractStep.LabelId");
 }
 QSharedPointer<NodeProperty> SubtractStepProperties::labelIdProperty() {
-  return _node->prototype()->getProperty(
+  return SubtractStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.SubtractStep.LabelId", false);
+}
+NodePropertyTyped<vx::types::Int>
+SubtractStepProperties::labelIdPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(labelIdProperty());
 }
 void SubtractStepProperties::setLabelId(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -2750,78 +2871,79 @@ static const char _prototype_ThresholdSelectionStep_[] = {
     32,  34,  84,  104, 114, 101, 115, 104, 111, 108, 100, 32,  98,  97,  115,
     101, 100, 32,  115, 101, 108, 101, 99,  116, 105, 111, 110, 34,  44,  32,
     34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
-    34,  34,  44,  32,  34,  73,  99,  111, 110, 34,  58,  32,  34,  58,  47,
-    105, 99,  111, 110, 115, 47,  117, 105, 45,  115, 112, 108, 105, 116, 116,
-    101, 114, 46,  112, 110, 103, 34,  44,  32,  34,  73,  115, 83,  112, 101,
-    99,  105, 97,  108, 83,  116, 101, 112, 34,  58,  32,  102, 97,  108, 115,
-    101, 44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,
-    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
-    111, 120, 105, 101, 46,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105,
-    111, 110, 83,  116, 101, 112, 46,  84,  104, 114, 101, 115, 104, 111, 108,
-    100, 83,  101, 108, 101, 99,  116, 105, 111, 110, 83,  116, 101, 112, 34,
-    44,  32,  34,  78,  111, 100, 101, 75,  105, 110, 100, 34,  58,  32,  34,
-    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
-    116, 46,  86,  111, 120, 105, 101, 46,  78,  111, 100, 101, 75,  105, 110,
-    100, 46,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,
-    116, 101, 112, 34,  44,  32,  34,  80,  114, 111, 112, 101, 114, 116, 105,
-    101, 115, 34,  58,  32,  123, 34,  100, 101, 46,  117, 110, 105, 95,  115,
+    34,  84,  104, 114, 101, 115, 104, 111, 108, 100, 32,  83,  101, 103, 109,
+    101, 110, 116, 97,  116, 105, 111, 110, 34,  44,  32,  34,  73,  99,  111,
+    110, 34,  58,  32,  34,  58,  47,  105, 99,  111, 110, 115, 47,  117, 105,
+    45,  115, 112, 108, 105, 116, 116, 101, 114, 46,  112, 110, 103, 34,  44,
+    32,  34,  73,  115, 83,  112, 101, 99,  105, 97,  108, 83,  116, 101, 112,
+    34,  58,  32,  102, 97,  108, 115, 101, 44,  32,  34,  78,  97,  109, 101,
+    34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
+    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  83,  101, 103,
+    109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101, 112, 46,  84,
+    104, 114, 101, 115, 104, 111, 108, 100, 83,  101, 108, 101, 99,  116, 105,
+    111, 110, 83,  116, 101, 112, 34,  44,  32,  34,  78,  111, 100, 101, 75,
+    105, 110, 100, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
     116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
-    83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101,
-    112, 46,  84,  104, 114, 101, 115, 104, 111, 108, 100, 83,  101, 108, 101,
-    99,  116, 105, 111, 110, 83,  116, 101, 112, 46,  76,  111, 119, 101, 114,
-    84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  58,  32,  123, 34,  68,
-    105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  76,
-    111, 119, 101, 114, 84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  44,
-    32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  76,  111, 119, 101, 114,
-    84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  44,  32,  34,  84,  121,
-    112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
-    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
-    114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  70,  108, 111,
-    97,  116, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
-    116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
-    83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101,
-    112, 46,  84,  104, 114, 101, 115, 104, 111, 108, 100, 83,  101, 108, 101,
-    99,  116, 105, 111, 110, 83,  116, 101, 112, 46,  85,  112, 112, 101, 114,
-    84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  58,  32,  123, 34,  68,
-    105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  85,
-    112, 112, 101, 114, 84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  44,
-    32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  85,  112, 112, 101, 114,
-    84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  44,  32,  34,  84,  121,
-    112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
-    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
-    114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  70,  108, 111,
-    97,  116, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
-    116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
-    83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116, 101,
-    112, 46,  84,  104, 114, 101, 115, 104, 111, 108, 100, 83,  101, 108, 101,
-    99,  116, 105, 111, 110, 83,  116, 101, 112, 46,  86,  111, 108, 117, 109,
-    101, 34,  58,  32,  123, 34,  65,  108, 108, 111, 119, 101, 100, 78,  111,
-    100, 101, 80,  114, 111, 116, 111, 116, 121, 112, 101, 115, 34,  58,  32,
-    91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
-    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116, 97,  46,
-    86,  111, 108, 117, 109, 101, 34,  93,  44,  32,  34,  68,  105, 115, 112,
-    108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  73,  110, 112, 117,
-    116, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101,
+    78,  111, 100, 101, 75,  105, 110, 100, 46,  83,  101, 103, 109, 101, 110,
+    116, 97,  116, 105, 111, 110, 83,  116, 101, 112, 34,  44,  32,  34,  80,
+    114, 111, 112, 101, 114, 116, 105, 101, 115, 34,  58,  32,  123, 34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  83,  101, 103, 109, 101, 110, 116, 97,
+    116, 105, 111, 110, 83,  116, 101, 112, 46,  84,  104, 114, 101, 115, 104,
+    111, 108, 100, 83,  101, 108, 101, 99,  116, 105, 111, 110, 83,  116, 101,
+    112, 46,  76,  111, 119, 101, 114, 84,  104, 114, 101, 115, 104, 111, 108,
+    100, 34,  58,  32,  123, 34,  68,  105, 115, 112, 108, 97,  121, 78,  97,
+    109, 101, 34,  58,  32,  34,  76,  111, 119, 101, 114, 84,  104, 114, 101,
+    115, 104, 111, 108, 100, 34,  44,  32,  34,  78,  97,  109, 101, 34,  58,
+    32,  34,  76,  111, 119, 101, 114, 84,  104, 114, 101, 115, 104, 111, 108,
+    100, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101,
     46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
     86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,
-    121, 112, 101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101, 110,
-    99,  101, 34,  125, 125, 44,  32,  34,  83,  116, 97,  114, 116, 115, 82,
-    117, 110, 65,  117, 116, 111, 109, 97,  116, 105, 99,  34,  58,  32,  116,
-    114, 117, 101, 44,  32,  34,  83,  116, 101, 112, 75,  105, 110, 100, 34,
-    58,  32,  34,  83,  101, 108, 101, 99,  116, 105, 111, 110, 83,  116, 101,
-    112, 34,  44,  32,  34,  83,  116, 101, 112, 84,  105, 112, 34,  58,  32,
-    34,  84,  104, 114, 101, 115, 104, 111, 108, 100, 32,  83,  101, 108, 101,
-    99,  116, 105, 111, 110, 34,  44,  32,  34,  85,  73,  34,  58,  32,  123,
-    34,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 83,  116,
-    101, 112, 85,  73,  69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,
-    123, 34,  78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110,
-    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
-    105, 101, 46,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110,
-    83,  116, 101, 112, 46,  84,  104, 114, 101, 115, 104, 111, 108, 100, 83,
-    101, 108, 101, 99,  116, 105, 111, 110, 83,  116, 101, 112, 46,  84,  104,
-    114, 101, 115, 104, 111, 108, 100, 87,  105, 100, 103, 101, 116, 34,  44,
-    32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  67,  117, 115, 116, 111,
-    109, 34,  125, 93,  125, 125, 0};
+    121, 112, 101, 46,  70,  108, 111, 97,  116, 34,  125, 44,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  83,  101, 103, 109, 101, 110, 116, 97,
+    116, 105, 111, 110, 83,  116, 101, 112, 46,  84,  104, 114, 101, 115, 104,
+    111, 108, 100, 83,  101, 108, 101, 99,  116, 105, 111, 110, 83,  116, 101,
+    112, 46,  85,  112, 112, 101, 114, 84,  104, 114, 101, 115, 104, 111, 108,
+    100, 34,  58,  32,  123, 34,  68,  105, 115, 112, 108, 97,  121, 78,  97,
+    109, 101, 34,  58,  32,  34,  85,  112, 112, 101, 114, 84,  104, 114, 101,
+    115, 104, 111, 108, 100, 34,  44,  32,  34,  78,  97,  109, 101, 34,  58,
+    32,  34,  85,  112, 112, 101, 114, 84,  104, 114, 101, 115, 104, 111, 108,
+    100, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101,
+    46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
+    86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,
+    121, 112, 101, 46,  70,  108, 111, 97,  116, 34,  125, 44,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  83,  101, 103, 109, 101, 110, 116, 97,
+    116, 105, 111, 110, 83,  116, 101, 112, 46,  84,  104, 114, 101, 115, 104,
+    111, 108, 100, 83,  101, 108, 101, 99,  116, 105, 111, 110, 83,  116, 101,
+    112, 46,  86,  111, 108, 117, 109, 101, 34,  58,  32,  123, 34,  65,  108,
+    108, 111, 119, 101, 100, 78,  111, 100, 101, 80,  114, 111, 116, 111, 116,
+    121, 112, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105,
+    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
+    101, 46,  68,  97,  116, 97,  46,  86,  111, 108, 117, 109, 101, 34,  93,
+    44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,
+    58,  32,  34,  73,  110, 112, 117, 116, 34,  44,  32,  34,  84,  121, 112,
+    101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114,
+    111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  78,  111, 100, 101,
+    82,  101, 102, 101, 114, 101, 110, 99,  101, 34,  125, 125, 44,  32,  34,
+    83,  116, 97,  114, 116, 115, 82,  117, 110, 65,  117, 116, 111, 109, 97,
+    116, 105, 99,  34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  83,  116,
+    101, 112, 75,  105, 110, 100, 34,  58,  32,  34,  83,  101, 108, 101, 99,
+    116, 105, 111, 110, 83,  116, 101, 112, 34,  44,  32,  34,  83,  116, 101,
+    112, 84,  105, 112, 34,  58,  32,  34,  84,  104, 114, 101, 115, 104, 111,
+    108, 100, 32,  83,  101, 108, 101, 99,  116, 105, 111, 110, 34,  44,  32,
+    34,  85,  73,  34,  58,  32,  123, 34,  83,  101, 103, 109, 101, 110, 116,
+    97,  116, 105, 111, 110, 83,  116, 101, 112, 85,  73,  69,  110, 116, 114,
+    105, 101, 115, 34,  58,  32,  91,  123, 34,  78,  97,  109, 101, 34,  58,
+    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  83,  101, 103, 109, 101,
+    110, 116, 97,  116, 105, 111, 110, 83,  116, 101, 112, 46,  84,  104, 114,
+    101, 115, 104, 111, 108, 100, 83,  101, 108, 101, 99,  116, 105, 111, 110,
+    83,  116, 101, 112, 46,  84,  104, 114, 101, 115, 104, 111, 108, 100, 87,
+    105, 100, 103, 101, 116, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,
+    32,  34,  67,  117, 115, 116, 111, 109, 34,  125, 93,  125, 125, 0};
 const char* ThresholdSelectionStepProperties::_getPrototypeJson() {
   return _prototype_ThresholdSelectionStep_;
 }
@@ -2841,10 +2963,14 @@ double ThresholdSelectionStepProperties::lowerThresholdRaw() {
 }
 QSharedPointer<NodeProperty>
 ThresholdSelectionStepProperties::lowerThresholdProperty() {
-  return _node->prototype()->getProperty(
+  return ThresholdSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep."
       "LowerThreshold",
       false);
+}
+NodePropertyTyped<vx::types::Float>
+ThresholdSelectionStepProperties::lowerThresholdPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(lowerThresholdProperty());
 }
 void ThresholdSelectionStepProperties::setLowerThreshold(double value) {
   _node->setNodePropertyTyped<double>(
@@ -2865,10 +2991,14 @@ double ThresholdSelectionStepProperties::upperThresholdRaw() {
 }
 QSharedPointer<NodeProperty>
 ThresholdSelectionStepProperties::upperThresholdProperty() {
-  return _node->prototype()->getProperty(
+  return ThresholdSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep."
       "UpperThreshold",
       false);
+}
+NodePropertyTyped<vx::types::Float>
+ThresholdSelectionStepProperties::upperThresholdPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(upperThresholdProperty());
 }
 void ThresholdSelectionStepProperties::setUpperThreshold(double value) {
   _node->setNodePropertyTyped<double>(
@@ -2888,9 +3018,13 @@ QDBusObjectPath ThresholdSelectionStepProperties::volumeRaw() {
 }
 QSharedPointer<NodeProperty>
 ThresholdSelectionStepProperties::volumeProperty() {
-  return _node->prototype()->getProperty(
+  return ThresholdSelectionStepProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep.Volume",
       false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+ThresholdSelectionStepProperties::volumePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(volumeProperty());
 }
 void ThresholdSelectionStepProperties::setVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(

@@ -24,13 +24,18 @@
 
 #include <Voxie/Vis/VisualizerNode.hpp>
 
+#include <Voxie/Component/HelpCommon.hpp>
+
 #include <QtCore/QDebug>
 #include <QtCore/QEvent>
 
 #include <QtGui/QCloseEvent>
 
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QVBoxLayout>
+
+#include <Main/Root.hpp>
 
 using namespace vx;
 
@@ -42,9 +47,11 @@ VisualizerContainer::VisualizerContainer(QMdiArea* container,
       container(container),
       window(nullptr) {
   visualizer->setParent(this);
-  this->setWindowTitle(this->visualizer->mainView()->windowTitle());
-  connect(this->visualizer->mainView(), &QWidget::windowTitleChanged, this,
+
+  connect(this->visualizer, &Node::displayNameChanged, this,
           &QWidget::setWindowTitle);
+  this->setWindowTitle(this->visualizer->displayName());
+
   this->setWindowIcon(icon);
   {
     QVBoxLayout* layout = new QVBoxLayout();
@@ -63,6 +70,12 @@ VisualizerContainer::VisualizerContainer(QMdiArea* container,
         QList<vx::Node*> nodes;
         nodes << this->visualizer;
         vx::voxieRoot().activeVisualizerProvider()->setSelectedNodes(nodes);
+      });
+
+      QAction* helpAction = bar->addAction("Help");
+      connect(helpAction, &QAction::triggered, this, [this]() {
+        voxieRoot().handleLink(
+            vx::help::uriForPrototype(this->visualizer->prototype()));
       });
 
       layout->addWidget(bar);
@@ -126,6 +139,45 @@ void VisualizerContainer::switchPopState() {
   }
 }
 
+// This is a workaround for a problem when the focus switches from a widget
+// outside the MDI area to the first widget in the MDI area, which will cause Qt
+// to activate the first MDI windows. This can happen with the Tab key, but also
+// when the focus is in a side panel property section and this section is hidden
+// (can happen e.g. when clicking on a link there). This class can be set as a
+// focus proxy which will magically prevent this from happening.
+class MdiFocusFix : public QWidget {
+  QMdiSubWindow* window;
+
+  static const bool debug = false;
+
+  // TODO: Make this also work for Shift+Tab? (Currently using Shift+Tab it's
+  // possible to switch into the last MDI window, which will cause that window
+  // to be activated.)
+
+ public:
+  MdiFocusFix(QWidget* parent, QMdiSubWindow* window)
+      : QWidget(parent), window(window) {
+    this->setFocusPolicy(Qt::StrongFocus);
+    show();
+  }
+
+  void focusInEvent(QFocusEvent* event) override {
+    if (debug) qDebug() << "MdiFocusFix::focusInEvent" << event;
+    // Note: A focus change because a widget is hidden or destroyed is
+    // will have TabFocusReason.
+    if (event->reason() != Qt::TabFocusReason &&
+        event->reason() != Qt::BacktabFocusReason) {
+      // If the reason is not Tab/Backtab, simulate a focus change to the real
+      // QMdiSubWindow, which will cause the QMdiSubWindow (which listens for
+      // QApplication::focusChanged) to activate the window if needed. (Without
+      // this clicking on the title bar of an MDI window will not activate it.)
+      if (debug) qDebug() << "MdiFocusFix: Forwarding event";
+      Q_EMIT qApp->focusChanged(this, window);
+    }
+    return QWidget::focusInEvent(event);
+  }
+};
+
 void VisualizerContainer::moveToNewMdiChild() {
   if (this->window != nullptr) {
     this->setParent(nullptr);
@@ -133,7 +185,7 @@ void VisualizerContainer::moveToNewMdiChild() {
   }
 
   this->window = this->container->addSubWindow(this);
-  // TODO: Choose position for new MDI childs differently?
+  this->window->setFocusProxy(new MdiFocusFix(this->container, this->window));
   this->window->move(10 / 96.0 * this->logicalDpiX(),
                      10 / 96.0 * this->logicalDpiY());
   this->window->setWindowIcon(icon);

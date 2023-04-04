@@ -59,6 +59,10 @@
               return node;                                                \
             }));                                                          \
     return prototype;                                                     \
+  }                                                                       \
+  QSharedPointer<vx::NodePrototype>                                       \
+      prototypeName##Properties::getNodePrototype() {                     \
+    return classname::getPrototypeSingleton();                            \
   }
 
 #define NODE_PROTOTYPE_IMPL(classname) \

@@ -2,7 +2,7 @@
     "NodePrototype": [
         {
             "Description": "Segmentation by setting multiple thresholds",
-            "DisplayName": "",
+            "DisplayName": "Multi-Threshold Segmentation",
             "StepTip": "Multi-Threshold Segmentation",
             "Name": "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep",
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",

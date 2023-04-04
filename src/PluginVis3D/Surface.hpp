@@ -24,8 +24,6 @@
 
 #include <Voxie/Node/Object3DNode.hpp>
 
-#include <Voxie/Vis/MouseOperation.hpp>
-
 #include <PluginVis3D/Prototypes.forward.hpp>
 
 namespace vx {
@@ -39,27 +37,16 @@ class Surface : public vx::Object3DNode {
   void mouseMoveEventImpl(
       QMouseEvent* event,
       std::tuple<Object3DPickImageData*, uint32_t, uint32_t> pickData,
-      const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd,
-      MouseOperation* mouseOperation);
+      const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd);
   void mousePressEventImpl(
       QMouseEvent* event,
       std::tuple<Object3DPickImageData*, uint32_t, uint32_t> pickData,
-      const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd,
-      MouseOperation* mouseOperation);
-  /**
-   * @brief mouseSelectEvent performs an select event (@link
-   * MouseOperation::Action or @link MouseOperation::SetPoint).
-   * This function is called from other mouse event functions like @link
-   * mouseMoveEvent() or @link mousePressEvent().
-   * @param event The event data from the mouse move or mouse press event.
-   * @param action The desired action to perform, either @link
-   * MouseOperation::Action or @link MouseOperation::SetPoint.
-   */
+      const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd);
   void mouseSelectEvent(
       QMouseEvent* event,
       std::tuple<Object3DPickImageData*, uint32_t, uint32_t> pickData,
       const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd,
-      MouseOperation::Action action);
+      bool doSetPoint);
 
   uint32_t highlightedTriangleID = 0;
 

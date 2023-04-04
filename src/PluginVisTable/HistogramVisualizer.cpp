@@ -228,7 +228,6 @@ void HistogramVisualizer::updateTable() {
     properties->setColumn(currentColumn);
   }
 
-  view()->setWindowTitle(title);
   setAutomaticDisplayName(title);
 
   updateData();

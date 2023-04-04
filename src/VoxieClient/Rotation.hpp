@@ -49,7 +49,10 @@ class Rotation<T, 3> {
  public:
   explicit Rotation(const Quaternion<T>& quaternion) : quaternion_(quaternion) {
     T lenSq = squaredNorm(quaternion);
-    if (lenSq < 0.98 || lenSq > 1.02)
+    // Allow a lot of values because normalization of small vectors currently
+    // does not work very well (e.g. in fromAxisAndAngle())
+    // if (lenSq < 0.98 || lenSq > 1.02)
+    if (lenSq < 0.90 || lenSq > 1.10)
       vx::intern::throwQuaternionLengthOutOfRange(lenSq);
     using std::sqrt;
     quaternion_ /= sqrt(lenSq);
@@ -71,9 +74,15 @@ class Rotation<T, 3> {
          1 - 2 * x * x - 2 * y * y},
     };
   }
-  operator LinearMap<T, 3>() { return createLinearMap(asRotationMatrix()); }
-  operator AffineMap<T, 3>() { return createLinearMap(asRotationMatrix()); }
-  operator ProjectiveMap<T, 3>() { return createLinearMap(asRotationMatrix()); }
+  operator LinearMap<T, 3>() const {
+    return createLinearMap(asRotationMatrix());
+  }
+  operator AffineMap<T, 3>() const {
+    return createLinearMap(asRotationMatrix());
+  }
+  operator ProjectiveMap<T, 3>() const {
+    return createLinearMap(asRotationMatrix());
+  }
 
   const Quaternion<T>& asQuaternion() const { return this->quaternion_; }
   Quaternion<T>& asQuaternion() { return this->quaternion_; }
@@ -93,6 +102,51 @@ class Rotation<T, 3> {
   }
   friend Rotation& operator*=(Rotation& rot, const Rotation& rot2) {
     return rot = rot * rot2;
+  }
+
+ private:
+  LinearMap<T, 3> asMap() const { return *this; }
+  AffineMap<T, 3> asAMap() const { return *this; }
+  ProjectiveMap<T, 3> asPMap() const { return *this; }
+
+ public:
+  // Needed to avoid casts
+  friend LinearMap<T, 3> operator*(const Rotation& v1,
+                                   const LinearMap<T, 3>& v2) {
+    return v1.asMap() * v2;
+  }
+  friend LinearMap<T, 3> operator*(const LinearMap<T, 3>& v1,
+                                   const Rotation& v2) {
+    return v1 * v2.asMap();
+  }
+  friend LinearMap<T, 3>& operator*=(LinearMap<T, 3>& v1, const Rotation& v2) {
+    return v1 *= v2.asMap();
+  }
+
+  // TODO: Allow LinearMap<> * AffineMap<> etc.?
+  friend AffineMap<T, 3> operator*(const Rotation& v1,
+                                   const AffineMap<T, 3>& v2) {
+    return v1.asAMap() * v2;
+  }
+  friend AffineMap<T, 3> operator*(const AffineMap<T, 3>& v1,
+                                   const Rotation& v2) {
+    return v1 * v2.asAMap();
+  }
+  friend AffineMap<T, 3>& operator*=(AffineMap<T, 3>& v1, const Rotation& v2) {
+    return v1 *= v2.asAMap();
+  }
+
+  friend ProjectiveMap<T, 3> operator*(const Rotation& v1,
+                                       const ProjectiveMap<T, 3>& v2) {
+    return v1.asPMap() * v2;
+  }
+  friend ProjectiveMap<T, 3> operator*(const ProjectiveMap<T, 3>& v1,
+                                       const Rotation& v2) {
+    return v1 * v2.asPMap();
+  }
+  friend ProjectiveMap<T, 3>& operator*=(ProjectiveMap<T, 3>& v1,
+                                         const Rotation& v2) {
+    return v1 *= v2.asPMap();
   }
 
   // The angle of the rotation in radians
@@ -198,9 +252,25 @@ inline Rotation<T, 3> rotationFromAxisAngle(const vx::Vector<T, 3>& axis,
                                             T rad) {
   using std::cos;
   using std::sin;
+  using std::sqrt;
+
+  T axisNorm = sqrt(squaredNorm(axis));
+  if (axisNorm == 0) {
+    // Zero-length axis. (Or axis length close enought to zero that the squared
+    // values is rounded to zero). This should only happen for rad == 0.
+    // Return an identity rotation even if rad != 0, as there is no proper value
+    // to return in this case.
+    return identityRotation<T>();
+  }
+  // TODO: Check what happens if axisNorm is very close to 0 (might return a
+  // non-normalized vector in this case and the Rotation constructor below might
+  // throw)
+  auto axisNormalized = axis / axisNorm;
+
   T sinVal = sin(rad / 2);
   T cosVal = cos(rad / 2);
-  auto axis2 = sinVal * normalize(axis);
+  auto axis2 = sinVal * axisNormalized;
+  // qDebug() << "Normalized" << squaredNorm(axisNormalized);
   return Rotation<T, 3>(Quaternion<T>(cosVal, axis2[0], axis2[1], axis2[2]));
 }
 template <typename T>

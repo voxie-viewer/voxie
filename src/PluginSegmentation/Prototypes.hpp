@@ -12,6 +12,7 @@
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
 #include <Voxie/Node/Node.hpp>
+#include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
 
 namespace vx {
@@ -273,12 +274,14 @@ class SegmentationProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   SegmentationProperties(vx::Node* parent);
   ~SegmentationProperties();
 
   vx::Node* input() override final;
   QDBusObjectPath inputRaw() override final;
-  QSharedPointer<NodeProperty> inputProperty();
+  static QSharedPointer<NodeProperty> inputProperty();
+  static NodePropertyTyped<vx::types::NodeReference> inputPropertyTyped();
   void setInput(vx::Node* value);
  Q_SIGNALS:
   void inputChanged(vx::Node* value);
@@ -288,7 +291,9 @@ class SegmentationProperties : public QObject,
 
   vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
-  QSharedPointer<NodeProperty> outputProperty();
+  static QSharedPointer<NodeProperty> outputProperty();
+  static NodePropertyTyped<vx::types::OutputNodeReference>
+  outputPropertyTyped();
   void setOutput(vx::Node* value);
  Q_SIGNALS:
   void outputChanged(vx::Node* value);
@@ -299,7 +304,9 @@ class SegmentationProperties : public QObject,
 
   QList<vx::Node*> stepList() override final;
   QList<QDBusObjectPath> stepListRaw() override final;
-  QSharedPointer<NodeProperty> stepListProperty();
+  static QSharedPointer<NodeProperty> stepListProperty();
+  static NodePropertyTyped<vx::types::NodeReferenceList>
+  stepListPropertyTyped();
   void setStepList(QList<vx::Node*> value);
  Q_SIGNALS:
   void stepListChanged(QList<vx::Node*> value);
@@ -340,12 +347,14 @@ class AssignmentStepProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   AssignmentStepProperties(vx::Node* parent);
   ~AssignmentStepProperties();
 
   qint64 labelID() override final;
   qint64 labelIDRaw() override final;
-  QSharedPointer<NodeProperty> labelIDProperty();
+  static QSharedPointer<NodeProperty> labelIDProperty();
+  static NodePropertyTyped<vx::types::Int> labelIDPropertyTyped();
   void setLabelID(qint64 value);
  Q_SIGNALS:
   void labelIDChanged(qint64 value);
@@ -431,6 +440,7 @@ class BrushSelectionStepProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   BrushSelectionStepProperties(vx::Node* parent);
   ~BrushSelectionStepProperties();
 
@@ -438,7 +448,9 @@ class BrushSelectionStepProperties : public QObject,
       override final;
   QList<std::tuple<std::tuple<double, double, double>, double>>
   brushEraseCentersWithRadiusRaw() override final;
-  QSharedPointer<NodeProperty> brushEraseCentersWithRadiusProperty();
+  static QSharedPointer<NodeProperty> brushEraseCentersWithRadiusProperty();
+  static NodePropertyTyped<vx::types::ListPosition3DDoubleTuple>
+  brushEraseCentersWithRadiusPropertyTyped();
   void setBrushEraseCentersWithRadius(
       QList<std::tuple<QVector3D, double>> value);
  Q_SIGNALS:
@@ -454,7 +466,9 @@ class BrushSelectionStepProperties : public QObject,
       override final;
   QList<std::tuple<std::tuple<double, double, double>, double>>
   brushSelectCentersWithRadiusRaw() override final;
-  QSharedPointer<NodeProperty> brushSelectCentersWithRadiusProperty();
+  static QSharedPointer<NodeProperty> brushSelectCentersWithRadiusProperty();
+  static NodePropertyTyped<vx::types::ListPosition3DDoubleTuple>
+  brushSelectCentersWithRadiusPropertyTyped();
   void setBrushSelectCentersWithRadius(
       QList<std::tuple<QVector3D, double>> value);
  Q_SIGNALS:
@@ -469,7 +483,9 @@ class BrushSelectionStepProperties : public QObject,
   QQuaternion planeOrientation() override final;
   std::tuple<double, double, double, double> planeOrientationRaw()
       override final;
-  QSharedPointer<NodeProperty> planeOrientationProperty();
+  static QSharedPointer<NodeProperty> planeOrientationProperty();
+  static NodePropertyTyped<vx::types::Orientation3D>
+  planeOrientationPropertyTyped();
   void setPlaneOrientation(QQuaternion value);
  Q_SIGNALS:
   void planeOrientationChanged(QQuaternion value);
@@ -480,7 +496,8 @@ class BrushSelectionStepProperties : public QObject,
 
   QVector3D planeOrigin() override final;
   std::tuple<double, double, double> planeOriginRaw() override final;
-  QSharedPointer<NodeProperty> planeOriginProperty();
+  static QSharedPointer<NodeProperty> planeOriginProperty();
+  static NodePropertyTyped<vx::types::Position3D> planeOriginPropertyTyped();
   void setPlaneOrigin(QVector3D value);
  Q_SIGNALS:
   void planeOriginChanged(QVector3D value);
@@ -492,7 +509,9 @@ class BrushSelectionStepProperties : public QObject,
   QQuaternion volumeOrientation() override final;
   std::tuple<double, double, double, double> volumeOrientationRaw()
       override final;
-  QSharedPointer<NodeProperty> volumeOrientationProperty();
+  static QSharedPointer<NodeProperty> volumeOrientationProperty();
+  static NodePropertyTyped<vx::types::Orientation3D>
+  volumeOrientationPropertyTyped();
   void setVolumeOrientation(QQuaternion value);
  Q_SIGNALS:
   void volumeOrientationChanged(QQuaternion value);
@@ -503,7 +522,8 @@ class BrushSelectionStepProperties : public QObject,
 
   QVector3D volumeOrigin() override final;
   std::tuple<double, double, double> volumeOriginRaw() override final;
-  QSharedPointer<NodeProperty> volumeOriginProperty();
+  static QSharedPointer<NodeProperty> volumeOriginProperty();
+  static NodePropertyTyped<vx::types::Position3D> volumeOriginPropertyTyped();
   void setVolumeOrigin(QVector3D value);
  Q_SIGNALS:
   void volumeOriginChanged(QVector3D value);
@@ -514,7 +534,8 @@ class BrushSelectionStepProperties : public QObject,
 
   QVector3D voxelSize() override final;
   std::tuple<double, double, double> voxelSizeRaw() override final;
-  QSharedPointer<NodeProperty> voxelSizeProperty();
+  static QSharedPointer<NodeProperty> voxelSizeProperty();
+  static NodePropertyTyped<vx::types::Position3D> voxelSizePropertyTyped();
   void setVoxelSize(QVector3D value);
  Q_SIGNALS:
   void voxelSizeChanged(QVector3D value);
@@ -586,13 +607,16 @@ class LassoSelectionStepProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   LassoSelectionStepProperties(vx::Node* parent);
   ~LassoSelectionStepProperties();
 
   QQuaternion planeOrientation() override final;
   std::tuple<double, double, double, double> planeOrientationRaw()
       override final;
-  QSharedPointer<NodeProperty> planeOrientationProperty();
+  static QSharedPointer<NodeProperty> planeOrientationProperty();
+  static NodePropertyTyped<vx::types::Orientation3D>
+  planeOrientationPropertyTyped();
   void setPlaneOrientation(QQuaternion value);
  Q_SIGNALS:
   void planeOrientationChanged(QQuaternion value);
@@ -603,7 +627,8 @@ class LassoSelectionStepProperties : public QObject,
 
   QVector3D planeOrigin() override final;
   std::tuple<double, double, double> planeOriginRaw() override final;
-  QSharedPointer<NodeProperty> planeOriginProperty();
+  static QSharedPointer<NodeProperty> planeOriginProperty();
+  static NodePropertyTyped<vx::types::Position3D> planeOriginPropertyTyped();
   void setPlaneOrigin(QVector3D value);
  Q_SIGNALS:
   void planeOriginChanged(QVector3D value);
@@ -614,7 +639,9 @@ class LassoSelectionStepProperties : public QObject,
 
   QList<QVector3D> polygonNodes() override final;
   QList<std::tuple<double, double, double>> polygonNodesRaw() override final;
-  QSharedPointer<NodeProperty> polygonNodesProperty();
+  static QSharedPointer<NodeProperty> polygonNodesProperty();
+  static NodePropertyTyped<vx::types::ListPosition3D>
+  polygonNodesPropertyTyped();
   void setPolygonNodes(QList<QVector3D> value);
  Q_SIGNALS:
   void polygonNodesChanged(QList<QVector3D> value);
@@ -626,7 +653,9 @@ class LassoSelectionStepProperties : public QObject,
   QQuaternion volumeOrientation() override final;
   std::tuple<double, double, double, double> volumeOrientationRaw()
       override final;
-  QSharedPointer<NodeProperty> volumeOrientationProperty();
+  static QSharedPointer<NodeProperty> volumeOrientationProperty();
+  static NodePropertyTyped<vx::types::Orientation3D>
+  volumeOrientationPropertyTyped();
   void setVolumeOrientation(QQuaternion value);
  Q_SIGNALS:
   void volumeOrientationChanged(QQuaternion value);
@@ -637,7 +666,8 @@ class LassoSelectionStepProperties : public QObject,
 
   QVector3D volumeOrigin() override final;
   std::tuple<double, double, double> volumeOriginRaw() override final;
-  QSharedPointer<NodeProperty> volumeOriginProperty();
+  static QSharedPointer<NodeProperty> volumeOriginProperty();
+  static NodePropertyTyped<vx::types::Position3D> volumeOriginPropertyTyped();
   void setVolumeOrigin(QVector3D value);
  Q_SIGNALS:
   void volumeOriginChanged(QVector3D value);
@@ -648,7 +678,8 @@ class LassoSelectionStepProperties : public QObject,
 
   QVector3D voxelSize() override final;
   std::tuple<double, double, double> voxelSizeRaw() override final;
-  QSharedPointer<NodeProperty> voxelSizeProperty();
+  static QSharedPointer<NodeProperty> voxelSizeProperty();
+  static NodePropertyTyped<vx::types::Position3D> voxelSizePropertyTyped();
   void setVoxelSize(QVector3D value);
  Q_SIGNALS:
   void voxelSizeChanged(QVector3D value);
@@ -690,12 +721,14 @@ class ManualSelectionStepProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   ManualSelectionStepProperties(vx::Node* parent);
   ~ManualSelectionStepProperties();
 
   QList<qint64> labelIds() override final;
   QList<qint64> labelIdsRaw() override final;
-  QSharedPointer<NodeProperty> labelIdsProperty();
+  static QSharedPointer<NodeProperty> labelIdsProperty();
+  static NodePropertyTyped<vx::types::IntList> labelIdsPropertyTyped();
   void setLabelIds(QList<qint64> value);
  Q_SIGNALS:
   void labelIdsChanged(QList<qint64> value);
@@ -760,12 +793,14 @@ class MetaStepProperties : public QObject, public MetaStepPropertiesBase {
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   MetaStepProperties(vx::Node* parent);
   ~MetaStepProperties();
 
   vx::Color color() override final;
   std::tuple<double, double, double, double> colorRaw() override final;
-  QSharedPointer<NodeProperty> colorProperty();
+  static QSharedPointer<NodeProperty> colorProperty();
+  static NodePropertyTyped<vx::types::Color> colorPropertyTyped();
   void setColor(vx::Color value);
  Q_SIGNALS:
   void colorChanged(vx::Color value);
@@ -775,7 +810,8 @@ class MetaStepProperties : public QObject, public MetaStepPropertiesBase {
 
   QString description() override final;
   QString descriptionRaw() override final;
-  QSharedPointer<NodeProperty> descriptionProperty();
+  static QSharedPointer<NodeProperty> descriptionProperty();
+  static NodePropertyTyped<vx::types::String> descriptionPropertyTyped();
   void setDescription(QString value);
  Q_SIGNALS:
   void descriptionChanged(QString value);
@@ -786,7 +822,8 @@ class MetaStepProperties : public QObject, public MetaStepPropertiesBase {
 
   qint64 labelID() override final;
   qint64 labelIDRaw() override final;
-  QSharedPointer<NodeProperty> labelIDProperty();
+  static QSharedPointer<NodeProperty> labelIDProperty();
+  static NodePropertyTyped<vx::types::Int> labelIDPropertyTyped();
   void setLabelID(qint64 value);
  Q_SIGNALS:
   void labelIDChanged(qint64 value);
@@ -797,7 +834,9 @@ class MetaStepProperties : public QObject, public MetaStepPropertiesBase {
 
   QString modificationKind() override final;
   QString modificationKindRaw() override final;
-  QSharedPointer<NodeProperty> modificationKindProperty();
+  static QSharedPointer<NodeProperty> modificationKindProperty();
+  static NodePropertyTyped<vx::types::Enumeration>
+  modificationKindPropertyTyped();
   void setModificationKind(QString value);
  Q_SIGNALS:
   void modificationKindChanged(QString value);
@@ -808,7 +847,8 @@ class MetaStepProperties : public QObject, public MetaStepPropertiesBase {
 
   QString name() override final;
   QString nameRaw() override final;
-  QSharedPointer<NodeProperty> nameProperty();
+  static QSharedPointer<NodeProperty> nameProperty();
+  static NodePropertyTyped<vx::types::String> namePropertyTyped();
   void setName(QString value);
  Q_SIGNALS:
   void nameChanged(QString value);
@@ -818,7 +858,8 @@ class MetaStepProperties : public QObject, public MetaStepPropertiesBase {
 
   bool visibility() override final;
   bool visibilityRaw() override final;
-  QSharedPointer<NodeProperty> visibilityProperty();
+  static QSharedPointer<NodeProperty> visibilityProperty();
+  static NodePropertyTyped<vx::types::Boolean> visibilityPropertyTyped();
   void setVisibility(bool value);
  Q_SIGNALS:
   void visibilityChanged(bool value);
@@ -874,6 +915,7 @@ class MultiThresholdStepProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   MultiThresholdStepProperties(vx::Node* parent);
   ~MultiThresholdStepProperties();
 
@@ -881,7 +923,9 @@ class MultiThresholdStepProperties : public QObject,
   thresholdList() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint64>>
   thresholdListRaw() override final;
-  QSharedPointer<NodeProperty> thresholdListProperty();
+  static QSharedPointer<NodeProperty> thresholdListProperty();
+  static NodePropertyTyped<vx::types::ThresholdLabelMapping>
+  thresholdListPropertyTyped();
   void setThresholdList(
       QList<std::tuple<double, std::tuple<double, double, double, double>,
                        qint64>>
@@ -899,7 +943,8 @@ class MultiThresholdStepProperties : public QObject,
 
   vx::Node* volume() override final;
   QDBusObjectPath volumeRaw() override final;
-  QSharedPointer<NodeProperty> volumeProperty();
+  static QSharedPointer<NodeProperty> volumeProperty();
+  static NodePropertyTyped<vx::types::NodeReference> volumePropertyTyped();
   void setVolume(vx::Node* value);
  Q_SIGNALS:
   void volumeChanged(vx::Node* value);
@@ -940,12 +985,14 @@ class RemoveLabelStepProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   RemoveLabelStepProperties(vx::Node* parent);
   ~RemoveLabelStepProperties();
 
   QList<qint64> labelIDs() override final;
   QList<qint64> labelIDsRaw() override final;
-  QSharedPointer<NodeProperty> labelIDsProperty();
+  static QSharedPointer<NodeProperty> labelIDsProperty();
+  static NodePropertyTyped<vx::types::IntList> labelIDsPropertyTyped();
   void setLabelIDs(QList<qint64> value);
  Q_SIGNALS:
   void labelIDsChanged(QList<qint64> value);
@@ -986,12 +1033,14 @@ class SubtractStepProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   SubtractStepProperties(vx::Node* parent);
   ~SubtractStepProperties();
 
   qint64 labelId() override final;
   qint64 labelIdRaw() override final;
-  QSharedPointer<NodeProperty> labelIdProperty();
+  static QSharedPointer<NodeProperty> labelIdProperty();
+  static NodePropertyTyped<vx::types::Int> labelIdPropertyTyped();
   void setLabelId(qint64 value);
  Q_SIGNALS:
   void labelIdChanged(qint64 value);
@@ -1044,12 +1093,14 @@ class ThresholdSelectionStepProperties
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   ThresholdSelectionStepProperties(vx::Node* parent);
   ~ThresholdSelectionStepProperties();
 
   double lowerThreshold() override final;
   double lowerThresholdRaw() override final;
-  QSharedPointer<NodeProperty> lowerThresholdProperty();
+  static QSharedPointer<NodeProperty> lowerThresholdProperty();
+  static NodePropertyTyped<vx::types::Float> lowerThresholdPropertyTyped();
   void setLowerThreshold(double value);
  Q_SIGNALS:
   void lowerThresholdChanged(double value);
@@ -1060,7 +1111,8 @@ class ThresholdSelectionStepProperties
 
   double upperThreshold() override final;
   double upperThresholdRaw() override final;
-  QSharedPointer<NodeProperty> upperThresholdProperty();
+  static QSharedPointer<NodeProperty> upperThresholdProperty();
+  static NodePropertyTyped<vx::types::Float> upperThresholdPropertyTyped();
   void setUpperThreshold(double value);
  Q_SIGNALS:
   void upperThresholdChanged(double value);
@@ -1071,7 +1123,8 @@ class ThresholdSelectionStepProperties
 
   vx::Node* volume() override final;
   QDBusObjectPath volumeRaw() override final;
-  QSharedPointer<NodeProperty> volumeProperty();
+  static QSharedPointer<NodeProperty> volumeProperty();
+  static NodePropertyTyped<vx::types::NodeReference> volumePropertyTyped();
   void setVolume(vx::Node* value);
  Q_SIGNALS:
   void volumeChanged(vx::Node* value);

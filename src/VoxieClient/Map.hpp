@@ -283,6 +283,19 @@ AffineMap<T, dim, dim> createTranslation(const vx::Vector<T, dim>& v) {
       concatColumns(identityMatrix<T, dim>(), createColumnVector(v)));
 }
 
+template <std::size_t dim, typename T>
+AffineMap<T, dim, dim> createScaling(const T& v) {
+  vx::Matrix<T, dim, dim> mat = vx::Matrix<T, dim, dim>::zero();
+  for (std::size_t i = 0; i < dim; i++) mat(i, i) = v;
+  return createLinearMap(mat);
+}
+template <typename T, std::size_t dim>
+AffineMap<T, dim, dim> createScaling(const vx::Vector<T, dim>& v) {
+  vx::Matrix<T, dim, dim> mat = vx::Matrix<T, dim, dim>::zero();
+  for (std::size_t i = 0; i < dim; i++) mat(i, i) = v(i);
+  return createLinearMap(mat);
+}
+
 // Note: Only maps which do not change dimension can be invertible
 template <typename T, std::size_t dim>
 AffineMap<T, dim> inverse(const AffineMap<T, dim>& m,

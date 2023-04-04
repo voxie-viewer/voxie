@@ -46,6 +46,8 @@ HelpWindow::HelpWindow(QWidget* parent)
     QObject::connect(
         backendView.data(), &HelpBrowserBackendView::handleLink, this,
         [this](const QUrl& url) { this->linkHandler.handleLink(url); });
+    QObject::connect(backendView.data(), &HelpBrowserBackendView::doReload,
+                     this, [this]() { this->openHelpForUri(this->lastUri); });
   }
 
   this->setWindowTitle("Voxie help");
@@ -69,6 +71,7 @@ void HelpWindow::openHelpForUri(const QString& uri) {
   auto data = pageGenerator.generateHelpPage(uri, false, nullptr);
   // qDebug() << "setHtml" << this->backendView << std::get<0>(data)
   //         << std::get<1>(data).length();
+  this->lastUri = uri;
   if (this->backendView) {
     this->backendView->setHtml(
         std::get<1>(data),

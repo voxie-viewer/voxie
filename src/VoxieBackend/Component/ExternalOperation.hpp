@@ -137,7 +137,6 @@ class VOXIEBACKEND_EXPORT ExternalOperationImport : public ExternalOperation {
   void finished(const QSharedPointer<vx::Data>& data);
 };
 
-class ExternalOperationExportAdapterImpl;
 class VOXIEBACKEND_EXPORT ExternalOperationExport : public ExternalOperation {
   Q_OBJECT
   REFCOUNTEDOBJ_DECL(ExternalOperationExport)

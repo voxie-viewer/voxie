@@ -179,6 +179,18 @@ class VOXIECORESHARED_EXPORT PropertyConditionHasValue
 };
 
 namespace vx {
+enum class PropertyConnectionPriority : quint32 {
+  // Don't show connection in "new ... node" window
+  HideNew,
+
+  // Normal connection
+  Normal,
+};
+VOXIECORESHARED_EXPORT PropertyConnectionPriority
+parseConnectionPriority(const QString& str);
+VOXIECORESHARED_EXPORT QString
+connectionPriorityToString(PropertyConnectionPriority priority);
+
 class VOXIECORESHARED_EXPORT NodeProperty : public vx::PropertyBase {
   Q_OBJECT
 
@@ -206,6 +218,8 @@ class VOXIECORESHARED_EXPORT NodeProperty : public vx::PropertyBase {
   qint64 intMaximum_;
   QStringList patterns_;
   bool hasPatterns_;
+
+  PropertyConnectionPriority connectionPriority_;
 
  public:
   QList<QWeakPointer<vx::NodePrototype>> _allowedTypes;
@@ -286,6 +300,10 @@ class VOXIECORESHARED_EXPORT NodeProperty : public vx::PropertyBase {
   qint64 intMaximum();
   QStringList patterns();
 
+  PropertyConnectionPriority connectionPriority() {
+    return connectionPriority_;
+  }
+
   /**
    * @brief Return whether obj is allowed as a value for the property. Throws an
    * exception when the property is not a reference property.
@@ -301,5 +319,23 @@ class VOXIECORESHARED_EXPORT NodeProperty : public vx::PropertyBase {
    */
   bool allowsAsValue(vx::NodePrototype* childPrototype);
   bool allowsAsValue(const QSharedPointer<vx::NodePrototype>& childPrototype);
+
+  void throwIfTypeIsNot(const QSharedPointer<PropertyType>& type);
+};
+
+template <typename Type_>
+class NodePropertyTyped {
+  QSharedPointer<NodeProperty> property_;
+
+ public:
+  using Type = Type_;
+  using QtType = typename Type::QtType;
+
+  explicit NodePropertyTyped(const QSharedPointer<NodeProperty>& property)
+      : property_(property) {
+    property_->throwIfTypeIsNot(Type::type());
+  }
+
+  const QSharedPointer<NodeProperty>& property() const { return property_; }
 };
 }  // namespace vx

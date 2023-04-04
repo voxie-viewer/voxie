@@ -76,8 +76,9 @@ void OperationRegistry::addOperation(
     throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
                         "operation is nullptr");
 
-  // TODO: Should this be done earlier, e.g. when the operation finished but
-  // still is existing?
+  // Clean up destroyed operations
+  // TODO: This probably should not be needed because all operations should emit
+  // finished() before being destroyed
   QObject::connect(operation.data(), &QObject::destroyed, this, [this]() {
     // TODO: Do this more efficiently?
     for (int i = 0; i < operations.size();) {
@@ -89,6 +90,26 @@ void OperationRegistry::addOperation(
     }
   });
   this->operations << operation;
+  QWeakPointer<Operation> operationWeak = operation;
+  // TODO: It seems like some operations (e.g. run "Extract Isosurface") are not
+  // destroyed on windows. Check this.
+  operation->onFinished(
+      this, [this, operationWeak](
+                const QSharedPointer<Operation::ResultError>& result) {
+        Q_UNUSED(result);
+
+        auto operationStrong = operationWeak.lock();
+        if (!operationStrong) return;
+
+        // TODO: Do this more efficiently?
+        for (int i = 0; i < operations.size();) {
+          if (operations[i] == operationStrong) {
+            operations.removeAt(i);
+          } else {
+            i++;
+          }
+        }
+      });
 
   Q_EMIT this->newRunningOperation(operation);
 }

@@ -159,7 +159,6 @@ Plugin::Plugin(QObject* plugin, const QString& name,
       plugin(plugin),
       pluginName("unknown"),
       allScriptExtensions(),
-      allUiCommands(),
       allFilters2D(),
       allImporters(),
       allExporters(),
@@ -180,11 +179,6 @@ void Plugin::initialize() {
       qobject_cast<IScriptExtensionPlugin*>(plugin);
   if (scriptExtensionPlugin) {
     this->allScriptExtensions = scriptExtensionPlugin->scriptExtensions();
-  }
-
-  IUICommandPlugin* uiCommandPlugin = qobject_cast<IUICommandPlugin*>(plugin);
-  if (uiCommandPlugin) {
-    this->allUiCommands = uiCommandPlugin->uiCommands();
   }
 
   IFilter2DPlugin* filter2dPlugin = qobject_cast<IFilter2DPlugin*>(plugin);
@@ -210,7 +204,6 @@ void Plugin::initialize() {
   // Set up parent of UI commands (so they will be when the Plugin is
   // deleted) but do not make them available over ListMembers() /
   // GetMemberByName() (because they are QActions and not Components)
-  registerChildren(this, this->allUiCommands, "UICommands");
   addObjects("Filter2DPrototype", this->allFilters2D);
   addObjects("Importer", this->allImporters);
   addObjects("Exporter", this->allExporters);

@@ -5,6 +5,9 @@
             "DisplayName": "NodeGroup",
             "Name": "de.uni_stuttgart.Voxie.Node.NodeGroup",
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.NodeGroup",
+            "TroveClassifiers": [
+                "Development Status :: 4 - Beta"
+            ],
             "Properties": {}
         }
     ]

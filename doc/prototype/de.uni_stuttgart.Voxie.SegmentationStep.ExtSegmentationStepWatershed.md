@@ -38,7 +38,7 @@ Determines if the sequential or parallel implementation is used
 
 ## Parallel Implementation
 
-The parallel implementation is based on the paper "Parallel Marker-Based Image Segmentation with Watershed Transformation" by Alina N. Moga (doi: 10.1007/3-540-49164-3\_21).
+The parallel implementation is based on the paper "Parallel Marker-Based Image Segmentation with Watershed Transformation" by Alina N. Moga <doi:10.1007/3-540-49164-3_21>.
 
 The algorithm works by creating minimum spanning trees for each region on different threads using the Boruvka algorithm.
 After that those regions are merged pairwise.

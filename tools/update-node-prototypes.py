@@ -92,6 +92,20 @@ def getCppTypeRaw(name):
         return property_types.dbusToCppRawType(ptype['DBusSignature'])
 
 
+def getShortName(name):
+    if name not in property_types.typesWithCompat:
+        raise Exception('Unknown property type name: ' + repr(name))
+    ptype = property_types.typesWithCompat[name]
+
+    sname = ptype['Name']
+    if '.' in sname:
+        sname = sname[sname.rindex('.') + 1:]
+    if 'ShortName' in ptype:
+        sname = ptype['ShortName']
+
+    return sname
+
+
 for (outPrefix, inputFiles, doExport) in files:
     exportStr = ''
     if doExport:
@@ -141,6 +155,7 @@ for (outPrefix, inputFiles, doExport) in files:
         hpp.write('#include <Voxie/Data/Color.hpp>\n')
         hpp.write('#include <Voxie/Data/ColorizerEntry.hpp>\n')
         hpp.write('#include <VoxieBackend/Data/DataType.hpp>\n')
+        hpp.write('#include <Voxie/Node/Types.hpp>\n')  # TODO: Add this include?
         hpp.write('\n')
         cpp.write('#include "Prototypes.hpp"\n')
         cpp.write('\n')
@@ -264,6 +279,7 @@ for (outPrefix, inputFiles, doExport) in files:
 
             namePrototypeJson = '_prototype_' + nameBare + '_'
             hpp.write('static const char* _getPrototypeJson();\n')
+            hpp.write('static QSharedPointer<vx::NodePrototype> getNodePrototype();\n')
             cpp.write('static const char ' + namePrototypeJson + '[] = {\n')
             f = io.StringIO()
             json.dump(prototype, f, allow_nan=False,
@@ -295,6 +311,7 @@ for (outPrefix, inputFiles, doExport) in files:
                 ptype = property['Type']
                 ptypeCpp = getCppType(ptype)
                 ptypeCppRaw2 = getCppTypeRaw(ptype)
+                ptypeShort = getShortName(ptype)
                 getterName = pnameBare[0].lower() + pnameBare[1:]
                 setterName = 'set' + pnameBare[0].upper() + pnameBare[1:]
                 eventName = pnameBare[0].lower() + pnameBare[1:] + 'Changed'
@@ -317,11 +334,16 @@ for (outPrefix, inputFiles, doExport) in files:
                 cpp.write('}\n')
 
                 hpp.write(
-                    'QSharedPointer<NodeProperty> %sProperty();\n' % (getterName))
+                    'static QSharedPointer<NodeProperty> %sProperty();\n' % (getterName))
+                hpp.write(
+                    'static NodePropertyTyped<vx::types::%s> %sPropertyTyped();\n' % (ptypeShort, getterName))
                 cpp.write('QSharedPointer<NodeProperty> %s::%sProperty() {\n' % (
                     nameProperties, getterName))
-                cpp.write('return _node->prototype()->getProperty(%s, false);\n' %
-                          (escapeCppString(pname),))
+                cpp.write('return %s::getNodePrototype()->getProperty(%s, false);\n' %
+                          (nameProperties, escapeCppString(pname),))
+                cpp.write('}\n')
+                cpp.write('NodePropertyTyped<vx::types::%s> %s::%sPropertyTyped() {\n' % (ptypeShort, nameProperties, getterName))
+                cpp.write('return NodePropertyTyped<vx::types::%s>(%sProperty());\n' % (ptypeShort, getterName,))
                 cpp.write('}\n')
 
                 hpp.write('void %s(%s value);\n' % (setterName, ptypeCpp))

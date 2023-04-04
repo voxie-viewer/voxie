@@ -106,7 +106,7 @@ VOXIE_REF="$(git rev-parse HEAD)"
 VOXIE_REF_SHORT="$(git rev-parse --short=10 "$VOXIE_REF")"
 VOXIE_TAG="$VOXIE_REF"
 
-rm -rf build/release/install build/release/*-mac*.tar.gz voxie-*mac*.tar.gz build/release/*.dmg voxie-*mac*.dmg old-manual.pdf
+rm -rf build/release/install build/release/*-mac*.tar.gz voxie-*mac*.tar.gz build/release/*.dmg voxie-*mac*.dmg
 
 mkdir -p "build/release/install"
 
@@ -203,7 +203,6 @@ rm -f build/release/new.dmg
 
 echo "Copy .dmg file..."
 cp build/release/"$TAG-mac64.dmg" .
-#cp build/extra/old-manual.pdf .
 
 #rm -rf build/release/install
 echo "Done."

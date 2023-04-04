@@ -27,9 +27,10 @@
 
 #include "Instance.hpp"
 
+#include <Main/DebugOptionDBus.hpp>
+#include <Main/AllDebugOptions.hpp>
 #include <Main/IO/Load.hpp>
 #include <Main/Root.hpp>
-#include <Main/ScriptWrapper.hpp>
 #include <Main/Utilities.hpp>
 #include <Main/Version.hpp>
 
@@ -513,37 +514,6 @@ void InstanceAdaptorImpl::Quit(const QMap<QString, QDBusVariant>& options) {
   }
 }
 
-QDBusVariant InstanceAdaptorImpl::ExecuteQScriptCode(
-    const QString& code, const QMap<QString, QDBusVariant>& options) {
-  try {
-    ExportedObject::checkOptions(options);
-    QScriptValue result = root->scriptEngine().evaluate(code);
-    if (root->scriptEngine().hasUncaughtException()) {
-      throw Exception("de.uni_stuttgart.Voxie.QScriptExecutionFailed",
-                      result.toString());
-      return QDBusVariant();
-    }
-    if (result.isUndefined()) {
-      return QDBusVariant("<undefined>");
-    }
-    QVariant resultVariant = ScriptWrapper::fromScriptValue(result);
-    // Test whether result value can be marshalled
-    QDBusArgument arg;
-    arg.beginStructure();
-    arg << QDBusVariant(resultVariant);
-    arg.endStructure();
-    if (arg.currentSignature() == "") {
-      throw Exception("de.uni_stuttgart.Voxie.QScriptMarshallingFailed",
-                      "Failed to marshal return value");
-      return QDBusVariant();
-    }
-    return QDBusVariant(resultVariant);
-  } catch (Exception& e) {
-    e.handle(object);
-    return QDBusVariant();
-  }
-}
-
 QDBusObjectPath InstanceAdaptorImpl::OpenFile(
     const QString& fileName, const QMap<QString, QDBusVariant>& options) {
   try {
@@ -644,6 +614,60 @@ QDBusObjectPath InstanceAdaptorImpl::RunAllFilters(
 
     clientPtr->incRefCount(result);
     return ExportedObject::getPath(result);
+  } catch (Exception& e) {
+    return e.handle(object);
+  }
+}
+
+static QList<DebugOptionDBus*> getDebugOptionList() {
+  QList<DebugOptionDBus*> result;
+
+  auto options = allDebugOptions();
+  for (const auto& entry : *options) {
+    result << new DebugOptionDBus(entry);
+  }
+
+  return result;
+}
+static QSharedPointer<QList<DebugOptionDBus*>> debugOptionList() {
+  static QSharedPointer<QList<DebugOptionDBus*>> cache =
+      createQSharedPointer<QList<DebugOptionDBus*>>(
+          std::move(getDebugOptionList()));
+  return cache;
+}
+
+QDBusObjectPath InstanceAdaptorImpl::GetDebugOption(
+    const QString& name, const QMap<QString, QDBusVariant>& options) {
+  try {
+    ExportedObject::checkOptions(options);
+
+    // TODO: create QMap?
+    auto list = debugOptionList();
+    for (const auto& entry : *list) {
+      if (entry->option()->name() == name)
+        return vx::ExportedObject::getPath(entry);
+    }
+
+    throw Exception("de.uni_stuttgart.Voxie.DebugOptionNotFound",
+                    "Cannot find debug option " + name);
+  } catch (Exception& e) {
+    return e.handle(object);
+  }
+}
+QList<QDBusObjectPath> InstanceAdaptorImpl::ListDebugOptions(
+    const QMap<QString, QDBusVariant>& options) {
+  try {
+    ExportedObject::checkOptions(options);
+
+    QList<QDBusObjectPath> paths;
+
+    auto list = debugOptionList();
+    for (const auto& entry : *list) {
+      paths.append(vx::ExportedObject::getPath(entry));
+    }
+
+    return paths;
+
   } catch (Exception& e) {
     return e.handle(object);
   }

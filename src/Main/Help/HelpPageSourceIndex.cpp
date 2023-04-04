@@ -104,7 +104,7 @@ class HelpPageSourceIndex : public HelpPageSource {
       }
     }
 
-    return createQSharedPointer<HelpPage>(doc, "", "Index");
+    return createQSharedPointer<HelpPage>(doc, "Index");
   }
 };
 }  // namespace help

@@ -198,12 +198,14 @@ void SelectNodeConnection::finish() {
 }
 
 QList<QSharedPointer<ConnectNodesImpl>> vx::getPossibleConnections(
-    Node* parent, Node* child) {
+    Node* parent, Node* child, PropertyConnectionPriority minPriority) {
   QList<QSharedPointer<ConnectNodesImpl>> possibilities;
 
   // Search for output property in parent which allows child as value
   for (const auto& property : parent->prototype()->nodeProperties()) {
     if (!property->isReference() || !property->isOutputReference()) continue;
+
+    if (property->connectionPriority() < minPriority) continue;
 
     if (!property->allowsAsValue(child)) continue;
 
@@ -214,6 +216,8 @@ QList<QSharedPointer<ConnectNodesImpl>> vx::getPossibleConnections(
   // Search for input property in child which allows parent as value
   for (const auto& property : child->prototype()->nodeProperties()) {
     if (!property->isReference() || property->isOutputReference()) continue;
+
+    if (property->connectionPriority() < minPriority) continue;
 
     if (!property->allowsAsValue(parent)) continue;
 
@@ -226,6 +230,8 @@ QList<QSharedPointer<ConnectNodesImpl>> vx::getPossibleConnections(
   for (const auto& property : child->prototype()->nodeProperties()) {
     if (!property->isReference() || property->isOutputReference()) continue;
 
+    if (property->connectionPriority() < minPriority) continue;
+
     for (const auto& prototype3D : Root::instance()->factories()) {
       if (prototype3D->nodeKind() != NodeKind::Object3D) continue;
       if (!property->allowsAsValue(prototype3D)) continue;
@@ -234,6 +240,8 @@ QList<QSharedPointer<ConnectNodesImpl>> vx::getPossibleConnections(
       for (const auto& property3D : prototype3D->nodeProperties()) {
         if (!property3D->isReference() || property3D->isOutputReference())
           continue;
+
+        if (property3D->connectionPriority() < minPriority) continue;
 
         if (!property3D->allowsAsValue(parent)) continue;
 
@@ -247,10 +255,13 @@ QList<QSharedPointer<ConnectNodesImpl>> vx::getPossibleConnections(
 }
 
 // TODO: reduce code duplication with getPossibleConnections()?
-bool vx::canBeChildOf(Node* parent, NodePrototype* childPrototype) {
+bool vx::canBeChildOf(Node* parent, NodePrototype* childPrototype,
+                      PropertyConnectionPriority minPriority) {
   // Search for output property in parent which allows child as value
   for (const auto& property : parent->prototype()->nodeProperties()) {
     if (!property->isReference() || !property->isOutputReference()) continue;
+
+    if (property->connectionPriority() < minPriority) continue;
 
     if (!property->allowsAsValue(childPrototype)) continue;
 
@@ -260,6 +271,8 @@ bool vx::canBeChildOf(Node* parent, NodePrototype* childPrototype) {
   // Search for input property in child which allows parent as value
   for (const auto& property : childPrototype->nodeProperties()) {
     if (!property->isReference() || property->isOutputReference()) continue;
+
+    if (property->connectionPriority() < minPriority) continue;
 
     if (!property->allowsAsValue(parent)) continue;
 
@@ -271,6 +284,8 @@ bool vx::canBeChildOf(Node* parent, NodePrototype* childPrototype) {
   for (const auto& property : childPrototype->nodeProperties()) {
     if (!property->isReference() || property->isOutputReference()) continue;
 
+    if (property->connectionPriority() < minPriority) continue;
+
     for (const auto& prototype3D : Root::instance()->factories()) {
       if (prototype3D->nodeKind() != NodeKind::Object3D) continue;
       if (!property->allowsAsValue(prototype3D)) continue;
@@ -279,6 +294,8 @@ bool vx::canBeChildOf(Node* parent, NodePrototype* childPrototype) {
       for (const auto& property3D : prototype3D->nodeProperties()) {
         if (!property3D->isReference() || property3D->isOutputReference())
           continue;
+
+        if (property3D->connectionPriority() < minPriority) continue;
 
         if (!property3D->allowsAsValue(parent)) continue;
 

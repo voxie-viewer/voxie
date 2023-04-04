@@ -132,9 +132,8 @@ class TomographyRawData2DAccessorOperationsImpl(voxie.DBusExportObject):
                 region[:] = img[inputRegionStart[0]:inputRegionStart[0] + regionSize[0],
                                 inputRegionStart[1]:inputRegionStart[1] + regionSize[1]]
 
-            version = update.Finish()
-
-        return version.VersionString
+            with update.Finish() as version:
+                return version.VersionString
 
     def incRefCount(self):
         self.refCount += 1

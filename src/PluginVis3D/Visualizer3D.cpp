@@ -28,7 +28,6 @@
 
 #include <Voxie/IO/SaveFileDialog.hpp>
 
-#include <PluginVis3D/CamProperties.hpp>
 #include <PluginVis3D/View3DPropertiesConnection.hpp>
 
 #include <QtOpenGL/QGLFormat>
@@ -57,44 +56,40 @@ using namespace vx;
 using namespace vx::vis3d;
 using namespace vx::visualization;
 
+// TODO: Make axisFilter work again?
+
 Visualizer3D::Visualizer3D()
     : VisualizerNode(getPrototypeSingleton()),
-      properties(new View3DProperties(this)),
-      mouseOperation(IsosurfaceMouseOperation::create()) {
+      properties(new View3DProperties(this)) {
   {
     this->view = new Visualizer3DView(
-        properties, new vx::visualization::View3D(this, mouseOperation),
-        mouseOperation, &axisFilter);
+        properties, new vx::visualization::View3D(this, View3DProperty::All),
+        &axisFilter);
     new View3DPropertiesConnection(this->properties, this->view->getView3D());
     this->view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    this->view->setWindowTitle("3D Visualizer");
     this->setAutomaticDisplayName("3D Visualizer");
     this->view->setMinimumSize(400, 300);
   }
 
-  QFormLayout* controlLayout;
   {
-    QWidget* sectionControl3DSettings = new QWidget();
-    sectionControl3DSettings->setWindowTitle("Render Settings");
-    {
-      controlLayout = new QFormLayout();
-      {
-        auto orthoProjectionBox = new QCheckBox("&Orthographic");
-        controlLayout->addRow("Projection", orthoProjectionBox);
-        orthoProjectionBox->setToolTip(
-            "Toggles orthographic projection. Hotkey: o");
-        // Update the box if the property value changes
-        connect(this->properties, &View3DProperties::fieldOfViewChanged, this,
-                [this, orthoProjectionBox]() {
-                  orthoProjectionBox->setChecked(
-                      this->properties->fieldOfView() == 0);
-                });
-        // Set initial value
-        orthoProjectionBox->setChecked(this->properties->fieldOfView() == 0);
-        // Change the projection when the user clicks the checkbox
-        // TODO: Add animation?
-        connect(
-            orthoProjectionBox, &QCheckBox::clicked, this,
+    this->control3DSettings = new QWidget();
+    auto controlLayout = new QGridLayout();
+
+    auto orthoProjectionBox = new QCheckBox("&Orthographic projection");
+    controlLayout->addWidget(orthoProjectionBox, 3, 0, 1, 3);
+    orthoProjectionBox->setToolTip(
+        "Toggles orthographic projection (o, Numpad 5)");
+    // Update the box if the property value changes
+    connect(
+        this->properties, &View3DProperties::fieldOfViewChanged, this,
+        [this, orthoProjectionBox]() {
+          orthoProjectionBox->setChecked(this->properties->fieldOfView() == 0);
+        });
+    // Set initial value
+    orthoProjectionBox->setChecked(this->properties->fieldOfView() == 0);
+    // Change the projection when the user clicks the checkbox
+    // TODO: Add animation?
+    connect(orthoProjectionBox, &QCheckBox::clicked, this,
             [this, orthoProjectionBox]() {
               if (orthoProjectionBox->isChecked())
                 this->properties->setFieldOfView(0);
@@ -103,90 +98,86 @@ Visualizer3D::Visualizer3D()
                     this->properties->fieldOfViewProperty()->defaultValue()));
             });
 
-        QHBoxLayout* viewLayout = new QHBoxLayout;
-        QHBoxLayout* viewLayout2 = new QHBoxLayout;
+    auto frontViewButton = new QPushButton("Front");
+    frontViewButton->setToolTip("Show front view (Numpad 1)");
+    auto rightViewButton = new QPushButton("Right");
+    rightViewButton->setToolTip("Show right view (Numpad 3)");
+    auto topViewButton = new QPushButton("Top");
+    topViewButton->setToolTip("Show top view (Numpad 7)");
+    auto backViewButton = new QPushButton("Back");
+    backViewButton->setToolTip("Show back view (Ctrl + Numpad 1)");
+    auto leftViewButton = new QPushButton("Left");
+    leftViewButton->setToolTip("Show left view (Ctrl + Numpad 3)");
+    auto bottomViewButton = new QPushButton("Bottom");
+    bottomViewButton->setToolTip("Show bottom view (Ctrl + Numpad 7)");
 
-        QPushButton* frontViewButton;
-        QPushButton* backViewButton;
-        QPushButton* rightViewButton;
-        QPushButton* leftViewButton;
-        QPushButton* topViewButton;
-        QPushButton* bottomViewButton;
-        viewLayout->addWidget(frontViewButton = new QPushButton("Front"));
-        viewLayout->addWidget(rightViewButton = new QPushButton("Right"));
-        viewLayout->addWidget(topViewButton = new QPushButton("Top"));
-        viewLayout2->addWidget(backViewButton = new QPushButton("Back"));
-        viewLayout2->addWidget(leftViewButton = new QPushButton("Left"));
-        viewLayout2->addWidget(bottomViewButton = new QPushButton("Bottom"));
+    // The SignalMapper lets us call a function with arguments when a button
+    // is pressed
+    QSignalMapper* signalMapper = new QSignalMapper(this);
+    connect(frontViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+    connect(backViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+    connect(rightViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+    connect(leftViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+    connect(topViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+    connect(bottomViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
 
-        // The SignalMapper lets us call a function with arguments when a button
-        // is pressed
-        QSignalMapper* signalMapper = new QSignalMapper(this);
-        connect(frontViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-        connect(backViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-        connect(rightViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-        connect(leftViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-        connect(topViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-        connect(bottomViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+    // Mapping the view angle arguments to the buttons
+    signalMapper->setMapping(frontViewButton, "front");
+    signalMapper->setMapping(backViewButton, "back");
+    signalMapper->setMapping(rightViewButton, "right");
+    signalMapper->setMapping(leftViewButton, "left");
+    signalMapper->setMapping(topViewButton, "top");
+    signalMapper->setMapping(bottomViewButton, "bottom");
 
-        // Mapping the view angle arguments to the buttons
-        signalMapper->setMapping(frontViewButton, "front");
-        signalMapper->setMapping(backViewButton, "back");
-        signalMapper->setMapping(rightViewButton, "right");
-        signalMapper->setMapping(leftViewButton, "left");
-        signalMapper->setMapping(topViewButton, "top");
-        signalMapper->setMapping(bottomViewButton, "bottom");
+    connect(signalMapper, SIGNAL(mapped(QString)), this,
+            SLOT(handleViewChange(QString)));
 
-        connect(signalMapper, SIGNAL(mapped(QString)), this,
-                SLOT(handleViewChange(QString)));
+    controlLayout->addWidget(frontViewButton, 1, 0);
+    controlLayout->addWidget(rightViewButton, 1, 1);
+    controlLayout->addWidget(topViewButton, 1, 2);
+    controlLayout->addWidget(backViewButton, 2, 0);
+    controlLayout->addWidget(leftViewButton, 2, 1);
+    controlLayout->addWidget(bottomViewButton, 2, 2);
 
-        QLabel* viewLabel = new QLabel("Views");
-        viewLabel->setToolTip(
-            "Hotkeys for views: \n"
-            "(Ctrl +) 1 : Back/Front \n"
-            "(Ctrl +) 3 : Left/Right \n"
-            "(Ctrl +) 7 : Bottom/Top \n"
-            "4,6 : Rotate Left/Right \n"
-            "2,8 : Rotate Down/Up");
+    QPushButton* resetButton = new QPushButton("Reset zoom");
+    resetButton->setToolTip(
+        "Reset zoom and position to show everything (Home, Numpad 0)");
+    QObject::connect(resetButton, &QPushButton::clicked, this, [this]() {
+      this->view->getView3D()->resetView(View3DProperty::LookAt |
+                                         View3DProperty::ZoomLog);
+    });
+    controlLayout->addWidget(resetButton, 0, 0);
 
-        controlLayout->addRow(viewLabel, viewLayout);
-        controlLayout->addItem(viewLayout2);
+    QPushButton* zoomToOneButton = new QPushButton("Zoom 1");
+    zoomToOneButton->setToolTip("Set zoom to 1");
+    QObject::connect(zoomToOneButton, &QPushButton::clicked, this,
+                     [this]() { this->properties->setZoomLog(0); });
+    controlLayout->addWidget(zoomToOneButton, 0, 1);
 
-        QPushButton* zoomToOneButton = new QPushButton("Set zoom to 1");
-        QObject::connect(zoomToOneButton, &QPushButton::clicked, this,
-                         [this]() { this->properties->setZoomLog(0); });
-        controlLayout->addRow("Zoom", zoomToOneButton);
+    QPushButton* resetViewSizeButton = new QPushButton("Reset view size");
+    resetViewSizeButton->setToolTip(
+        "Reset unzoomed view size to default (250mm)");
+    QObject::connect(resetViewSizeButton, &QPushButton::clicked, this,
+                     [this]() { this->properties->setViewSizeUnzoomed(0.25); });
+    controlLayout->addWidget(resetViewSizeButton, 4, 0);
 
-        QPushButton* viewSizePhysicalButton =
-            new QPushButton("Set unzoomed view size to physical size");
-        QObject::connect(
-            viewSizePhysicalButton, &QPushButton::clicked, this, [this]() {
-              auto viewSizePixel = this->view->height();
-              auto viewSizeM =
-                  viewSizePixel / this->view->physicalDpiY() * 0.0254;
-              // qDebug() << "View size" << viewSizePixel << "px /" << viewSizeM
-              //          << "m";
-              this->properties->setViewSizeUnzoomed(viewSizeM);
-            });
-        controlLayout->addRow("View size", viewSizePhysicalButton);
-      }
-      sectionControl3DSettings->setLayout(controlLayout);
-    }
-    auto objectWidget = createObjectWidget();
-    auto mouseOperationWidget = createMouseOperationWidget();
+    QPushButton* viewSizePhysicalButton = new QPushButton("Physical view size");
+    viewSizePhysicalButton->setToolTip(
+        "Set unzoomed view size to physical size");
+    QObject::connect(
+        viewSizePhysicalButton, &QPushButton::clicked, this, [this]() {
+          auto viewSizePixel = this->view->height();
+          auto viewSizeM = viewSizePixel / this->view->physicalDpiY() * 0.0254;
+          // qDebug() << "View size" << viewSizePixel << "px /" << viewSizeM
+          //          << "m";
+          this->properties->setViewSizeUnzoomed(viewSizeM);
+        });
+    controlLayout->addWidget(viewSizePhysicalButton, 4, 1);
 
-    CamProperties* camProp = new CamProperties(view);
-    settingUpCamProperties(camProp);
-
-    this->planeWidget = new PlanePropertiesUi(view);
-
-    this->dynamicSections().append(objectWidget);
-    this->dynamicSections().append(mouseOperationWidget);
-    this->dynamicSections().append(this->planeWidget);
-    this->dynamicSections().append(camProp);
-    this->dynamicSections().append(sectionControl3DSettings);
-    this->dynamicSections().squeeze();
+    this->control3DSettings->setLayout(controlLayout);
   }
+
+  this->planeWidget = new PlanePropertiesUi(view);
 
 #ifdef ENABLE_OSVR
   auto osvrEnabled = new QCheckBox();
@@ -248,7 +239,7 @@ Visualizer3D::Visualizer3D()
   auto sn = new vx::spnav::SpaceNavVisualizer(this);
   auto view3d = view->getView3D();
   view3d->registerSpaceNavVisualizer(sn);
-  connect(view3d, &vx::visualization::View3D::objectPositionChangeRequested,
+  connect(view, &Visualizer3DView::objectPositionChangeRequested,
           this, [this](QVector3D offset) {
             axisFilter.filter(offset);
 
@@ -268,7 +259,7 @@ Visualizer3D::Visualizer3D()
             // qDebug() << "Visualizer3D::positionChanged" << obj3D << offset;
             obj3D->objectPositionChangeRequested(offset);
           });
-  connect(view3d, &vx::visualization::View3D::objectRotationChangeRequested,
+  connect(view, &Visualizer3DView::objectRotationChangeRequested,
           this, [this](QQuaternion rotation) {
             axisFilter.filter(rotation);
 
@@ -288,221 +279,26 @@ Visualizer3D::Visualizer3D()
             // qDebug() << "Visualizer3D::rotationChanged" << obj3D << rotation;
             obj3D->objectRotationChangeRequested(rotation);
           });
-
-  connect(mouseOperation.data(),
-          &IsosurfaceMouseOperation::preferedActionChanged, this,
-          &Visualizer3D::preferedMouseActionChanged);
 }
 
-void Visualizer3D::settingUpCamProperties(CamProperties* camProp) {
-  camProp->setObjectName("Propertie Widget");
-  camProp->setWindowTitle("Camera Properties");
-
-  // GUI need the last valid Properties to reset itself
-  connect(camProp, &CamProperties::rotationRequest, this->view->getView3D(),
-          &View3D::cameraRotationRequested);
-  connect(camProp, &CamProperties::zoomRequest, this->view->getView3D(),
-          &View3D::zoomRequested);
-
-  // Properties changed by input in the GUI
-  connect(camProp, &CamProperties::rotationChanged, this->view->getView3D(),
-          &View3D::setRotation);
-  connect(camProp, &CamProperties::zoomChanged, this->view->getView3D(),
-          &View3D::setZoom);
-
-  // Properties changed by interaction with the object
-  connect(this->view->getView3D(), &View3D::changed, camProp,
-          &CamProperties::rotationRequest);
-  connect(this->view->getView3D(), &View3D::zoomChanged, camProp,
-          &CamProperties::setZoom);
-  connect(this->view->getView3D(), &View3D::cameraRotationChanged, camProp,
-          &CamProperties::setRotation);
-
-  camProp->init();
+QWidget* Visualizer3D::getCustomPropertySectionContent(const QString& name) {
+  if (name == "de.uni_stuttgart.Voxie.Visualizer.View3D.Control3DSettings") {
+    return control3DSettings;
+  } else if (name == "de.uni_stuttgart.Voxie.Visualizer.View3D.PlaneSettings") {
+    return planeWidget;
+  } else {
+    return Node::getCustomPropertySectionContent(name);
+  }
 }
 
 void Visualizer3D::handleViewChange(QString direction) {
   this->view->setFixedAngle(direction);
 }
 
-QWidget* Visualizer3D::createMouseOperationWidget() {
-  QVBoxLayout* mainLayout = new QVBoxLayout;
-  QWidget* mouseOperationWidget = new QWidget;
-  mouseOperationWidget->setWindowTitle("Mouse Operation");
-  mouseOperationWidget->setLayout(mainLayout);
-
-  QWidget* surfaceControlBox = new QWidget();
-  {
-    QHBoxLayout* hBoxLayout = new QHBoxLayout;
-    surfaceControlBox->setLayout(hBoxLayout);
-    moveSurfaceButton =
-        new QPushButton(QIcon(":/icons-voxie/move-surface.png"), "Move");
-    // moveSurfaceButton->setFixedSize(16,16);
-    moveSurfaceButton->setCheckable(true);
-    connect(moveSurfaceButton, &QPushButton::clicked, [=]() {
-      if (moveSurfaceButton->isChecked())
-        mouseOperation->setPreferedAction(MouseOperation::MoveObject);
-      else
-        mouseOperation->setPreferedAction(MouseOperation::RotateView);
-    });
-    hBoxLayout->addWidget(moveSurfaceButton);
-
-    rotateSurfaceButton =
-        new QPushButton(QIcon(":/icons/rotate-surface.png"), "Rotate");
-    // rotateSurfaceButton->setFixedSize(16,16);
-    rotateSurfaceButton->setCheckable(true);
-    connect(rotateSurfaceButton, &QPushButton::clicked, [=]() {
-      if (rotateSurfaceButton->isChecked())
-        mouseOperation->setPreferedAction(MouseOperation::RotateObject);
-      else
-        mouseOperation->setPreferedAction(MouseOperation::RotateView);
-    });
-    hBoxLayout->addWidget(rotateSurfaceButton);
-
-    selectSurfaceButton =
-        new QPushButton(QIcon(":/icons/select-surface.png"), "Select");
-    // selectSurfaceButton->setFixedSize(16,16);
-    selectSurfaceButton->setCheckable(true);
-    connect(selectSurfaceButton, &QPushButton::clicked, [=]() {
-      if (selectSurfaceButton->isChecked())
-        mouseOperation->setPreferedAction(MouseOperation::SelectObject);
-      else
-        mouseOperation->setPreferedAction(MouseOperation::RotateView);
-    });
-    hBoxLayout->addWidget(selectSurfaceButton);
-
-    addDataPointButton =
-        new QPushButton(QIcon(":/icons/select-surface.png"), "Add point");
-    // selectSurfaceButton->setFixedSize(16,16);
-    addDataPointButton->setCheckable(true);
-    connect(addDataPointButton, &QPushButton::clicked, [=]() {
-      if (addDataPointButton->isChecked())
-        mouseOperation->setPreferedAction(MouseOperation::SetPoint);
-      else
-        mouseOperation->setPreferedAction(MouseOperation::RotateView);
-    });
-    hBoxLayout->addWidget(addDataPointButton);
-  }
-
-  axisControlBox = new QWidget();
-  {
-    axisControlBox->hide();
-    QHBoxLayout* hBoxLayout = new QHBoxLayout;
-    axisControlBox->setLayout(hBoxLayout);
-
-    filterXButton = new QPushButton("X");
-    {
-      filterXButton->setCheckable(true);
-      connect(filterXButton, &QPushButton::toggled,
-              [=] { axisFilter.setFilterX(!filterXButton->isChecked()); });
-    }
-    hBoxLayout->addWidget(filterXButton);
-
-    filterYButton = new QPushButton("Y");
-    {
-      filterYButton->setCheckable(true);
-      connect(filterYButton, &QPushButton::toggled,
-              [=] { axisFilter.setFilterY(!filterYButton->isChecked()); });
-    }
-    hBoxLayout->addWidget(filterYButton);
-
-    filterZButton = new QPushButton("Z");
-    {
-      filterZButton->setCheckable(true);
-      connect(filterZButton, &QPushButton::toggled,
-              [=] { axisFilter.setFilterZ(!filterZButton->isChecked()); });
-    }
-    hBoxLayout->addWidget(filterZButton);
-
-    /*
-    movePlaneButton = new QPushButton("Plane");
-    {
-      movePlaneButton->setCheckable(true);
-      connect(movePlaneButton, &QPushButton::toggled,
-              [=] { movePlane = movePlaneButton->isChecked(); });
-    }
-    hBoxLayout->addWidget(movePlaneButton);
-    */
-
-    connect(&axisFilter, &AxisFilter::changed, this,
-            &Visualizer3D::axisFilterChanged);
-    axisFilterChanged();
-  }
-
-  mainLayout->addWidget(surfaceControlBox);
-  mainLayout->addWidget(axisControlBox);
-  return mouseOperationWidget;
-}
-
 void Visualizer3D::axisFilterChanged() {
   filterXButton->setChecked(!axisFilter.filterX());
   filterYButton->setChecked(!axisFilter.filterY());
   filterZButton->setChecked(!axisFilter.filterZ());
-}
-
-QWidget* Visualizer3D::createObjectWidget() {
-  QWidget* objectWidget = new QWidget();
-  QFormLayout* formLayout = new QFormLayout();
-  objectWidget->setLayout(formLayout);
-  objectWidget->setWindowTitle("Objects");
-
-  return objectWidget;
-}
-
-/**
- * @brief Visualizer3D::preferedMouseActionChanged Sets all the button
- * states according to the prefered mouse action
- */
-void Visualizer3D::preferedMouseActionChanged() {
-  auto newAction = mouseOperation->getPreferedAction();
-  QPushButton* buttonToPush = NULL;
-  switch (newAction) {
-    case MouseOperation::Action::MoveObject: {
-      buttonToPush = moveSurfaceButton;
-      break;
-    }
-    case MouseOperation::Action::RotateObject: {
-      buttonToPush = rotateSurfaceButton;
-      break;
-    }
-    case MouseOperation::SelectObject: {
-      buttonToPush = selectSurfaceButton;
-      break;
-    }
-    case MouseOperation::SetPoint: {
-      buttonToPush = addDataPointButton;
-      break;
-    }
-
-    default: {
-      // Do nothing
-    }
-  }
-  if (buttonToPush != NULL)
-    buttonToPush->setChecked(true);
-  else
-    axisControlBox->hide();
-
-  // Uncheck all other buttons:
-  if (buttonToPush != moveSurfaceButton)
-    moveSurfaceButton->setChecked(false);
-  else
-    axisControlBox->show();
-
-  if (buttonToPush != rotateSurfaceButton)
-    rotateSurfaceButton->setChecked(false);
-  else
-    axisControlBox->show();
-
-  if (buttonToPush != addDataPointButton)
-    addDataPointButton->setChecked(false);
-  else
-    axisControlBox->hide();
-
-  if (buttonToPush != selectSurfaceButton)
-    selectSurfaceButton->setChecked(false);
-  else
-    axisControlBox->hide();
 }
 
 vx::SharedFunPtr<VisualizerNode::RenderFunction>

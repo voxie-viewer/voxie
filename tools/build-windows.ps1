@@ -518,9 +518,6 @@ if (1) {
   Remove-Item -recurse "$TARGET/python/dbus-python-windows"
 }
 
-echo "Copying manual..."
-Copy-Item old-manual.pdf $TARGET
-
 echo "Creating README..."
 $text = [IO.File]::ReadAllText("tools/README-windows.tmpl") -replace "`n", "`r`n"
 $text = $text -replace "%QT_VERSION%", $QT_VERSION

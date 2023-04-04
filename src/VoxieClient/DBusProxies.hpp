@@ -480,6 +480,54 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataVersionInterface
 };
 
 /*
+ * Proxy class for interface de.uni_stuttgart.Voxie.DebugOption
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDebugOptionInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.DebugOption";
+  }
+
+ public:
+  DeUni_stuttgartVoxieDebugOptionInterface(const QString& service,
+                                           const QString& path,
+                                           const QDBusConnection& connection,
+                                           QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieDebugOptionInterface();
+
+  Q_PROPERTY(QDBusSignature DBusSignature READ dBusSignature)
+  inline QDBusSignature dBusSignature() const {
+    return qvariant_cast<QDBusSignature>(property("DBusSignature"));
+  }
+
+  Q_PROPERTY(QString Name READ name)
+  inline QString name() const {
+    return qvariant_cast<QString>(property("Name"));
+  }
+
+ public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusVariant> GetValue(
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetValue"), argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> SetValue(
+      const QDBusVariant& value,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(value) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("SetValue"), argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
  * Proxy class for interface de.uni_stuttgart.Voxie.DynamicObject
  */
 class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDynamicObjectInterface
@@ -1670,16 +1718,6 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
                                      argumentList);
   }
 
-  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusVariant>
-  ExecuteQScriptCode(const QString& code,
-                     const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
-                         options) {
-    QList<QVariant> argumentList;
-    argumentList << QVariant::fromValue(code) << QVariant::fromValue(options);
-    return asyncCallWithArgumentList(QStringLiteral("ExecuteQScriptCode"),
-                                     argumentList);
-  }
-
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath> GetComponent(
       const QString& componentType, const QString& name,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
@@ -1687,6 +1725,16 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
     argumentList << QVariant::fromValue(componentType)
                  << QVariant::fromValue(name) << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("GetComponent"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
+  GetDebugOption(const QString& name,
+                 const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                     options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(name) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetDebugOption"),
                                      argumentList);
   }
 
@@ -1707,6 +1755,15 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
     argumentList << QVariant::fromValue(client) << QVariant::fromValue(fileName)
                  << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("Import"), argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QList<QDBusObjectPath>>
+  ListDebugOptions(const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                   options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("ListDebugOptions"),
+                                     argumentList);
   }
 
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QList<QDBusObjectPath>>
@@ -3419,6 +3476,7 @@ typedef ::DeUni_stuttgartVoxieDataInterface Data;
 typedef ::DeUni_stuttgartVoxieDataNodeInterface DataNode;
 typedef ::DeUni_stuttgartVoxieDataObjectInterface DataObject;
 typedef ::DeUni_stuttgartVoxieDataVersionInterface DataVersion;
+typedef ::DeUni_stuttgartVoxieDebugOptionInterface DebugOption;
 typedef ::DeUni_stuttgartVoxieDynamicObjectInterface DynamicObject;
 typedef ::DeUni_stuttgartVoxieEventListDataAccessorInterface
     EventListDataAccessor;

@@ -9,6 +9,9 @@
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Property",
             "Icon": ":/icons/paper-plane.png",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Property.Plane.Orientation": {
                     "CompatibilityNames": [

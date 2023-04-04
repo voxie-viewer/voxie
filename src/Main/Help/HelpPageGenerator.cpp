@@ -103,7 +103,10 @@ static const char* mathHeader = R"(
 
 QSharedPointer<HelpPage> HelpPageGenerator::getHelpPage(
     const QString& url) const {
-  if (helpPageCache.contains(url)) return helpPageCache[url];
+  if (helpPageCache.contains(url)) {
+    auto result = helpPageCache[url];
+    if (!result || result->dependencies()->isUpToDate()) return result;
+  }
 
   QSharedPointer<HelpPage> page;
 
@@ -145,7 +148,12 @@ HelpPageGenerator::generateHelpPage(
     const std::function<QString(const QString&, const QString&)>& fixupUrls)
     const {
   // Cache help pages instead of re-generating them everytime
-  if (renderedHelpPageCache.contains(url)) return renderedHelpPageCache[url];
+  if (renderedHelpPageCache.contains(url)) {
+    auto result = renderedHelpPageCache[url];
+    if (!std::get<0>(result) ||
+        std::get<0>(result)->dependencies()->isUpToDate())
+      return result;
+  }
 
   auto page = getHelpPage(url);
 
@@ -349,7 +357,6 @@ QSharedPointer<vx::cmark::Node> HelpPageGenerator::createTOC(
 
     html += "<a href=\"#" + id.toHtmlEscaped() + "\">";
     html += text.toHtmlEscaped();
-    html += "</a>";
     html += "</a>";
   }
   while (curLevel > 0) {

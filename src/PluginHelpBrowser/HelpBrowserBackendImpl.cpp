@@ -33,6 +33,8 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 
+#include <QtWidgets/QShortcut>
+
 #include <QtWebEngineCore/QWebEngineUrlRequestJob>
 
 #include <QtWebEngineWidgets/QWebEngineProfile>
@@ -99,6 +101,10 @@ bool HelpWebPage::acceptNavigationRequest(const QUrl& url, NavigationType type,
     Q_EMIT this->handleLink(url);
     return false;
   }
+  if (type == QWebEnginePage::NavigationTypeReload) {
+    Q_EMIT this->doReload();
+    return false;
+  }
   return true;
 }
 
@@ -162,9 +168,26 @@ HelpBrowserBackendViewImpl::HelpBrowserBackendViewImpl() {
         handleLink(url);
       },
       Qt::QueuedConnection);
+  QObject::connect(
+      page, &HelpWebPage::doReload, this,
+      [this]() {
+        // After a navigation request, call setHtml() again,
+        // otherwise the next setHtml() call seems to be
+        // sometimes(?) dropped. (It seems like the QWebEnginePage
+        // expects new data after a navigation request.)
+        if (this->view) this->view->setHtml(this->lastHtml, this->lastBaseUrl);
+        doReload();
+      },
+      Qt::QueuedConnection);
 
   view = new QWebEngineView;
   QObject::connect(this, &QObject::destroyed, view, &QObject::deleteLater);
+
+  // Add shortcut for reloading
+  QShortcut* shortcut = new QShortcut(QKeySequence("Ctrl+r"), view);
+  QObject::connect(shortcut, &QShortcut::activated, view,
+                   &QWebEngineView::reload);
+
   view->setPage(page);
 }
 HelpBrowserBackendViewImpl::~HelpBrowserBackendViewImpl() {}
@@ -180,15 +203,30 @@ QWidget* HelpBrowserBackendViewImpl::widget() {
 
 void HelpBrowserBackendViewImpl::setHtml(const QString& html,
                                          const QUrl& baseUrl) {
+  if (0) {
+    QFile file("/tmp/foo.html");
+    if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
+      qCritical() << "Error opening file" << file.fileName();
+    } else {
+      file.write(html.toUtf8());
+    }
+  }
+
   if (!view) {
     qWarning()
         << "HelpBrowserBackendViewImpl::widget(): view has been destroyed";
     return;
   }
   // qDebug() << "Calling setHtml" << html.length();
+  // qDebug() << baseUrl;
+  QUrl fixedBaseUrl = baseUrl;
+  if (baseUrl == QUrl(""))
+    // Without this webengine will not allow access to file:/// URIs (which is
+    // currently needed)
+    fixedBaseUrl = QUrl("file:///");
   lastHtml = html;
-  lastBaseUrl = baseUrl;
-  view->setHtml(html, baseUrl);
+  lastBaseUrl = fixedBaseUrl;
+  view->setHtml(html, fixedBaseUrl);
 }
 
 HelpBrowserBackendImpl::HelpBrowserBackendImpl() {}

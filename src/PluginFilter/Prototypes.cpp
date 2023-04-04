@@ -241,7 +241,12 @@ static const char _prototype_ColorizeLabeledSurface_[] = {
     93,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,
     117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
     111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 67,  111,
-    110, 100, 105, 116, 105, 111, 110, 46,  65,  110, 100, 34,  125, 125, 0};
+    110, 100, 105, 116, 105, 111, 110, 46,  65,  110, 100, 34,  125, 44,  32,
+    34,  84,  114, 111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101,
+    114, 115, 34,  58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109,
+    101, 110, 116, 32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  53,
+    32,  45,  32,  80,  114, 111, 100, 117, 99,  116, 105, 111, 110, 47,  83,
+    116, 97,  98,  108, 101, 34,  93,  125, 0};
 const char* ColorizeLabeledSurfaceProperties::_getPrototypeJson() {
   return _prototype_ColorizeLabeledSurface_;
 }
@@ -266,9 +271,14 @@ ColorizeLabeledSurfaceProperties::inputColorizerRaw() {
 }
 QSharedPointer<NodeProperty>
 ColorizeLabeledSurfaceProperties::inputColorizerProperty() {
-  return _node->prototype()->getProperty(
+  return ColorizeLabeledSurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.InputColorizer",
       false);
+}
+NodePropertyTyped<vx::types::ValueColorMapping>
+ColorizeLabeledSurfaceProperties::inputColorizerPropertyTyped() {
+  return NodePropertyTyped<vx::types::ValueColorMapping>(
+      inputColorizerProperty());
 }
 void ColorizeLabeledSurfaceProperties::setInputColorizer(
     QList<vx::ColorizerEntry> value) {
@@ -291,9 +301,13 @@ QDBusObjectPath ColorizeLabeledSurfaceProperties::inputSurfaceRaw() {
 }
 QSharedPointer<NodeProperty>
 ColorizeLabeledSurfaceProperties::inputSurfaceProperty() {
-  return _node->prototype()->getProperty(
+  return ColorizeLabeledSurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.InputSurface",
       false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+ColorizeLabeledSurfaceProperties::inputSurfacePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(inputSurfaceProperty());
 }
 void ColorizeLabeledSurfaceProperties::setInputSurface(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -311,8 +325,12 @@ QDBusObjectPath ColorizeLabeledSurfaceProperties::inputTableRaw() {
 }
 QSharedPointer<NodeProperty>
 ColorizeLabeledSurfaceProperties::inputTableProperty() {
-  return _node->prototype()->getProperty(
+  return ColorizeLabeledSurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.InputTable", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+ColorizeLabeledSurfaceProperties::inputTablePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(inputTableProperty());
 }
 void ColorizeLabeledSurfaceProperties::setInputTable(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -330,8 +348,12 @@ QDBusObjectPath ColorizeLabeledSurfaceProperties::outputRaw() {
 }
 QSharedPointer<NodeProperty>
 ColorizeLabeledSurfaceProperties::outputProperty() {
-  return _node->prototype()->getProperty(
+  return ColorizeLabeledSurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.Output", false);
+}
+NodePropertyTyped<vx::types::OutputNodeReference>
+ColorizeLabeledSurfaceProperties::outputPropertyTyped() {
+  return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
 }
 void ColorizeLabeledSurfaceProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -625,7 +647,12 @@ static const char _prototype_ColorizeSurfaceFromAttribute_[] = {
     112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
     117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
     114, 111, 112, 101, 114, 116, 121, 67,  111, 110, 100, 105, 116, 105, 111,
-    110, 46,  78,  111, 116, 34,  125, 125, 0};
+    110, 46,  78,  111, 116, 34,  125, 44,  32,  34,  84,  114, 111, 118, 101,
+    67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,
+    34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116,
+    97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,  32,  80,  114, 111,
+    100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,  98,  108, 101, 34,
+    93,  125, 0};
 const char* ColorizeSurfaceFromAttributeProperties::_getPrototypeJson() {
   return _prototype_ColorizeSurfaceFromAttribute_;
 }
@@ -653,10 +680,16 @@ ColorizeSurfaceFromAttributeProperties::inputColorizerRaw() {
 }
 QSharedPointer<NodeProperty>
 ColorizeSurfaceFromAttributeProperties::inputColorizerProperty() {
-  return _node->prototype()->getProperty(
-      "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute."
-      "InputColorizer",
-      false);
+  return ColorizeSurfaceFromAttributeProperties::getNodePrototype()
+      ->getProperty(
+          "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute."
+          "InputColorizer",
+          false);
+}
+NodePropertyTyped<vx::types::ValueColorMapping>
+ColorizeSurfaceFromAttributeProperties::inputColorizerPropertyTyped() {
+  return NodePropertyTyped<vx::types::ValueColorMapping>(
+      inputColorizerProperty());
 }
 void ColorizeSurfaceFromAttributeProperties::setInputColorizer(
     QList<vx::ColorizerEntry> value) {
@@ -682,9 +715,15 @@ QDBusObjectPath ColorizeSurfaceFromAttributeProperties::inputSurfaceRaw() {
 }
 QSharedPointer<NodeProperty>
 ColorizeSurfaceFromAttributeProperties::inputSurfaceProperty() {
-  return _node->prototype()->getProperty(
-      "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute.InputSurface",
-      false);
+  return ColorizeSurfaceFromAttributeProperties::getNodePrototype()
+      ->getProperty(
+          "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute."
+          "InputSurface",
+          false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+ColorizeSurfaceFromAttributeProperties::inputSurfacePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(inputSurfaceProperty());
 }
 void ColorizeSurfaceFromAttributeProperties::setInputSurface(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -702,9 +741,14 @@ QDBusObjectPath ColorizeSurfaceFromAttributeProperties::outputRaw() {
 }
 QSharedPointer<NodeProperty>
 ColorizeSurfaceFromAttributeProperties::outputProperty() {
-  return _node->prototype()->getProperty(
-      "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute.Output",
-      false);
+  return ColorizeSurfaceFromAttributeProperties::getNodePrototype()
+      ->getProperty(
+          "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute.Output",
+          false);
+}
+NodePropertyTyped<vx::types::OutputNodeReference>
+ColorizeSurfaceFromAttributeProperties::outputPropertyTyped() {
+  return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
 }
 void ColorizeSurfaceFromAttributeProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -891,120 +935,125 @@ static const char _prototype_CreateSurface_[] = {
     110, 103, 108, 101, 32,  109, 101, 115, 104, 41,  32,  111, 117, 116, 32,
     111, 102, 32,  97,  32,  118, 111, 108, 117, 109, 101, 46,  34,  44,  32,
     34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
-    34,  67,  114, 101, 97,  116, 101, 32,  83,  117, 114, 102, 97,  99,  101,
-    34,  44,  32,  34,  73,  99,  111, 110, 34,  58,  32,  34,  58,  47,  105,
-    99,  111, 110, 115, 47,  100, 101, 115, 107, 116, 111, 112, 46,  112, 110,
-    103, 34,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  100, 101,
-    46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
-    86,  111, 120, 105, 101, 46,  70,  105, 108, 116, 101, 114, 46,  67,  114,
-    101, 97,  116, 101, 83,  117, 114, 102, 97,  99,  101, 34,  44,  32,  34,
-    78,  111, 100, 101, 75,  105, 110, 100, 34,  58,  32,  34,  100, 101, 46,
-    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
-    111, 120, 105, 101, 46,  78,  111, 100, 101, 75,  105, 110, 100, 46,  70,
-    105, 108, 116, 101, 114, 34,  44,  32,  34,  80,  114, 111, 112, 101, 114,
-    116, 105, 101, 115, 34,  58,  32,  123, 34,  100, 101, 46,  117, 110, 105,
-    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
-    101, 46,  70,  105, 108, 116, 101, 114, 46,  67,  114, 101, 97,  116, 101,
-    83,  117, 114, 102, 97,  99,  101, 46,  65,  108, 103, 111, 114, 105, 116,
-    104, 109, 34,  58,  32,  123, 34,  67,  111, 109, 112, 97,  116, 105, 98,
-    105, 108, 105, 116, 121, 78,  97,  109, 101, 115, 34,  58,  32,  91,  34,
+    34,  69,  120, 116, 114, 97,  99,  116, 32,  105, 115, 111, 117, 114, 102,
+    97,  99,  101, 34,  44,  32,  34,  73,  99,  111, 110, 34,  58,  32,  34,
+    58,  47,  105, 99,  111, 110, 115, 47,  100, 101, 115, 107, 116, 111, 112,
+    46,  112, 110, 103, 34,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,
+    34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
+    114, 116, 46,  86,  111, 120, 105, 101, 46,  70,  105, 108, 116, 101, 114,
+    46,  67,  114, 101, 97,  116, 101, 83,  117, 114, 102, 97,  99,  101, 34,
+    44,  32,  34,  78,  111, 100, 101, 75,  105, 110, 100, 34,  58,  32,  34,
     100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
-    116, 46,  86,  111, 120, 105, 101, 46,  67,  114, 101, 97,  116, 101, 83,
-    117, 114, 102, 97,  99,  101, 46,  65,  108, 103, 111, 114, 105, 116, 104,
-    109, 34,  93,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,
-    109, 101, 34,  58,  32,  34,  97,  108, 103, 111, 114, 105, 116, 104, 109,
-    34,  44,  32,  34,  73,  115, 67,  117, 115, 116, 111, 109, 83,  116, 111,
-    114, 97,  103, 101, 34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  73,
-    115, 67,  117, 115, 116, 111, 109, 85,  73,  34,  58,  32,  116, 114, 117,
-    101, 44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,
+    116, 46,  86,  111, 120, 105, 101, 46,  78,  111, 100, 101, 75,  105, 110,
+    100, 46,  70,  105, 108, 116, 101, 114, 34,  44,  32,  34,  80,  114, 111,
+    112, 101, 114, 116, 105, 101, 115, 34,  58,  32,  123, 34,  100, 101, 46,
     117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
-    111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121,
-    112, 101, 46,  83,  116, 114, 105, 110, 103, 34,  125, 44,  32,  34,  100,
-    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
-    46,  86,  111, 120, 105, 101, 46,  70,  105, 108, 116, 101, 114, 46,  67,
-    114, 101, 97,  116, 101, 83,  117, 114, 102, 97,  99,  101, 46,  73,  110,
-    112, 117, 116, 86,  111, 108, 117, 109, 101, 34,  58,  32,  123, 34,  65,
-    108, 108, 111, 119, 101, 100, 78,  111, 100, 101, 80,  114, 111, 116, 111,
-    116, 121, 112, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110,
-    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
-    105, 101, 46,  68,  97,  116, 97,  46,  86,  111, 108, 117, 109, 101, 34,
-    93,  44,  32,  34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105,
-    116, 121, 78,  97,  109, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,
-    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
-    111, 120, 105, 101, 46,  67,  114, 101, 97,  116, 101, 83,  117, 114, 102,
-    97,  99,  101, 46,  73,  110, 112, 117, 116, 86,  111, 108, 117, 109, 101,
-    34,  93,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109,
-    101, 34,  58,  32,  34,  73,  110, 112, 117, 116, 32,  86,  111, 108, 117,
-    109, 101, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100,
-    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
-    46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121,
-    84,  121, 112, 101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101,
-    110, 99,  101, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,
-    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
-    46,  70,  105, 108, 116, 101, 114, 46,  67,  114, 101, 97,  116, 101, 83,
-    117, 114, 102, 97,  99,  101, 46,  76,  97,  98,  101, 108, 86,  111, 108,
-    117, 109, 101, 34,  58,  32,  123, 34,  65,  108, 108, 111, 119, 101, 100,
-    78,  111, 100, 101, 80,  114, 111, 116, 111, 116, 121, 112, 101, 115, 34,
-    58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
-    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116,
-    97,  46,  86,  111, 108, 117, 109, 101, 34,  93,  44,  32,  34,  67,  111,
-    109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121, 78,  97,  109, 101,
-    115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
-    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  67,
-    114, 101, 97,  116, 101, 83,  117, 114, 102, 97,  99,  101, 46,  76,  97,
-    98,  101, 108, 86,  111, 108, 117, 109, 101, 34,  93,  44,  32,  34,  68,
-    105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  76,
-    97,  98,  101, 108, 32,  86,  111, 108, 117, 109, 101, 34,  44,  32,  34,
-    84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
-    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
-    46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  78,
-    111, 100, 101, 82,  101, 102, 101, 114, 101, 110, 99,  101, 34,  125, 44,
+    111, 120, 105, 101, 46,  70,  105, 108, 116, 101, 114, 46,  67,  114, 101,
+    97,  116, 101, 83,  117, 114, 102, 97,  99,  101, 46,  65,  108, 103, 111,
+    114, 105, 116, 104, 109, 34,  58,  32,  123, 34,  67,  111, 109, 112, 97,
+    116, 105, 98,  105, 108, 105, 116, 121, 78,  97,  109, 101, 115, 34,  58,
+    32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  67,  114, 101, 97,
+    116, 101, 83,  117, 114, 102, 97,  99,  101, 46,  65,  108, 103, 111, 114,
+    105, 116, 104, 109, 34,  93,  44,  32,  34,  68,  105, 115, 112, 108, 97,
+    121, 78,  97,  109, 101, 34,  58,  32,  34,  97,  108, 103, 111, 114, 105,
+    116, 104, 109, 34,  44,  32,  34,  73,  115, 67,  117, 115, 116, 111, 109,
+    83,  116, 111, 114, 97,  103, 101, 34,  58,  32,  116, 114, 117, 101, 44,
+    32,  34,  73,  115, 67,  117, 115, 116, 111, 109, 85,  73,  34,  58,  32,
+    116, 114, 117, 101, 44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,
+    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
+    116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116,
+    121, 84,  121, 112, 101, 46,  83,  116, 114, 105, 110, 103, 34,  125, 44,
     32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
     97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,  105, 108, 116, 101,
     114, 46,  67,  114, 101, 97,  116, 101, 83,  117, 114, 102, 97,  99,  101,
-    46,  84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  58,  32,  123, 34,
-    67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121, 78,  97,
-    109, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,
-    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
-    46,  67,  114, 101, 97,  116, 101, 83,  117, 114, 102, 97,  99,  101, 46,
-    84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  93,  44,  32,  34,  68,
-    105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  84,
-    104, 114, 101, 115, 104, 111, 108, 100, 34,  44,  32,  34,  73,  115, 67,
-    117, 115, 116, 111, 109, 83,  116, 111, 114, 97,  103, 101, 34,  58,  32,
-    102, 97,  108, 115, 101, 44,  32,  34,  73,  115, 67,  117, 115, 116, 111,
-    109, 85,  73,  34,  58,  32,  102, 97,  108, 115, 101, 44,  32,  34,  84,
-    121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
+    46,  73,  110, 112, 117, 116, 86,  111, 108, 117, 109, 101, 34,  58,  32,
+    123, 34,  65,  108, 108, 111, 119, 101, 100, 78,  111, 100, 101, 80,  114,
+    111, 116, 111, 116, 121, 112, 101, 115, 34,  58,  32,  91,  34,  100, 101,
+    46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
+    86,  111, 120, 105, 101, 46,  68,  97,  116, 97,  46,  86,  111, 108, 117,
+    109, 101, 34,  93,  44,  32,  34,  67,  111, 109, 112, 97,  116, 105, 98,
+    105, 108, 105, 116, 121, 78,  97,  109, 101, 115, 34,  58,  32,  91,  34,
+    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
+    116, 46,  86,  111, 120, 105, 101, 46,  67,  114, 101, 97,  116, 101, 83,
+    117, 114, 102, 97,  99,  101, 46,  73,  110, 112, 117, 116, 86,  111, 108,
+    117, 109, 101, 34,  93,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121,
+    78,  97,  109, 101, 34,  58,  32,  34,  73,  110, 112, 117, 116, 32,  86,
+    111, 108, 117, 109, 101, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,
+    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101,
+    114, 116, 121, 84,  121, 112, 101, 46,  78,  111, 100, 101, 82,  101, 102,
+    101, 114, 101, 110, 99,  101, 34,  125, 44,  32,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  70,  105, 108, 116, 101, 114, 46,  67,  114, 101, 97,
+    116, 101, 83,  117, 114, 102, 97,  99,  101, 46,  76,  97,  98,  101, 108,
+    86,  111, 108, 117, 109, 101, 34,  58,  32,  123, 34,  65,  108, 108, 111,
+    119, 101, 100, 78,  111, 100, 101, 80,  114, 111, 116, 111, 116, 121, 112,
+    101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115,
     116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
-    80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  70,  108,
-    111, 97,  116, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,
-    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
-    46,  79,  117, 116, 112, 117, 116, 34,  58,  32,  123, 34,  65,  108, 108,
-    111, 119, 101, 100, 78,  111, 100, 101, 80,  114, 111, 116, 111, 116, 121,
-    112, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,
-    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
-    46,  68,  97,  116, 97,  46,  83,  117, 114, 102, 97,  99,  101, 34,  93,
-    44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,
-    58,  32,  34,  79,  117, 116, 112, 117, 116, 34,  44,  32,  34,  84,  121,
-    112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
-    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
-    114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  79,  117, 116,
-    112, 117, 116, 78,  111, 100, 101, 82,  101, 102, 101, 114, 101, 110, 99,
-    101, 34,  125, 125, 44,  32,  34,  82,  117, 110, 70,  105, 108, 116, 101,
-    114, 69,  110, 97,  98,  108, 101, 100, 67,  111, 110, 100, 105, 116, 105,
-    111, 110, 34,  58,  32,  123, 34,  67,  111, 110, 100, 105, 116, 105, 111,
-    110, 34,  58,  32,  123, 34,  80,  114, 111, 112, 101, 114, 116, 121, 34,
-    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
-    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,  105, 108, 116,
-    101, 114, 46,  67,  114, 101, 97,  116, 101, 83,  117, 114, 102, 97,  99,
-    101, 46,  73,  110, 112, 117, 116, 86,  111, 108, 117, 109, 101, 34,  44,
-    32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110,
-    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
-    105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 67,  111, 110, 100,
-    105, 116, 105, 111, 110, 46,  73,  115, 69,  109, 112, 116, 121, 34,  125,
+    68,  97,  116, 97,  46,  86,  111, 108, 117, 109, 101, 34,  93,  44,  32,
+    34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121, 78,
+    97,  109, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105,
+    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
+    101, 46,  67,  114, 101, 97,  116, 101, 83,  117, 114, 102, 97,  99,  101,
+    46,  76,  97,  98,  101, 108, 86,  111, 108, 117, 109, 101, 34,  93,  44,
+    32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,
+    32,  34,  76,  97,  98,  101, 108, 32,  86,  111, 108, 117, 109, 101, 34,
     44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117,
     110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
-    120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 67,  111, 110,
-    100, 105, 116, 105, 111, 110, 46,  78,  111, 116, 34,  125, 125, 0};
+    120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112,
+    101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101, 110, 99,  101,
+    34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,  105,
+    108, 116, 101, 114, 46,  67,  114, 101, 97,  116, 101, 83,  117, 114, 102,
+    97,  99,  101, 46,  84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  58,
+    32,  123, 34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116,
+    121, 78,  97,  109, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  67,  114, 101, 97,  116, 101, 83,  117, 114, 102, 97,
+    99,  101, 46,  84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  93,  44,
+    32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,
+    32,  34,  84,  104, 114, 101, 115, 104, 111, 108, 100, 34,  44,  32,  34,
+    73,  115, 67,  117, 115, 116, 111, 109, 83,  116, 111, 114, 97,  103, 101,
+    34,  58,  32,  102, 97,  108, 115, 101, 44,  32,  34,  73,  115, 67,  117,
+    115, 116, 111, 109, 85,  73,  34,  58,  32,  102, 97,  108, 115, 101, 44,
+    32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110,
+    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
+    105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101,
+    46,  70,  108, 111, 97,  116, 34,  125, 44,  32,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  79,  117, 116, 112, 117, 116, 34,  58,  32,  123, 34,
+    65,  108, 108, 111, 119, 101, 100, 78,  111, 100, 101, 80,  114, 111, 116,
+    111, 116, 121, 112, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  68,  97,  116, 97,  46,  83,  117, 114, 102, 97,  99,
+    101, 34,  93,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,
+    109, 101, 34,  58,  32,  34,  79,  117, 116, 112, 117, 116, 34,  44,  32,
+    34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105,
+    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
+    101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,
+    79,  117, 116, 112, 117, 116, 78,  111, 100, 101, 82,  101, 102, 101, 114,
+    101, 110, 99,  101, 34,  125, 125, 44,  32,  34,  82,  117, 110, 70,  105,
+    108, 116, 101, 114, 69,  110, 97,  98,  108, 101, 100, 67,  111, 110, 100,
+    105, 116, 105, 111, 110, 34,  58,  32,  123, 34,  67,  111, 110, 100, 105,
+    116, 105, 111, 110, 34,  58,  32,  123, 34,  80,  114, 111, 112, 101, 114,
+    116, 121, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
+    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,
+    105, 108, 116, 101, 114, 46,  67,  114, 101, 97,  116, 101, 83,  117, 114,
+    102, 97,  99,  101, 46,  73,  110, 112, 117, 116, 86,  111, 108, 117, 109,
+    101, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101,
+    46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
+    86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 67,
+    111, 110, 100, 105, 116, 105, 111, 110, 46,  73,  115, 69,  109, 112, 116,
+    121, 34,  125, 44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121,
+    67,  111, 110, 100, 105, 116, 105, 111, 110, 46,  78,  111, 116, 34,  125,
+    44,  32,  34,  84,  114, 111, 118, 101, 67,  108, 97,  115, 115, 105, 102,
+    105, 101, 114, 115, 34,  58,  32,  91,  34,  68,  101, 118, 101, 108, 111,
+    112, 109, 101, 110, 116, 32,  83,  116, 97,  116, 117, 115, 32,  58,  58,
+    32,  53,  32,  45,  32,  80,  114, 111, 100, 117, 99,  116, 105, 111, 110,
+    47,  83,  116, 97,  98,  108, 101, 34,  93,  125, 0};
 const char* CreateSurfaceProperties::_getPrototypeJson() {
   return _prototype_CreateSurface_;
 }
@@ -1021,8 +1070,12 @@ QString CreateSurfaceProperties::algorithmRaw() {
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.Algorithm");
 }
 QSharedPointer<NodeProperty> CreateSurfaceProperties::algorithmProperty() {
-  return _node->prototype()->getProperty(
+  return CreateSurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.Algorithm", false);
+}
+NodePropertyTyped<vx::types::String>
+CreateSurfaceProperties::algorithmPropertyTyped() {
+  return NodePropertyTyped<vx::types::String>(algorithmProperty());
 }
 void CreateSurfaceProperties::setAlgorithm(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -1039,8 +1092,12 @@ QDBusObjectPath CreateSurfaceProperties::inputVolumeRaw() {
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.InputVolume");
 }
 QSharedPointer<NodeProperty> CreateSurfaceProperties::inputVolumeProperty() {
-  return _node->prototype()->getProperty(
+  return CreateSurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.InputVolume", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+CreateSurfaceProperties::inputVolumePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(inputVolumeProperty());
 }
 void CreateSurfaceProperties::setInputVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -1057,8 +1114,12 @@ QDBusObjectPath CreateSurfaceProperties::labelVolumeRaw() {
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.LabelVolume");
 }
 QSharedPointer<NodeProperty> CreateSurfaceProperties::labelVolumeProperty() {
-  return _node->prototype()->getProperty(
+  return CreateSurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.LabelVolume", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+CreateSurfaceProperties::labelVolumePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(labelVolumeProperty());
 }
 void CreateSurfaceProperties::setLabelVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -1075,8 +1136,12 @@ double CreateSurfaceProperties::thresholdRaw() {
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.Threshold");
 }
 QSharedPointer<NodeProperty> CreateSurfaceProperties::thresholdProperty() {
-  return _node->prototype()->getProperty(
+  return CreateSurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.Threshold", false);
+}
+NodePropertyTyped<vx::types::Float>
+CreateSurfaceProperties::thresholdPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(thresholdProperty());
 }
 void CreateSurfaceProperties::setThreshold(double value) {
   _node->setNodePropertyTyped<double>(
@@ -1093,8 +1158,12 @@ QDBusObjectPath CreateSurfaceProperties::outputRaw() {
       "de.uni_stuttgart.Voxie.Output");
 }
 QSharedPointer<NodeProperty> CreateSurfaceProperties::outputProperty() {
-  return _node->prototype()->getProperty("de.uni_stuttgart.Voxie.Output",
-                                         false);
+  return CreateSurfaceProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Output", false);
+}
+NodePropertyTyped<vx::types::OutputNodeReference>
+CreateSurfaceProperties::outputPropertyTyped() {
+  return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
 }
 void CreateSurfaceProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -1317,7 +1386,12 @@ static const char _prototype_TableFilter_[] = {
     101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
     116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114,
     111, 112, 101, 114, 116, 121, 67,  111, 110, 100, 105, 116, 105, 111, 110,
-    46,  78,  111, 116, 34,  125, 125, 0};
+    46,  78,  111, 116, 34,  125, 44,  32,  34,  84,  114, 111, 118, 101, 67,
+    108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,  34,
+    68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116, 97,
+    116, 117, 115, 32,  58,  58,  32,  53,  32,  45,  32,  80,  114, 111, 100,
+    117, 99,  116, 105, 111, 110, 47,  83,  116, 97,  98,  108, 101, 34,  93,
+    125, 0};
 const char* TableFilterProperties::_getPrototypeJson() {
   return _prototype_TableFilter_;
 }
@@ -1334,7 +1408,12 @@ QList<QDBusObjectPath> TableFilterProperties::inputRaw() {
       "de.uni_stuttgart.Voxie.Input");
 }
 QSharedPointer<NodeProperty> TableFilterProperties::inputProperty() {
-  return _node->prototype()->getProperty("de.uni_stuttgart.Voxie.Input", false);
+  return TableFilterProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Input", false);
+}
+NodePropertyTyped<vx::types::NodeReferenceList>
+TableFilterProperties::inputPropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReferenceList>(inputProperty());
 }
 void TableFilterProperties::setInput(QList<vx::Node*> value) {
   _node->setNodePropertyTyped<QList<QDBusObjectPath>>(
@@ -1352,8 +1431,12 @@ QDBusObjectPath TableFilterProperties::outputRaw() {
       "de.uni_stuttgart.Voxie.Output");
 }
 QSharedPointer<NodeProperty> TableFilterProperties::outputProperty() {
-  return _node->prototype()->getProperty("de.uni_stuttgart.Voxie.Output",
-                                         false);
+  return TableFilterProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Output", false);
+}
+NodePropertyTyped<vx::types::OutputNodeReference>
+TableFilterProperties::outputPropertyTyped() {
+  return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
 }
 void TableFilterProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(

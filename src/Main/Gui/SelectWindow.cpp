@@ -63,10 +63,9 @@ SelectWindow::SelectWindow(
   this->listView->setSortingEnabled(true);
 
   this->showNonApplicableBox = new QCheckBox("Always show non-&applicable");
-  this->showNonApplicableBox->setChecked(true);
+  this->showNonApplicableBox->setChecked(false);
   this->showNonStableBox = new QCheckBox("Always show non-&stable");
-  // TODO: Set default to false?
-  this->showNonStableBox->setChecked(true);
+  this->showNonStableBox->setChecked(false);
   this->addButton = new QPushButton("&Add");
   this->cancelButton = new QPushButton("&Cancel");
   this->searchBox = new QLineEdit();
@@ -123,8 +122,11 @@ SelectWindow::SelectWindow(
   QListWidgetItem* newItem;
 
   for (const auto& prototype : factories) {
+    // TODO: Also allow showing HideNew priority connections under some
+    // conditions?
     if (prototype->nodeKind() == kind &&
-        (!currentNode || canBeChildOf(currentNode, prototype.data()))) {
+        (!currentNode || canBeChildOf(currentNode, prototype.data(),
+                                      PropertyConnectionPriority::Normal))) {
       newItem = new QListWidgetItem(prototype->displayName());
       newItem->setData(Qt::UserRole, QVariant::fromValue(prototype));
       // if the "Select filter" dialog was opened via the context menu of a data
@@ -143,6 +145,8 @@ SelectWindow::SelectWindow(
       this->listView->addItem(newItem);
     }
   }
+
+  filterNodes();
 
   connect(this->listView, &QListWidget::currentItemChanged, this,
           &SelectWindow::updateDescription);
@@ -275,6 +279,11 @@ void SelectWindow::addNewNode() {
     if (currentNode) {
       currentNode->addChildNode(node.data());
     }
+
+    // Select the newly created node in the graph
+    vx::voxieRoot().activeVisualizerProvider()->setSelectedNodes({node.data()});
+    // TODO: Also zoom/move graph view to show the new node? Always do that when
+    // changing the node selection?
   } catch (vx::Exception& e) {
     qWarning() << "Failed to create node:" << e.message();
     QMessageBox(QMessageBox::Critical,

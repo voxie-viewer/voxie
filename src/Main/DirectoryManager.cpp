@@ -88,12 +88,6 @@ DirectoryManager::DirectoryManager(QObject* parent) : QObject(parent) {
   else
     licensesPath_ = QDir(baseDir_).absoluteFilePath("licenses");
 
-  if (pathConfig.contains("OldManualFile"))
-    oldManualFile_ =
-        binDir.absoluteFilePath(pathConfig["OldManualFile"].toString());
-  else
-    oldManualFile_ = "";
-
   for (QString path : pluginPathStr.split(split)) {
     if (path == "") continue;
     pluginPath_.push_back(path);
@@ -191,7 +185,6 @@ void DirectoryManager::dump() const {
   DUMP(docPrototypePath);
   DUMP(docTopicPath);
   DUMP(katexPath);
-  DUMP(oldManualFile);
 #undef DUMP
 }
 

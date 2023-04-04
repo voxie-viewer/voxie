@@ -369,6 +369,7 @@ void forwardSignalFromListPropertyNodeOnReconnect(
  *
  * The property must be of type NodeReference.
  */
+// TODO: Drop this untyped overload?
 template <typename RealType, typename Target1, typename TargetSignal,
           typename... Pars>
 void forwardSignalFromProperty(Node* node,
@@ -382,12 +383,24 @@ void forwardSignalFromProperty(Node* node,
       typename std::decay<decltype(lambda)>::type, Pars...>(
       node, property, signal, target, targetSignal, lambda);
 }
+// TODO: Somehow statically make sure that node and property match?
+// Or introduce a type which combines a Node + a NodePropertyTyped
+template <typename RealType, typename Target1, typename TargetSignal,
+          typename... Pars>
+void forwardSignalFromProperty(
+    Node* node, const NodePropertyTyped<vx::types::NodeReference>& property,
+    void (RealType::*signal)(Pars...), Target1* target,
+    TargetSignal targetSignal) {
+  forwardSignalFromProperty(node, property.property(), signal, target,
+                            targetSignal);
+}
 
 /**
  * Similar to forwardSignalFromProperty(), but also invoke targetSignal
  * when the connection changes. This means that the target signal must not have
  * any arguments.
  */
+// TODO: Drop this untyped overload?
 template <typename RealType, typename Target1, typename TargetSignal,
           typename... Pars>
 void forwardSignalFromPropertyOnReconnect(
@@ -406,5 +419,15 @@ void forwardSignalFromPropertyOnReconnect(
       typename std::decay<decltype(lambda)>::type, Pars...>(
       node, property, signal, target, targetSignal, lambda);
   if (invokeNow) lambda();
+}
+// TODO: Somehow statically make sure that node and property match?
+template <typename RealType, typename Target1, typename TargetSignal,
+          typename... Pars>
+void forwardSignalFromPropertyOnReconnect(
+    Node* node, const NodePropertyTyped<vx::types::NodeReference>& property,
+    void (RealType::*signal)(Pars...), Target1* target,
+    TargetSignal targetSignal, bool invokeNow = false) {
+  forwardSignalFromPropertyOnReconnect(node, property.property(), signal,
+                                       target, targetSignal, invokeNow);
 }
 }  // namespace vx

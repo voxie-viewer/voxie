@@ -22,6 +22,10 @@
 
 #include "ExamplePlugin.hpp"
 
+#include <VoxieClient/JsonUtil.hpp>
+
+#include <Voxie/Component/Tool.hpp>
+
 #include <PluginExample/RAWImporter.hpp>
 #include <PluginExample/RandomChartVisualizer.hpp>
 #include <PluginExample/TheSphereGenerator.hpp>
@@ -29,45 +33,12 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
 
-ExamplePlugin::ExamplePlugin(QObject* parent) : QGenericPlugin(parent) {}
-
-QObject* ExamplePlugin::create(const QString& key,
-                               const QString& specification) {
-  (void)key;
-  (void)specification;
-  return nullptr;
-}
+ExamplePlugin::ExamplePlugin() : PluginInstance() {}
 
 QWidget* ExamplePlugin::preferencesWidget() {
   QLabel* label = new QLabel("Settings Page");
   label->setAlignment(Qt::AlignCenter);
   return label;
-}
-
-QList<QAction*> ExamplePlugin::uiCommands() {
-  QList<QAction*> actions;
-
-  QAction* messageBoxAction = new QAction("Show Message Box", nullptr);
-  connect(messageBoxAction, &QAction::triggered, []() -> void {
-    QMessageBox(QMessageBox::Information, "Example Plugin",
-                "Plugins can be integrated into UI!", QMessageBox::Ok)
-        .exec();
-  });
-  messageBoxAction->setObjectName("MessageBox testcommand");
-  actions.append(messageBoxAction);
-
-  QAction* generateSphereAction = new QAction("Generate Sphere", nullptr);
-  connect(generateSphereAction, &QAction::triggered, []() -> void {
-    auto filter = dynamic_cast<FilterNode*>(
-        TheSphereGenerator::getPrototypeSingleton()
-            ->create(QMap<QString, QVariant>(), QList<Node*>(),
-                     QMap<QString, QDBusVariant>())
-            .data());
-    if (filter) filter->run();
-  });
-  actions.append(generateSphereAction);
-
-  return actions;
 }
 
 QList<QSharedPointer<vx::NodePrototype>> ExamplePlugin::objectPrototypes() {
@@ -81,4 +52,40 @@ QList<QSharedPointer<vx::io::Importer>> ExamplePlugin::importers() {
   QList<QSharedPointer<vx::io::Importer>> list;
   list.append(makeSharedQObject<RAWImporter>());
   return list;
+}
+
+class ToolCreateSphere : public vx::ToolGlobal {
+  // TODO: Put JSON data somewhere else
+  static QJsonObject getJson() {
+    const char* data = R"""(
+{
+    "ToolType": "Global",
+    "Name": "de.uni_stuttgart.Voxie.Example.Tool.CreateSphere",
+    "DisplayName": "Create example sphere",
+    "Description": "Create example sphere."
+}
+)""";
+    return expectObject(parseJsonData(data, "<data>"));
+  }
+
+ public:
+  ToolCreateSphere() : ToolGlobal(getJson()) {}
+
+  QProcess* startGlobal(QProcess* process = new QProcess()) override {
+    auto filter = dynamic_cast<FilterNode*>(
+        TheSphereGenerator::getPrototypeSingleton()
+            ->create(QMap<QString, QVariant>(), QList<Node*>(),
+                     QMap<QString, QDBusVariant>())
+            .data());
+    if (filter) filter->run();
+
+    (void)process;
+    return nullptr;
+  }
+};
+
+QList<QSharedPointer<vx::Component>> ExamplePlugin::createComponents() {
+  return {
+    makeSharedQObject<ToolCreateSphere>(),
+  };
 }

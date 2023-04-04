@@ -6,6 +6,9 @@
             "Name": "de.uni_stuttgart.Voxie.Object3D.Plane",
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Object3D",
             "Icon": ":/icons/universal.png",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Object3D.Plane.Plane": {
                     "AllowedNodePrototypes": [
@@ -47,7 +50,8 @@
                         "de.uni_stuttgart.Voxie.Data.Volume"
                     ],
                     "DisplayName": "Slice volume",
-                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "ConnectionPriority": "HideNew"
                 },
                 "de.uni_stuttgart.Voxie.Object3D.Plane.SliceValueColorMapping": {
                     "DisplayName": "Slice value to color mapping",

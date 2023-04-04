@@ -60,9 +60,6 @@
                     "AllowedNodePrototypes": [
                         "de.uni_stuttgart.Voxie.Data.Volume"
                     ],
-                    "OutputTags": [
-                        "de.uni_stuttgart.Voxie.Tags.Volume.Float"
-                    ],
                     "DisplayName": "Output",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
                 }

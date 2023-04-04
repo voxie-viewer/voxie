@@ -64,7 +64,7 @@ class BrushSelectionTool : public Visualizer2DTool {
   QString getName() override { return "Brush Selection"; }
 
   void triggerLayerRedraw(bool isMouseValid = true);
-  void getStepManager();
+  bool getStepManager();
 
  public Q_SLOTS:
   void activateTool() override;
@@ -79,6 +79,7 @@ class BrushSelectionTool : public Visualizer2DTool {
 
  private:
   SliceVisualizer* sv;
+  // TODO: What happens if stepManager is destroyed?
   vx::StepManagerI* stepManager = nullptr;
   quint8 brushRadius = 10;
 

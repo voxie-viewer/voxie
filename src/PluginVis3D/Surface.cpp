@@ -115,7 +115,8 @@ class SurfacePerShareGroup : public Object3DPerShareGroup {
         [](QObject* obj) { obj->deleteLater(); });
 
     if (!surfaceData->getSurface()) {
-      qWarning() << "Not a SurfaceDataTriangleIndexed, ignoring";
+      // This happens e.g. when there is an empty data node connected
+      // qWarning() << "Not a SurfaceDataTriangleIndexed, ignoring";
       return;
     }
 
@@ -176,7 +177,7 @@ class SurfacePerShareGroup : public Object3DPerShareGroup {
   void uploadData() {
     shareGroup->select();
 
-    qDebug() << "uploadData()";
+    // qDebug() << "uploadData()";
 
     auto surface = this->surfaceObj;
     if (!surface) {
@@ -403,7 +404,7 @@ Surface::Surface()
                    &object3d_prop::SurfaceProperties::backColorChanged, this,
                    &Surface::triggerRendering);
 
-  // Update bounding box when volume changes
+  // Update bounding box when surface changes
   QObject::connect(properties,
                    &object3d_prop::SurfaceProperties::surfaceChanged, this,
                    &Surface::boundingBoxChanged);
@@ -470,6 +471,12 @@ QSharedPointer<Object3DPerShareGroup> Surface::newPerShareGroup(
         connect(surfaceObj, &DataNode::dataChanged, psg, [psg, surfaceWeak]() {
           // qDebug() << "DATA_CHANGED" << surfaceWeak;
           if (!surfaceWeak) return;
+
+          // TODO: Is this correct?
+          // The bounding box change notification code probably should be
+          // cleaned up
+          Q_EMIT surfaceWeak->boundingBoxChanged();
+
           auto surfaceObj2 = dynamic_cast<vx::SurfaceNode*>(
               surfaceWeak->properties->surface());
           if (!surfaceObj2) {
@@ -499,8 +506,12 @@ void drawBoundingBox(OpenGLDrawWidget::PrimitiveBuffer& drawingBuffer,
   } else {
   }
 
-  auto srf =
-      qSharedPointerDynamicCast<SurfaceDataTriangleIndexed>(surface->surface());
+  auto surfaceData = surface->surface();
+  if (!surfaceData) {
+    qWarning() << "drawBoundingBox: No surface data\n";
+    return;
+  }
+  auto srf = qSharedPointerDynamicCast<SurfaceDataTriangleIndexed>(surfaceData);
   if (!srf) {
     qWarning() << "Not a SurfaceDataTriangleIndexed, ignoring";
     return;
@@ -787,13 +798,6 @@ void Surface::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
     start = fmin(-halfLength, min.x());
     end = fmax(halfLength, max.x());
 
-    // TODO
-    /*
-    bool canFilterAxis =
-        mouseOperation->getPreferedAction() == MouseOperation::MoveObject ||
-        mouseOperation->getPreferedAction() == MouseOperation::RotateObject;
-    */
-
     if (true /*TODO !canFilterAxis || !axisFilter->filterX()*/) {
       drawingBuffer.addLine(QVector3D(1.0f, 0.0f, 0.0f),
                             QVector3D(start, 0.0f, 0.0f),
@@ -994,8 +998,10 @@ BoundingBox3D Surface::getBoundingBox() {
   if (!surface) {
     return BoundingBox3D::empty();
   } else {
-    auto srf = qSharedPointerDynamicCast<SurfaceDataTriangleIndexed>(
-        surface->surface());
+    auto surfaceData = surface->surface();
+    if (!surfaceData) return BoundingBox3D::empty();
+    auto srf =
+        qSharedPointerDynamicCast<SurfaceDataTriangleIndexed>(surfaceData);
     if (!srf) {
       qWarning() << "Not a SurfaceDataTriangleIndexed, ignoring";
       return BoundingBox3D::empty();
@@ -1031,25 +1037,13 @@ bool Surface::needMouseTracking() {
 void Surface::mouseMoveEventImpl(
     QMouseEvent* event,
     std::tuple<Object3DPickImageData*, uint32_t, uint32_t> pickData,
-    const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd,
-    MouseOperation* mouseOperation) {
+    const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd) {
+  Q_UNUSED(event);
+  Q_UNUSED(mouseRayStart);
+  Q_UNUSED(mouseRayEnd);
+
   auto selectedNodes =
       vx::voxieRoot().activeVisualizerProvider()->selectedNodes();
-
-  // TODO: ?
-  if (selectedNodes.size() == 0 ||
-      !dynamic_cast<vx::Object3DNode*>(selectedNodes[0])) {
-    auto mouseOperation2 =
-        dynamic_cast<IsosurfaceMouseOperation*>(mouseOperation);
-    if (mouseOperation2) {
-      auto action = mouseOperation2->getPreferedAction();
-      // If there is an upcoming mouse action but no selected surface, try to
-      // select one:
-      if (action == MouseOperation::MoveObject ||
-          action == MouseOperation::RotateObject)
-        mouseSelectEvent(event, pickData, mouseRayStart, mouseRayEnd, action);
-    }
-  }
 
   if (properties->highlightCurrentTriangle()) {
     auto oldHighlightedTriangleID = highlightedTriangleID;
@@ -1067,20 +1061,31 @@ void Surface::mouseMoveEventImpl(
 void Surface::mousePressEventImpl(
     QMouseEvent* event,
     std::tuple<Object3DPickImageData*, uint32_t, uint32_t> pickData,
-    const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd,
-    MouseOperation* mouseOperation) {
-  // qDebug() << "mousePressEventImpl" << std::get<0>(pickData);
-  auto action = mouseOperation->decideAction(event);
-  if (action == MouseOperation::SetPoint ||
-      action == MouseOperation::SelectObject) {
-    mouseSelectEvent(event, pickData, mouseRayStart, mouseRayEnd, action);
+    const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd) {
+  // qDebug() << "mousePressEventImpl" << std::get<0>(pickData) << event;
+
+  // Ignore all non-left button presses
+  if (event->button() != Qt::LeftButton) return;
+
+  // Ignore all button presses if another button is already pressed
+  if ((event->buttons() & (Qt::MiddleButton | Qt::RightButton)) != Qt::NoButton)
+    return;
+
+  auto modifiers =
+      event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier);
+
+  if (modifiers == Qt::ShiftModifier) {
+    mouseSelectEvent(event, pickData, mouseRayStart, mouseRayEnd, false);
+  } else if (modifiers == Qt::ControlModifier) {
+    mouseSelectEvent(event, pickData, mouseRayStart, mouseRayEnd, true);
   }
 }
+// TODO: Clean up, use different methods for selecting and setting points?
 void Surface::mouseSelectEvent(
     QMouseEvent* event,
     std::tuple<Object3DPickImageData*, uint32_t, uint32_t> pickData,
     const QVector3D& mouseRayStartGlobal, const QVector3D& mouseRayEndGlobal,
-    MouseOperation::Action action) {
+    bool doSetPoint) {
   Q_UNUSED(event);
 
   QVector3D hitPos;
@@ -1156,7 +1161,7 @@ void Surface::mouseSelectEvent(
   hitPos = rotation.rotatedVector(hitPos);
   hitPos += position;
 
-  if (action == MouseOperation::SetPoint) {
+  if (doSetPoint) {
     Q_EMIT this->setPointCalled(hitPos);
   } else {
     auto selectedNodes =
@@ -1174,8 +1179,4 @@ vx::SurfaceNode* Surface::surface() {
 }
 QString Surface::shadingTechnique() { return properties->shadingTechnique(); }
 
-namespace vx {
-namespace vis3d {
-NODE_PROTOTYPE_IMPL_SEP(object3d_prop::Surface, Surface)
-}
-}  // namespace vx
+NODE_PROTOTYPE_IMPL_SEP(object3d_prop::Surface, vis3d::Surface)

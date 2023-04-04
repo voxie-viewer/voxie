@@ -50,17 +50,22 @@ static const char _prototype_Container_[] = {
     116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
     67,  111, 110, 116, 97,  105, 110, 101, 114, 68,  97,  116, 97,  34,  93,
     44,  32,  34,  84,  97,  103, 115, 34,  58,  32,  34,  34,  44,  32,  34,
-    85,  73,  34,  58,  32,  123, 34,  83,  105, 100, 101, 80,  97,  110, 101,
-    108, 83,  101, 99,  116, 105, 111, 110, 115, 34,  58,  32,  91,  123, 34,
-    68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,
-    73,  110, 102, 111, 34,  44,  32,  34,  69,  110, 116, 114, 105, 101, 115,
-    34,  58,  32,  91,  123, 34,  78,  97,  109, 101, 34,  58,  32,  34,  100,
-    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
-    46,  86,  111, 120, 105, 101, 46,  68,  97,  116, 97,  46,  67,  111, 110,
-    116, 97,  105, 110, 101, 114, 46,  73,  110, 102, 111, 34,  44,  32,  34,
-    84,  121, 112, 101, 34,  58,  32,  34,  67,  117, 115, 116, 111, 109, 34,
-    125, 93,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  73,  110,
-    102, 111, 83,  101, 99,  116, 105, 111, 110, 34,  125, 93,  125, 125, 0};
+    84,  114, 111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114,
+    115, 34,  58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101,
+    110, 116, 32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  53,  32,
+    45,  32,  80,  114, 111, 100, 117, 99,  116, 105, 111, 110, 47,  83,  116,
+    97,  98,  108, 101, 34,  93,  44,  32,  34,  85,  73,  34,  58,  32,  123,
+    34,  83,  105, 100, 101, 80,  97,  110, 101, 108, 83,  101, 99,  116, 105,
+    111, 110, 115, 34,  58,  32,  91,  123, 34,  68,  105, 115, 112, 108, 97,
+    121, 78,  97,  109, 101, 34,  58,  32,  34,  73,  110, 102, 111, 34,  44,
+    32,  34,  69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,  123, 34,
+    78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
+    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
+    46,  68,  97,  116, 97,  46,  67,  111, 110, 116, 97,  105, 110, 101, 114,
+    46,  73,  110, 102, 111, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,
+    32,  34,  67,  117, 115, 116, 111, 109, 34,  125, 93,  44,  32,  34,  78,
+    97,  109, 101, 34,  58,  32,  34,  73,  110, 102, 111, 83,  101, 99,  116,
+    105, 111, 110, 34,  125, 93,  125, 125, 0};
 const char* ContainerProperties::_getPrototypeJson() {
   return _prototype_Container_;
 }
@@ -108,7 +113,12 @@ static const char _prototype_EventListData_[] = {
     115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
     117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  69,
     118, 101, 110, 116, 76,  105, 115, 116, 68,  97,  116, 97,  65,  99,  99,
-    101, 115, 115, 111, 114, 34,  93,  125, 0};
+    101, 115, 115, 111, 114, 34,  93,  44,  32,  34,  84,  114, 111, 118, 101,
+    67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,
+    34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116,
+    97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,  32,  80,  114, 111,
+    100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,  98,  108, 101, 34,
+    93,  125, 0};
 const char* EventListDataProperties::_getPrototypeJson() {
   return _prototype_EventListData_;
 }
@@ -270,7 +280,11 @@ static const char _prototype_GeometricPrimitive_[] = {
     100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
     116, 46,  86,  111, 120, 105, 101, 46,  71,  101, 111, 109, 101, 116, 114,
     105, 99,  80,  114, 105, 109, 105, 116, 105, 118, 101, 68,  97,  116, 97,
-    34,  93,  125, 0};
+    34,  93,  44,  32,  34,  84,  114, 111, 118, 101, 67,  108, 97,  115, 115,
+    105, 102, 105, 101, 114, 115, 34,  58,  32,  91,  34,  68,  101, 118, 101,
+    108, 111, 112, 109, 101, 110, 116, 32,  83,  116, 97,  116, 117, 115, 32,
+    58,  58,  32,  53,  32,  45,  32,  80,  114, 111, 100, 117, 99,  116, 105,
+    111, 110, 47,  83,  116, 97,  98,  108, 101, 34,  93,  125, 0};
 const char* GeometricPrimitiveProperties::_getPrototypeJson() {
   return _prototype_GeometricPrimitive_;
 }
@@ -289,9 +303,14 @@ quint64 GeometricPrimitiveProperties::measurementPrimitive1Raw() {
 }
 QSharedPointer<NodeProperty>
 GeometricPrimitiveProperties::measurementPrimitive1Property() {
-  return _node->prototype()->getProperty(
+  return GeometricPrimitiveProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.MeasurementPrimitive1",
       false);
+}
+NodePropertyTyped<vx::types::GeometricPrimitive>
+GeometricPrimitiveProperties::measurementPrimitive1PropertyTyped() {
+  return NodePropertyTyped<vx::types::GeometricPrimitive>(
+      measurementPrimitive1Property());
 }
 void GeometricPrimitiveProperties::setMeasurementPrimitive1(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
@@ -310,9 +329,14 @@ quint64 GeometricPrimitiveProperties::measurementPrimitive2Raw() {
 }
 QSharedPointer<NodeProperty>
 GeometricPrimitiveProperties::measurementPrimitive2Property() {
-  return _node->prototype()->getProperty(
+  return GeometricPrimitiveProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.MeasurementPrimitive2",
       false);
+}
+NodePropertyTyped<vx::types::GeometricPrimitive>
+GeometricPrimitiveProperties::measurementPrimitive2PropertyTyped() {
+  return NodePropertyTyped<vx::types::GeometricPrimitive>(
+      measurementPrimitive2Property());
 }
 void GeometricPrimitiveProperties::setMeasurementPrimitive2(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
@@ -330,9 +354,14 @@ quint64 GeometricPrimitiveProperties::selectedPrimitiveRaw() {
 }
 QSharedPointer<NodeProperty>
 GeometricPrimitiveProperties::selectedPrimitiveProperty() {
-  return _node->prototype()->getProperty(
+  return GeometricPrimitiveProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.SelectedPrimitive",
       false);
+}
+NodePropertyTyped<vx::types::GeometricPrimitive>
+GeometricPrimitiveProperties::selectedPrimitivePropertyTyped() {
+  return NodePropertyTyped<vx::types::GeometricPrimitive>(
+      selectedPrimitiveProperty());
 }
 void GeometricPrimitiveProperties::setSelectedPrimitive(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
@@ -520,7 +549,11 @@ static const char _prototype_Surface_[] = {
     102, 97,  99,  101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110,
     105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
     105, 101, 46,  83,  117, 114, 102, 97,  99,  101, 68,  97,  116, 97,  34,
-    93,  125, 0};
+    93,  44,  32,  34,  84,  114, 111, 118, 101, 67,  108, 97,  115, 115, 105,
+    102, 105, 101, 114, 115, 34,  58,  32,  91,  34,  68,  101, 118, 101, 108,
+    111, 112, 109, 101, 110, 116, 32,  83,  116, 97,  116, 117, 115, 32,  58,
+    58,  32,  53,  32,  45,  32,  80,  114, 111, 100, 117, 99,  116, 105, 111,
+    110, 47,  83,  116, 97,  98,  108, 101, 34,  93,  125, 0};
 const char* SurfaceProperties::_getPrototypeJson() {
   return _prototype_Surface_;
 }
@@ -540,8 +573,12 @@ std::tuple<double, double, double, double> SurfaceProperties::rotationRaw() {
           "de.uni_stuttgart.Voxie.MovableDataNode.Rotation");
 }
 QSharedPointer<NodeProperty> SurfaceProperties::rotationProperty() {
-  return _node->prototype()->getProperty(
+  return SurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.MovableDataNode.Rotation", false);
+}
+NodePropertyTyped<vx::types::Orientation3D>
+SurfaceProperties::rotationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Orientation3D>(rotationProperty());
 }
 void SurfaceProperties::setRotation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -560,8 +597,12 @@ std::tuple<double, double, double> SurfaceProperties::translationRaw() {
       "de.uni_stuttgart.Voxie.MovableDataNode.Translation");
 }
 QSharedPointer<NodeProperty> SurfaceProperties::translationProperty() {
-  return _node->prototype()->getProperty(
+  return SurfaceProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.MovableDataNode.Translation", false);
+}
+NodePropertyTyped<vx::types::Position3D>
+SurfaceProperties::translationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(translationProperty());
 }
 void SurfaceProperties::setTranslation(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -658,7 +699,12 @@ static const char _prototype_Table_[] = {
     68,  66,  117, 115, 73,  110, 116, 101, 114, 102, 97,  99,  101, 115, 34,
     58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
     116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  84,  97,  98,
-    108, 101, 68,  97,  116, 97,  34,  93,  125, 0};
+    108, 101, 68,  97,  116, 97,  34,  93,  44,  32,  34,  84,  114, 111, 118,
+    101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,
+    91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,
+    116, 97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,  32,  80,  114,
+    111, 100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,  98,  108, 101,
+    34,  93,  125, 0};
 const char* TableProperties::_getPrototypeJson() { return _prototype_Table_; }
 
 TableProperties::~TableProperties() {}
@@ -708,8 +754,12 @@ static const char _prototype_TomographyRawData_[] = {
     116, 101, 114, 102, 97,  99,  101, 115, 34,  58,  32,  91,  34,  100, 101,
     46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
     86,  111, 120, 105, 101, 46,  84,  111, 109, 111, 103, 114, 97,  112, 104,
-    121, 82,  97,  119, 68,  97,  116, 97,  66,  97,  115, 101, 34,  93,  125,
-    0};
+    121, 82,  97,  119, 68,  97,  116, 97,  66,  97,  115, 101, 34,  93,  44,
+    32,  34,  84,  114, 111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105,
+    101, 114, 115, 34,  58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112,
+    109, 101, 110, 116, 32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,
+    53,  32,  45,  32,  80,  114, 111, 100, 117, 99,  116, 105, 111, 110, 47,
+    83,  116, 97,  98,  108, 101, 34,  93,  125, 0};
 const char* TomographyRawDataProperties::_getPrototypeJson() {
   return _prototype_TomographyRawData_;
 }
@@ -828,7 +878,12 @@ static const char _prototype_Volume_[] = {
     116, 97,  68,  66,  117, 115, 73,  110, 116, 101, 114, 102, 97,  99,  101,
     115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
     117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,
-    111, 108, 117, 109, 101, 68,  97,  116, 97,  34,  93,  125, 0};
+    111, 108, 117, 109, 101, 68,  97,  116, 97,  34,  93,  44,  32,  34,  84,
+    114, 111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115,
+    34,  58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110,
+    116, 32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,
+    32,  80,  114, 111, 100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,
+    98,  108, 101, 34,  93,  125, 0};
 const char* VolumeProperties::_getPrototypeJson() { return _prototype_Volume_; }
 
 VolumeProperties::~VolumeProperties() {}
@@ -846,8 +901,12 @@ std::tuple<double, double, double, double> VolumeProperties::rotationRaw() {
           "de.uni_stuttgart.Voxie.MovableDataNode.Rotation");
 }
 QSharedPointer<NodeProperty> VolumeProperties::rotationProperty() {
-  return _node->prototype()->getProperty(
+  return VolumeProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.MovableDataNode.Rotation", false);
+}
+NodePropertyTyped<vx::types::Orientation3D>
+VolumeProperties::rotationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Orientation3D>(rotationProperty());
 }
 void VolumeProperties::setRotation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -866,8 +925,12 @@ std::tuple<double, double, double> VolumeProperties::translationRaw() {
       "de.uni_stuttgart.Voxie.MovableDataNode.Translation");
 }
 QSharedPointer<NodeProperty> VolumeProperties::translationProperty() {
-  return _node->prototype()->getProperty(
+  return VolumeProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.MovableDataNode.Translation", false);
+}
+NodePropertyTyped<vx::types::Position3D>
+VolumeProperties::translationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(translationProperty());
 }
 void VolumeProperties::setTranslation(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -951,7 +1014,11 @@ static const char _prototype_NodeGroup_[] = {
     116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  78,  111, 100,
     101, 75,  105, 110, 100, 46,  78,  111, 100, 101, 71,  114, 111, 117, 112,
     34,  44,  32,  34,  80,  114, 111, 112, 101, 114, 116, 105, 101, 115, 34,
-    58,  32,  123, 125, 125, 0};
+    58,  32,  123, 125, 44,  32,  34,  84,  114, 111, 118, 101, 67,  108, 97,
+    115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,  34,  68,  101,
+    118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116, 97,  116, 117,
+    115, 32,  58,  58,  32,  52,  32,  45,  32,  66,  101, 116, 97,  34,  93,
+    125, 0};
 const char* NodeGroupProperties::_getPrototypeJson() {
   return _prototype_NodeGroup_;
 }
@@ -1064,7 +1131,12 @@ static const char _prototype_Plane_[] = {
     34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
     114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114,
     116, 121, 84,  121, 112, 101, 46,  80,  111, 115, 105, 116, 105, 111, 110,
-    51,  68,  34,  125, 125, 125, 0};
+    51,  68,  34,  125, 125, 44,  32,  34,  84,  114, 111, 118, 101, 67,  108,
+    97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,  34,  68,
+    101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116, 97,  116,
+    117, 115, 32,  58,  58,  32,  53,  32,  45,  32,  80,  114, 111, 100, 117,
+    99,  116, 105, 111, 110, 47,  83,  116, 97,  98,  108, 101, 34,  93,  125,
+    0};
 const char* PlaneProperties::_getPrototypeJson() { return _prototype_Plane_; }
 
 PlaneProperties::~PlaneProperties() {}
@@ -1082,8 +1154,12 @@ std::tuple<double, double, double, double> PlaneProperties::orientationRaw() {
           "de.uni_stuttgart.Voxie.Property.Plane.Orientation");
 }
 QSharedPointer<NodeProperty> PlaneProperties::orientationProperty() {
-  return _node->prototype()->getProperty(
+  return PlaneProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Property.Plane.Orientation", false);
+}
+NodePropertyTyped<vx::types::Orientation3D>
+PlaneProperties::orientationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Orientation3D>(orientationProperty());
 }
 void PlaneProperties::setOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -1102,8 +1178,12 @@ std::tuple<double, double, double> PlaneProperties::originRaw() {
       "de.uni_stuttgart.Voxie.Property.Plane.Origin");
 }
 QSharedPointer<NodeProperty> PlaneProperties::originProperty() {
-  return _node->prototype()->getProperty(
+  return PlaneProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Property.Plane.Origin", false);
+}
+NodePropertyTyped<vx::types::Position3D>
+PlaneProperties::originPropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(originProperty());
 }
 void PlaneProperties::setOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(

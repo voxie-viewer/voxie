@@ -32,6 +32,10 @@
 
 namespace vx {
 
+template <typename T, std::size_t dim>
+class Vector;
+// TODO: Switch from QVector3D to vx::Vector<double, 3>
+
 class VOXIECORESHARED_EXPORT BoundingBox3D {
   QVector3D min_, max_;
 
@@ -66,11 +70,14 @@ class VOXIECORESHARED_EXPORT BoundingBox3D {
   static BoundingBox3D point(const QVector3D& point) {
     return BoundingBox3D(point, point);
   }
+  static BoundingBox3D pointV(const vx::Vector<double, 3>& point);
 
   bool isEmpty() const {
     return min().x() > max().x() || min().y() > max().y() ||
            min().z() > max().z();
   }
+
+  QList<vx::Vector<double, 3>> corners() const;
 };
 
 }  // namespace vx

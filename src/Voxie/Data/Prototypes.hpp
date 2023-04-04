@@ -12,6 +12,7 @@
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
 #include <Voxie/Node/Node.hpp>
+#include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
 
 namespace vx {
@@ -106,6 +107,7 @@ class VOXIECORESHARED_EXPORT ContainerProperties
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   ContainerProperties(vx::Node* parent);
   ~ContainerProperties();
 };
@@ -139,6 +141,7 @@ class VOXIECORESHARED_EXPORT EventListDataProperties
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   EventListDataProperties(vx::Node* parent);
   ~EventListDataProperties();
 };
@@ -189,12 +192,15 @@ class VOXIECORESHARED_EXPORT GeometricPrimitiveProperties
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   GeometricPrimitiveProperties(vx::Node* parent);
   ~GeometricPrimitiveProperties();
 
   quint64 measurementPrimitive1() override final;
   quint64 measurementPrimitive1Raw() override final;
-  QSharedPointer<NodeProperty> measurementPrimitive1Property();
+  static QSharedPointer<NodeProperty> measurementPrimitive1Property();
+  static NodePropertyTyped<vx::types::GeometricPrimitive>
+  measurementPrimitive1PropertyTyped();
   void setMeasurementPrimitive1(quint64 value);
  Q_SIGNALS:
   void measurementPrimitive1Changed(quint64 value);
@@ -205,7 +211,9 @@ class VOXIECORESHARED_EXPORT GeometricPrimitiveProperties
 
   quint64 measurementPrimitive2() override final;
   quint64 measurementPrimitive2Raw() override final;
-  QSharedPointer<NodeProperty> measurementPrimitive2Property();
+  static QSharedPointer<NodeProperty> measurementPrimitive2Property();
+  static NodePropertyTyped<vx::types::GeometricPrimitive>
+  measurementPrimitive2PropertyTyped();
   void setMeasurementPrimitive2(quint64 value);
  Q_SIGNALS:
   void measurementPrimitive2Changed(quint64 value);
@@ -216,7 +224,9 @@ class VOXIECORESHARED_EXPORT GeometricPrimitiveProperties
 
   quint64 selectedPrimitive() override final;
   quint64 selectedPrimitiveRaw() override final;
-  QSharedPointer<NodeProperty> selectedPrimitiveProperty();
+  static QSharedPointer<NodeProperty> selectedPrimitiveProperty();
+  static NodePropertyTyped<vx::types::GeometricPrimitive>
+  selectedPrimitivePropertyTyped();
   void setSelectedPrimitive(quint64 value);
  Q_SIGNALS:
   void selectedPrimitiveChanged(quint64 value);
@@ -264,12 +274,14 @@ class VOXIECORESHARED_EXPORT SurfaceProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   SurfaceProperties(vx::Node* parent);
   ~SurfaceProperties();
 
   QQuaternion rotation() override final;
   std::tuple<double, double, double, double> rotationRaw() override final;
-  QSharedPointer<NodeProperty> rotationProperty();
+  static QSharedPointer<NodeProperty> rotationProperty();
+  static NodePropertyTyped<vx::types::Orientation3D> rotationPropertyTyped();
   void setRotation(QQuaternion value);
  Q_SIGNALS:
   void rotationChanged(QQuaternion value);
@@ -280,7 +292,8 @@ class VOXIECORESHARED_EXPORT SurfaceProperties : public QObject,
 
   QVector3D translation() override final;
   std::tuple<double, double, double> translationRaw() override final;
-  QSharedPointer<NodeProperty> translationProperty();
+  static QSharedPointer<NodeProperty> translationProperty();
+  static NodePropertyTyped<vx::types::Position3D> translationPropertyTyped();
   void setTranslation(QVector3D value);
  Q_SIGNALS:
   void translationChanged(QVector3D value);
@@ -317,6 +330,7 @@ class VOXIECORESHARED_EXPORT TableProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   TableProperties(vx::Node* parent);
   ~TableProperties();
 };
@@ -350,6 +364,7 @@ class VOXIECORESHARED_EXPORT TomographyRawDataProperties
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   TomographyRawDataProperties(vx::Node* parent);
   ~TomographyRawDataProperties();
 };
@@ -392,12 +407,14 @@ class VOXIECORESHARED_EXPORT VolumeProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   VolumeProperties(vx::Node* parent);
   ~VolumeProperties();
 
   QQuaternion rotation() override final;
   std::tuple<double, double, double, double> rotationRaw() override final;
-  QSharedPointer<NodeProperty> rotationProperty();
+  static QSharedPointer<NodeProperty> rotationProperty();
+  static NodePropertyTyped<vx::types::Orientation3D> rotationPropertyTyped();
   void setRotation(QQuaternion value);
  Q_SIGNALS:
   void rotationChanged(QQuaternion value);
@@ -408,7 +425,8 @@ class VOXIECORESHARED_EXPORT VolumeProperties : public QObject,
 
   QVector3D translation() override final;
   std::tuple<double, double, double> translationRaw() override final;
-  QSharedPointer<NodeProperty> translationProperty();
+  static QSharedPointer<NodeProperty> translationProperty();
+  static NodePropertyTyped<vx::types::Position3D> translationPropertyTyped();
   void setTranslation(QVector3D value);
  Q_SIGNALS:
   void translationChanged(QVector3D value);
@@ -447,6 +465,7 @@ class VOXIECORESHARED_EXPORT NodeGroupProperties
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   NodeGroupProperties(vx::Node* parent);
   ~NodeGroupProperties();
 };
@@ -488,12 +507,14 @@ class VOXIECORESHARED_EXPORT PlaneProperties : public QObject,
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   PlaneProperties(vx::Node* parent);
   ~PlaneProperties();
 
   QQuaternion orientation() override final;
   std::tuple<double, double, double, double> orientationRaw() override final;
-  QSharedPointer<NodeProperty> orientationProperty();
+  static QSharedPointer<NodeProperty> orientationProperty();
+  static NodePropertyTyped<vx::types::Orientation3D> orientationPropertyTyped();
   void setOrientation(QQuaternion value);
  Q_SIGNALS:
   void orientationChanged(QQuaternion value);
@@ -504,7 +525,8 @@ class VOXIECORESHARED_EXPORT PlaneProperties : public QObject,
 
   QVector3D origin() override final;
   std::tuple<double, double, double> originRaw() override final;
-  QSharedPointer<NodeProperty> originProperty();
+  static QSharedPointer<NodeProperty> originProperty();
+  static NodePropertyTyped<vx::types::Position3D> originPropertyTyped();
   void setOrigin(QVector3D value);
  Q_SIGNALS:
   void originChanged(QVector3D value);
@@ -543,6 +565,7 @@ class VOXIECORESHARED_EXPORT PreviewBoxProperties
 
  public:
   static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
   PreviewBoxProperties(vx::Node* parent);
   ~PreviewBoxProperties();
 };

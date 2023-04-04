@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <QtCore/QDateTime>
 #include <QtCore/QMap>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QString>
@@ -54,19 +55,44 @@ class HelpPageInfo {
   }
 };
 
+class HelpPageDependencies {
+  // Note: List can contain invalid QDateTimes to inidicate missing files
+  QList<std::tuple<QString, QDateTime>> files_;
+
+ public:
+  HelpPageDependencies(const QList<std::tuple<QString, QDateTime>>& files);
+  ~HelpPageDependencies();
+
+  const QList<std::tuple<QString, QDateTime>>& files() const { return files_; }
+
+  bool isUpToDate();
+
+  static QSharedPointer<HelpPageDependencies> none();
+  static QSharedPointer<HelpPageDependencies> fromSingleFile(
+      const QString& fileName);
+};
+
 // TODO: Should this contain a HelpPageInfo?
 class HelpPage {
   QSharedPointer<vx::cmark::Node> doc_;
   QString baseFileName_;
+  QSharedPointer<HelpPageDependencies> dependencies_;
   QString title_;
 
  public:
+  // TODO: Clean up constructors
+  HelpPage(const QSharedPointer<vx::cmark::Node>& doc, const QString& title);
   HelpPage(const QSharedPointer<vx::cmark::Node>& doc,
-           const QString& baseFileName, const QString& title);
+           const QString& baseFileName,
+           const QSharedPointer<HelpPageDependencies>& dependencies,
+           const QString& title);
   ~HelpPage();
 
   const QSharedPointer<vx::cmark::Node>& doc() const { return doc_; }
   const QString& baseFileName() const { return baseFileName_; }
+  const QSharedPointer<HelpPageDependencies>& dependencies() const {
+    return dependencies_;
+  }
   const QString& title() const { return title_; }
 
   QSharedPointer<vx::cmark::Node> docClone();

@@ -148,7 +148,7 @@ class VOXIECORESHARED_EXPORT ObjectProperties : public QWidget {
   void positionChanged(QVector3D, bool);
 
   /**
-   * @brief rotationChanged is a signal which is called if the object rozation
+   * @brief rotationChanged is a signal which is called if the object rotation
    * has changed.
    */
   void rotationChanged(QQuaternion, bool);

@@ -34,7 +34,6 @@
 #include <PluginVisSlice/ToolSelection.hpp>
 #include <PluginVisSlice/Visualizer2DTool.hpp>
 
-#include <PluginVisSlice/GeometricAnalysisTool.hpp>
 #include <PluginVisSlice/Grid.hpp>
 #include <PluginVisSlice/ImageLayer.hpp>
 #include <PluginVisSlice/LabelLayer.hpp>
@@ -74,6 +73,10 @@ namespace vx {
 class ColorizerEntry;
 class HistogramProvider;
 class ParameterCopy;
+
+namespace visualization {
+class View3D;
+}
 }  // namespace vx
 
 class InfoWidget;
@@ -97,6 +100,8 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
 
   QWidget* view;
   QComboBox* box;
+
+  QSharedPointer<vx::visualization::View3D> view3d_;
 
   // sidebar widgets
   ImagePaintWidget* _imageDisplayingWidget;
@@ -132,7 +137,7 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
       0;  // init value is tool to be activated when window is created
 
   vx::BrushSelectionTool* brushSelectionTool = nullptr;
-  Visualizer2DTool* sliceAdjustmentTool = nullptr;
+  Visualizer2DTool* defaultTool = nullptr;
   vx::BrushSelectionLayer* brushSelectionLayer = nullptr;
 
   vx::LassoSelectionTool* lassoSelectionTool = nullptr;
@@ -201,6 +206,8 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
 
   QWidget* mainView() override { return view; }
 
+  const QSharedPointer<vx::visualization::View3D>& view3d() { return view3d_; }
+
   /**
    * @brief Appends all relevant segmentation functionality to the
    * SliceVisualizer: SelectionLayer, LabelLayer, BrushSelectionLayer &
@@ -215,7 +222,7 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   void activateBrushSelectionTool() override;
 
   /**
-   * @brief Sets the SliceAdjustment tool as currently active tool
+   * @brief Sets the DefaultTool as currently active tool
    */
   void deactivateBrushSelectionTool() override;
 
@@ -225,7 +232,7 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   void activateLassoSelectionTool() override;
 
   /**
-   * @brief Set the current tool to SliceAdjustment if LassoSelection is active
+   * @brief Set the current tool to DefaultTool if LassoSelection is active
    */
   void deactivateLassoSelectionTool() override;
 
@@ -341,11 +348,15 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
    */
   virtual vx::Slice* slice() final { return this->_slice; }
 
+  void updateBoundingBox();
+
   /**
    * Resets the current plane area to the bounding rectangle putting it into the
    * upper left corner.
    */
   void resetPlaneArea() {
+    // TODO: Replace this with code based on View3D / the volume bounding box?
+
     //_currentPlaneArea = slice()->getBoundingRectangle();
     QRectF bbox = slice()->getBoundingRectangle();
     this->properties->setCenterPoint(bbox.center());

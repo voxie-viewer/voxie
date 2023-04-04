@@ -32,7 +32,6 @@
 #include <Voxie/Vis/View3D.hpp>
 #include <Voxie/Vis/VisualizerNode.hpp>
 
-#include <PluginVis3D/CamProperties.hpp>
 #include <PluginVis3D/LightSourceProperties.hpp>
 #include <PluginVis3D/RenderImplementationSelection.hpp>
 #include <PluginVis3D/ThreadSafe_MxN_Matrix.hpp>
@@ -167,6 +166,7 @@ class VolumeRenderingView : public QWidget {
 
   virtual void mousePressEvent(QMouseEvent* event) override;
   virtual void mouseMoveEvent(QMouseEvent* event) override;
+  virtual void mouseReleaseEvent(QMouseEvent* event) override;
   virtual void wheelEvent(QWheelEvent* event) override;
   virtual void paintEvent(QPaintEvent* event) override;
   virtual void resizeEvent(QResizeEvent* event) override;
@@ -203,13 +203,6 @@ class VolumeRenderingVisualizer : public vx::VisualizerNode {
    */
   void settingUpRenderImplementationSelection(
       RenderImplementationSelection* renderImpl);
-
-  /**
-   * @brief settingUpCameraProperties contains the name setting and connections
-   * for CameraProperties
-   * @param camProp
-   */
-  void settingUpCameraProperties(CamProperties* camProp);
 
   /**
    * @brief settingUpObjectProperties contains the name setting and connections

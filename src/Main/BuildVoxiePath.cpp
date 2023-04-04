@@ -36,8 +36,7 @@ int main(int argc, char** argv) {
   QString output = argv[1];
   QString srcDir = argv[2];
   QString binDir = argv[3];
-  QString oldManualFile = argv[4];
-  QString licenses = argv[5];
+  QString licenses = argv[4];
 
   QList<QString> additionalPythonLibDirs;
   for (int i = 6; i < argc; i++) {
@@ -62,7 +61,6 @@ int main(int argc, char** argv) {
 
   QJsonObject result;
   result["VoxieDir"] = outputDir.relativeFilePath(srcDir);
-  result["OldManualFile"] = outputDir.relativeFilePath(oldManualFile);
   result["LicensesPath"] = outputDir.relativeFilePath(licenses);
   result["AdditionalPluginParentDirs"] = binDirs;
   result["AdditionalScriptParentDirs"] = binDirs;

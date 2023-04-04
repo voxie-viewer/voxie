@@ -2,13 +2,13 @@
     "NodePrototype": [
         {
             "Description": "Segmentation using a watershed algorithm",
-            "DisplayName": "",
+            "DisplayName": "Watershed Segmentation",
             "Name": "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed",
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",
             "StepKind": "ExtensionStep",
             "IsSpecialStep": false,
             "StartsRunAutomatic": false,
-            "StepTip": "Watershed",
+            "StepTip": "Watershed ",
             "Icon": ":/icons/water.png",
             "Properties": {
                 "de.uni_stuttgart.Voxie.SegmentationStep.ExtSegmentationStepWatershed.Sigma": {

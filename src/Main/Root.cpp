@@ -26,9 +26,10 @@
 
 #include "Root.hpp"
 
+#include <Main/DebugOptions.hpp>
 #include <Main/DirectoryManager.hpp>
 #include <Main/MetatypeRegistration.hpp>
-#include <Main/ScriptWrapper.hpp>
+
 #include <VoxieClient/DBusProxies.hpp>
 
 #include <Main/Gui/DataNodeUI.hpp>
@@ -37,8 +38,6 @@
 #include <Main/Gui/SelectObjectConnection.hpp>
 #include <Main/Gui/SidePanel.hpp>
 #include <Main/Gui/SliceView.hpp>
-
-#include <Main/Gui/Preferences/OpenclPreferences.hpp>
 
 #include <Main/IO/Load.hpp>
 
@@ -103,7 +102,6 @@
 #include <QtCore/QPluginLoader>
 #include <QtCore/QProcess>
 #include <QtCore/QProcessEnvironment>
-#include <QtCore/QSettings>
 #include <QtCore/QTextStream>
 #include <QtCore/QtCoreVersion>
 
@@ -199,12 +197,18 @@ class CorePlugin : public Plugin {
   }
 };
 
+class DebugEventFilter : public QObject {
+ protected:
+  bool eventFilter(QObject* object, QEvent* event) override {
+    qDebug() << "Got event:" << object << event;
+    return QObject::eventFilter(object, event);
+  }
+};
+
 Root::Root(bool headless)
     : QObject(),
       coreWindow(nullptr),
       isHeadless_(headless),
-      jsEngine(),
-      scriptWrapper(&jsEngine),
       disableOpenGL_(false),
       disableOpenCL_(false) {
   voxieInstance = new Instance(this);
@@ -213,8 +217,6 @@ Root::Root(bool headless)
   scriptLauncher_ = makeSharedQObject<ScriptLauncher>(this);
   helpRegistry_ = createQSharedPointer<vx::help::HelpPageRegistry>();
   helpLinkHandler_ = createQSharedPointer<vx::help::HelpLinkHandler>(nullptr);
-  settings_ = new QSettings(QSettings::IniFormat, QSettings::UserScope, "voxie",
-                            "voxie", this);
 
   connect(this, &Root::logEmitted, [](const QString& msg) {
     QDateTime now = QDateTime::currentDateTime();
@@ -256,49 +258,40 @@ Root::Root(bool headless)
     corePlugin->reAddPrototypes();
   }
 
-  if (!headless) this->coreWindow = new CoreWindow(this);
-
-  QScriptValue globalObject = this->jsEngine.globalObject();
-
-  globalObject.setProperty("voxie", scriptWrapper.getWrapper(voxieInstance),
-                           QScriptValue::ReadOnly | QScriptValue::Undeletable);
-
-  // Override normal print() function
-  ScriptWrapper::addScriptFunction(
-      globalObject, "print", QScriptValue::ReadOnly | QScriptValue::Undeletable,
-      [this](QScriptContext* context, QScriptEngine* engine) {
-        QString str;
-        for (int i = 0; i < context->argumentCount(); i++) {
-          if (i > 0) str += " ";
-          str += context->argument(i).toString();
+  vx::debug_option::Log_QtEvents()->registerAndCallChangeHandler(
+      this, [this](bool value) {
+        if (value) {
+          if (!this->debugEventFilter) {
+            this->debugEventFilter = new DebugEventFilter();
+            qApp->installEventFilter(this->debugEventFilter);
+          }
+        } else {
+          if (this->debugEventFilter) {
+            this->debugEventFilter->deleteLater();
+            this->debugEventFilter = nullptr;
+          }
         }
-        log(str);
-        return engine->undefinedValue();
       });
 
-  ScriptWrapper::addScriptFunction(
-      globalObject, "describe",
-      QScriptValue::ReadOnly | QScriptValue::Undeletable,
-      [](QScriptContext* context, QScriptEngine* engine) {
-        Q_UNUSED(engine);
-        if (context->argumentCount() != 1)
-          return context->throwError(
-              QString("Invalid number of arguments (expected one argument, the "
-                      "object to describe)"));
-        QScriptValue obj = context->argument(0);
-        QScriptValue description = obj.data().property("description");
-        if (!description.isValid())
-          description = obj.prototype().data().property("description");
-        if (!description.isValid())
-          return context->throwError(
-              QString("Object does not have a description"));
-        QString ret;
-        ret += QString("Description of object %1:\n").arg(obj.toString());
-        ret += description.toString();
-        return QScriptValue(ret);
+  vx::debug_option::Log_FocusChanges()->registerAndCallChangeHandler(
+      this, [this](bool value) {
+        if (value) {
+          if (!this->focusChangedDebugHandler) {
+            this->focusChangedDebugHandler =
+                connect(qApp, &QApplication::focusChanged, this,
+                        [](QWidget* old, QWidget* newW) {
+                          qDebug() << "Focus changed:" << old << newW;
+                        });
+          }
+        } else {
+          if (this->focusChangedDebugHandler) {
+            QObject::disconnect(this->focusChangedDebugHandler);
+            this->focusChangedDebugHandler = QMetaObject::Connection();
+          }
+        }
       });
 
-  this->jsEngine.collectGarbage();
+  if (!headless) this->coreWindow = new CoreWindow(this);
 }
 
 Root::~Root() { delete this->coreWindow; }
@@ -450,6 +443,10 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
   }
   if (parser.isSet("dbus-p2p")) useBus = false;
   if (parser.isSet("dbus-bus")) useBus = true;
+  if (parser.isSet("opencl") && parser.isSet("no-opencl")) {
+    qCritical("Got both --opencl and --no-opencl options");
+    return 1;
+  }
 
   handler = qInstallMessageHandler(myHandler);
 
@@ -593,7 +590,8 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
 
   ::root->mainDBusService_ = dbusService;
   ::root->disableOpenGL_ = parser.isSet("no-opengl");
-  ::root->disableOpenCL_ = parser.isSet("no-opencl");
+  // ::root->disableOpenCL_ = parser.isSet("no-opencl");
+  ::root->disableOpenCL_ = !parser.isSet("opencl");
 
   setVoxieRoot(::root);
 
@@ -761,6 +759,8 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
                     "normal, background, hidden";
       ::root->coreWindow->show();
     }
+
+    ::root->coreWindow->updateExtensions();
   }
 
   OperationRegistry::instance()->registerNewRunningOperationHandler(
@@ -950,7 +950,6 @@ void Root::loadPlugins(QString pluginDirectory) {
       }
 
       plugins_ << plugin;
-      if (!this->isHeadless()) this->mainWindow()->insertPlugin(plugin);
     } else {
       qDebug() << "Failed to load plugin '" + lib + "':"
                << pluginLoader->errorString();
@@ -961,21 +960,15 @@ void Root::loadPlugins(QString pluginDirectory) {
 
 bool Root::initOpenCL() {
   if (disableOpenCL()) {
-    qWarning() << "OpenCL disabled from the command line";
+    // qWarning() << "OpenCL disabled from the command line";
     opencl::CLInstance::initialize(new opencl::CLInstance());
     return false;
   }
+  qDebug() << "OpenCL support enabled";
 
-  // load from qsettings
-  using namespace gui::preferences;
-  QString platformName =
-      settings()
-          ->value(OpenclPreferences::defaultPlatformSettingsKey)
-          .value<QString>();
-  QStringList deviceNames =
-      settings()
-          ->value(OpenclPreferences::defaultDevicesSettingsKey)
-          .value<QStringList>();
+  // TODO: Clean up
+  QString platformName = "";
+  QStringList deviceNames{};
 
   opencl::CLInstance* instance = nullptr;
 
@@ -1056,49 +1049,8 @@ const QList<QSharedPointer<NodePrototype>>& Root::factories() {
   return factories_;
 }
 
-QScriptEngine& Root::scriptEngine() { return this->jsEngine; }
-
-void Root::log(QScriptValue value) {
-  Q_EMIT this->logEmitted(value.toString());
-}
-
-bool Root::execFile(const QString& fileName) {
-  QFile file(fileName);
-  if (!file.open(QIODevice::ReadOnly)) {
-    this->log("Can't open file " + fileName);
-    return false;
-  }
-  QTextStream stream(&file);
-  QString code = stream.readAll();
-  // Hide local variables defined in code
-  code = "(function () { " + code + " }) ()";
-
-  bool success =
-      this->exec(code, "", [this](const QString& text) { log(text); });
-  file.close();
-  return success;
-}
-
-bool Root::exec(const QString& code, const QString& codeToPrint,
-                const std::function<void(const QString&)>& print) {
-  if (codeToPrint != "") print("> " + codeToPrint);
-  QScriptValue result = this->jsEngine.evaluate(code);
-  if (root->scriptEngine().hasUncaughtException()) {
-    print("--- " + result.toString());
-    return false;
-  }
-  if (!result.isUndefined()) {
-    if (result.isArray()) {
-      int length = result.property("length").toInteger();
-      print("Array[" + QString::number(length) + "]");
-      for (int i = 0; i < length; i++) {
-        print(result.property(i).toString());
-      }
-    } else {
-      print(result.toString());
-    }
-  }
-  return true;
+void Root::log(const QString& str) {
+  Q_EMIT this->logEmitted(str);
 }
 
 void Root::quit(bool askForConfirmation) {

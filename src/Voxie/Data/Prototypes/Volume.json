@@ -13,6 +13,9 @@
                 "de.uni_stuttgart.Voxie.VolumeData"
             ],
             "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.Hdf5.ExportVolume",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.MovableDataNode.Rotation": {
                     "CompatibilityNames": [

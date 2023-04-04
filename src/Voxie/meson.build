@@ -26,6 +26,7 @@ moc_files = qt5.preprocess(
   ],
   moc_headers : [
     'IVoxie.hpp',
+    #'DebugOptions.hpp',
     #'MathQt.hpp',
     #'Util.hpp',
     #'Voxie.hpp',
@@ -34,6 +35,7 @@ moc_files = qt5.preprocess(
     #'Component/Interfaces.hpp',
     'Component/MetaFilter2D.hpp',
     'Component/Plugin.hpp',
+    'Component/Tool.hpp',
 
     #'Data/BoundingBox3D.hpp',
     #'Data/Color.hpp',
@@ -136,10 +138,8 @@ moc_files = qt5.preprocess(
     'Vis/HistogramVisualizerWidget.hpp',
     'Vis/HistogramWidget.hpp',
     #'Vis/LabeledAxis.hpp',
-    'Vis/MouseOperation.hpp',
     'Vis/OpenGLWidget.hpp',
     'Vis/QVecLineEdit.hpp',
-    #'Vis/SimpleMouseOperation.hpp',
     'Vis/View3D.hpp',
     'Vis/VisualizerNode.hpp',
     'Vis/VisualizerView.hpp',
@@ -154,12 +154,14 @@ voxie = shared_library(
     moc_files,
 
     'IVoxie.cpp',
+    'DebugOptions.cpp',
     'MathQt.cpp',
     'Util.cpp',
 
     'Component/HelpCommon.cpp',
     'Component/MetaFilter2D.cpp',
     'Component/Plugin.cpp',
+    'Component/Tool.cpp',
 
     'Data/BoundingBox3D.cpp',
     'Data/Color.cpp',
@@ -259,7 +261,6 @@ voxie = shared_library(
     'Vis/LabeledAxis.cpp',
     'Vis/OpenGLWidget.cpp',
     'Vis/QVecLineEdit.cpp',
-    'Vis/SimpleMouseOperation.cpp',
     'Vis/View3D.cpp',
     'Vis/VisualizerNode.cpp',
     'Vis/VisualizerView.cpp',

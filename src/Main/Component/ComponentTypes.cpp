@@ -35,7 +35,7 @@
 #include <Voxie/Component/MetaFilter2D.hpp>
 
 #include <Main/Component/ExtensionNodePrototype.hpp>
-#include <Main/Component/Tool.hpp>
+#include <Voxie/Component/Tool.hpp>
 
 using namespace vx;
 using namespace vx::io;

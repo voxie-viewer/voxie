@@ -524,6 +524,54 @@ class VOXIECLIENT_EXPORT DataVersionAdaptor : public QDBusAbstractAdaptor {
 };
 
 /*
+ * Adaptor class for interface de.uni_stuttgart.Voxie.DebugOption
+ */
+class VOXIECLIENT_EXPORT DebugOptionAdaptor : public QDBusAbstractAdaptor {
+  Q_OBJECT
+  Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.DebugOption")
+  Q_CLASSINFO(
+      "D-Bus Introspection",
+      ""
+      "  <interface name=\"de.uni_stuttgart.Voxie.DebugOption\">\n"
+      "    <property access=\"read\" type=\"s\" name=\"Name\"/>\n"
+      "    <property access=\"read\" type=\"g\" name=\"DBusSignature\"/>\n"
+      "    <method name=\"GetValue\">\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In0\"/>\n"
+      "      <arg direction=\"out\" type=\"v\" name=\"value\"/>\n"
+      "    </method>\n"
+      "    <method name=\"SetValue\">\n"
+      "      <arg direction=\"in\" type=\"v\" name=\"value\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "    </method>\n"
+      "  </interface>\n"
+      "")
+ public:
+  DebugOptionAdaptor(QObject* parent) : QDBusAbstractAdaptor(parent) {}
+  virtual ~DebugOptionAdaptor() {}
+
+ public:  // PROPERTIES
+  Q_PROPERTY(QDBusSignature DBusSignature READ dBusSignature)
+  virtual QDBusSignature dBusSignature() const = 0;
+
+  Q_PROPERTY(QString Name READ name)
+  virtual QString name() const = 0;
+
+ public Q_SLOTS:  // METHODS
+  virtual QDBusVariant GetValue(
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual void SetValue(const QDBusVariant& value,
+                        const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                            options) = 0;
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
  * Adaptor class for interface de.uni_stuttgart.Voxie.DynamicObject
  */
 class VOXIECLIENT_EXPORT DynamicObjectAdaptor : public QDBusAbstractAdaptor {
@@ -1842,14 +1890,6 @@ class VOXIECLIENT_EXPORT InstanceAdaptor : public QDBusAbstractAdaptor {
       "QDBusVariant&gt;))&amp;\" "
       "name=\"org.qtproject.QtDBus.QtTypeName.In0\"/>\n"
       "    </method>\n"
-      "    <method name=\"ExecuteQScriptCode\">\n"
-      "      <arg direction=\"out\" type=\"v\"/>\n"
-      "      <arg direction=\"in\" type=\"s\" name=\"code\"/>\n"
-      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
-      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
-      "QDBusVariant&gt;))&amp;\" "
-      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
-      "    </method>\n"
       "    <method name=\"OpenFile\">\n"
       "      <annotation value=\"true\" "
       "name=\"org.freedesktop.DBus.Deprecated\"/>\n"
@@ -1876,6 +1916,21 @@ class VOXIECLIENT_EXPORT InstanceAdaptor : public QDBusAbstractAdaptor {
       "QDBusVariant&gt;))&amp;\" "
       "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
       "      <arg direction=\"out\" type=\"o\"/>\n"
+      "    </method>\n"
+      "    <method name=\"GetDebugOption\">\n"
+      "      <arg direction=\"out\" type=\"o\"/>\n"
+      "      <arg direction=\"in\" type=\"s\" name=\"name\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "    </method>\n"
+      "    <method name=\"ListDebugOptions\">\n"
+      "      <arg direction=\"out\" type=\"ao\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In0\"/>\n"
       "    </method>\n"
       "  </interface>\n"
       "")
@@ -1959,17 +2014,19 @@ class VOXIECLIENT_EXPORT InstanceAdaptor : public QDBusAbstractAdaptor {
       const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) &
           gridSpacing,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
-  virtual QDBusVariant ExecuteQScriptCode(
-      const QString& code,
-      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
   virtual QDBusObjectPath GetComponent(
       const QString& componentType, const QString& name,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual QDBusObjectPath GetDebugOption(
+      const QString& name,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
   virtual QDBusObjectPath GetPluginByName(
       const QString& name,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
   virtual QDBusObjectPath Import(
       const QDBusObjectPath& client, const QString& fileName,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual QList<QDBusObjectPath> ListDebugOptions(
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
   virtual QList<QDBusObjectPath> ListNodes(
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;

@@ -72,6 +72,7 @@ class VOXIECORESHARED_EXPORT HelpBrowserBackendView : public QObject {
 
  Q_SIGNALS:
   void handleLink(const QUrl& url);
+  void doReload();
 };
 
 class VOXIECORESHARED_EXPORT HelpBrowserBackend : public QObject {

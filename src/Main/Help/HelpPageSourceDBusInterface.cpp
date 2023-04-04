@@ -560,7 +560,7 @@ class HelpPageSourceDBusInterface : public HelpPageSource {
               doc, interf->doc->paramByName()["short_description"].trimmed());
       }
 
-      return createQSharedPointer<HelpPage>(doc, "", "DBus interfaces");
+      return createQSharedPointer<HelpPage>(doc, "DBus interfaces");
     } else if (parts.size() == 1) {
       // qDebug() << suffix;
       if (!info()->interfacesByName.contains(suffix)) {
@@ -659,7 +659,7 @@ class HelpPageSourceDBusInterface : public HelpPageSource {
         }
       }
 
-      return createQSharedPointer<HelpPage>(doc, "", title);
+      return createQSharedPointer<HelpPage>(doc, title);
     } else {
       qWarning() << "Unable to handle dbus-interface URL" << suffix;
       return QSharedPointer<HelpPage>();

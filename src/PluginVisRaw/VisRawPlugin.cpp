@@ -39,12 +39,6 @@ QObject* VisRawPlugin::create(const QString& key,
   return nullptr;
 }
 
-QList<QAction*> VisRawPlugin::uiCommands() {
-  QList<QAction*> actions;
-
-  return actions;
-}
-
 QList<QSharedPointer<vx::NodePrototype>> VisRawPlugin::objectPrototypes() {
   QList<QSharedPointer<vx::NodePrototype>> list;
   list.append(RawVisualizer::getPrototypeSingleton());

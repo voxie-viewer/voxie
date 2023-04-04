@@ -8,6 +8,9 @@
                 "de.uni_stuttgart.Voxie.TableVisualizer"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Visualizer.Table.Table": {
                     "CompatibilityNames": [

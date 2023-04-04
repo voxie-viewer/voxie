@@ -13,6 +13,9 @@
                 "de.uni_stuttgart.Voxie.SurfaceData"
             ],
             "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.Ply.Export",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.MovableDataNode.Rotation": {
                     "CompatibilityNames": [

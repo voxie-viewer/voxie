@@ -349,7 +349,6 @@ void ScatterPlotVisualizer::updateTable() {
     properties->setColumnColor(currentColumnColor);
   }
 
-  view()->setWindowTitle(title);
   setAutomaticDisplayName(title);
 
   updatePoints();

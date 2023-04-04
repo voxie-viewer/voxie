@@ -82,6 +82,8 @@ QSharedPointer<vx::VolumeDataVoxel> TheSphereGenerator::genSphereImpl(
           0.04f *
           (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f);
 
+      voxel *= 50;
+
       return static_cast<Type>(voxel);
     });
 

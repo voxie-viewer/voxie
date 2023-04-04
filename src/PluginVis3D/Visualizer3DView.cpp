@@ -26,6 +26,8 @@
 
 #include <Voxie/IVoxie.hpp>
 
+#include <Voxie/MathQt.hpp>
+
 #include <Voxie/Data/GeometricPrimitiveObject.hpp>
 #include <VoxieBackend/Data/GeometricPrimitive.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveData.hpp>
@@ -40,6 +42,9 @@
 #include <PluginVis3D/Helper/gluhelper.hpp>
 
 #include <PluginVis3D/GeometricPrimitive.hpp>
+
+// #include <PluginVis3D/DebugOptions.hpp>
+#include <Voxie/DebugOptions.hpp>
 
 #include <math.h>
 
@@ -56,8 +61,6 @@
 #include <QtWidgets/QVBoxLayout>
 
 using namespace vx;
-
-static bool drawViewCenter = true;  // TODO: turn into property
 
 class FrameBuffer : protected QOpenGLFunctions {
  public:
@@ -162,17 +165,18 @@ class FrameBuffer : protected QOpenGLFunctions {
 
 Visualizer3DView::Visualizer3DView(
     View3DProperties* properties, vx::visualization::View3D* view3d,
-    QSharedPointer<IsosurfaceMouseOperation> mouseOperation,
     AxisFilter* axisFilter)
     : properties(properties),
       view3d(view3d),
-      mouseOperation(mouseOperation),
       axisFilter(axisFilter) {
   this->resize(500 / 96.0 * this->logicalDpiX(),
                400 / 96.0 * this->logicalDpiY());
   setFocusPolicy(Qt::StrongFocus);
 
   connect(view3d, &vx::visualization::View3D::changed, this,
+          [this] { this->update(); });
+
+  connect(properties, &View3DProperties::showViewCenterChanged, this,
           [this] { this->update(); });
 
   highlightedNode = nullptr;
@@ -254,7 +258,8 @@ void Visualizer3DView::updateObjects(const QList<vx::Node*>& objects) {
                                            */
                                            update();
                                          });
-      qDebug() << "Connect triggerRendering for" << path.path() << connection;
+      // qDebug() << "Connect triggerRendering for" << path.path() <<
+      // connection;
       triggerRenderingConnections.insert(path, connection);
     }
     if (!needMouseTrackingChangedConnections.contains(path)) {
@@ -376,7 +381,8 @@ void Visualizer3DView::updateMouseTracking() {
                  << ":" << e.message();
     }
   }
-  qDebug() << "setMouseTracking" << needMouseTracking;
+  if (vx::debug_option::Log_Vis3D_MouseTracking()->get())
+    qDebug() << "setMouseTracking" << needMouseTracking;
   setMouseTracking(needMouseTracking);
 }
 
@@ -386,13 +392,13 @@ void Visualizer3DView::setFixedAngle(QString direction) {
 
 void Visualizer3DView::drawAxisIndicators(const QMatrix4x4& matViewProj) {
   PrimitiveBuffer drawingBuffer;
-  QVector3D center = this->view3d->getCenterPoint();
+  QVector3D center = toQVector(vectorCastNarrow<float>(this->view3d->lookAt()));
 
   auto bb = this->getBoundingBoxWithDefault();
   auto diagonal = (bb.max() - bb.min()).length();
 
   // Draw view center
-  if (drawViewCenter) {
+  if (properties->showViewCenter()) {
     float halfLength = diagonal / 50.0f;
 
     drawingBuffer.addLine(QVector3D(0.8f, 0.5f, 0.5f),
@@ -453,12 +459,12 @@ vx::BoundingBox3D Visualizer3DView::getBoundingBoxWithDefault(
 
 void Visualizer3DView::updateBoundingBox() {
   // qDebug() << "updateBoundingBox()" << zoomInitialized;
-  // TODO: also change centerPoint
   bool isDefault;
   auto boundingBox = getBoundingBoxWithDefault(&isDefault);
-  auto maxDiagonalSize = (boundingBox.max() - boundingBox.min()).length();
-  // qDebug() << "new maxDiagonalSize" << maxDiagonalSize << isDefault;
-  this->getView3D()->setStandardZoom(maxDiagonalSize, !zoomInitialized);
+  this->getView3D()->setBoundingBox(boundingBox);
+  if (!zoomInitialized)
+    this->getView3D()->resetView(vx::visualization::View3DProperty::LookAt |
+                                 vx::visualization::View3DProperty::ZoomLog);
   zoomInitialized = !isDefault;
 }
 
@@ -539,8 +545,12 @@ void Visualizer3DView::renderScreenshot(
   auto pixelSize = view3d->pixelSize(this->size());
   // TODO: use highlightedObject here?
   Object3DRenderContext renderContext(
-      context, surface, framebuffer.frameBuffer, viewMatrix, projectionMatrix,
-      cameraPosition, boundingBox, clippingPlanes, highlightedNode, pixelSize);
+      context, surface, framebuffer.frameBuffer,
+      toQMatrix4x4(matrixCastNarrow<float>(viewMatrix.projectiveMatrix())),
+      toQMatrix4x4(
+          matrixCastNarrow<float>(projectionMatrix.projectiveMatrix())),
+      toQVector(vectorCastNarrow<float>(cameraPosition.hmgVectorData())),
+      boundingBox, clippingPlanes, highlightedNode, pixelSize);
 
   paintImg(renderContext);
   // paintPick(context, surface, framebuffer.frameBuffer, viewMatrix,
@@ -615,9 +625,12 @@ void Visualizer3DView::paint() {
 
   auto pixelSize = view3d->pixelSize(this->size());
   Object3DRenderContext renderContext(
-      context(), context()->surface(), defaultFramebufferObject(), viewMatrix,
-      projectionMatrix, cameraPosition, boundingBox, clippingPlanes,
-      highlightedNode, pixelSize);
+      context(), context()->surface(), defaultFramebufferObject(),
+      toQMatrix4x4(matrixCastNarrow<float>(viewMatrix.projectiveMatrix())),
+      toQMatrix4x4(
+          matrixCastNarrow<float>(projectionMatrix.projectiveMatrix())),
+      toQVector(vectorCastNarrow<float>(cameraPosition.hmgVectorData())),
+      boundingBox, clippingPlanes, highlightedNode, pixelSize);
 
   paintImg(renderContext);
 
@@ -630,9 +643,12 @@ void Visualizer3DView::paint() {
   glViewport(0, 0, width(), height());
 
   Object3DRenderContext renderContextPick(
-      context(), context()->surface(), pickFrameBuffer->frameBuffer, viewMatrix,
-      projectionMatrix, cameraPosition, boundingBox, clippingPlanes,
-      highlightedNode, pixelSize);
+      context(), context()->surface(), pickFrameBuffer->frameBuffer,
+      toQMatrix4x4(matrixCastNarrow<float>(viewMatrix.projectiveMatrix())),
+      toQMatrix4x4(
+          matrixCastNarrow<float>(projectionMatrix.projectiveMatrix())),
+      toQVector(vectorCastNarrow<float>(cameraPosition.hmgVectorData())),
+      boundingBox, clippingPlanes, highlightedNode, pixelSize);
 
   paintPick(renderContextPick,
             pickInfo);  // TODO: do this only when needed
@@ -939,12 +955,15 @@ void Visualizer3DView::getTransformedMouseRay(QMouseEvent* event,
   auto mouseX = event->x() + 0.5;
   auto mouseY = event->y() + 0.5;
 
-  auto viewMatrix = view3d->viewMatrix();
+  auto viewMatrix = toQMatrix4x4(
+      matrixCastNarrow<float>(view3d->viewMatrix().projectiveMatrix()));
   viewMatrix.translate(translation);
   viewMatrix.rotate(rotation);
 
   // GLU unproject:
-  auto fProj = view3d->projectionMatrix(this->width(), this->height());
+  auto fProj = toQMatrix4x4(matrixCastNarrow<float>(
+      view3d->projectionMatrix(this->width(), this->height())
+          .projectiveMatrix()));
   float objNear[4] = {std::numeric_limits<float>::quiet_NaN(),
                       std::numeric_limits<float>::quiet_NaN(),
                       std::numeric_limits<float>::quiet_NaN(),
@@ -992,8 +1011,8 @@ void Visualizer3DView::mousePressEvent(QMouseEvent* event) {
         continue;
       }
 
-      Q_EMIT obj3D->mousePressEvent(event, pickData, mouseRayStart, mouseRayEnd,
-                                    mouseOperation.data());
+      Q_EMIT obj3D->mousePressEvent(event, pickData, mouseRayStart,
+                                    mouseRayEnd);
     } catch (Exception& e) {
       qWarning() << "Error while handling mouse press event for object" << obj
                  << ":" << e.message();
@@ -1021,8 +1040,7 @@ void Visualizer3DView::mouseMoveEvent(QMouseEvent* event) {
         continue;
       }
 
-      Q_EMIT obj3D->mouseMoveEvent(event, pickData, mouseRayStart, mouseRayEnd,
-                                   mouseOperation.data());
+      Q_EMIT obj3D->mouseMoveEvent(event, pickData, mouseRayStart, mouseRayEnd);
     } catch (Exception& e) {
       qWarning() << "Error while handling mouse move event for object" << obj
                  << ":" << e.message();
@@ -1030,6 +1048,55 @@ void Visualizer3DView::mouseMoveEvent(QMouseEvent* event) {
   }
 
   view3d->mouseMoveEvent(mouseLast, event, size());
+
+  // TODO: Make this depend on modifiers pressed during mousePressEvent
+  auto modifiers =
+      event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier);
+  if (event->buttons() == Qt::LeftButton &&
+      (modifiers == (Qt::ShiftModifier | Qt::ControlModifier))) {
+    auto windowSize = size();
+
+    // TODO: Allow slow move/rotation?
+    bool doMove = false;
+    double factor = 1.0;
+    // if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
+    if (event->modifiers().testFlag(Qt::AltModifier)) doMove = true;
+
+    int dxInt = event->x() - mouseLast.x();
+    int dyInt = event->y() - mouseLast.y();
+
+    if (dxInt == 0 && dyInt == 0) return;
+
+    double dx = dxInt * factor;
+    double dy = dyInt * factor;
+
+    if (!doMove) {
+      // TODO: Use arcball vector
+      auto matView = view3d->viewMatrix();
+      vx::Rotation<double, 3> quatX = vx::rotationFromAxisAngleDeg(
+          matView.map(vx::HmgVector<double, 3>({0, 1, 0}, 0)).getVectorPart(),
+          dx * 0.15);
+      vx::Rotation<double, 3> quatY = vx::rotationFromAxisAngleDeg(
+          matView.map(vx::HmgVector<double, 3>({1, 0, 0}, 0)).getVectorPart(),
+          dy * 0.15);
+      Q_EMIT this->objectRotationChangeRequested(
+          toQQuaternion(rotationCastNarrow<float>(quatX * quatY)));
+    } else {
+      vx::Vector<double, 3> move(dx, -dy, 0);
+      move *= view3d->pixelSize(windowSize);
+      auto offset = view3d->orientation().map(move);
+
+      Q_EMIT this->objectPositionChangeRequested(
+          toQVector(vectorCastNarrow<float>(offset)));
+    }
+  }
+
+  this->mouseLast = event->pos();
+}
+
+void Visualizer3DView::mouseReleaseEvent(QMouseEvent* event) {
+  view3d->mouseReleaseEvent(mouseLast, event, size());
+
   this->mouseLast = event->pos();
 }
 

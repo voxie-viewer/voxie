@@ -24,6 +24,8 @@
 
 #include <Voxie/Vis/View3D.hpp>
 
+#include <Voxie/MathQt.hpp>
+
 #include <PluginVis3D/Prototypes.hpp>
 
 using namespace vx;
@@ -38,8 +40,6 @@ View3DPropertiesConnection::View3DPropertiesConnection(
   QObject::connect(view3d, &QObject::destroyed, this, &QObject::deleteLater);
 
   QObject::connect(this->view3d, &View3D::changed, this,
-                   &View3DPropertiesConnection::updateFromView);
-  QObject::connect(this->view3d, &View3D::zoomChanged, this,
                    &View3DPropertiesConnection::updateFromView);
 
   QObject::connect(
@@ -56,7 +56,7 @@ View3DPropertiesConnection::View3DPropertiesConnection(
       [this](float value) {
         if (!this->view3d || !this->properties || suppressForwardToView) return;
         suppressForwardFromView = true;
-        this->view3d->setViewSizeStandard(value);
+        this->view3d->setViewSizeUnzoomed(value);
         suppressForwardFromView = false;
       });
 
@@ -65,7 +65,7 @@ View3DPropertiesConnection::View3DPropertiesConnection(
       [this](float value) {
         if (!this->view3d || !this->properties || suppressForwardToView) return;
         suppressForwardFromView = true;
-        this->view3d->setZoom(std::exp(value));
+        this->view3d->setZoomLog(value);
         suppressForwardFromView = false;
       });
 
@@ -74,7 +74,7 @@ View3DPropertiesConnection::View3DPropertiesConnection(
       [this](const QVector3D& value) {
         if (!this->view3d || !this->properties || suppressForwardToView) return;
         suppressForwardFromView = true;
-        this->view3d->setCenterPoint(value);
+        this->view3d->setLookAt(vectorCast<double>(toVector(value)));
         suppressForwardFromView = false;
       });
 
@@ -83,17 +83,19 @@ View3DPropertiesConnection::View3DPropertiesConnection(
       [this](const QQuaternion& value) {
         if (!this->view3d || !this->properties || suppressForwardToView) return;
         suppressForwardFromView = true;
-        this->view3d->setRotation(value);
+        this->view3d->setOrientation(rotationCast<double>(toRotation(value)));
         suppressForwardFromView = false;
       });
 
   // Copy initial values
   suppressForwardFromView = true;
   this->view3d->setFieldOfView(this->properties->fieldOfView());
-  this->view3d->setViewSizeStandard(this->properties->viewSizeUnzoomed());
-  this->view3d->setZoom(std::exp(this->properties->zoomLog()));
-  this->view3d->setCenterPoint(this->properties->lookAt());
-  this->view3d->setRotation(this->properties->orientation());
+  this->view3d->setViewSizeUnzoomed(this->properties->viewSizeUnzoomed());
+  this->view3d->setZoomLog(this->properties->zoomLog());
+  this->view3d->setLookAt(
+      vectorCast<double>(toVector(this->properties->lookAt())));
+  this->view3d->setOrientation(
+      rotationCast<double>(toRotation(this->properties->orientation())));
   suppressForwardFromView = false;
 }
 View3DPropertiesConnection::~View3DPropertiesConnection() {}
@@ -107,27 +109,27 @@ void View3DPropertiesConnection::updateFromView() {
 
   suppressForwardToView = true;
   {
-    auto val = view3d->getFieldOfView();
+    auto val = view3d->fieldOfView();
     auto valOld = properties->fieldOfView();
     if (val != valOld) properties->setFieldOfView(val);
   }
   {
-    auto val = view3d->getViewSizeStandard();
+    auto val = view3d->viewSizeUnzoomed();
     auto valOld = properties->viewSizeUnzoomed();
     if (val != valOld) properties->setViewSizeUnzoomed(val);
   }
   {
-    auto val = std::log(view3d->getZoom());
+    auto val = view3d->zoomLog();
     auto valOld = properties->zoomLog();
     if (val != valOld) properties->setZoomLog(val);
   }
   {
-    auto val = view3d->getCenterPoint();
+    auto val = toQVector(vectorCastNarrow<float>(view3d->lookAt()));
     auto valOld = properties->lookAt();
     if (val != valOld) properties->setLookAt(val);
   }
   {
-    auto val = view3d->getRotation();
+    auto val = toQQuaternion(rotationCastNarrow<float>(view3d->orientation()));
     auto valOld = properties->orientation();
     if (val != valOld) properties->setOrientation(val);
   }

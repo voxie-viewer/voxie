@@ -8,6 +8,9 @@
                 "de.uni_stuttgart.Voxie.Visualizer3D"
             ],
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Visualizer.View3D.Objects": {
                     "CompatibilityNames": [
@@ -23,12 +26,18 @@
                     "CompatibilityNames": [
                         "de.uni_stuttgart.Voxie.Visualizer3D.Camera.FieldOfView"
                     ],
-                    "DisplayName": "The field of view",
+                    "DisplayName": "Field of view",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
                     "ShortDescription": "The field of view in radians",
                     "DefaultValue": 0.6981317007977318,
                     "MinimumValue": 0.0,
-                    "MaximumValue": 3.141592653589793
+                    "MaximumValue": 3.141592653589793,
+                    "Unit": [
+                        [
+                            "rad",
+                            1
+                        ]
+                    ]
                 },
                 "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ViewSizeUnzoomed": {
                     "CompatibilityNames": [
@@ -36,9 +45,15 @@
                     ],
                     "DisplayName": "View size (unzoomed)",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
-                    "ShortDescription": "Size of region (in y direction) which can be seen at the center point plane on 100% zoom (in meters)",
+                    "ShortDescription": "Size of region (in y direction) which can be seen at the center point plane on 100% zoom",
                     "DefaultValue": 0.25,
-                    "MinimumValue": 0.0
+                    "MinimumValue": 0.0,
+                    "Unit": [
+                        [
+                            "m",
+                            1
+                        ]
+                    ]
                 },
                 "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ZoomLog": {
                     "CompatibilityNames": [
@@ -75,7 +90,64 @@
                         0,
                         0
                     ]
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.View3D.ShowViewCenter": {
+                    "DisplayName": "Show view center",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
                 }
+            },
+            "UI": {
+                "SidePanelSections": [
+                    {
+                        "Name": "Control3DSettingsSection",
+                        "DisplayName": "Render Settings",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.Visualizer.View3D.Control3DSettings"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "CameraSection",
+                        "DisplayName": "Camera Properties",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.LookAt",
+                                "LabelStyle": "ExtraLine"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.Orientation",
+                                "LabelStyle": "ExtraLine"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ZoomLog"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ViewSizeUnzoomed"
+                            },
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.FieldOfView"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "PlaneSettings",
+                        "DisplayName": "Plane Properties",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.Visualizer.View3D.PlaneSettings"
+                            }
+                        ]
+                    }
+                ]
             }
         }
     ]

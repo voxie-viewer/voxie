@@ -1,23 +1,5 @@
 stages:
-  - build-manual
   - build
-
-
-build-manual:
-  stage: build-manual
-
-  tags:
-    - docker
-
-  image: "debian:11.5"
-
-  script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 git build-essential meson ninja-build texlive-latex-extra"
-    - "tools/create-old-manual.sh"
-
-  artifacts:
-    paths:
-      - old-manual.pdf
 
 
 check-formatting:
@@ -42,7 +24,7 @@ build-linux-11:
   image: "debian:11.5"
 
   script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh"
 
   artifacts:
@@ -58,7 +40,7 @@ build-linux-11-nointern:
   image: "debian:11.5"
 
   script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh --no-intern"
 
 
@@ -71,7 +53,7 @@ build-linux-2004:
   image: "ubuntu:focal-20220826"
 
   script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh"
 
   artifacts:
@@ -88,7 +70,7 @@ build-linux-2004-onlylib:
   image: "ubuntu:focal-20220826"
 
   script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers"
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers"
     - "tools/build.sh --only-lib"
 
 build-linux-2004-nointern:
@@ -100,7 +82,7 @@ build-linux-2004-nointern:
   image: "ubuntu:focal-20220826"
 
   script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh --no-intern"
 
 
@@ -113,7 +95,7 @@ build-linux-1804:
   image: "ubuntu:bionic-20220902"
 
   script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra"
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh --unpack-meson"
 
   artifacts:
@@ -134,7 +116,7 @@ build-linux-1604:
       - voxie*.tar.gz
 
   script:
-    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-numpy python3-scipy python3-pyqt5 ca-certificates git texlive-latex-extra unzip
+    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-numpy python3-scipy python3-pyqt5 ca-certificates git unzip
     - tools/create-release.sh --unpack-meson --unpack-ninja --disable-help-browser
 
 
@@ -145,9 +127,6 @@ build-windows-10:
     - windows-10
 
   script: "powershell -ExecutionPolicy Unrestricted .\\tools\\build-windows.ps1"
-
-  dependencies:
-    - build-manual
 
   artifacts:
     paths:

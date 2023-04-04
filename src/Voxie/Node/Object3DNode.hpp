@@ -35,8 +35,6 @@
 // TODO: should there be an object for a Object3D being displayed in a
 // particular view?
 
-class MouseOperation;
-
 namespace vx {
 class Object3DNode;
 
@@ -321,12 +319,10 @@ class VOXIECORESHARED_EXPORT Object3DNode : public Node {
   void mouseMoveEvent(
       QMouseEvent* event,
       std::tuple<Object3DPickImageData*, uint32_t, uint32_t> pickData,
-      const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd,
-      MouseOperation* mouseOperation);
+      const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd);
   void mousePressEvent(
       QMouseEvent* event,
       std::tuple<Object3DPickImageData*, uint32_t, uint32_t> pickData,
-      const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd,
-      MouseOperation* mouseOperation);
+      const QVector3D& mouseRayStart, const QVector3D& mouseRayEnd);
 };
 }  // namespace vx

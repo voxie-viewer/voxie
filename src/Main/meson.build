@@ -22,7 +22,6 @@ custom_target(
     build_voxie_path,
     '@OUTPUT@', meson.current_source_dir() + '/../..',
     meson.current_build_dir() + '/..',
-    meson.current_build_dir() + '/../extra/old-manual.pdf',
     meson.current_build_dir() + '/../extra/licenses',
     additional_build_voxie_path_args,
   ],
@@ -63,7 +62,6 @@ qt_modules = [
   'DBus',
   'Gui',
   'Widgets',
-  'Script',
 ]
 # Note: moc does not like "include_type:'system'" because meson only considers -I and -D for moc, not -isystem: <https://github.com/mesonbuild/meson/blob/398df5629863e913fa603cbf02c525a9f501f8a8/mesonbuild/modules/qt.py#L193>. See also <https://github.com/mesonbuild/meson/pull/8139>. Note that currently voxie should compile even without this workaround, see update-dbus-proxies.py.
 qt5_dep = dependency('qt5', modules : qt_modules, include_type : 'system')
@@ -118,11 +116,13 @@ moc_files = qt5.preprocess(
     'Utilities.cpp',
   ],
   moc_headers : [
+    #'AllDebugOptions.hpp',
     'DirectoryManager.hpp',
+    'DebugOptionDBus.hpp',
+    #'DebugOptions.hpp',
     'Instance.hpp',
     #'MetatypeRegistration.hpp',
     'Root.hpp',
-    'ScriptWrapper.hpp',
     'Utilities.hpp',
 
     #'Component/ComponentTypes.hpp',
@@ -132,7 +132,6 @@ moc_files = qt5.preprocess(
 
     'Component/ScriptLauncher.hpp',
     #'Component/SessionManager.hpp',
-    'Component/Tool.hpp',
 
     'Gui/AboutDialogWindow.hpp',
     'Gui/ButtonLabel.hpp',
@@ -145,9 +144,7 @@ moc_files = qt5.preprocess(
     'Gui/HelpWindow.hpp',
     'Gui/OpenFileDialog.hpp',
     'Gui/PlaneView.hpp',
-    'Gui/PluginManagerWindow.hpp',
     #'Gui/PosRotValid.hpp',
-    'Gui/PreferencesWindow.hpp',
     'Gui/ScriptConsole.hpp',
     'Gui/ScriptLineEdit.hpp',
     'Gui/SelectObjectConnection.hpp',
@@ -160,9 +157,6 @@ moc_files = qt5.preprocess(
     'Gui/About/AboutLicenseTab.hpp',
     'Gui/About/InformationTab.hpp',
     'Gui/About/ThirdPartyTab.hpp',
-
-    'Gui/Preferences/OpenclPreferences.hpp',
-    'Gui/Preferences/ScriptPreferences.hpp',
 
     #'IO/Load.hpp',
     'IO/RunAllFilterOperation.hpp',
@@ -193,12 +187,14 @@ main = executable(
   [
     moc_files,
 
+    'AllDebugOptions.cpp',
     'DirectoryManager.cpp',
+    'DebugOptionDBus.cpp',
+    'DebugOptions.cpp',
     'Instance.cpp',
     'Main.cpp',
     'MetatypeRegistration.cpp',
     'Root.cpp',
-    'ScriptWrapper.cpp',
     'Utilities.cpp',
 
     'Component/ComponentTypes.cpp',
@@ -207,7 +203,6 @@ main = executable(
     'Component/ExtensionSegmentationStep.cpp',
     'Component/ScriptLauncher.cpp',
     'Component/SessionManager.cpp',
-    'Component/Tool.cpp',
 
     'Gui/AboutDialogWindow.cpp',
     'Gui/ButtonLabel.cpp',
@@ -220,9 +215,7 @@ main = executable(
     'Gui/HelpWindow.cpp',
     'Gui/OpenFileDialog.cpp',
     'Gui/PlaneView.cpp',
-    'Gui/PluginManagerWindow.cpp',
     'Gui/PosRotValid.cpp',
-    'Gui/PreferencesWindow.cpp',
     'Gui/ScriptConsole.cpp',
     'Gui/ScriptLineEdit.cpp',
     'Gui/SelectObjectConnection.cpp',
@@ -236,9 +229,6 @@ main = executable(
     'Gui/About/AboutLicenseTab.cpp',
     'Gui/About/InformationTab.cpp',
     'Gui/About/ThirdPartyTab.cpp',
-
-    'Gui/Preferences/OpenclPreferences.cpp',
-    'Gui/Preferences/ScriptPreferences.cpp',
 
     'IO/Load.cpp',
     'IO/RunAllFilterOperation.cpp',

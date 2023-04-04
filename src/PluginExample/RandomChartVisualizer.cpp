@@ -37,9 +37,6 @@ using namespace vx;
 
 RandomChartVisualizer::RandomChartVisualizer()
     : SimpleVisualizer(getPrototypeSingleton()) {
-  this->setAutomaticDisplayName("Sweet Curves");
-
-  this->view()->setWindowTitle("Sweet Curves");
   this->view()->setMinimumSize(300, 200);
 
   // Init function + section
@@ -74,6 +71,8 @@ RandomChartVisualizer::RandomChartVisualizer()
         };
         break;
     }
+    this->setAutomaticDisplayName("Chart for " + func->text());
+
     layout->addRow(name, func);
 
     form = new QWidget();

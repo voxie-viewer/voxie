@@ -254,8 +254,6 @@ RawVisualizer::RawVisualizer()
     else
       name2 = "RawVisualizer - Not connected";
     this->setAutomaticDisplayName(name2);
-    // TODO: Should't the window title be set to the acual name?
-    this->view()->setWindowTitle(name2);
   });
 
   cache = RawImageCache::create();

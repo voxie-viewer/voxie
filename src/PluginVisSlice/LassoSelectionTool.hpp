@@ -77,7 +77,7 @@ class LassoSelectionTool : public Visualizer2DTool {
    * @param point
    */
   void savePoint(QPointF point);
-  void getStepManager();
+  bool getStepManager();
 
   /**
    * @brief Triggers the lassoSelectionLayer redraw.
@@ -109,6 +109,7 @@ class LassoSelectionTool : public Visualizer2DTool {
   QPointF getClosestNode(QPointF point);
 
  private:
+  // TODO: What happens if stepManager is destroyed?
   vx::StepManagerI* stepManager = nullptr;
   quint8 minDistance = 10;  // minimal distance in pixels between points (of
                             // Polygon) before they are considered equal

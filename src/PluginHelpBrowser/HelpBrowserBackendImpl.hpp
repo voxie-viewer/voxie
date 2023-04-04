@@ -51,6 +51,7 @@ class HelpWebPage : public QWebEnginePage {
 
  Q_SIGNALS:
   void handleLink(const QUrl& url);
+  void doReload();
 };
 
 class HelpBrowserBackendViewImpl : public vx::HelpBrowserBackendView {

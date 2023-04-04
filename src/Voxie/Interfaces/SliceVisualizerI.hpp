@@ -40,7 +40,7 @@ class VOXIECORESHARED_EXPORT SliceVisualizerI {
   virtual void activateBrushSelectionTool() = 0;
 
   /**
-   * @brief Set the current tool to SliceAdjustment if BrushSelection is active
+   * @brief Set the current tool to DefaultTool if BrushSelection is active
    */
   virtual void deactivateBrushSelectionTool() = 0;
 
@@ -50,7 +50,7 @@ class VOXIECORESHARED_EXPORT SliceVisualizerI {
   virtual void activateLassoSelectionTool() = 0;
 
   /**
-   * @brief Set the current tool to SliceAdjustment if LassoSelection is active
+   * @brief Set the current tool to DefaultTool if LassoSelection is active
    */
   virtual void deactivateLassoSelectionTool() = 0;
 

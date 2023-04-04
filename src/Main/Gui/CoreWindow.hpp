@@ -44,7 +44,6 @@
 namespace vx {
 class Root;
 class VisualizerNode;
-class Plugin;
 namespace io {
 class Importer;
 }
@@ -77,10 +76,12 @@ class CoreWindow : public QMainWindow {
 
  private:
   QMdiArea* mdiArea;
+  QMenuBar* menuBar;
   QMenu* windowMenu;
   QMenu* scriptsMenu;
   int scriptsMenuStaticSize;
-  QMenu* pluginsMenu;
+  QMenu* toolMenu = nullptr;
+  int toolMenuStaticSize = 0;
 
   QList<VisualizerContainer*> visualizers;
 
@@ -115,6 +116,8 @@ class CoreWindow : public QMainWindow {
   QMdiArea* getMdiArea() { return mdiArea; }
 
   QAction* toggleTabbedAction;
+
+  void updateExtensions();
 
  private:
   /**
@@ -170,8 +173,6 @@ class CoreWindow : public QMainWindow {
  public:
   explicit CoreWindow(Root* root, QWidget* parent = 0);
   ~CoreWindow();
-
-  void insertPlugin(const QSharedPointer<Plugin>& plugin);
 
   /**
    * @brief Adds a visualizer to the window.

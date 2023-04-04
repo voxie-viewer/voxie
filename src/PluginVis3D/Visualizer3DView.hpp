@@ -30,7 +30,6 @@
 #include <PluginVis3D/Data/AxisFilter.hpp>
 #include <PluginVis3D/Data/CuttingPlane.hpp>
 
-#include <PluginVis3D/Helper/IsosurfaceMouseOperation.hpp>
 #include <PluginVis3D/Prototypes.hpp>
 
 #include <PluginVis3D/Vis3DShaders.hpp>
@@ -84,7 +83,6 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
   QPoint mouseLast;
 
   vx::visualization::View3D* view3d;
-  QSharedPointer<IsosurfaceMouseOperation> mouseOperation;
   const AxisFilter* axisFilter;
 
   bool generating = false;
@@ -150,7 +148,6 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
  public:
   explicit Visualizer3DView(
       View3DProperties* properties, vx::visualization::View3D* view3,
-      QSharedPointer<IsosurfaceMouseOperation> mouseOperation,
       AxisFilter* axisFilter);
 
   ~Visualizer3DView();
@@ -176,6 +173,7 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
 
   virtual void mousePressEvent(QMouseEvent* event) override;
   virtual void mouseMoveEvent(QMouseEvent* event) override;
+  virtual void mouseReleaseEvent(QMouseEvent* event) override;
   virtual void wheelEvent(QWheelEvent* event) override;
   virtual void keyPressEvent(QKeyEvent* event) override;
 
@@ -205,4 +203,18 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
    * changed.
    */
   void cuttingModeChanged();
+
+  /**
+   * @brief objectPositionChangeRequested is signalled if a other class request
+   * the object position.
+   * @param QVector3D offset
+   */
+  void objectPositionChangeRequested(QVector3D offset);
+
+  /**
+   * @brief objectRotationChangeRequested is signalled if a other class request
+   * the object rotation.
+   * @param QQuaternion angle
+   */
+  void objectRotationChangeRequested(QQuaternion angle);
 };

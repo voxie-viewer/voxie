@@ -122,8 +122,8 @@ void NodePrototype::createHelper(QSharedPointer<Node> node,
   vx::checkOnMainThread("NodePrototype::createHelper");
 
   ExportedObject::checkOptions(options, "Data", "ManualDisplayName",
-                               "ParentNodeGroup"
-                               "AllowCompatibilityNames");
+                               "ParentNodeGroup", "AllowCompatibilityNames",
+                               "GraphPosition");
 
   if (registerNode) node->setStateToSetup();
 
@@ -154,6 +154,15 @@ void NodePrototype::createHelper(QSharedPointer<Node> node,
             ExportedObject::getOptionValue<QDBusObjectPath>(options,
                                                             "ParentNodeGroup"))
             .data());
+  }
+
+  if (ExportedObject::hasOption(options, "GraphPosition")) {
+    if (!vx::voxieRoot().isHeadless()) {
+      vx::voxieRoot().setGraphPosition(
+          node.data(),
+          toQtVector(ExportedObject::getOptionValue<TupleVector<double, 2>>(
+              options, "GraphPosition")));
+    }
   }
 
   node->setNodeProperties(properties);

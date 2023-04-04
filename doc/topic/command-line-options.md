@@ -36,11 +36,13 @@ Note that currently opening a [3D visualizer] with this option might cause
 voxie to crash.
 
 
-`--no-opencl`
--------------
+`--opencl`, `--no-opencl`
+-------------------------
 
 The `--no-opengl` option disables support for OpenCL. This might be useful
 if OpenCL is not available or the OpenCL driver is not working properly.
+The `--opencl` option will enable OpenCL support. Currently OpenCL support is
+disabled by default.
 
 
 [3D visualizer]: voxie:///help/prototype/de.uni_stuttgart.Voxie.Visualizer.View3D

@@ -110,7 +110,8 @@ class HelpPageSourcePrototype : public HelpPageSource {
     // Add help page content (if available)
     auto pageContent = registry->lookUpHelpPage(prototype);
     QString baseFilename = std::get<0>(pageContent);
-    auto markdownSource = std::get<1>(pageContent);
+    auto dependencies = std::get<1>(pageContent);
+    auto markdownSource = std::get<2>(pageContent);
 
     // Parse markdown document
     // https://github.com/commonmark/commonmark-spec/blob/master/CommonMark.dtd
@@ -119,7 +120,8 @@ class HelpPageSourcePrototype : public HelpPageSource {
     // Move all nodes from rootNode to doc
     doc->appendAllChildrenOf(rootNode);
 
-    return createQSharedPointer<HelpPage>(doc, baseFilename, title);
+    return createQSharedPointer<HelpPage>(doc, baseFilename, dependencies,
+                                          title);
   }
 };
 }  // namespace help

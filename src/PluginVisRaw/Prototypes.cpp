@@ -410,85 +410,90 @@ static const char _prototype_TomographyRawData_[] = {
     58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
     103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112,
     101, 114, 116, 121, 84,  121, 112, 101, 46,  66,  111, 111, 108, 101, 97,
-    110, 34,  125, 125, 44,  32,  34,  85,  73,  34,  58,  32,  123, 34,  83,
-    105, 100, 101, 80,  97,  110, 101, 108, 83,  101, 99,  116, 105, 111, 110,
-    115, 34,  58,  32,  91,  123, 34,  68,  105, 115, 112, 108, 97,  121, 78,
-    97,  109, 101, 34,  58,  32,  34,  73,  110, 102, 111, 34,  44,  32,  34,
-    69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,  123, 34,  78,  97,
-    109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
-    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,
-    105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  84,  111, 109, 111, 103,
-    114, 97,  112, 104, 121, 82,  97,  119, 68,  97,  116, 97,  46,  73,  110,
-    102, 111, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  67,
-    117, 115, 116, 111, 109, 34,  125, 93,  44,  32,  34,  78,  97,  109, 101,
-    34,  58,  32,  34,  73,  110, 102, 111, 83,  101, 99,  116, 105, 111, 110,
-    34,  125, 44,  32,  123, 34,  68,  105, 115, 112, 108, 97,  121, 78,  97,
-    109, 101, 34,  58,  32,  34,  67,  117, 114, 114, 101, 110, 116, 32,  105,
-    109, 97,  103, 101, 34,  44,  32,  34,  69,  110, 116, 114, 105, 101, 115,
-    34,  58,  32,  91,  123, 34,  80,  114, 111, 112, 101, 114, 116, 121, 34,
-    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
-    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117,
-    97,  108, 105, 122, 101, 114, 46,  84,  111, 109, 111, 103, 114, 97,  112,
-    104, 121, 82,  97,  119, 68,  97,  116, 97,  46,  67,  117, 114, 114, 101,
-    110, 116, 73,  109, 97,  103, 101, 76,  105, 115, 116, 34,  44,  32,  34,
-    84,  121, 112, 101, 34,  58,  32,  34,  80,  114, 111, 112, 101, 114, 116,
-    121, 34,  125, 44,  32,  123, 34,  80,  114, 111, 112, 101, 114, 116, 121,
-    34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
-    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115,
-    117, 97,  108, 105, 122, 101, 114, 46,  84,  111, 109, 111, 103, 114, 97,
-    112, 104, 121, 82,  97,  119, 68,  97,  116, 97,  46,  67,  117, 114, 114,
-    101, 110, 116, 73,  109, 97,  103, 101, 34,  44,  32,  34,  84,  121, 112,
-    101, 34,  58,  32,  34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  125,
-    44,  32,  123, 34,  78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,
-    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
-    111, 120, 105, 101, 46,  82,  97,  119, 86,  105, 115, 117, 97,  108, 105,
-    122, 101, 114, 46,  83,  104, 111, 119, 80,  101, 114, 73,  109, 97,  103,
-    101, 77,  101, 116, 97,  100, 97,  116, 97,  34,  44,  32,  34,  84,  121,
-    112, 101, 34,  58,  32,  34,  67,  117, 115, 116, 111, 109, 34,  125, 44,
-    32,  123, 34,  78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,  117,
-    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
-    120, 105, 101, 46,  82,  97,  119, 86,  105, 115, 117, 97,  108, 105, 122,
-    101, 114, 46,  73,  109, 97,  103, 101, 83,  101, 108, 101, 99,  116, 105,
-    111, 110, 66,  117, 116, 116, 111, 110, 115, 34,  44,  32,  34,  84,  121,
-    112, 101, 34,  58,  32,  34,  67,  117, 115, 116, 111, 109, 34,  125, 44,
-    32,  123, 34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  58,  32,  34,
+    110, 34,  125, 125, 44,  32,  34,  84,  114, 111, 118, 101, 67,  108, 97,
+    115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,  34,  68,  101,
+    118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116, 97,  116, 117,
+    115, 32,  58,  58,  32,  53,  32,  45,  32,  80,  114, 111, 100, 117, 99,
+    116, 105, 111, 110, 47,  83,  116, 97,  98,  108, 101, 34,  93,  44,  32,
+    34,  85,  73,  34,  58,  32,  123, 34,  83,  105, 100, 101, 80,  97,  110,
+    101, 108, 83,  101, 99,  116, 105, 111, 110, 115, 34,  58,  32,  91,  123,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  73,  110, 102, 111, 34,  44,  32,  34,  69,  110, 116, 114, 105, 101,
+    115, 34,  58,  32,  91,  123, 34,  78,  97,  109, 101, 34,  58,  32,  34,
     100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
     116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108, 105,
     122, 101, 114, 46,  84,  111, 109, 111, 103, 114, 97,  112, 104, 121, 82,
-    97,  119, 68,  97,  116, 97,  46,  73,  109, 97,  103, 101, 75,  105, 110,
-    100, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  80,  114,
-    111, 112, 101, 114, 116, 121, 34,  125, 44,  32,  123, 34,  78,  97,  109,
+    97,  119, 68,  97,  116, 97,  46,  73,  110, 102, 111, 34,  44,  32,  34,
+    84,  121, 112, 101, 34,  58,  32,  34,  67,  117, 115, 116, 111, 109, 34,
+    125, 93,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  73,  110,
+    102, 111, 83,  101, 99,  116, 105, 111, 110, 34,  125, 44,  32,  123, 34,
+    68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,
+    67,  117, 114, 114, 101, 110, 116, 32,  105, 109, 97,  103, 101, 34,  44,
+    32,  34,  69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,  123, 34,
+    80,  114, 111, 112, 101, 114, 116, 121, 34,  58,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122, 101, 114,
+    46,  84,  111, 109, 111, 103, 114, 97,  112, 104, 121, 82,  97,  119, 68,
+    97,  116, 97,  46,  67,  117, 114, 114, 101, 110, 116, 73,  109, 97,  103,
+    101, 76,  105, 115, 116, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,
+    32,  34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  125, 44,  32,  123,
+    34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  58,  32,  34,  100, 101,
+    46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
+    86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122, 101,
+    114, 46,  84,  111, 109, 111, 103, 114, 97,  112, 104, 121, 82,  97,  119,
+    68,  97,  116, 97,  46,  67,  117, 114, 114, 101, 110, 116, 73,  109, 97,
+    103, 101, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  80,
+    114, 111, 112, 101, 114, 116, 121, 34,  125, 44,  32,  123, 34,  78,  97,
+    109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
+    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  82,
+    97,  119, 86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  83,  104,
+    111, 119, 80,  101, 114, 73,  109, 97,  103, 101, 77,  101, 116, 97,  100,
+    97,  116, 97,  34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,
+    67,  117, 115, 116, 111, 109, 34,  125, 44,  32,  123, 34,  78,  97,  109,
     101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
     116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  82,  97,
-    119, 86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  83,  104, 111,
-    119, 73,  109, 97,  103, 101, 75,  105, 110, 100, 34,  44,  32,  34,  84,
-    121, 112, 101, 34,  58,  32,  34,  67,  117, 115, 116, 111, 109, 34,  125,
-    93,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  73,  109, 97,
-    103, 101, 83,  101, 108, 101, 99,  116, 105, 111, 110, 83,  101, 99,  116,
-    105, 111, 110, 34,  125, 44,  32,  123, 34,  68,  105, 115, 112, 108, 97,
-    121, 78,  97,  109, 101, 34,  58,  32,  34,  67,  111, 108, 111, 114, 105,
-    122, 101, 114, 34,  44,  32,  34,  69,  110, 116, 114, 105, 101, 115, 34,
-    58,  32,  91,  123, 34,  76,  97,  98,  101, 108, 83,  116, 121, 108, 101,
-    34,  58,  32,  34,  78,  111, 110, 101, 34,  44,  32,  34,  80,  114, 111,
+    119, 86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  73,  109, 97,
+    103, 101, 83,  101, 108, 101, 99,  116, 105, 111, 110, 66,  117, 116, 116,
+    111, 110, 115, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,
+    67,  117, 115, 116, 111, 109, 34,  125, 44,  32,  123, 34,  80,  114, 111,
     112, 101, 114, 116, 121, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105,
     95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
     101, 46,  86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  84,  111,
     109, 111, 103, 114, 97,  112, 104, 121, 82,  97,  119, 68,  97,  116, 97,
-    46,  86,  97,  108, 117, 101, 67,  111, 108, 111, 114, 77,  97,  112, 112,
-    105, 110, 103, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,
-    80,  114, 111, 112, 101, 114, 116, 121, 34,  125, 93,  44,  32,  34,  78,
-    97,  109, 101, 34,  58,  32,  34,  67,  111, 108, 111, 114, 105, 122, 101,
-    114, 83,  101, 99,  116, 105, 111, 110, 34,  125, 44,  32,  123, 34,  68,
-    105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  72,
-    105, 115, 116, 111, 103, 114, 97,  109, 34,  44,  32,  34,  69,  110, 116,
-    114, 105, 101, 115, 34,  58,  32,  91,  123, 34,  78,  97,  109, 101, 34,
-    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
-    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  82,  97,  119, 86,
-    105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  72,  105, 115, 116, 111,
-    103, 114, 97,  109, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,
+    46,  73,  109, 97,  103, 101, 75,  105, 110, 100, 34,  44,  32,  34,  84,
+    121, 112, 101, 34,  58,  32,  34,  80,  114, 111, 112, 101, 114, 116, 121,
+    34,  125, 44,  32,  123, 34,  78,  97,  109, 101, 34,  58,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  82,  97,  119, 86,  105, 115, 117, 97,
+    108, 105, 122, 101, 114, 46,  83,  104, 111, 119, 73,  109, 97,  103, 101,
+    75,  105, 110, 100, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,
     34,  67,  117, 115, 116, 111, 109, 34,  125, 93,  44,  32,  34,  78,  97,
-    109, 101, 34,  58,  32,  34,  72,  105, 115, 116, 111, 103, 114, 97,  109,
-    83,  101, 99,  116, 105, 111, 110, 34,  125, 93,  125, 125, 0};
+    109, 101, 34,  58,  32,  34,  73,  109, 97,  103, 101, 83,  101, 108, 101,
+    99,  116, 105, 111, 110, 83,  101, 99,  116, 105, 111, 110, 34,  125, 44,
+    32,  123, 34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,
+    58,  32,  34,  67,  111, 108, 111, 114, 105, 122, 101, 114, 34,  44,  32,
+    34,  69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,  123, 34,  76,
+    97,  98,  101, 108, 83,  116, 121, 108, 101, 34,  58,  32,  34,  78,  111,
+    110, 101, 34,  44,  32,  34,  80,  114, 111, 112, 101, 114, 116, 121, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117,
+    97,  108, 105, 122, 101, 114, 46,  84,  111, 109, 111, 103, 114, 97,  112,
+    104, 121, 82,  97,  119, 68,  97,  116, 97,  46,  86,  97,  108, 117, 101,
+    67,  111, 108, 111, 114, 77,  97,  112, 112, 105, 110, 103, 34,  44,  32,
+    34,  84,  121, 112, 101, 34,  58,  32,  34,  80,  114, 111, 112, 101, 114,
+    116, 121, 34,  125, 93,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,
+    34,  67,  111, 108, 111, 114, 105, 122, 101, 114, 83,  101, 99,  116, 105,
+    111, 110, 34,  125, 44,  32,  123, 34,  68,  105, 115, 112, 108, 97,  121,
+    78,  97,  109, 101, 34,  58,  32,  34,  72,  105, 115, 116, 111, 103, 114,
+    97,  109, 34,  44,  32,  34,  69,  110, 116, 114, 105, 101, 115, 34,  58,
+    32,  91,  123, 34,  78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  82,  97,  119, 86,  105, 115, 117, 97,  108, 105,
+    122, 101, 114, 46,  72,  105, 115, 116, 111, 103, 114, 97,  109, 34,  44,
+    32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  67,  117, 115, 116, 111,
+    109, 34,  125, 93,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,
+    72,  105, 115, 116, 111, 103, 114, 97,  109, 83,  101, 99,  116, 105, 111,
+    110, 34,  125, 93,  125, 125, 0};
 const char* TomographyRawDataProperties::_getPrototypeJson() {
   return _prototype_TomographyRawData_;
 }
@@ -506,8 +511,12 @@ std::tuple<double, double> TomographyRawDataProperties::centerPointRaw() {
 }
 QSharedPointer<NodeProperty>
 TomographyRawDataProperties::centerPointProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.View2D.CenterPoint", false);
+}
+NodePropertyTyped<vx::types::Point2D>
+TomographyRawDataProperties::centerPointPropertyTyped() {
+  return NodePropertyTyped<vx::types::Point2D>(centerPointProperty());
 }
 void TomographyRawDataProperties::setCenterPoint(QPointF value) {
   _node->setNodePropertyTyped<std::tuple<double, double>>(
@@ -526,8 +535,12 @@ double TomographyRawDataProperties::verticalSizeRaw() {
 }
 QSharedPointer<NodeProperty>
 TomographyRawDataProperties::verticalSizeProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.View2D.VerticalSize", false);
+}
+NodePropertyTyped<vx::types::Float>
+TomographyRawDataProperties::verticalSizePropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(verticalSizeProperty());
 }
 void TomographyRawDataProperties::setVerticalSize(double value) {
   _node->setNodePropertyTyped<double>(
@@ -545,9 +558,13 @@ qint64 TomographyRawDataProperties::currentImageRaw() {
 }
 QSharedPointer<NodeProperty>
 TomographyRawDataProperties::currentImageProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.CurrentImage",
       false);
+}
+NodePropertyTyped<vx::types::Int>
+TomographyRawDataProperties::currentImagePropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(currentImageProperty());
 }
 void TomographyRawDataProperties::setCurrentImage(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -569,9 +586,14 @@ TomographyRawDataProperties::currentImageListRaw() {
 }
 QSharedPointer<NodeProperty>
 TomographyRawDataProperties::currentImageListProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.CurrentImageList",
       false);
+}
+NodePropertyTyped<vx::types::TomographyRawDataImageList>
+TomographyRawDataProperties::currentImageListPropertyTyped() {
+  return NodePropertyTyped<vx::types::TomographyRawDataImageList>(
+      currentImageListProperty());
 }
 void TomographyRawDataProperties::setCurrentImageList(
     std::tuple<QString, QJsonObject> value) {
@@ -591,8 +613,13 @@ QJsonObject TomographyRawDataProperties::imageKindRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImageKind");
 }
 QSharedPointer<NodeProperty> TomographyRawDataProperties::imageKindProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImageKind", false);
+}
+NodePropertyTyped<vx::types::TomographyRawDataImageKind>
+TomographyRawDataProperties::imageKindPropertyTyped() {
+  return NodePropertyTyped<vx::types::TomographyRawDataImageKind>(
+      imageKindProperty());
 }
 void TomographyRawDataProperties::setImageKind(QJsonObject value) {
   _node->setNodePropertyTyped<QJsonObject>(
@@ -610,9 +637,13 @@ double TomographyRawDataProperties::imagesPerSecondRaw() {
 }
 QSharedPointer<NodeProperty>
 TomographyRawDataProperties::imagesPerSecondProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImagesPerSecond",
       false);
+}
+NodePropertyTyped<vx::types::Float>
+TomographyRawDataProperties::imagesPerSecondPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(imagesPerSecondProperty());
 }
 void TomographyRawDataProperties::setImagesPerSecond(double value) {
   _node->setNodePropertyTyped<double>(
@@ -630,9 +661,13 @@ QString TomographyRawDataProperties::interpolationRaw() {
 }
 QSharedPointer<NodeProperty>
 TomographyRawDataProperties::interpolationProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.Interpolation",
       false);
+}
+NodePropertyTyped<vx::types::Enumeration>
+TomographyRawDataProperties::interpolationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Enumeration>(interpolationProperty());
 }
 void TomographyRawDataProperties::setInterpolation(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -649,8 +684,12 @@ QDBusObjectPath TomographyRawDataProperties::rawDataRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.RawData");
 }
 QSharedPointer<NodeProperty> TomographyRawDataProperties::rawDataProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.RawData", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+TomographyRawDataProperties::rawDataPropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(rawDataProperty());
 }
 void TomographyRawDataProperties::setRawData(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -675,9 +714,14 @@ TomographyRawDataProperties::valueColorMappingRaw() {
 }
 QSharedPointer<NodeProperty>
 TomographyRawDataProperties::valueColorMappingProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ValueColorMapping",
       false);
+}
+NodePropertyTyped<vx::types::ValueColorMapping>
+TomographyRawDataProperties::valueColorMappingPropertyTyped() {
+  return NodePropertyTyped<vx::types::ValueColorMapping>(
+      valueColorMappingProperty());
 }
 void TomographyRawDataProperties::setValueColorMapping(
     QList<vx::ColorizerEntry> value) {
@@ -700,9 +744,13 @@ bool TomographyRawDataProperties::waitForImagesRaw() {
 }
 QSharedPointer<NodeProperty>
 TomographyRawDataProperties::waitForImagesProperty() {
-  return _node->prototype()->getProperty(
+  return TomographyRawDataProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.WaitForImages",
       false);
+}
+NodePropertyTyped<vx::types::Boolean>
+TomographyRawDataProperties::waitForImagesPropertyTyped() {
+  return NodePropertyTyped<vx::types::Boolean>(waitForImagesProperty());
 }
 void TomographyRawDataProperties::setWaitForImages(bool value) {
   _node->setNodePropertyTyped<bool>(

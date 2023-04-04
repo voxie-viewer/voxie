@@ -24,7 +24,6 @@
 
 #include <Voxie/Node/Object3DNode.hpp>
 
-#include <Voxie/Vis/MouseOperation.hpp>
 #include <Voxie/Vis/OpenGLWidget.hpp>
 
 #include <PluginVis3D/Prototypes.forward.hpp>

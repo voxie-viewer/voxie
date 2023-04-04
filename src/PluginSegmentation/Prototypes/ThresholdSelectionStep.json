@@ -2,7 +2,7 @@
     "NodePrototype": [
         {
             "Description": "Threshold based selection",
-            "DisplayName": "",
+            "DisplayName": "Threshold Segmentation",
             "StepTip": "Threshold Selection",
             "Name": "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep",
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.SegmentationStep",

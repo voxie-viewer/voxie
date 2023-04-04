@@ -38,12 +38,6 @@ QObject* VisTablePlugin::create(const QString& key,
   return nullptr;
 }
 
-QList<QAction*> VisTablePlugin::uiCommands() {
-  QList<QAction*> actions;
-
-  return actions;
-}
-
 QList<QSharedPointer<vx::NodePrototype>> VisTablePlugin::objectPrototypes() {
   QList<QSharedPointer<vx::NodePrototype>> list;
   list.append(TableVisualizer::getPrototypeSingleton());

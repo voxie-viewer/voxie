@@ -158,8 +158,12 @@ qint64 TheSphereGeneratorProperties::seedRaw() {
       "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Seed");
 }
 QSharedPointer<NodeProperty> TheSphereGeneratorProperties::seedProperty() {
-  return _node->prototype()->getProperty(
+  return TheSphereGeneratorProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Seed", false);
+}
+NodePropertyTyped<vx::types::Int>
+TheSphereGeneratorProperties::seedPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(seedProperty());
 }
 void TheSphereGeneratorProperties::setSeed(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -176,8 +180,12 @@ qint64 TheSphereGeneratorProperties::sizeRaw() {
       "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Size");
 }
 QSharedPointer<NodeProperty> TheSphereGeneratorProperties::sizeProperty() {
-  return _node->prototype()->getProperty(
+  return TheSphereGeneratorProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Size", false);
+}
+NodePropertyTyped<vx::types::Int>
+TheSphereGeneratorProperties::sizePropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(sizeProperty());
 }
 void TheSphereGeneratorProperties::setSize(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -194,8 +202,12 @@ QDBusObjectPath TheSphereGeneratorProperties::outputRaw() {
       "de.uni_stuttgart.Voxie.Output");
 }
 QSharedPointer<NodeProperty> TheSphereGeneratorProperties::outputProperty() {
-  return _node->prototype()->getProperty("de.uni_stuttgart.Voxie.Output",
-                                         false);
+  return TheSphereGeneratorProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Output", false);
+}
+NodePropertyTyped<vx::types::OutputNodeReference>
+TheSphereGeneratorProperties::outputPropertyTyped() {
+  return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
 }
 void TheSphereGeneratorProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(

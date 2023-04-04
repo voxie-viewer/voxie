@@ -110,7 +110,12 @@ static const char _prototype_AutoScaleTableUnits_[] = {
     34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105,
     95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
     101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 67,  111, 110, 100, 105,
-    116, 105, 111, 110, 46,  78,  111, 116, 34,  125, 125, 0};
+    116, 105, 111, 110, 46,  78,  111, 116, 34,  125, 44,  32,  34,  84,  114,
+    111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,
+    58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116,
+    32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,  32,
+    80,  114, 111, 100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,  98,
+    108, 101, 34,  93,  125, 0};
 const char* AutoScaleTableUnitsProperties::_getPrototypeJson() {
   return _prototype_AutoScaleTableUnits_;
 }
@@ -127,8 +132,12 @@ QDBusObjectPath AutoScaleTableUnitsProperties::tableRaw() {
       "de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits.Table");
 }
 QSharedPointer<NodeProperty> AutoScaleTableUnitsProperties::tableProperty() {
-  return _node->prototype()->getProperty(
+  return AutoScaleTableUnitsProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits.Table", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+AutoScaleTableUnitsProperties::tablePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(tableProperty());
 }
 void AutoScaleTableUnitsProperties::setTable(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -145,8 +154,12 @@ QDBusObjectPath AutoScaleTableUnitsProperties::outputRaw() {
       "de.uni_stuttgart.Voxie.Output");
 }
 QSharedPointer<NodeProperty> AutoScaleTableUnitsProperties::outputProperty() {
-  return _node->prototype()->getProperty("de.uni_stuttgart.Voxie.Output",
-                                         false);
+  return AutoScaleTableUnitsProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Output", false);
+}
+NodePropertyTyped<vx::types::OutputNodeReference>
+AutoScaleTableUnitsProperties::outputPropertyTyped() {
+  return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
 }
 void AutoScaleTableUnitsProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -526,7 +539,12 @@ static const char _prototype_Histogram_[] = {
     105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
     105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101,
     46,  70,  108, 111, 97,  116, 34,  44,  32,  34,  85,  73,  80,  111, 115,
-    105, 116, 105, 111, 110, 34,  58,  32,  56,  125, 125, 125, 0};
+    105, 116, 105, 111, 110, 34,  58,  32,  56,  125, 125, 44,  32,  34,  84,
+    114, 111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115,
+    34,  58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110,
+    116, 32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,
+    32,  80,  114, 111, 100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,
+    98,  108, 101, 34,  93,  125, 0};
 const char* HistogramProperties::_getPrototypeJson() {
   return _prototype_Histogram_;
 }
@@ -543,8 +561,12 @@ qint64 HistogramProperties::bucketCountRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.BucketCount");
 }
 QSharedPointer<NodeProperty> HistogramProperties::bucketCountProperty() {
-  return _node->prototype()->getProperty(
+  return HistogramProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.BucketCount", false);
+}
+NodePropertyTyped<vx::types::Int>
+HistogramProperties::bucketCountPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(bucketCountProperty());
 }
 void HistogramProperties::setBucketCount(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -567,8 +589,12 @@ HistogramProperties::colorMapRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.ColorMap");
 }
 QSharedPointer<NodeProperty> HistogramProperties::colorMapProperty() {
-  return _node->prototype()->getProperty(
+  return HistogramProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.ColorMap", false);
+}
+NodePropertyTyped<vx::types::ValueColorMapping>
+HistogramProperties::colorMapPropertyTyped() {
+  return NodePropertyTyped<vx::types::ValueColorMapping>(colorMapProperty());
 }
 void HistogramProperties::setColorMap(QList<vx::ColorizerEntry> value) {
   _node->setNodePropertyTyped<QList<
@@ -589,8 +615,12 @@ QString HistogramProperties::columnRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.Column");
 }
 QSharedPointer<NodeProperty> HistogramProperties::columnProperty() {
-  return _node->prototype()->getProperty(
+  return HistogramProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.Column", false);
+}
+NodePropertyTyped<vx::types::String>
+HistogramProperties::columnPropertyTyped() {
+  return NodePropertyTyped<vx::types::String>(columnProperty());
 }
 void HistogramProperties::setColumn(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -607,8 +637,12 @@ bool HistogramProperties::logarithmicXRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.LogarithmicX");
 }
 QSharedPointer<NodeProperty> HistogramProperties::logarithmicXProperty() {
-  return _node->prototype()->getProperty(
+  return HistogramProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.LogarithmicX", false);
+}
+NodePropertyTyped<vx::types::Boolean>
+HistogramProperties::logarithmicXPropertyTyped() {
+  return NodePropertyTyped<vx::types::Boolean>(logarithmicXProperty());
 }
 void HistogramProperties::setLogarithmicX(bool value) {
   _node->setNodePropertyTyped<bool>(
@@ -625,8 +659,12 @@ bool HistogramProperties::logarithmicYRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.LogarithmicY");
 }
 QSharedPointer<NodeProperty> HistogramProperties::logarithmicYProperty() {
-  return _node->prototype()->getProperty(
+  return HistogramProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.LogarithmicY", false);
+}
+NodePropertyTyped<vx::types::Boolean>
+HistogramProperties::logarithmicYPropertyTyped() {
+  return NodePropertyTyped<vx::types::Boolean>(logarithmicYProperty());
 }
 void HistogramProperties::setLogarithmicY(bool value) {
   _node->setNodePropertyTyped<bool>(
@@ -644,8 +682,12 @@ double HistogramProperties::lowerBoundXFractionRaw() {
 }
 QSharedPointer<NodeProperty>
 HistogramProperties::lowerBoundXFractionProperty() {
-  return _node->prototype()->getProperty(
+  return HistogramProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.LowerBoundXFraction", false);
+}
+NodePropertyTyped<vx::types::Float>
+HistogramProperties::lowerBoundXFractionPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(lowerBoundXFractionProperty());
 }
 void HistogramProperties::setLowerBoundXFraction(double value) {
   _node->setNodePropertyTyped<double>(
@@ -662,8 +704,12 @@ QDBusObjectPath HistogramProperties::tableRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.Table");
 }
 QSharedPointer<NodeProperty> HistogramProperties::tableProperty() {
-  return _node->prototype()->getProperty(
+  return HistogramProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.Table", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+HistogramProperties::tablePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(tableProperty());
 }
 void HistogramProperties::setTable(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -681,8 +727,12 @@ double HistogramProperties::upperBoundXFractionRaw() {
 }
 QSharedPointer<NodeProperty>
 HistogramProperties::upperBoundXFractionProperty() {
-  return _node->prototype()->getProperty(
+  return HistogramProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Histogram.UpperBoundXFraction", false);
+}
+NodePropertyTyped<vx::types::Float>
+HistogramProperties::upperBoundXFractionPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(upperBoundXFractionProperty());
 }
 void HistogramProperties::setUpperBoundXFraction(double value) {
   _node->setNodePropertyTyped<double>(
@@ -1300,7 +1350,12 @@ static const char _prototype_ScatterPlot_[] = {
     116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
     80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  70,  108,
     111, 97,  116, 34,  44,  32,  34,  85,  73,  80,  111, 115, 105, 116, 105,
-    111, 110, 34,  58,  32,  49,  48,  125, 125, 125, 0};
+    111, 110, 34,  58,  32,  49,  48,  125, 125, 44,  32,  34,  84,  114, 111,
+    118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,
+    32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,
+    83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,  32,  80,
+    114, 111, 100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,  98,  108,
+    101, 34,  93,  125, 0};
 const char* ScatterPlotProperties::_getPrototypeJson() {
   return _prototype_ScatterPlot_;
 }
@@ -1323,8 +1378,12 @@ ScatterPlotProperties::colorMapRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColorMap");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::colorMapProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColorMap", false);
+}
+NodePropertyTyped<vx::types::ValueColorMapping>
+ScatterPlotProperties::colorMapPropertyTyped() {
+  return NodePropertyTyped<vx::types::ValueColorMapping>(colorMapProperty());
 }
 void ScatterPlotProperties::setColorMap(QList<vx::ColorizerEntry> value) {
   _node->setNodePropertyTyped<QList<
@@ -1345,8 +1404,12 @@ QString ScatterPlotProperties::columnColorRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnColor");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::columnColorProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnColor", false);
+}
+NodePropertyTyped<vx::types::String>
+ScatterPlotProperties::columnColorPropertyTyped() {
+  return NodePropertyTyped<vx::types::String>(columnColorProperty());
 }
 void ScatterPlotProperties::setColumnColor(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -1363,8 +1426,12 @@ QString ScatterPlotProperties::columnXRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnX");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::columnXProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnX", false);
+}
+NodePropertyTyped<vx::types::String>
+ScatterPlotProperties::columnXPropertyTyped() {
+  return NodePropertyTyped<vx::types::String>(columnXProperty());
 }
 void ScatterPlotProperties::setColumnX(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -1381,8 +1448,12 @@ QString ScatterPlotProperties::columnYRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnY");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::columnYProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnY", false);
+}
+NodePropertyTyped<vx::types::String>
+ScatterPlotProperties::columnYPropertyTyped() {
+  return NodePropertyTyped<vx::types::String>(columnYProperty());
 }
 void ScatterPlotProperties::setColumnY(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -1399,8 +1470,12 @@ bool ScatterPlotProperties::logarithmicXRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.LogarithmicX");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::logarithmicXProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.LogarithmicX", false);
+}
+NodePropertyTyped<vx::types::Boolean>
+ScatterPlotProperties::logarithmicXPropertyTyped() {
+  return NodePropertyTyped<vx::types::Boolean>(logarithmicXProperty());
 }
 void ScatterPlotProperties::setLogarithmicX(bool value) {
   _node->setNodePropertyTyped<bool>(
@@ -1417,8 +1492,12 @@ bool ScatterPlotProperties::logarithmicYRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.LogarithmicY");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::logarithmicYProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.LogarithmicY", false);
+}
+NodePropertyTyped<vx::types::Boolean>
+ScatterPlotProperties::logarithmicYPropertyTyped() {
+  return NodePropertyTyped<vx::types::Boolean>(logarithmicYProperty());
 }
 void ScatterPlotProperties::setLogarithmicY(bool value) {
   _node->setNodePropertyTyped<bool>(
@@ -1435,8 +1514,12 @@ qint64 ScatterPlotProperties::pointLimitRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointLimit");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::pointLimitProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointLimit", false);
+}
+NodePropertyTyped<vx::types::Int>
+ScatterPlotProperties::pointLimitPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(pointLimitProperty());
 }
 void ScatterPlotProperties::setPointLimit(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -1453,8 +1536,12 @@ double ScatterPlotProperties::pointScaleRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointScale");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::pointScaleProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointScale", false);
+}
+NodePropertyTyped<vx::types::Float>
+ScatterPlotProperties::pointScalePropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(pointScaleProperty());
 }
 void ScatterPlotProperties::setPointScale(double value) {
   _node->setNodePropertyTyped<double>(
@@ -1471,8 +1558,12 @@ QDBusObjectPath ScatterPlotProperties::tableRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.Table");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::tableProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.Table", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+ScatterPlotProperties::tablePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(tableProperty());
 }
 void ScatterPlotProperties::setTable(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -1489,8 +1580,12 @@ double ScatterPlotProperties::viewMarginRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ViewMargin");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::viewMarginProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ViewMargin", false);
+}
+NodePropertyTyped<vx::types::Float>
+ScatterPlotProperties::viewMarginPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(viewMarginProperty());
 }
 void ScatterPlotProperties::setViewMargin(double value) {
   _node->setNodePropertyTyped<double>(
@@ -1507,8 +1602,12 @@ double ScatterPlotProperties::viewPercentileRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ViewPercentile");
 }
 QSharedPointer<NodeProperty> ScatterPlotProperties::viewPercentileProperty() {
-  return _node->prototype()->getProperty(
+  return ScatterPlotProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ViewPercentile", false);
+}
+NodePropertyTyped<vx::types::Float>
+ScatterPlotProperties::viewPercentilePropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(viewPercentileProperty());
 }
 void ScatterPlotProperties::setViewPercentile(double value) {
   _node->setNodePropertyTyped<double>(
@@ -1951,16 +2050,20 @@ static const char _prototype_Table_[] = {
     86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,
     121, 112, 101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101, 110,
     99,  101, 34,  44,  32,  34,  85,  73,  80,  111, 115, 105, 116, 105, 111,
-    110, 34,  58,  32,  49,  125, 125, 44,  32,  34,  85,  73,  34,  58,  32,
-    123, 34,  83,  105, 100, 101, 80,  97,  110, 101, 108, 83,  101, 99,  116,
-    105, 111, 110, 115, 34,  58,  32,  91,  93,  44,  32,  34,  84,  79,  68,
-    79,  34,  58,  32,  34,  65,  100, 100, 32,  116, 97,  98,  108, 101, 32,
-    99,  111, 108, 117, 109, 110, 32,  108, 105, 115, 116, 32,  40,  119, 105,
-    116, 104, 32,  118, 105, 115, 105, 98,  105, 108, 105, 116, 121, 47,  115,
-    111, 114, 116, 105, 110, 103, 47,  112, 111, 115, 105, 116, 105, 111, 110,
-    41,  32,  97,  110, 100, 32,  114, 111, 119, 32,  99,  111, 117, 110, 116,
-    32,  105, 110, 102, 111, 114, 109, 97,  116, 105, 111, 110, 34,  125, 125,
-    0};
+    110, 34,  58,  32,  49,  125, 125, 44,  32,  34,  84,  114, 111, 118, 101,
+    67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,
+    34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116,
+    97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,  32,  80,  114, 111,
+    100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,  98,  108, 101, 34,
+    93,  44,  32,  34,  85,  73,  34,  58,  32,  123, 34,  83,  105, 100, 101,
+    80,  97,  110, 101, 108, 83,  101, 99,  116, 105, 111, 110, 115, 34,  58,
+    32,  91,  93,  44,  32,  34,  84,  79,  68,  79,  34,  58,  32,  34,  65,
+    100, 100, 32,  116, 97,  98,  108, 101, 32,  99,  111, 108, 117, 109, 110,
+    32,  108, 105, 115, 116, 32,  40,  119, 105, 116, 104, 32,  118, 105, 115,
+    105, 98,  105, 108, 105, 116, 121, 47,  115, 111, 114, 116, 105, 110, 103,
+    47,  112, 111, 115, 105, 116, 105, 111, 110, 41,  32,  97,  110, 100, 32,
+    114, 111, 119, 32,  99,  111, 117, 110, 116, 32,  105, 110, 102, 111, 114,
+    109, 97,  116, 105, 111, 110, 34,  125, 125, 0};
 const char* TableProperties::_getPrototypeJson() { return _prototype_Table_; }
 
 TableProperties::~TableProperties() {}
@@ -1975,8 +2078,11 @@ qint64 TableProperties::rowLimitRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Table.RowLimit");
 }
 QSharedPointer<NodeProperty> TableProperties::rowLimitProperty() {
-  return _node->prototype()->getProperty(
+  return TableProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Table.RowLimit", false);
+}
+NodePropertyTyped<vx::types::Int> TableProperties::rowLimitPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(rowLimitProperty());
 }
 void TableProperties::setRowLimit(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -1993,8 +2099,12 @@ QString TableProperties::sortColumnRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Table.SortColumn");
 }
 QSharedPointer<NodeProperty> TableProperties::sortColumnProperty() {
-  return _node->prototype()->getProperty(
+  return TableProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Table.SortColumn", false);
+}
+NodePropertyTyped<vx::types::String>
+TableProperties::sortColumnPropertyTyped() {
+  return NodePropertyTyped<vx::types::String>(sortColumnProperty());
 }
 void TableProperties::setSortColumn(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -2011,8 +2121,12 @@ QString TableProperties::sortOrderRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder");
 }
 QSharedPointer<NodeProperty> TableProperties::sortOrderProperty() {
-  return _node->prototype()->getProperty(
+  return TableProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder", false);
+}
+NodePropertyTyped<vx::types::Enumeration>
+TableProperties::sortOrderPropertyTyped() {
+  return NodePropertyTyped<vx::types::Enumeration>(sortOrderProperty());
 }
 void TableProperties::setSortOrder(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -2029,8 +2143,12 @@ QDBusObjectPath TableProperties::tableRaw() {
       "de.uni_stuttgart.Voxie.Visualizer.Table.Table");
 }
 QSharedPointer<NodeProperty> TableProperties::tableProperty() {
-  return _node->prototype()->getProperty(
+  return TableProperties::getNodePrototype()->getProperty(
       "de.uni_stuttgart.Voxie.Visualizer.Table.Table", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+TableProperties::tablePropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(tableProperty());
 }
 void TableProperties::setTable(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(

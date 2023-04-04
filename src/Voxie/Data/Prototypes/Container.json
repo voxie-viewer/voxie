@@ -15,6 +15,9 @@
                 "de.uni_stuttgart.Voxie.ContainerData"
             ],
             "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.ContainerData.Json.Export",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {},
             "UI": {
                 "SidePanelSections": [

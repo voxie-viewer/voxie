@@ -15,11 +15,7 @@ Compiling from source on Linux
 
 First, install the packages required to run Voxie. On Ubuntu 20.04 this can be done using:
 
-    sudo apt-get install build-essential meson ninja-build pkg-config qtscript5-dev libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git
-
-If you want to compile the old manual, you also have to install LaTeX:
-
-    sudo apt-get install texlive-latex-extra
+    sudo apt-get install build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git
 
 Then you can either use `qtcreator` (with meson) for compiling the code or run
 
@@ -90,7 +86,7 @@ from <https://github.com/voxie-viewer/voxie/releases>.
 The Linux binaries in `voxie-...-lin64.tar.gz` require Qt5, the OpenCL ICD and
 DBus to be available. To install Qt5 and the OpenCL ICD under Ubuntu, type:
 
-    sudo apt-get install libqt5script5 libqt5opengl5 libqt5x11extras5 ocl-icd-libopencl1
+    sudo apt-get install libqt5opengl5 libqt5x11extras5 ocl-icd-libopencl1
 
 The Windows binaries in `voxie-...-win64.zip` have all required libraries
 bundled.
@@ -105,8 +101,6 @@ You can extend Voxie by writing plugins or scripts.
 
 * Plugins will be loaded into the same address space as Voxie and can access
   all the internals of Voxie.
-* Internal scripts can be written in JavaScript/QScript. There are some examples
-  in the directory `scripts`.
 * External scripts can be written in an arbitrary language and can communicate
   with Voxie over DBus. The can also access the data directly using shared
   memory. There are some examples in the directory `scripts` and one in

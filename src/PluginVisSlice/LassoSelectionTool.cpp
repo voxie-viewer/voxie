@@ -116,7 +116,7 @@ void LassoSelectionTool::toolMouseReleaseEvent(QMouseEvent* ev) {
       QList<QPointF> polygonNodes =
           this->nodes.mid(this->nodes.lastIndexOf(closestPoint));
 
-      getStepManager();
+      if (!getStepManager()) return;
 
       // make sure that that the polygon is 2D and not 0/1D.
       if (polygonNodes.size() > 2) {
@@ -231,12 +231,15 @@ bool LassoSelectionTool::doesNewLineIntersect(QLineF newLine) {
   return false;
 }
 
-void LassoSelectionTool::getStepManager() {
+bool LassoSelectionTool::getStepManager() {
   SegmentationI* segmentation =
       dynamic_cast<SegmentationI*>(this->sv->properties->segmentationFilter());
 
   if (segmentation) {
     this->stepManager = segmentation->getStepManager();
+    return true;
+  } else {
+    return false;
   }
 }
 

@@ -21,7 +21,7 @@
                     ],
                     "DisplayName": "Label Volume",
                     "OutputTags": [
-                        "de.uni_stuttgart.Voxie.Tags.Volume.Segmented"
+                        "de.uni_stuttgart.Voxie.Tags.Volume.Mask"
                     ],
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
                 },

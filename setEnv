@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+POS="${0%/*}"; test "$POS" = "$0" && POS=.
+
+export PYTHONPATH="$POS/pythonlib:$POS/intern/pythonlib${PYTHONPATH+:$PYTHONPATH}"
+
+exec "$@"

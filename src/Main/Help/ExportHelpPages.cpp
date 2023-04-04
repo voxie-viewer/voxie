@@ -82,6 +82,9 @@ bool vx::help::exportHelpPages(Root* root, HelpPageGenerator* pageGenerator,
             }
             // TODO: What should be done with voxie:action URLs?
             return url;
+          } else if (parsedUrl.scheme() == "doi") {
+            return "https://dx.doi.org/" +
+                   QString::fromUtf8(QUrl::toPercentEncoding(parsedUrl.path()));
           }
 
           if (!parsedUrl.isRelative()) return url;
@@ -89,23 +92,44 @@ bool vx::help::exportHelpPages(Root* root, HelpPageGenerator* pageGenerator,
 
           // qDebug() << "url" << parsedUrl;
           // TODO: sanity check of filename
+          // TODO: filename vs. URI escaping
           QString filename = parsedUrl.path();
           QString pathPrefix = "files/";
+          bool ignore = false;
+          QString modifiedFilename = filename;
+          if (QFileInfo(filename).isAbsolute()) {
+            int pos = filename.indexOf("/./");
+            if (pos == -1) {
+              qWarning() << "Got absolute filename in URI" << filename
+                         << baseDir;
+            } else {
+              modifiedFilename = filename.mid(pos + 3);
+              // TODO: This is a hack
+              // This relies on the fact that absolute filenames are produced
+              // only by HelpPageSourceAll and all the files are copied
+              // elsewhere
+              ignore = true;
+            }
+          }
           if (!copiedFiles.contains(filename)) {
             copiedFiles.insert(filename);
-            QString sourceFilename = baseDir + "/" + filename;
-            QString targetFilename = dir + "/" + pathPrefix + filename;
+            QString sourceFilename = QDir(baseDir).filePath(filename);
+            QString targetFilename = dir + "/" + pathPrefix + modifiedFilename;
+            // qDebug() << filename << targetFilename;
             if (!QFileInfo(targetFilename).dir().mkpath(".")) {
               qCritical() << "Failed to create directory";
               fail = true;
             }
-            if (!QFile::copy(sourceFilename, targetFilename)) {
-              qCritical() << "Copying" << sourceFilename << "to"
-                          << targetFilename << "failed.";
-              fail = true;
+            if (!ignore) {
+              if (!QFile::copy(sourceFilename, targetFilename)) {
+                qCritical() << "Copying" << sourceFilename << "to"
+                            << targetFilename << "failed.";
+                fail = true;
+              }
             }
           }
-          return rootPath + pathPrefix + url;
+          // TODO: Convert modifiedFilename to URL?
+          return rootPath + pathPrefix + modifiedFilename;
         });
 
     QFile file(dir + "/" + name + ".html");

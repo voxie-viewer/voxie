@@ -32,8 +32,7 @@ namespace gui {
 /**
  * @brief A script console window.
  *
- * Allows the user to enter JavaScript snippets and displays the global script
- * log.
+ * Allows the user to enter script snippets and displays the global script log.
  */
 class ScriptConsole : public QDialog {
   Q_OBJECT

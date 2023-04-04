@@ -2,10 +2,13 @@
     "NodePrototype": [
         {
             "Description": "Extract a smaller sub volume out of a bigger volume. The limits are given by a set of points whose bounding box is used. The filter does not resample the data.",
-            "DisplayName": "Crop",
+            "DisplayName": "Crop volume",
             "Name": "de.uni_stuttgart.Voxie.Filter.Crop",
             "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
             "Icon": ":/icons/image-crop.png",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
             "Properties": {
                 "de.uni_stuttgart.Voxie.Input": {
                     "AllowedNodePrototypes": [

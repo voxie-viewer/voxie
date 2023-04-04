@@ -44,8 +44,8 @@ void BrushSelectionTool::setBrushRadius(quint8 radius) {
 quint8 BrushSelectionTool::getBrushRadius() { return this->brushRadius; }
 
 void BrushSelectionTool::activateTool() {
+  if (!getStepManager()) return;
   valueButton->setChecked(true);
-  getStepManager();
 
   if (this->sv->slice()) {
     this->stepManager->setBrushSelectionProperties(
@@ -117,12 +117,15 @@ void BrushSelectionTool::triggerLayerRedraw(bool isMouseValid) {
   }
 }
 
-void BrushSelectionTool::getStepManager() {
+bool BrushSelectionTool::getStepManager() {
   SegmentationI* segmentation =
       dynamic_cast<SegmentationI*>(this->sv->properties->segmentationFilter());
 
   if (segmentation) {
     this->stepManager = segmentation->getStepManager();
+    return true;
+  } else {
+    return false;
   }
 }
 

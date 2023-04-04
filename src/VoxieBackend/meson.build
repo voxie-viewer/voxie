@@ -29,6 +29,7 @@ moc_files = qt5.preprocess(
     'Property/PropertyBase.cpp',
   ] + additional_voxiebackend_moc_sources,
   moc_headers : [
+    #'DebugOptions.hpp',
     #'VoxieBackend.hpp',
 
     'Component/Component.hpp',
@@ -109,6 +110,8 @@ voxiebackend = shared_library(
   'VoxieBackend',
   [
     moc_files,
+
+    'DebugOptions.cpp',
 
     'Component/Component.cpp',
     'Component/ComponentContainer.cpp',

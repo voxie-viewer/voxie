@@ -22,7 +22,14 @@
 
 #include "HelpPage.hpp"
 
+#include <VoxieClient/QtUtil.hpp>
+
+#include <Main/DebugOptions.hpp>
+
 #include <Main/Help/CMark.hpp>
+
+#include <QtCore/QDebug>
+#include <QtCore/QFileInfo>
 
 using namespace vx::help;
 
@@ -35,9 +42,59 @@ HelpPageInfo::HelpPageInfo(const QString& url, const QString& title,
       metaInformation_(metaInformation) {}
 HelpPageInfo::~HelpPageInfo() {}
 
+HelpPageDependencies::HelpPageDependencies(
+    const QList<std::tuple<QString, QDateTime>>& files)
+    : files_(files) {}
+HelpPageDependencies::~HelpPageDependencies() {}
+
+bool HelpPageDependencies::isUpToDate() {
+  if (vx::debug_option::Log_HelpPageCache()->get())
+    qDebug() << "HelpPageDependencies::isUpToDate";
+
+  for (const auto& entry : this->files()) {
+    auto fn = std::get<0>(entry);
+    auto lastModified = std::get<1>(entry);
+
+    QFileInfo info(fn);
+    auto modified = info.lastModified();
+    auto upToDate = modified == lastModified;
+
+    if (vx::debug_option::Log_HelpPageCache()->get())
+      qDebug() << "  =>" << fn << lastModified << modified << upToDate;
+
+    if (!upToDate) return false;
+  }
+
+  return true;
+}
+
+QSharedPointer<HelpPageDependencies> HelpPageDependencies::none() {
+  // TODO: Cache?
+  return createQSharedPointer<HelpPageDependencies>(
+      QList<std::tuple<QString, QDateTime>>());
+}
+QSharedPointer<HelpPageDependencies> HelpPageDependencies::fromSingleFile(
+    const QString& fileName) {
+  QFileInfo info(fileName);
+  auto lastModified = info.lastModified();
+
+  QList<std::tuple<QString, QDateTime>> files{
+      std::make_tuple(fileName, lastModified),
+  };
+  return createQSharedPointer<HelpPageDependencies>(files);
+}
+
 HelpPage::HelpPage(const QSharedPointer<vx::cmark::Node>& doc,
-                   const QString& baseFileName, const QString& title)
-    : doc_(doc), baseFileName_(baseFileName), title_(title) {}
+                   const QString& title)
+    : HelpPage(doc, "", HelpPageDependencies::none(), title) {}
+HelpPage::HelpPage(const QSharedPointer<vx::cmark::Node>& doc,
+                   const QString& baseFileName,
+                   const QSharedPointer<HelpPageDependencies>& dependencies,
+                   const QString& title)
+    : doc_(doc),
+      baseFileName_(baseFileName),
+      dependencies_(dependencies),
+      title_(title) {}
 HelpPage::~HelpPage() {}
 
 QSharedPointer<vx::cmark::Node> HelpPage::docClone() {

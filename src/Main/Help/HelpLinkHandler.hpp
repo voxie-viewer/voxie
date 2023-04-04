@@ -51,9 +51,6 @@ class HelpLinkHandler {
 
   void openHelp(QString uri);
 
-  void loadPrototypes();
-
-  bool prototypesLoaded = false;
   gui::HelpWindow* window;
 };
 

@@ -22,189 +22,249 @@
 
 #pragma once
 
-#include <Voxie/Vis/MouseOperation.hpp>
+#include <VoxieClient/Map.hpp>
+#include <VoxieClient/Rotation.hpp>
+#include <VoxieClient/Vector.hpp>
+
+#include <Voxie/Data/BoundingBox3D.hpp>
+
 #include <Voxie/Voxie.hpp>
-#include <cmath>
 
 #include <QtCore/QObject>
-
-#include <QSharedPointer>
+#include <QtCore/QSharedPointer>
 
 #include <QtGui/QMouseEvent>
-#include <QtGui/QQuaternion>
+
+#include <cmath>
 
 namespace vx {
-
 namespace spnav {
 class SpaceNavVisualizer;
 }
 
 namespace visualization {
+class MouseAction;
 
-class VOXIECORESHARED_EXPORT View3D : public QObject {
-  Q_OBJECT
- private:
+enum class View3DProperty : quint32 {
+  LookAt = 1 << 0,
+  Orientation = 1 << 1,
+  ZoomLog = 1 << 2,
+  ViewSizeUnzoomed = 1 << 3,
+  FieldOfView = 1 << 4,
+
+  None = 0,
+  All = LookAt | Orientation | ZoomLog | ViewSizeUnzoomed | FieldOfView,
+};
+
+// TODO: How should this be done properly?
+static inline View3DProperty operator|(View3DProperty a, View3DProperty b) {
+  return static_cast<View3DProperty>(static_cast<quint32>(a) |
+                                     static_cast<quint32>(b));
+}
+static inline View3DProperty operator&(View3DProperty a, View3DProperty b) {
+  return static_cast<View3DProperty>(static_cast<quint32>(a) &
+                                     static_cast<quint32>(b));
+}
+static inline View3DProperty operator^(View3DProperty a, View3DProperty b) {
+  return static_cast<View3DProperty>(static_cast<quint32>(a) ^
+                                     static_cast<quint32>(b));
+}
+static inline View3DProperty operator~(View3DProperty a) {
+  return static_cast<View3DProperty>(~static_cast<quint32>(a));
+}
+static inline View3DProperty& operator|=(View3DProperty& a, View3DProperty b) {
+  return a = a | b;
+}
+static inline View3DProperty& operator&=(View3DProperty& a, View3DProperty b) {
+  return a = a & b;
+}
+
+class VOXIECORESHARED_EXPORT View3DValues {
+ public:
+  View3DValues();
+
+  View3DProperty valid;
+
   /**
-   * @brief minimal and maximal values for zoom factor
+   * @brief Coordiantes (in world space) around which rotations will happen
    */
-  float zoomMin, zoomMax;
+  vx::Vector<double, 3> lookAt;
+
+  /**
+   * @brief Rotation which will transform coordinates from eye space to world
+   * space (i.e. the rotation of the camera)
+   */
+  vx::Rotation<double, 3> orientation;
+
+  /**
+   * @brief Zoom value
+   */
+  double zoomLog;
+
+  /**
+   * @brief Size of region (in y direction) which can be seen in the lookAt
+   * plane on standard zoom
+   */
+  double viewSizeUnzoomed;
 
   /**
    * @brief Field of view in y direction in rad.
    *
    * Note that 0 indicates an orthographic projection.
    */
-  float fieldOfView;
+  double fieldOfView;
 
-  /**
-   * @brief Size of region (in y direction) which can be seen in the centerPoint
-   * plane on standard zoom
-   */
-  float viewSizeStandard;
+  // Note: The set*() methods will also set the field to valid
+  void setLookAt(const vx::Vector<double, 3>& value);
+  void setOrientation(const vx::Rotation<double, 3>& value);
+  void setZoomLog(double value);
+  void setViewSizeUnzoomed(double value);
+  void setFieldOfView(double value);
 
-  /**
-   * @brief Zoom factor
-   */
-  float zoom;
+  void updateFrom(const View3DValues& values, View3DProperty toCopy);
 
-  /**
-   * @brief Coordiantes (in world space) around which rotations will happen
-   */
-  QVector3D centerPoint;
+  // Updates only properties which are valid in values
+  void updateFrom(const View3DValues& values);
+};
 
-  /**
-   * @brief Rotation which will transform coordinates from eye space to world
-   * space (i.e. the rotation of the camera)
-   */
-  QQuaternion rotation;
+class VOXIECORESHARED_EXPORT View3D : public QObject {
+  Q_OBJECT
 
-  float factor;
+ private:
+  View3DValues values_;
 
-  QSharedPointer<MouseOperation> mouseOperation;
+  View3DProperty changable_;
+
+  BoundingBox3D boundingBox_;
+
+  double zoomLogMin_, zoomLogMax_;
+
+  QSharedPointer<MouseAction> currentMouseAction_;
 
  public:
   /**
    * @brief constructor of View3D
-   * @param QObject* parent
-   * @param QSharedPointer<MouseOperation> mouseOperation
-   * @param float viewSizeStandard
-   * @param float zoomMin
-   * @param float zoomMax
    */
-  View3D(QObject* parent, QSharedPointer<MouseOperation> mouseOperation);
+  View3D(QObject* parent, View3DProperty changable,
+         const View3DValues& initial = View3DValues());
 
   // Note: The view matrix transforms into a coordinate system which is centered
   // on the center point, not on the eye point. Moving the origin to the eye
   // point is done in the projection matrix.
-  QMatrix4x4 viewMatrix();
-  QMatrix4x4 projectionMatrix(float fWidth, float fHeight);
+  vx::AffineMap<double, 3> viewMatrix() const;
+  vx::ProjectiveMap<double, 3> projectionMatrix(double fWidth,
+                                                double fHeight) const;
 
   void mousePressEvent(const QPoint& mouseLast, QMouseEvent* event,
                        const QSize& windowSize);
   void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
                       const QSize& windowSize);
+  void mouseReleaseEvent(const QPoint& mouseLast, QMouseEvent* event,
+                         const QSize& windowSize);
   void wheelEvent(QWheelEvent* event, const QSize& windowSize);
   void keyPressEvent(QKeyEvent* event, const QSize& windowSize);
   void setFixedAngle(QString direction);
   void switchProjection();
-  void moveZoom(float value);
+  void moveZoom(double value);
 
-  void move(QVector3D vectorViewSpace);
-  void resetView();
+  void move(const vx::Vector<double, 3>& vectorViewSpace);
+  void resetView(View3DProperty toReset = View3DProperty::LookAt |
+                                          View3DProperty::ZoomLog |
+                                          View3DProperty::Orientation);
 
   void registerSpaceNavVisualizer(vx::spnav::SpaceNavVisualizer* sn);
 
-  const QVector3D& getCenterPoint() const { return centerPoint; }
+  const View3DValues& values() const { return values_; }
 
-  float viewSize() const { return viewSizeStandard; }
+  View3DProperty changable() const { return changable_; }
 
-  float getZoomMin() const { return zoomMin; }
-  float getZoomMax() const { return zoomMax; }
-  float getFieldOfView() const { return fieldOfView; }
-  float getViewSizeStandard() const { return viewSizeStandard; }
-  float getZoom() const { return zoom; }
-  QQuaternion getRotation() const { return rotation; }
-  QVector4D getCameraPosition();
+  void update(const View3DValues& values);
 
-  void setFieldOfView(float value);
-  void setViewSizeStandard(float value);
-  void setCenterPoint(const QVector3D& value);
+  const BoundingBox3D& boundingBox() const { return boundingBox_; }
+  double zoomLogMin() const { return zoomLogMin_; }
+  double zoomLogMax() const { return zoomLogMax_; }
 
-  /**
-   * @brief Size of 1 pixel at the centerPoint in m
-   * @param const QSize& windowSize
-   * @return float
-   */
-  float pixelSize(const QSize& windowSize) const {
-    return viewSize() / windowSize.height() / this->zoom;
+  const vx::Vector<double, 3>& lookAt() const { return values().lookAt; }
+  vx::Rotation<double, 3> orientation() const { return values().orientation; }
+  double zoomLog() const { return values().zoomLog; }
+  double viewSizeUnzoomed() const { return values().viewSizeUnzoomed; }
+  double fieldOfView() const { return values().fieldOfView; }
+
+  double viewSizeZoomed() const {
+    return viewSizeUnzoomed() / std::exp(zoomLog());
   }
 
   /**
-   * @brief setStandardZoom Sets a new ViewSizeStandard and calculates depending
-   * variables.
-   * @param diagonalSize Diagonale of the displayed DataObject
-   * @param changeCurrentZoom Defines if the current Zoom Level should be
-   * changed
+   * Return the zoom value limited by some minimum and maximum value.
    */
-  void setStandardZoom(float diagonalSize, bool changeCurrentZoom = true,
-                       float zoomMin = 1e-2, float zoomMax = 1e2);
+  double limitZoomLog(double zoomLog) const;
+
+  vx::HmgVector<double, 3> getCameraPosition();
+
+  void setFieldOfView(double value);
+  void setViewSizeUnzoomed(double value);
+  void setLookAt(const vx::Vector<double, 3>& value);
+
+  /**
+   * @brief Size of 1 pixel at the lookAt in m
+   * @param const QSize& windowSize
+   * @return double
+   */
+  double pixelSize(const QSize& windowSize) const {
+    return viewSizeUnzoomed() / windowSize.height() / std::exp(this->zoomLog());
+  }
+
+  void setBoundingBox(const BoundingBox3D& boundingBox);
+  // Note: This will not update the zoom, call
+  // view3d->setZoomLog(view3d->limitZoomLog(view3d->zoomLog())) if this is
+  // desired
+  void setZoomLogMinMax(double zoomLogMin, double zoomLogMax);
+  void setZoomLogUnlimited();
 
  Q_SIGNALS:
-  void changed();
-  /**
-   * @brief objectPositionChangeRequested is signalled if a other class request
-   * the object position.
-   * @param QVector3D offset
-   */
-  void objectPositionChangeRequested(QVector3D offset);
+  void changed(const View3DValues& update);
 
-  /**
-   * @brief objectRotationChangeRequested is signalled if a other class request
-   * the object rotation.
-   * @param QQuaternion angle
-   */
-  void objectRotationChangeRequested(QQuaternion angle);
-
-  /**
-   * @brief cameraRotationChanged is signalled if the camera rotation changed.
-   * @param QQuaternion angle
-   */
-  void cameraRotationChanged(QQuaternion angel);
-
-  /**
-   * @brief zoomChanged is signalled if the zoom changed.
-   * @param float zoom (current zoom factor)
-   * @param float zoomMin
-   * @param float zoomMax
-   */
-  void zoomChanged(float zoom, float zoomMin, float zoomMax);
-
- public Q_SLOTS:
-
-  /**
-   * @brief cameraRotationRequested emit cameraRotationChanged signal to answer
-   * this request.
-   */
-  void cameraRotationRequested();
-
-  /**
-   * @brief zoomRequested emit zoomChanged signal to answer this request.
-   */
-  void zoomRequested();
-
+ public:
   /**
    * @brief rotate the camera to the given rotation
-   * @param QQuaternion rotation
+   * @param vx::Rotation<double, 3> rotation
    */
-  void rotate(QQuaternion rotation);
+  void rotate(vx::Rotation<double, 3> rotation);
 
   /**
    * @brief setZoom sets the camera zoom.
-   * @param float zoom
+   * @param double zoom
    */
-  void setZoom(float zoom);
+  void setZoomLog(double zoomLog);
 
-  void setRotation(QQuaternion rot);
+  void setOrientation(const vx::Rotation<double, 3>& rot);
+
+  // TODO: Create proper accessors for these?
+
+  // When zooming using Ctrl+middle mouse button and moving vertically over the
+  // entire window, the log zoom will be modified by this amount
+  double mouseActionZoomFactor = 2.0;
+
+  // When rotating the mouse wheel once, the log zoom will be modified by this
+  // amount
+  double wheelZoomFactor = 3.0;
+
+  // When rotating the mouse wheel once, the view will pan into Z direction by
+  // this times the (zoomed) vertical view size
+  double wheelPanFactor = 3.0;
+
+  // Amount of rotation by keys
+  double keyRotateAmountDeg = 22.5;
+
+  // Amount of zoom (log) by keys
+  double keyZoomAmount = 0.125;
+
+  // When doing panning with keys, each key press will pan keyPanFactor times
+  // the (zoomed) vertical view size
+  double keyPanFactor = 0.125;
+
+  // Keep the view Z value if possible when resetting the view
+  bool resetKeepViewZ = false;
 };
 }  // namespace visualization
 }  // namespace vx
