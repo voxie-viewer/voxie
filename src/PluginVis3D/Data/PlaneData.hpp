@@ -31,7 +31,6 @@
 #include <QOpenGLBuffer>
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/Colorizer.hpp>
-#include <Voxie/Data/Slice.hpp>
 #include <Voxie/PropertyObjects/PlaneNode.hpp>
 
 using namespace vx;
@@ -54,7 +53,7 @@ class PlaneData : public QObject {
   Q_OBJECT
  private:
   QSharedPointer<PlaneNode> plane;
-  QSharedPointer<Slice> slice;
+  QSharedPointer<VolumeNode> volume;
   QSharedPointer<QOpenGLBuffer> vertexBuffer;
   QSharedPointer<Texture> texture;
   bool _drawTexture = false;
@@ -128,13 +127,13 @@ class PlaneData : public QObject {
    */
   const QSharedPointer<PlaneNode> getPlane() const { return plane; }
 
-  const QSharedPointer<Slice> getSlice() const { return slice; }
-  void setSlice(QSharedPointer<Slice> slice) {
-    this->slice = slice;
+  const QSharedPointer<VolumeNode> getVolume() const { return volume; }
+  void setVolume(QSharedPointer<VolumeNode> volume) {
+    this->volume = volume;
     Q_EMIT drawTextureFlagChanged();
   }
-  void removeSlice() {
-    this->slice.clear();
+  void removeVolume() {
+    this->volume.clear();
     Q_EMIT drawTextureFlagChanged();
   }
 

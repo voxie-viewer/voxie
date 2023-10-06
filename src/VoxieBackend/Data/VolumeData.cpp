@@ -62,10 +62,9 @@ class VolumeDataAdaptorImpl : public VolumeDataAdaptor {
 
   vx::TupleVector<double, 3> volumeOrigin() const override {
     try {
-      return toTupleVector(object->origin());
+      return toTupleVector(object->volumeOrigin());
     } catch (vx::Exception& e) {
-      e.handle(object);
-      return vx::TupleVector<double, 3>(0, 0, 0);
+      return e.handle(object);
     }
   }
 
@@ -73,8 +72,7 @@ class VolumeDataAdaptorImpl : public VolumeDataAdaptor {
     try {
       return toTupleVector(object->volumeSize());
     } catch (vx::Exception& e) {
-      e.handle(object);
-      return vx::TupleVector<double, 3>(0, 0, 0);
+      return e.handle(object);
     }
   }
 
@@ -95,8 +93,13 @@ class VolumeDataAdaptorImpl : public VolumeDataAdaptor {
 
 using namespace vx::internal;
 
-VolumeData::VolumeData(const QSharedPointer<VolumeStructure>& volumeStructure)
-    : Data(), volumeStructure_(volumeStructure) {
+VolumeData::VolumeData(const vx::Vector<double, 3>& volumeOrigin,
+                       const vx::Vector<double, 3>& volumeSize,
+                       const QSharedPointer<VolumeStructure>& volumeStructure)
+    : Data(),
+      volumeOrigin_(volumeOrigin),
+      volumeSize_(volumeSize),
+      volumeStructure_(volumeStructure) {
   new VolumeDataAdaptorImpl(this);
   connect(this, &Data::dataChanged, this,
           [this](const QSharedPointer<DataVersion>& newVersion,

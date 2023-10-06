@@ -76,8 +76,14 @@ void ImageLayer::render(QImage& outputImage,
   VolumePropertiesCopy volumeProperties(
       parameters->properties()[properties.volumeRaw()]);
 
+  auto volumeRaw = properties.volumeRaw();
+  if (volumeRaw == QDBusObjectPath("/")) {
+    // No volume connected, nothing to render
+    return;
+  }
+
   auto data = qSharedPointerDynamicCast<VolumeData>(
-      parameters->getData(properties.volumeRaw()).data());
+      parameters->getData(volumeRaw).data());
   if (!data)
     throw vx::Exception("de.uni_stuttgart.Voxie.Error", "data == nullptr");
 
@@ -94,7 +100,7 @@ void ImageLayer::render(QImage& outputImage,
   auto interpolation = SliceVisualizer::getInterpolation(&properties);
 
   // TODO: try to release memory earlier?
-  SliceImage colorizedImage = Slice::generateImage(
+  SliceImage colorizedImage = generateSliceImage(
       data.data(), plane, sliceArea, outputImage.size(), interpolation);
 
   // TODO: Check whether this leaks filter objects

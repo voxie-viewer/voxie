@@ -50,6 +50,7 @@
                     ],
                     "DisplayName": "Value to color mapping",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.ValueColorMapping",
+                    "DefaultValue": [["NaN", [0.0, 0.0, 0.0, 0.0], 0], [0, [0.0, 0.0, 0.0, 1.0], 0], [1, [1.0, 1.0, 1.0, 1.0], 0]],
                     "TODO": "Don't show 'Label mapping' entry here"
                 },
                 "de.uni_stuttgart.Voxie.View2D.CenterPoint": {

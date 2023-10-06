@@ -30,8 +30,8 @@
 using namespace vx;
 using namespace vx::plugin;
 
-NormalizeFilter2D::NormalizeFilter2D(QObject* parent)
-    : vx::filter::Filter2D(parent) {}
+NormalizeFilter2D::NormalizeFilter2D(vx::plugin::MetaFilter2D* metaFilter)
+    : vx::filter::Filter2D(metaFilter) {}
 
 NormalizeFilter2D::~NormalizeFilter2D() {}
 
@@ -129,9 +129,8 @@ void NormalizeFilter2D::importFilterSettingsXML(
   this->upperLimit = attributes.value("upperLimit").toFloat();
 }
 
-vx::filter::Filter2D* NormalizeMetaFilter2D::createFilter() const {
-  NormalizeFilter2D* filter = new NormalizeFilter2D();
-  // filter->setName("Normalize Filter");
-  filter->setMetaName(this->objectName());
-  return filter;
+vx::filter::Filter2D* NormalizeMetaFilter2D::createFilter() {
+  return new NormalizeFilter2D(this);
 }
+
+QString NormalizeMetaFilter2D::displayName() { return "Normalize Filter"; }

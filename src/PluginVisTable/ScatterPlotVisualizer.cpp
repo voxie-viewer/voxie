@@ -77,7 +77,8 @@ static QWidget* labeledWidget(QString labelText, QWidget* widget) {
 ScatterPlotVisualizer::ScatterPlotVisualizer()
     : SimpleVisualizer(getPrototypeSingleton()),
       properties(new ScatterPlotProperties(this)) {
-  view()->setMinimumSize(300, 200);
+  view()->setMinimumSize(300 / 96.0 * this->view()->logicalDpiX(),
+                         200 / 96.0 * this->view()->logicalDpiY());
 
   cache = decltype(cache)::create();
   histogramProvider = decltype(histogramProvider)::create();

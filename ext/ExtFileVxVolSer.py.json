@@ -1,0 +1,24 @@
+{
+    "TODO_Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.VolumeSeries.VxVolSer.Export",
+            "DisplayName": "Voxie Volume Series JSON",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.ContainerNode"
+            ],
+            "Patterns": [
+                "*.vxvolser.json"
+            ]
+        }
+    ],
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.VolumeSeries.VxVolSer.Import",
+            "DisplayName": "Voxie Volume Series JSON",
+            "Description": "Load Volume Series from JSON files",
+            "Patterns": [
+                "*.vxvolser.json"
+            ]
+        }
+    ]
+}

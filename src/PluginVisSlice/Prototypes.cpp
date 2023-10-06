@@ -258,12 +258,6 @@ QString SlicePropertiesCopy::filter2DConfigurationRaw() {
       (*_properties)
           ["de.uni_stuttgart.Voxie.Visualizer.Slice.Filter2DConfiguration"]);
 }
-vx::Node* SlicePropertiesCopy::geometricPrimitive() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)
-              ["de.uni_stuttgart.Voxie.Visualizer.Slice.GeometricPrimitive"]));
-}
 QDBusObjectPath SlicePropertiesCopy::geometricPrimitiveRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)
@@ -363,11 +357,6 @@ bool SlicePropertiesCopy::gridSpacingAutomaticRaw() {
       (*_properties)
           ["de.uni_stuttgart.Voxie.Visualizer.Slice.GridSpacingAutomatic"]);
 }
-vx::Node* SlicePropertiesCopy::infoTable() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.InfoTable"]));
-}
 QDBusObjectPath SlicePropertiesCopy::infoTableRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.InfoTable"]);
@@ -382,20 +371,9 @@ QString SlicePropertiesCopy::interpolationRaw() {
   return vx::Node::parseVariant<QString>(
       (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.Interpolation"]);
 }
-vx::Node* SlicePropertiesCopy::labelContainer() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)
-              ["de.uni_stuttgart.Voxie.Visualizer.Slice.LabelContainer"]));
-}
 QDBusObjectPath SlicePropertiesCopy::labelContainerRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.LabelContainer"]);
-}
-vx::Node* SlicePropertiesCopy::plane() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.Plane"]));
 }
 QDBusObjectPath SlicePropertiesCopy::planeRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -468,12 +446,6 @@ bool SlicePropertiesCopy::rulerSpacingAutomaticRaw() {
       (*_properties)
           ["de.uni_stuttgart.Voxie.Visualizer.Slice.RulerSpacingAutomatic"]);
 }
-vx::Node* SlicePropertiesCopy::segmentationFilter() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)
-              ["de.uni_stuttgart.Voxie.Visualizer.Slice.SegmentationFilter"]));
-}
 QDBusObjectPath SlicePropertiesCopy::segmentationFilterRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)
@@ -510,11 +482,6 @@ bool SlicePropertiesCopy::showViewCenterRaw() {
   return vx::Node::parseVariant<bool>(
       (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.ShowViewCenter"]);
 }
-QList<vx::Node*> SlicePropertiesCopy::surface() {
-  return vx::PropertyValueConvertRaw<QList<QDBusObjectPath>, QList<vx::Node*>>::
-      fromRaw(vx::Node::parseVariant<QList<QDBusObjectPath>>(
-          (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.Surface"]));
-}
 QList<QDBusObjectPath> SlicePropertiesCopy::surfaceRaw() {
   return vx::Node::parseVariant<QList<QDBusObjectPath>>(
       (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.Surface"]);
@@ -535,11 +502,6 @@ SlicePropertiesCopy::valueColorMappingRaw() {
       std::tuple<double, std::tuple<double, double, double, double>, qint32>>>(
       (*_properties)
           ["de.uni_stuttgart.Voxie.Visualizer.Slice.ValueColorMapping"]);
-}
-vx::Node* SlicePropertiesCopy::volume() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Slice.Volume"]));
 }
 QDBusObjectPath SlicePropertiesCopy::volumeRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(

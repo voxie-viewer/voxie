@@ -39,6 +39,7 @@ Q_DECLARE_METATYPE(VX_IDENTITY_TYPE((std::tuple<double, double>)))
 Q_DECLARE_METATYPE(VX_IDENTITY_TYPE((std::tuple<double, double, double>)))
 Q_DECLARE_METATYPE(
     VX_IDENTITY_TYPE((std::tuple<double, double, double, double>)))
+Q_DECLARE_METATYPE(VX_IDENTITY_TYPE((std::tuple<QDBusObjectPath, double>)))
 Q_DECLARE_METATYPE(VX_IDENTITY_TYPE(
     (std::tuple<QString, std::tuple<QString, quint32, QString>, QString,
                 QMap<QString, QDBusVariant>, QMap<QString, QDBusVariant>>)))
@@ -75,6 +76,8 @@ Q_DECLARE_METATYPE(VX_IDENTITY_TYPE(
                       qint64>>)))
 Q_DECLARE_METATYPE(
     VX_IDENTITY_TYPE((QList<std::tuple<double, double, double>>)))
+Q_DECLARE_METATYPE(
+    VX_IDENTITY_TYPE((QList<std::tuple<QDBusObjectPath, double>>)))
 Q_DECLARE_METATYPE(VX_IDENTITY_TYPE(
     (QList<
         std::tuple<QString, std::tuple<QString, quint32, QString>, QString,
@@ -96,6 +99,7 @@ Q_DECLARE_METATYPE(VX_IDENTITY_TYPE(
                    QMap<QString, QDBusVariant>, QMap<QString, QDBusVariant>>>)))
 Q_DECLARE_METATYPE(
     VX_IDENTITY_TYPE((QList<std::tuple<quint32, quint32, quint32>>)))
+Q_DECLARE_METATYPE(QList<QList<quint64>>)
 Q_DECLARE_METATYPE(VX_IDENTITY_TYPE((QList<QMap<QString, QDBusVariant>>)))
 Q_DECLARE_METATYPE(QList<quint64>)
 Q_DECLARE_METATYPE(QList<QDBusVariant>)

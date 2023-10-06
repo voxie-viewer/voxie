@@ -46,7 +46,8 @@ VisualizerContainer::VisualizerContainer(QMdiArea* container,
       visualizer(visualizer),
       container(container),
       window(nullptr) {
-  visualizer->setParent(this);
+  // Remove node when the visualizer container is closed
+  QObject::connect(this, &QObject::destroyed, visualizer, &Node::destroy);
 
   connect(this->visualizer, &Node::displayNameChanged, this,
           &QWidget::setWindowTitle);

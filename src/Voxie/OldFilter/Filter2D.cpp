@@ -27,8 +27,8 @@
 using namespace vx::filter;
 using namespace vx;
 
-Filter2D::Filter2D(QObject* parent, Selection2DMask* mask)
-    : QObject(parent), mask(mask) {
+Filter2D::Filter2D(vx::plugin::MetaFilter2D* metaFilter)
+    : QObject(nullptr), metaFilter_(metaFilter), mask(nullptr) {
   if (mask == nullptr) {
     this->mask = new Selection2DMask(this);
   }

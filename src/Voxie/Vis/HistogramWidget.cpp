@@ -57,7 +57,7 @@ HistogramWidget::HistogramWidget(QWidget* parent) : QWidget(parent) {
   // set up the HistogramVisualizerWidget; This widget does the heavy lifting
   // for actually drawing the histogram
   this->histogramWidget = new HistogramVisualizerWidget(this);
-  this->histogramWidget->setMinimumHeight(200);
+  this->histogramWidget->setMinimumHeight(200 / 96.0 * this->logicalDpiY());
 
   //--- Toolbar with settings-button , enable/diable log-view etc. ---
   QToolBar* toolbar = new QToolBar(this);
@@ -167,14 +167,14 @@ void HistogramWidget::openSettingsDialog() {
     labelLowBound->setToolTip(
         "Change the lowest bucket index that should be displayed on the "
         "histogram; can be used to view a specific part of the histogram");
-    labelLowBound->setMinimumWidth(150);
+    labelLowBound->setMinimumWidth(150 / 96.0 * this->logicalDpiX());
     layout1->addWidget(labelLowBound);
     this->spinLowerBound = new QSpinBox();
     spinLowerBound->setEnabled(false);
     this->spinLowerBound->setToolTip("Enter a number, e.g. '5'");
     this->spinLowerBound->setMinimum(0);
     this->spinLowerBound->setMaximum(std::numeric_limits<int>::max());
-    this->spinLowerBound->setMinimumWidth(175);
+    this->spinLowerBound->setMinimumWidth(175 / 96.0 * this->logicalDpiX());
     spinLowerBound->setValue(0);
     connect(lowerBoundCheckBox, &QCheckBox::stateChanged, this, [&]() {
       spinLowerBound->setEnabled(!lowerBoundCheckBox->isChecked());
@@ -200,14 +200,14 @@ void HistogramWidget::openSettingsDialog() {
     labelUpperBound->setToolTip(
         "Change the highest bucket index that should be displayed on the "
         "histogram; can be used to view a specific part of the histogram");
-    labelUpperBound->setMinimumWidth(150);
+    labelUpperBound->setMinimumWidth(150 / 96.0 * this->logicalDpiX());
     layout2->addWidget(labelUpperBound);
     spinUpperBound = new QSpinBox();
     spinUpperBound->setEnabled(false);
     spinUpperBound->setToolTip("Enter a number, e.g. '10'");
     spinUpperBound->setMinimum(1);
     spinUpperBound->setMaximum(std::numeric_limits<int>::max());
-    spinUpperBound->setMinimumWidth(175);
+    spinUpperBound->setMinimumWidth(175 / 96.0 * this->logicalDpiX());
     spinUpperBound->setValue(
         !histogramProvider().isNull()
             ? histogramProvider()->getData()->buckets.size()
@@ -239,7 +239,7 @@ void HistogramWidget::openSettingsDialog() {
     this->spinMaxYValue->setMaximum(std::numeric_limits<int>::max());
     this->spinMaxYValue->setToolTip("Enter a number, e.g. '150'");
     this->spinMaxYValue->setSingleStep(5);
-    this->spinMaxYValue->setMinimumWidth(175);
+    this->spinMaxYValue->setMinimumWidth(175 / 96.0 * this->logicalDpiX());
     if (!histogramWidget->histogramProvider().isNull()) {
       this->spinMaxYValue->setValue(
           histogramWidget->histogramProvider()->getData()->maximumCount);
@@ -262,7 +262,7 @@ void HistogramWidget::openSettingsDialog() {
     labelYUpperBound->setToolTip(
         "The Y-Axis of the histogram represents the amount of pixels in the "
         "image matching to specific values.");
-    labelYUpperBound->setMinimumWidth(150);
+    labelYUpperBound->setMinimumWidth(150 / 96.0 * this->logicalDpiX());
     layout3->addWidget(labelYUpperBound);
     layout3->addWidget(this->spinMaxYValue);
     layout3->addWidget(this->maxYValueCheckBox, 0, Qt::AlignLeft);
@@ -273,27 +273,29 @@ void HistogramWidget::openSettingsDialog() {
     // checkBox is created in constructor
     spinResizer = new QSpinBox();
     spinResizer->setEnabled(false);
-    spinResizer->setMinimum(150);
-    spinResizer->setMaximum(500);
-    spinResizer->setToolTip("Enter a number between '150'and '500'.");
+    spinResizer->setMinimum(150 / 96.0 * this->logicalDpiY());
+    spinResizer->setMaximum(500 / 96.0 * this->logicalDpiY());
+    // spinResizer->setToolTip("Enter a number between '150' and '500'.");
     spinResizer->setSingleStep(25);
-    spinResizer->setMinimumWidth(175);
+    spinResizer->setMinimumWidth(175 / 96.0 * this->logicalDpiX());
     spinResizer->setValue(this->histogramWidget->height());
     defaultWidgetHeightCheckbox = new QCheckBox("default");
-    defaultWidgetHeightCheckbox->setToolTip(
-        "Enable to use the default value of 200 pixels");
+    defaultWidgetHeightCheckbox->setToolTip("Enable to use the default value");
     defaultWidgetHeightCheckbox->setCheckState(Qt::Checked);
     QLabel* resizerLabel = new QLabel("Height: Pixels", this);
     resizerLabel->setToolTip("The height of the histogram in pixels.");
-    resizerLabel->setMinimumWidth(150);
+    resizerLabel->setMinimumWidth(150 / 96.0 * this->logicalDpiX());
     layout4->addWidget(resizerLabel);
     layout4->addWidget(spinResizer);
     layout4->addWidget(defaultWidgetHeightCheckbox);
     connect(defaultWidgetHeightCheckbox, &QCheckBox::stateChanged, this, [&]() {
       spinResizer->setEnabled(!defaultWidgetHeightCheckbox->isChecked());
-      histogramWidget->setMinimumHeight(defaultWidgetHeightCheckbox->isChecked()
-                                            ? 200
-                                            : spinResizer->value());
+      histogramWidget->setMinimumHeight(
+          defaultWidgetHeightCheckbox->isChecked()
+              ? 200 / 96.0 * this->logicalDpiY()
+              // TODO: High-DPI: Also scale value from input field? Then the
+              // minimum / maximum values should not depend on logicalDpiY.
+              : spinResizer->value());
     });
     QObject::connect(
         spinResizer,
@@ -305,7 +307,8 @@ void HistogramWidget::openSettingsDialog() {
     // color widgets
     this->backgroundColorWidget = new MakeHandButton();
     this->backgroundColorWidget->setToolTip("Choose Color");
-    this->backgroundColorWidget->setMinimumWidth(175);
+    this->backgroundColorWidget->setMinimumWidth(175 / 96.0 *
+                                                 this->logicalDpiX());
     this->backgroundColorWidget->setAutoDefault(false);
     this->backgroundColorWidget->setStyleSheet(
         "QWidget { background-color: " +
@@ -314,7 +317,7 @@ void HistogramWidget::openSettingsDialog() {
     this->histoColorWidget = new MakeHandButton();
     this->histoColorWidget->setToolTip("Choose Color");
     this->histoColorWidget->setAutoDefault(false);
-    this->histoColorWidget->setMinimumWidth(175);
+    this->histoColorWidget->setMinimumWidth(175 / 96.0 * this->logicalDpiX());
     this->histoColorWidget->setStyleSheet(
         "QWidget { background-color: " +
         histogramWidget->foregroundColor().name() +
@@ -358,7 +361,7 @@ void HistogramWidget::openSettingsDialog() {
     QHBoxLayout* layout5 = new QHBoxLayout();
     QLabel* backgroundColLabel = new QLabel("Color: Background", this);
     backgroundColLabel->setToolTip("The background color of the histogram.");
-    backgroundColLabel->setMinimumWidth(150);
+    backgroundColLabel->setMinimumWidth(150 / 96.0 * this->logicalDpiX());
     layout5->addWidget(backgroundColLabel);
     layout5->addWidget(this->backgroundColorWidget);
     layout5->addWidget(this->defaultBackgroundColorCheckbox, 0, Qt::AlignLeft);
@@ -378,7 +381,7 @@ void HistogramWidget::openSettingsDialog() {
     QLabel* foregroundColLabel = new QLabel("Color: Histogram", this);
     foregroundColLabel->setToolTip(
         "The color of the histogram when colorized mode is unchecked.");
-    foregroundColLabel->setMinimumWidth(150);
+    foregroundColLabel->setMinimumWidth(150 / 96.0 * this->logicalDpiX());
 
     layout6->addWidget(foregroundColLabel);
     layout6->addWidget(this->histoColorWidget);

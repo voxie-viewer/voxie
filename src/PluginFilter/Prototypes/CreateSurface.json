@@ -2,7 +2,7 @@
     "NodePrototype": [
         {
             "Description": "Extracts a surface (triangle mesh) out of a volume.",
-            "DisplayName": "Extract isourface",
+            "DisplayName": "Extract isosurface",
             "Name": "de.uni_stuttgart.Voxie.Filter.CreateSurface",
             "CompatibilityNames": [
                 "de.uni_stuttgart.Voxie.CreateSurface"

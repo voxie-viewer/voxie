@@ -44,7 +44,8 @@ class VOXIECORESHARED_EXPORT ContainerData : public Data, public DataContainer {
                      QSharedPointer<vx::DataUpdate> update);
   void removeElement(QString key, QSharedPointer<vx::DataUpdate> update);
 
-  QSharedPointer<Data> getElement(QString key);
+  QSharedPointer<Data> getElementOrNull(const QString& key);
+  QSharedPointer<Data> getElement(const QString& key);
   QList<QString> getKeys();
   QList<QSharedPointer<Data>> getValues();
 

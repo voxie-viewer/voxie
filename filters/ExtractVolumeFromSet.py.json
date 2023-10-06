@@ -1,0 +1,31 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Extract a volume from a set of volumes.",
+            "DisplayName": "Extract volume from set",
+            "Name": "de.uni_stuttgart.Voxie.Filter.ExtractVolumeFromSet",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.ContainerNode"
+                    ],
+                    "DisplayName": "Input",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.ExtractVolumeFromSet.SelectedVolume": {
+                    "DisplayName": "Selected volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "MinimumValue": 0
+                }
+            }
+        }
+    ]
+}

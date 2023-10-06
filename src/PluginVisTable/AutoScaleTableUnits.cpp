@@ -48,7 +48,9 @@ AutoScaleTableUnits::AutoScaleTableUnits()
   this->setAutomaticDisplayName("Auto-scale table units");
 }
 
-QSharedPointer<io::RunFilterOperation> AutoScaleTableUnits::calculate() {
+QSharedPointer<io::RunFilterOperation> AutoScaleTableUnits::calculate(
+    bool isAutomaticFilterRun) {
+  Q_UNUSED(isAutomaticFilterRun);
   QSharedPointer<RunFilterOperation> operation(
       new RunFilterOperation(), [](QObject* obj) { obj->deleteLater(); });
 

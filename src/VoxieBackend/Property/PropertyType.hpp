@@ -78,6 +78,13 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
   virtual void verifyValue(NodeProperty& property, const QVariant& value) = 0;
 
   /**
+   * @brief Check whether value is a valid value in a context where there is no
+   * property.
+   * Non-canonical values are considered invalid.
+   */
+  virtual void verifyValueWithoutProperty(const QVariant& value) = 0;
+
+  /**
    * @brief Check whether value is a valid value for property and throw an
    * exception otherwise (property has to have this as type). Return the
    * canonical version of the property.
@@ -125,6 +132,10 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
    * Throws a Exception if the value cannot be converted;
    */
   virtual QVariant dbusToRaw(const QDBusVariant& value) = 0;
+
+  // Same as rawToDBus and dbusToRaw, but with a list of values
+  virtual QDBusVariant rawToDBusList(const QList<QVariant>& value) = 0;
+  virtual QList<QVariant> dbusToRawList(const QDBusVariant& value) = 0;
 
   virtual QDBusSignature dbusSignature() = 0;
 

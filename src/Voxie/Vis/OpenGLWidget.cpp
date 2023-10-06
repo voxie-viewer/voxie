@@ -23,12 +23,15 @@
 #include "OpenGLWidget.hpp"
 
 #include <VoxieClient/Exception.hpp>
+#include <VoxieClient/QtUtil.hpp>
 
+#include <Voxie/DebugOptions.hpp>
 #include <Voxie/IVoxie.hpp>
 
 #include <QtGui/QPainter>
+#include <QtGui/QResizeEvent>
 
-#include <QDebug>
+#include <QtCore/QDebug>
 
 // TODO: Check that this is working with QOpenGLWindow / make it work again
 
@@ -73,7 +76,11 @@ bool OpenGLWidget::checkOpenGLStatus() {
 }
 
 OpenGLWidget::OpenGLWidget(QWidget* parent)
-    : QOpenGLWidget(parent), fWidth(1), fHeight(1) {}
+    : QOpenGLWidget(parent),
+      fWidthPhys(1),
+      fHeightPhys(1),
+      fWidthDIP(1),
+      fHeightDIP(1) {}
 
 void OpenGLWidget::initializeGL() {
 #define FAIL(x)       \
@@ -118,14 +125,31 @@ void OpenGLWidget::initializeGL() {
 }
 
 void OpenGLWidget::resizeGL(int w, int h) {
-  this->fWidth = static_cast<float>(w);
-  this->fHeight = static_cast<float>(h);
+  this->fWidthDIP = static_cast<float>(w);
+  this->fHeightDIP = static_cast<float>(h);
 
-  this->fHeight = std::max<float>(this->fHeight, 1);
+  // https://doc.qt.io/qt-5/qwindow.html#devicePixelRatio
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+  double factor = this->window()->devicePixelRatioF();
+#else
+  double factor = this->window()->devicePixelRatio();
+#endif
+  this->fWidthPhys = this->fWidthDIP * factor;
+  this->fHeightPhys = this->fHeightDIP * factor;
+
+  this->fWidthPhys = std::max<float>(this->fWidthPhys, 1);
+  this->fHeightPhys = std::max<float>(this->fHeightPhys, 1);
+  this->fWidthDIP = std::max<float>(this->fWidthDIP, 1);
+  this->fHeightDIP = std::max<float>(this->fHeightDIP, 1);
+
+  // TODO: Is there a better way to get the phsical pixel count without
+  // rounding?
+  this->iWidthPhys = std::round(fWidthPhys);
+  this->iHeightPhys = std::round(fHeightPhys);
 
   if (!initialized()) return;
 
-  glViewport(0, 0, w, h);
+  glViewport(0, 0, this->fWidthPhys, this->fHeightPhys);
 }
 
 void OpenGLWidget::paintGL() {
@@ -148,6 +172,31 @@ void OpenGLWidget::paintEvent(QPaintEvent* event) {
   painter.drawText(QRect(QPoint(0, 0), this->size()), Qt::AlignCenter,
                    "Error initializing OpenGL:\n" + initError);
   painter.end();
+}
+
+// This code will coalesce resize events. This seems to be needed on Wayland for
+// some reason (at least for Qt 5.15.8)
+void OpenGLWidget::resizeEvent(QResizeEvent* event) {
+  if (vx::debug_option::Log_Workaround_CoalesceOpenGLResize()->enabled())
+    qDebug() << "OpenGLWidget::resizeEvent start";
+  if (vx::debug_option::Workaround_CoalesceOpenGLResize()->enabled()) {
+    resizePending = true;
+    vx::enqueueOnThread(this, [this, e = QResizeEvent(event->size(),
+                                                      event->oldSize())]() {
+      if (vx::debug_option::Log_Workaround_CoalesceOpenGLResize()->enabled())
+        qDebug() << "OpenGLWidget::resizeEvent cb" << resizePending;
+      if (!resizePending) return;
+      resizePending = false;
+      QResizeEvent e2(e);
+      QOpenGLWidget::resizeEvent(&e2);
+      if (vx::debug_option::Log_Workaround_CoalesceOpenGLResize()->enabled())
+        qDebug() << "OpenGLWidget::resizeEvent cb done";
+    });
+  } else {
+    QOpenGLWidget::resizeEvent(event);
+  }
+  if (vx::debug_option::Log_Workaround_CoalesceOpenGLResize()->enabled())
+    qDebug() << "OpenGLWidget::resizeEvent end";
 }
 
 OpenGLDrawUtils::OpenGLDrawUtils(QObject* parent) : QObject(parent) {}

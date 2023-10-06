@@ -41,6 +41,9 @@
 
 #include <cmath>
 
+// TODO: This (or possible some other code) currently will always drop the NaN
+// entry, this should be fixed
+
 using namespace vx;
 
 static std::map<vx::ColorInterpolator::InterpolationType, QString>

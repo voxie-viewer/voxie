@@ -343,19 +343,18 @@ int MC33Test::bettiTwo(QSharedPointer<vx::SurfaceDataTriangleIndexed> surface,
  */
 void MC33Test::createSurfaceAndCalculateCharacteristics(float volume[][5][5],
                                                         int& chi, int& beta1) {
-  auto pVolumeDataVoxel =
-      vx::VolumeDataVoxel::createVolume(5, 5, 5, vx::DataType::Float32);
+  auto pVolumeDataVoxel = vx::VolumeDataVoxel::createVolume(
+      {5, 5, 5}, vx::DataType::Float32, {0, 0, 0}, {1, 1, 1});
   // Write volume to correct memory location. Must be done because pointer is
   // unmutable.
-  pVolumeDataVoxel->performInGenericContext(
-      [&](const auto& pVolumeDataVoxelInst) {
-        void* data = pVolumeDataVoxelInst.getData();
-        for (int i = 0; i < 5; i++)
-          for (int j = 0; j < 5; j++)
-            for (int k = 0; k < 5; k++) {
-              *((float*)data + 25 * i + 5 * j + k) = volume[i][j][k];
-            }
-      });
+  pVolumeDataVoxel->performInGenericContext([&](auto& pVolumeDataVoxelInst) {
+    void* data = pVolumeDataVoxelInst.getData();
+    for (int i = 0; i < 5; i++)
+      for (int j = 0; j < 5; j++)
+        for (int k = 0; k < 5; k++) {
+          *((float*)data + 25 * i + 5 * j + k) = volume[i][j][k];
+        }
+  });
 
   // Run Marching Cubes
   QSharedPointer<vx::SurfaceDataTriangleIndexed> surface =

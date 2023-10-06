@@ -2,10 +2,11 @@
     "Name": "NBT",
     "Description": "NBT library for Python",
     "GitRepository": [
-        "https://github.com/steffen-kiess/NBT",
-        "https://github.com/twoolie/NBT"
+        "https://github.com/twoolie/NBT",
+        "https://github.com/steffen-kiess/NBT"
     ],
-    "GitCommit": "a4fb394fbc74784bcb2c34ebe1b7f242e725ec82",
+    "GitCommit": "6f43e8758d66374807e5f31d23fe2c9dc1d996b0",
+    "Version": "1.5.1",
     "FileFilter": [
         "LICENSE.txt",
         "README.md",

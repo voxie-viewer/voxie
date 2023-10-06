@@ -43,6 +43,14 @@ debug_options = {
         # 'PluginVis3D': {
         'Log.Vis3D.MouseTracking': {'Type': 'bool'},
         'Log.Vis3D.CreateModifiedSurface': {'Type': 'bool'},
+        'Log.HighDPI': {'Type': 'bool'},
+        'Log.TrackNodeLifecycle': {'Type': 'bool'},
+        'Log.Workaround.CoalesceOpenGLResize': {'Type': 'bool'},
+        'Workaround.CoalesceOpenGLResize': {'Type': 'bool', 'DefaultValue': True},
+        'Log.Properties.UI': {'Type': 'bool'},
+        'Log.Vis.Keyboard': {'Type': 'bool'},
+        'Log.Vis.Mouse': {'Type': 'bool'},
+        'Log.NodeNameLineEdit': {'Type': 'bool'},
     },
     'Main': {
         'Log.QtEvents': {'Type': 'bool'},
@@ -64,6 +72,22 @@ def escapeCppString(str):
             s += '\\{0:03o}'.format(c)
     s += '"'
     return s
+
+
+def escapeCppExpr(val):
+    if type(val) == str:
+        return escapeCppString(val)
+    elif type(val) == int:
+        return str(val)
+    elif type(val) == float:
+        return str(val)
+    elif type(val) == bool:
+        if val:
+            return 'true'
+        else:
+            return 'false'
+    else:
+        raise Exception('Unknown C++ value to escape: {}'.format(type(val)))
 
 
 def escape_name(name):
@@ -117,8 +141,13 @@ for module in sorted(debug_options):
             ty = option['Type']
             do_type = getDebugOptionType(ty)
 
+            def_value = option.get('DefaultValue')
+            def_value_str = ''
+            if def_value is not None:
+                def_value_str = ', ' + escapeCppExpr(def_value)
+
             hpp.write('{}{}* {}();'.format(exportStr, do_type, esc_name))
-            cpp.write('{} {}_option({});'.format(do_type, esc_name, escapeCppString(option_name)))
+            cpp.write('{} {}_option({}{});'.format(do_type, esc_name, escapeCppString(option_name), def_value_str))
 
         hpp.write('}\n')
         hpp.write('\n')

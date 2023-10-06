@@ -33,7 +33,6 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QListWidgetItem>
-#include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
@@ -147,7 +146,8 @@ QString ConnectNodesImplInputObject3D::description() {
 
 SelectNodeConnection::SelectNodeConnection(
     const QList<QSharedPointer<ConnectNodesImpl>>& possibilities)
-    : QDialog(), possibilities(possibilities) {
+    : QDialog(vx::voxieRoot().mainWindow()), possibilities(possibilities) {
+  // TODO: Make this non-modal?
   this->setModal(true);
   this->setWindowTitle("Select connection");
   this->setWindowFlags(Qt::Dialog);

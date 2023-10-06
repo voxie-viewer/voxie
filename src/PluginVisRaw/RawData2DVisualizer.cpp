@@ -72,7 +72,7 @@ using namespace vx::visualization;
 // TODO: Copied from TomographyRawDataNodeView.cpp
 class JsonInfoDialog : public QDialog {
  public:
-  JsonInfoDialog(const QString& data) {
+  JsonInfoDialog(const QString& data) : QDialog(vx::voxieRoot().mainWindow()) {
     this->resize(500 / 96.0 * this->logicalDpiX(),
                  450 / 96.0 * this->logicalDpiY());
     QVBoxLayout* layout = new QVBoxLayout();
@@ -135,7 +135,8 @@ RawVisualizer::RawVisualizer()
   qRegisterMetaType<QVector<int>>();
   qRegisterMetaType<QVector<float>>();
 
-  this->view()->setMinimumSize(300, 200);
+  this->view()->setMinimumSize(300 / 96.0 * this->view()->logicalDpiX(),
+                               200 / 96.0 * this->view()->logicalDpiY());
 
   info = new InfoWidget(this, nullptr);
   QObject::connect(this, &QObject::destroyed, info, &QObject::deleteLater);
@@ -240,7 +241,7 @@ RawVisualizer::RawVisualizer()
               valueColorMappingChanged,
           this, [&](QList<vx::ColorizerEntry> entries) {
             QSharedPointer<Colorizer> colorizer =
-                QSharedPointer<Colorizer>(new Colorizer());
+                makeSharedQObject<Colorizer>();
             colorizer->setEntries(entries);
             _histogramWidget->setColorizer(colorizer);
           });

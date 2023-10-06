@@ -145,7 +145,9 @@ QSharedPointer<QObject> ColorizeLabeledSurface::getPropertyUIData(
   }
 }
 
-QSharedPointer<RunFilterOperation> ColorizeLabeledSurface::calculate() {
+QSharedPointer<RunFilterOperation> ColorizeLabeledSurface::calculate(
+    bool isAutomaticFilterRun) {
+  Q_UNUSED(isAutomaticFilterRun);
   QSharedPointer<RunFilterOperation> operation(
       new RunFilterOperation(), [](QObject* obj) { obj->deleteLater(); });
 

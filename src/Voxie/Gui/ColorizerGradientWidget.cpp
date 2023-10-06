@@ -30,7 +30,7 @@ ColorizerGradientWidget::ColorizerGradientWidget(QWidget* parent)
       colorizer(QSharedPointer<vx::Colorizer>::create()),
       checkerboard(":/icons-voxie/transparency_.png"),
       contextMenu(new QMenu(this)) {
-  setMinimumHeight(50);
+  setMinimumHeight(50 / 96.0 * this->logicalDpiY());
   setMouseTracking(true);
 
   removeAction =
@@ -109,12 +109,13 @@ void ColorizerGradientWidget::setEntryCountBounds(int minEntries,
 
 void ColorizerGradientWidget::paintEvent(QPaintEvent* event) {
   Q_UNUSED(event);
-  static const int handleSizeSelected = 8;
-  static const int handleSizeUnselected = 7;
-  static const int lineThicknessUnselected = 1;
-  static const int lineThicknessSelected = 2;
+  // TODO: Should fractional values be allowed here?
+  static const int handleSizeSelected = 8 / 96.0 * this->logicalDpiX();
+  static const int handleSizeUnselected = 7 / 96.0 * this->logicalDpiX();
+  static const int lineThicknessUnselected = 1 / 96.0 * this->logicalDpiX();
+  static const int lineThicknessSelected = 2 / 96.0 * this->logicalDpiX();
   // we need the padding at the bottom to display values under the gradient
-  static const int paddingBottom = 15;
+  static const int paddingBottom = 15 / 96.0 * this->logicalDpiY();
 
   QPainter painter(this);
 
@@ -576,7 +577,7 @@ void ColorizerGradientWidget::mouseMoveEvent(QMouseEvent* event) {
   // force repaint if mouse is in widget bounds so the value displayed on hover
   // is updated
   if (underMouse()) {
-    repaint();
+    update();
   }
 }
 
@@ -654,5 +655,5 @@ void ColorizerGradientWidget::leaveEvent(QEvent* event) {
   Q_UNUSED(event);
   // we need to repaint when the cursor leaves the widget so that the line and
   // value we draw at the cursor position when hovering disappear again
-  repaint();
+  update();
 }

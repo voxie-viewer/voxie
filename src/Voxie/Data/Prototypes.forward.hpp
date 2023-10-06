@@ -46,6 +46,12 @@ class VolumePropertiesBase;
 class VolumePropertiesCopy;
 class VolumeProperties;
 }  // namespace data_prop
+inline namespace data_prop {
+class VolumeSeriesPropertiesEntry;
+class VolumeSeriesPropertiesBase;
+class VolumeSeriesPropertiesCopy;
+class VolumeSeriesProperties;
+}  // namespace data_prop
 inline namespace node_prop {
 class NodeGroupPropertiesEntry;
 class NodeGroupPropertiesBase;

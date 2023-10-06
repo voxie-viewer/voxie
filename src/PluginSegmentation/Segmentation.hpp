@@ -63,7 +63,8 @@ class Segmentation : public FilterNode, public SegmentationI {
  public:
   Segmentation();
 
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
   StepManager* getStepManager() override;
   void deactivateBrushes() override;
   void deactivateLasso() override;

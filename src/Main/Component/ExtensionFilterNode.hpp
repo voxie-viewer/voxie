@@ -48,7 +48,8 @@ class ExtensionFilterNode : public FilterNode {
   const QString& scriptFilename() const { return scriptFilename_; }
 
  private:
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
 
  Q_SIGNALS:
   void error(const Exception& e, const QSharedPointer<QString>& scriptOutput);
@@ -73,6 +74,8 @@ class ExternalOperationRunFilter : public ExternalOperation {
   // A list of objects which are kept alive while the operation is running
   QSharedPointer<QList<QSharedPointer<vx::ExportedObject>>> references;
 
+  bool isAutomaticFilterRun_;
+
  protected:
   void cleanup() override;
 
@@ -81,7 +84,7 @@ class ExternalOperationRunFilter : public ExternalOperation {
       const QSharedPointer<vx::io::RunFilterOperation>& operation,
       const QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>& parameters,
       const QSharedPointer<QList<QSharedPointer<vx::ExportedObject>>>&
-          references);
+      references, bool isAutomaticFilterRun);
   ~ExternalOperationRunFilter() override;
 
   const QSharedPointer<vx::io::RunFilterOperation>& operation() const {
@@ -97,5 +100,7 @@ class ExternalOperationRunFilter : public ExternalOperation {
   const QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>& parameters() {
     return parameters_;
   }
+
+  bool isAutomaticFilterRun() { return isAutomaticFilterRun_; }
 };
 }  // namespace vx

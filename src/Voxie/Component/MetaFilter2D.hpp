@@ -49,7 +49,9 @@ class VOXIECORESHARED_EXPORT MetaFilter2D : public vx::plugin::Component {
   virtual ~MetaFilter2D();
 
   /** prototype method for the filter */
-  virtual filter::Filter2D* createFilter() const = 0;
+  virtual filter::Filter2D* createFilter() = 0;
+
+  virtual QString displayName() = 0;
 
   QList<QString> supportedComponentDBusInterfaces() override;
 };

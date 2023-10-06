@@ -22,8 +22,8 @@
 
 #include "Version.hpp"
 
-QString vx::getGitRevision() { return QString(GIT_REVISION); }
-QString vx::getGitRevisionDescribe() { return QString(GIT_REVISION_DESCRIBE); }
+// vx::getGitRevision() is in Version.git_revision.cpp.in
+// vx::getGitRevisionDescribe() is in Version.git_revision_describe.cpp.in
 QString vx::getQtVersion() { return QString(QT_VERSION_STR); }
 QString vx::getVersionNoSuffix() {
   return

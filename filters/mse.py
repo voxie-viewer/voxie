@@ -39,7 +39,7 @@ def mse(arr1: np.ndarray, arr2: np.ndarray) -> float:
 
 
 if args.voxie_action != 'RunFilter':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 
 VOXIE_RUN_FILTER = 'de.uni_stuttgart.Voxie.ExternalOperationRunFilter'

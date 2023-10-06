@@ -72,7 +72,8 @@ void DefaultTool::toolMousePressEvent(QMouseEvent* ev) {
     // set origin to cursor
     QPointF cursorOnPlane =
         this->sv->sliceImage().pixelToPlanePoint(ev->pos(), true);
-    this->sv->slice()->setOrigin(cursorOnPlane);
+    // this->sv->properties->setCenterPoint(cursorOnPlane);
+    this->sv->movePlaneOrigin(cursorOnPlane);
   } else if (modifiers == Qt::ControlModifier) {
     this->savePoint(ev->pos());
   }
@@ -97,15 +98,12 @@ void DefaultTool::toolKeyPressEvent(QKeyEvent* ev) { Q_UNUSED(ev); }
 void DefaultTool::toolKeyReleaseEvent(QKeyEvent* ev) { Q_UNUSED(ev); }
 
 void DefaultTool::savePoint(QPointF point) {
-  if (!this->sv->slice()) {
-    return;
-  }
   vx::SliceImage sliceImg =
       (false ? this->sv->filteredSliceImage() : this->sv->sliceImage());
   QPoint yetAnotherKindOfPoint((int)point.x(), (int)point.y());
   QPointF planepoint = sliceImg.pixelToPlanePoint(yetAnotherKindOfPoint, true);
   QVector3D threeDPoint =
-      sv->slice()->getCuttingPlane().get3DPoint(planepoint.x(), planepoint.y());
+      sv->getCuttingPlane().get3DPoint(planepoint.x(), planepoint.y());
   auto gpo = dynamic_cast<GeometricPrimitiveNode*>(
       this->sv->properties->geometricPrimitive());
   if (!gpo) {

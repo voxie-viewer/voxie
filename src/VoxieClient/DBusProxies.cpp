@@ -326,6 +326,21 @@ DeUni_stuttgartVoxieExternalOperationRunSegmentationStepInterface::
     ~DeUni_stuttgartVoxieExternalOperationRunSegmentationStepInterface() {}
 
 /*
+ * Implementation of interface class DeUni_stuttgartVoxieExternalTaskInterface
+ */
+
+DeUni_stuttgartVoxieExternalTaskInterface::
+    DeUni_stuttgartVoxieExternalTaskInterface(const QString& service,
+                                              const QString& path,
+                                              const QDBusConnection& connection,
+                                              QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieExternalTaskInterface::
+    ~DeUni_stuttgartVoxieExternalTaskInterface() {}
+
+/*
  * Implementation of interface class DeUni_stuttgartVoxieFilterNodeInterface
  */
 
@@ -648,6 +663,36 @@ DeUni_stuttgartVoxiePropertyTypeInterface::
     ~DeUni_stuttgartVoxiePropertyTypeInterface() {}
 
 /*
+ * Implementation of interface class DeUni_stuttgartVoxieSeriesDataInterface
+ */
+
+DeUni_stuttgartVoxieSeriesDataInterface::
+    DeUni_stuttgartVoxieSeriesDataInterface(const QString& service,
+                                            const QString& path,
+                                            const QDBusConnection& connection,
+                                            QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieSeriesDataInterface::
+    ~DeUni_stuttgartVoxieSeriesDataInterface() {}
+
+/*
+ * Implementation of interface class
+ * DeUni_stuttgartVoxieSeriesDimensionInterface
+ */
+
+DeUni_stuttgartVoxieSeriesDimensionInterface::
+    DeUni_stuttgartVoxieSeriesDimensionInterface(
+        const QString& service, const QString& path,
+        const QDBusConnection& connection, QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieSeriesDimensionInterface::
+    ~DeUni_stuttgartVoxieSeriesDimensionInterface() {}
+
+/*
  * Implementation of interface class DeUni_stuttgartVoxieSurfaceDataInterface
  */
 
@@ -689,6 +734,18 @@ DeUni_stuttgartVoxieTableDataInterface::DeUni_stuttgartVoxieTableDataInterface(
 
 DeUni_stuttgartVoxieTableDataInterface::
     ~DeUni_stuttgartVoxieTableDataInterface() {}
+
+/*
+ * Implementation of interface class DeUni_stuttgartVoxieTaskInterface
+ */
+
+DeUni_stuttgartVoxieTaskInterface::DeUni_stuttgartVoxieTaskInterface(
+    const QString& service, const QString& path,
+    const QDBusConnection& connection, QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieTaskInterface::~DeUni_stuttgartVoxieTaskInterface() {}
 
 /*
  * Implementation of interface class
@@ -851,6 +908,21 @@ DeUni_stuttgartVoxieVolumeDataVoxelInterface::
 
 DeUni_stuttgartVoxieVolumeDataVoxelInterface::
     ~DeUni_stuttgartVoxieVolumeDataVoxelInterface() {}
+
+/*
+ * Implementation of interface class
+ * DeUni_stuttgartVoxieVolumeSeriesDataInterface
+ */
+
+DeUni_stuttgartVoxieVolumeSeriesDataInterface::
+    DeUni_stuttgartVoxieVolumeSeriesDataInterface(
+        const QString& service, const QString& path,
+        const QDBusConnection& connection, QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieVolumeSeriesDataInterface::
+    ~DeUni_stuttgartVoxieVolumeSeriesDataInterface() {}
 
 /*
  * Implementation of interface class

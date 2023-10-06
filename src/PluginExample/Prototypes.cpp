@@ -54,11 +54,6 @@ qint64 TheSphereGeneratorPropertiesCopy::sizeRaw() {
       (*_properties)
           ["de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Size"]);
 }
-vx::Node* TheSphereGeneratorPropertiesCopy::output() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Output"]));
-}
 QDBusObjectPath TheSphereGeneratorPropertiesCopy::outputRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.Output"]);

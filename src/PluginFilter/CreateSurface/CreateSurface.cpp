@@ -57,7 +57,9 @@ CreateSurface::CreateSurface()
   this->algorithmInput->setCurrentIndex(1);
 }
 
-QSharedPointer<vx::io::RunFilterOperation> CreateSurface::calculate() {
+QSharedPointer<vx::io::RunFilterOperation> CreateSurface::calculate(
+    bool isAutomaticFilterRun) {
+  Q_UNUSED(isAutomaticFilterRun);
   QSharedPointer<SurfaceExtractor> extractor;
 
   if (this->algorithmInput->currentIndex() == 0) {

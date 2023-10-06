@@ -184,8 +184,10 @@ void LightSourceProperties::on_addButton_clicked() {
   newRow->addWidget(listElement);
 
   QPushButton* butt = new QPushButton(listElement);
-  butt->setMaximumSize(23, 23);
-  butt->setMinimumSize(23, 23);
+  butt->setMaximumSize(23 / 96.0 * this->logicalDpiX(),
+                       23 / 96.0 * this->logicalDpiY());
+  butt->setMinimumSize(23 / 96.0 * this->logicalDpiX(),
+                       23 / 96.0 * this->logicalDpiY());
 
   butt->setIcon(QIcon(":/icons/cross-small.png"));
   newRow->addWidget(butt);

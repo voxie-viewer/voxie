@@ -107,13 +107,11 @@ FloatImage& FilterChain2D::getOutputImage() { return this->outputFloatImage; }
 
 SliceImage& FilterChain2D::getOutputSlice() { return this->outputSliceImage; }
 
-void FilterChain2D::onPlaneChanged(const Slice* slice,
-                                   const vx::PlaneInfo& oldPlane,
+// TODO: This was broken by the removal of the vx::Slice class, fix this?
+// See also SliceVisualizer.cpp
+void FilterChain2D::onPlaneChanged(const vx::PlaneInfo& oldPlane,
                                    const vx::PlaneInfo& newPlane,
                                    bool equivalent) {
-  Q_UNUSED(slice);  // TODO: slice parameter seems to be unused (both by this
-                    // function and by other functions which are connected to
-                    // Slice::planeChanged()), should probably be removed
   if (equivalent) {
     if (oldPlane.origin != newPlane.origin) {
       // translation
@@ -149,7 +147,7 @@ void FilterChain2D::toXML(QXmlStreamWriter* xml) {
   xml->writeAttribute("version", "1.0");
 
   for (int i = 0; i < this->getFilters().size(); i++) {
-    xml->writeStartElement(this->getFilter(i)->getMetaName());
+    xml->writeStartElement(this->getFilter(i)->metaFilter()->name());
     xml->writeAttribute("type", "filter2d");
     xml->writeAttribute(
         "selectionJson",
@@ -209,7 +207,7 @@ void FilterChain2D::fromXML(QXmlStreamReader* xml) {
            vx::voxieRoot()
                .components()
                ->listComponentsTyped<vx::plugin::MetaFilter2D>()) {
-        if (metaFilter->objectName().compare(xml->name()) == 0) {
+        if (metaFilter->name().compare(xml->name()) == 0) {
           Filter2D* filter = metaFilter->createFilter();
           this->addFilter(filter);
 
@@ -261,7 +259,7 @@ void FilterChain2D::fromXML(QString fileName) {
   try {
     fromXML(&xml);
   } catch (vx::Exception& e) {
-    QMessageBox messageBox;
+    QMessageBox messageBox(vx::voxieRoot().mainWindow());
     messageBox.critical(0, "Error", e.message());
     messageBox.setFixedSize(500, 200);
     return;

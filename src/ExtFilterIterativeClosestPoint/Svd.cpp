@@ -63,6 +63,7 @@ int dsvd(float** a, int m, int n, float* w, float** v) {
           matrix v: matrix V [1..n][1..n]
   */
   int flag, i, its, j, jj, k, l, nm;
+  nm = 0; // Prevent "warning: ‘nm’ may be used uninitialized"
   double c, f, h, s, x, y, z;
   double anorm = 0.0, g = 0.0, scale = 0.0;
 
@@ -219,7 +220,7 @@ int dsvd(float** a, int m, int n, float* w, float** v) {
         break;
       }
       if (its >= 30) {
-        free((void*)rv1);
+        delete[] rv1;
         fprintf(stderr, "No convergence after 30,000! iterations \n");
         return (0);
       }

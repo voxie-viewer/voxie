@@ -57,7 +57,7 @@ void FitPlane::fitSurface() {
   // TODO: allow a vx::vis3d::Surface 3D node?
   if (!srfObj) {
     qWarning() << "No surface set";
-    QMessageBox Msgbox;
+    QMessageBox Msgbox(vx::voxieRoot().mainWindow());
     Msgbox.setText("No surface set.");
     Msgbox.exec();
     return;
@@ -66,7 +66,7 @@ void FitPlane::fitSurface() {
       dynamic_cast<SurfaceDataTriangleIndexed*>(srfObj->surface().data());
   if (!srf) {
     qWarning() << "Not a SurfaceDataTriangleIndexed, ignoring";
-    QMessageBox Msgbox;
+    QMessageBox Msgbox(vx::voxieRoot().mainWindow());
     Msgbox.setText("Not a SurfaceDataTriangleIndexed, ignoring.");
     Msgbox.exec();
     return;
@@ -76,7 +76,7 @@ void FitPlane::fitSurface() {
       this->properties->geometricPrimitive());
   if (!gpo) {
     qWarning() << "No geometric primitive node set";
-    QMessageBox Msgbox;
+    QMessageBox Msgbox(vx::voxieRoot().mainWindow());
     Msgbox.setText("No geometric primitive node set.");
     Msgbox.exec();
     return;
@@ -85,7 +85,7 @@ void FitPlane::fitSurface() {
   auto gpd = gpo->geometricPrimitiveData();
   if (!gpd) {
     qWarning() << "No geometric primitive data set";
-    QMessageBox Msgbox;
+    QMessageBox Msgbox(vx::voxieRoot().mainWindow());
     Msgbox.setText("No geometric primitive data set.");
     Msgbox.exec();
     return;
@@ -166,7 +166,7 @@ void FitPlane::fitSurface() {
     PointList::newPlaneFromCoordinates(p1, p2, p3);
 
   } else {
-    QMessageBox Msgbox;
+    QMessageBox Msgbox(vx::voxieRoot().mainWindow());
     Msgbox.setText(
         "Please choose 3 different points to select a part of the surface "
         "for fitting.");
@@ -174,7 +174,9 @@ void FitPlane::fitSurface() {
   }
 }
 
-QSharedPointer<vx::io::RunFilterOperation> FitPlane::calculate() {
+QSharedPointer<vx::io::RunFilterOperation> FitPlane::calculate(
+    bool isAutomaticFilterRun) {
+  Q_UNUSED(isAutomaticFilterRun);
   QSharedPointer<vx::io::RunFilterOperation> operation =
       vx::io::RunFilterOperation::createRunFilterOperation();
   // qDebug() << "FitPlane::calculate()";

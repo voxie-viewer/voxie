@@ -154,10 +154,6 @@ void Operation::cancel() {
   Q_EMIT cancelled();
 }
 
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-
 void Operation::updateProgress(float progress) {
   if (progress < 0 || progress > 1) {
     qWarning() << "Got progress value of" << progress;

@@ -23,6 +23,7 @@
 #include <Main/Root.hpp>
 
 #include <Main/AllDebugOptions.hpp>
+#include <Main/Version.hpp>
 
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QDebug>
@@ -152,6 +153,12 @@ int main(int argc, char* argv[]) {
       "default to P2P DBus, hide main window)");
   parser.addOption(batchOption);
 
+  QCommandLineOption runScriptOption(
+      "run-script",
+      "The positional arguments are not files to be loaded but a script to be "
+      "run and its parameters. Mostly useful with --batch.");
+  parser.addOption(runScriptOption);
+
   QCommandLineOption mainWindowOption("main-window",
                                       "How to show the main window", "option");
   parser.addOption(mainWindowOption);
@@ -167,6 +174,7 @@ int main(int argc, char* argv[]) {
     int argc0 = 1;
     char* args0[2] = {argv[0], NULL};
     QCoreApplication app0(argc0, args0);
+    app0.setApplicationVersion(vx::getVersionString());
     parser.process(args);
 
     // Needed because if a 3d visualizer window is detached it is moved into a
@@ -208,6 +216,7 @@ int main(int argc, char* argv[]) {
       if (arg != qtOptionsChar.data()) qCritical("  '%s'", *arg);
     return 1;
   }
+  app->setApplicationVersion(vx::getVersionString());
 
   return vx::Root::startVoxie(*app, parser, headless);
 }

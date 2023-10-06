@@ -98,7 +98,8 @@ QSharedPointer<vx::OperationResultImport> RAWImporter::import(
                           "Data set dimensions are too large for double");
         }
 
-        auto data = VolumeDataVoxel::createVolume(size, size, size);
+        auto data = VolumeDataVoxel::createVolume(
+            {size, size, size}, DataType::Float32, {0, 0, 0}, {1, 1, 1});
         if (file.open(QFile::ReadOnly) == false) {
           throw Exception("de.uni_stuttgart.Voxie.RAWImporter.Error",
                           "Failed to open file");

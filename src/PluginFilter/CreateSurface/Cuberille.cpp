@@ -81,9 +81,11 @@ class VertexCache {
 }  // namespace
 
 // Return a vertex at (x, y, zBase+z)
-static SurfaceDataTriangleIndexed::IndexType addVertex(
-    SurfaceBuilder* sb, VertexCache& cache, const VolumeDataVoxel* data,
-    size_t x, size_t y, size_t z, size_t zBase) {
+static SurfaceDataTriangleIndexed::IndexType addVertex(SurfaceBuilder* sb,
+                                                       VertexCache& cache,
+                                                       VolumeDataVoxel* data,
+                                                       size_t x, size_t y,
+                                                       size_t z, size_t zBase) {
   SurfaceDataTriangleIndexed::IndexType& cacheItem = cache.get(x, y, z);
   if (cacheItem != SurfaceDataTriangleIndexed::invalidIndex) return cacheItem;
 
@@ -93,7 +95,7 @@ static SurfaceDataTriangleIndexed::IndexType addVertex(
 }
 
 static void addQuad(SurfaceBuilder* sb, VertexCache& cache,
-                    const VolumeDataVoxel* data, vx::VectorSizeT3 pos,
+                    VolumeDataVoxel* data, vx::VectorSizeT3 pos,
                     const std::array<int, 3>& a, const std::array<int, 3>& b,
                     const std::array<int, 3>& c, const std::array<int, 3>& d) {
   size_t x = pos.x;
@@ -110,7 +112,7 @@ static void addQuad(SurfaceBuilder* sb, VertexCache& cache,
 
 static void genCube(const vx::VectorSizeT3& position, int sides,
                     SurfaceBuilder* sb, VertexCache& cache,
-                    const VolumeDataVoxel* data) {
+                    VolumeDataVoxel* data) {
   // Front (+z)
   if (sides & 1) {
     addQuad(sb, cache, data, position, {{0, 0, 1}}, {{1, 0, 1}}, {{1, 1, 1}},

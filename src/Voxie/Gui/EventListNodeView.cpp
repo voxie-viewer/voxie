@@ -42,7 +42,7 @@ using namespace vx;
 namespace {
 class JsonInfoDialog : public QDialog {
  public:
-  JsonInfoDialog(const QString& data) {
+  JsonInfoDialog(const QString& data) : QDialog(vx::voxieRoot().mainWindow()) {
     this->resize(500 / 96.0 * this->logicalDpiX(),
                  450 / 96.0 * this->logicalDpiY());
     QVBoxLayout* layout = new QVBoxLayout();
@@ -59,7 +59,8 @@ class JsonInfoDialog : public QDialog {
 }  // namespace
 
 EventListNodeView::EventListNodeView(vx::EventListNode* node) : node(node) {
-  this->setMaximumHeight(400);
+  this->setWindowTitle("Event list");
+  this->setMaximumHeight(400 / 96.0 * this->logicalDpiY());
   QVBoxLayout* splitLayout = new QVBoxLayout();
 
   QFormLayout* form = new QFormLayout();

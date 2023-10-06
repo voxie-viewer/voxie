@@ -31,7 +31,6 @@
 #include <PluginExample/TheSphereGenerator.hpp>
 
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QMessageBox>
 
 ExamplePlugin::ExamplePlugin() : PluginInstance() {}
 

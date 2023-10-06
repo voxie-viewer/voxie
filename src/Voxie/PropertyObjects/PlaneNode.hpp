@@ -59,6 +59,8 @@ class VOXIECORESHARED_EXPORT PlaneNode : public PropertyNode {
   virtual QVariant getNodePropertyCustom(QString key) override;
   virtual void setNodePropertyCustom(QString key, QVariant value) override;
 
+  // TODO: This probably should not be a pointer, use normal properties instead
+  // (this no longer is shared anyway)
   QSharedPointer<const PlaneInfo> plane() { return this->_plane; }
 
   // TODO: Add setPlane() function or make it a property managed by Node

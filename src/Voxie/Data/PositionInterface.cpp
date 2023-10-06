@@ -36,7 +36,6 @@ PositionInterface::PositionInterface(
 
   auto objProp = new ObjectProperties();
 
-  objProp->setObjectName("Property Widget");
   objProp->setWindowTitle("Position Properties");
 
   // Properties changed by input in the GUI

@@ -30,7 +30,7 @@ context = voxie.VoxieContext(args)
 instance = context.createInstance()
 
 if args.voxie_action != 'RunTool':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 inputObjectPath = args.voxie_script_target_object
 inputObject = context.makeObject(context.bus, context.busName, inputObjectPath, [

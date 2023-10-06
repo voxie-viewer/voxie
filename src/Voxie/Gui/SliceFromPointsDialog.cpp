@@ -24,13 +24,15 @@
 
 #include "ui_SliceFromPointsDialog.h"
 
+#include <Voxie/IVoxie.hpp>
+
 #include <VoxieBackend/Data/GeometricPrimitive.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveData.hpp>
 
 using namespace vx;
 
 SliceFromPointsDialog::SliceFromPointsDialog(bool haveChangeSliceButton)
-    : QDialog(), ui(new Ui::SliceFromPointsDialog) {
+    : QDialog(vx::voxieRoot().mainWindow()), ui(new Ui::SliceFromPointsDialog) {
   ui->setupUi(this);
 
   if (!haveChangeSliceButton) this->ui->thisSliceButton->setVisible(false);

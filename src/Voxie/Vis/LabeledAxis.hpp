@@ -66,7 +66,7 @@ class LabeledAxis {
   void setIntegerLabels(bool value);
   bool isIntegerLabels() const;
 
-  void draw(QPainter& painter);
+  void draw(double dpiScale, QPainter& painter);
 
  private:
   Orientation orientation = Horizontal;

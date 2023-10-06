@@ -25,6 +25,7 @@
 
 #include <Voxie/Data/Colorizer.hpp>
 #include <Voxie/Data/Prototypes.hpp>
+#include <Voxie/Data/Slice.hpp>
 
 #include <Voxie/Node/ParameterCopy.hpp>
 
@@ -106,8 +107,8 @@ void SelectionLayer::render(
 
   // TODO: try to release memory earlier?
   SliceImage colorizedImage =
-      Slice::generateImage(labelVolume, plane, sliceArea, outputImage.size(),
-                           InterpolationMethod::NearestNeighbor);
+      generateSliceImage(labelVolume, plane, sliceArea, outputImage.size(),
+                         InterpolationMethod::NearestNeighbor);
 
   QImage qimage(colorizedImage.getDimension(), QImage::Format_ARGB32);
   QRgb* qimgbuffer = (QRgb*)qimage.bits();

@@ -27,10 +27,14 @@
 // https://bugreports.qt.io/browse/QTBUG-48377
 #include <QtDBus/QDBusConnection>
 
+#include <Voxie/Data/VolumeNode.hpp>
+
 #include <Voxie/Gui/ObjectProperties.hpp>
 
 #include <Voxie/Vis/View3D.hpp>
 #include <Voxie/Vis/VisualizerNode.hpp>
+
+#include <VoxieBackend/Data/VolumeData.hpp>
 
 #include <PluginVis3D/LightSourceProperties.hpp>
 #include <PluginVis3D/RenderImplementationSelection.hpp>
@@ -96,7 +100,7 @@ class VolumeRenderingView : public QWidget {
   QImage image;
   cl::Kernel kernel;
   cl::Image2D clImage;
-  QPoint mouseLast;
+  vx::Vector<double, 2> mouseLast;
   vx::visualization::View3D* view3d;
 
   float ambientlightScale = 0.8f;

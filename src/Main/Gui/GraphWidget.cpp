@@ -855,25 +855,25 @@ void GraphWidget::setAutoReorder(bool enabled) {
 void GraphWidget::selectNode(vx::Node* obj) {
   selectedNodes_.append(obj);
   Q_EMIT selectionChanged(selectedNodes_);
-  repaint();
+  update();
 }
 
 void GraphWidget::deselectNode(vx::Node* obj) {
   selectedNodes_.removeOne(obj);
   Q_EMIT selectionChanged(selectedNodes_);
-  repaint();
+  update();
 }
 
 void GraphWidget::clearSelectedNodes() {
   selectedNodes_.clear();
   Q_EMIT selectionChanged(selectedNodes_);
-  repaint();
+  update();
 }
 
 void GraphWidget::setSelectedNodes(QList<Node*> list) {
   this->selectedNodes_ = list;
   Q_EMIT selectionChanged(selectedNodes_);
-  repaint();
+  update();
 }
 
 NodeGroup* GraphWidget::currentNodeGroup() { return currentNodeGroup_; }
@@ -887,7 +887,7 @@ void GraphWidget::setCurrentNodeGroup(NodeGroup* nodeGroup) {
 
   Q_EMIT currentNodeGroupChanged(nodeGroup);
 
-  repaint();
+  update();
 }
 
 void GraphWidget::deleteSelectedNodes() {

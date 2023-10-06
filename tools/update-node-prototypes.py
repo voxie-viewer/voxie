@@ -203,6 +203,9 @@ for (outPrefix, inputFiles, doExport) in files:
             hpp.write('inline namespace ' + namespace + ' {\n')
             cpp.write('inline namespace ' + namespace + ' {\n')
 
+            # Indicates for each pname whether the non-raw property should be in *Base and *Copy
+            is_in_base = {}
+
             hppf.write('class %s;\n' % (namePropertiesEntry,))
             hpp.write('class %s%s : public vx::PropertiesEntryBase {\n' % (exportStr, namePropertiesEntry,))
             hpp.write('%s() = delete;\n' % (namePropertiesEntry,))
@@ -214,6 +217,7 @@ for (outPrefix, inputFiles, doExport) in files:
                 property = prototype['Properties'][pname]
                 pnameBare = pname[pname.rfind('.') + 1:]
                 ptype = property['Type']
+                is_in_base[pname] = ptype not in ['de.uni_stuttgart.Voxie.PropertyType.NodeReference', 'de.uni_stuttgart.Voxie.PropertyType.NodeReferenceList', 'de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference']
                 ptypeCpp = getCppType(ptype)
                 ptypeCppRaw2 = getCppTypeRaw(ptype)
                 hpp.write('%s(vx::PropType::%s, %s);\n' % (namePropertiesEntry, pnameBare, ptypeCpp))
@@ -233,7 +237,8 @@ for (outPrefix, inputFiles, doExport) in files:
                 ptypeCpp = getCppType(ptype)
                 ptypeCppRaw2 = getCppTypeRaw(ptype)
                 getterName = pnameBare[0].lower() + pnameBare[1:]
-                hpp.write('virtual %s %s() = 0;\n' % (ptypeCpp, getterName))
+                if is_in_base[pname]:
+                    hpp.write('virtual %s %s() = 0;\n' % (ptypeCpp, getterName))
                 hpp.write('virtual %s %sRaw() = 0;\n' %
                           (ptypeCppRaw2, getterName))
             hpp.write('};\n')
@@ -255,12 +260,13 @@ for (outPrefix, inputFiles, doExport) in files:
                 ptypeCpp = getCppType(ptype)
                 ptypeCppRaw2 = getCppTypeRaw(ptype)
                 getterName = pnameBare[0].lower() + pnameBare[1:]
-                hpp.write('%s %s() override final;\n' % (ptypeCpp, getterName))
-                cpp.write('%s %s::%s() {\n' % (
-                    ptypeCpp, namePropertiesCopy, getterName))
-                cpp.write('return vx::PropertyValueConvertRaw<%s, %s>::fromRaw(vx::Node::parseVariant<%s>((*_properties)[%s]));\n' % (
-                    ptypeCppRaw2, ptypeCpp, ptypeCppRaw2, escapeCppString(pname),))
-                cpp.write('}\n')
+                if is_in_base[pname]:
+                    hpp.write('%s %s() override final;\n' % (ptypeCpp, getterName))
+                    cpp.write('%s %s::%s() {\n' % (
+                        ptypeCpp, namePropertiesCopy, getterName))
+                    cpp.write('return vx::PropertyValueConvertRaw<%s, %s>::fromRaw(vx::Node::parseVariant<%s>((*_properties)[%s]));\n' % (
+                        ptypeCppRaw2, ptypeCpp, ptypeCppRaw2, escapeCppString(pname),))
+                    cpp.write('}\n')
                 hpp.write('%s %sRaw() override final;\n' %
                           (ptypeCppRaw2, getterName))
                 cpp.write('%s %s::%sRaw() {\n' % (
@@ -318,7 +324,11 @@ for (outPrefix, inputFiles, doExport) in files:
                 propName = pnameBare[0].upper() + pnameBare[1:]
                 hpp.write('\n')
 
-                hpp.write('%s %s() override final;\n' % (ptypeCpp, getterName))
+                non_raw_modifies = ''
+                if is_in_base[pname]:
+                    non_raw_modifies = ' override final'
+
+                hpp.write('%s %s()%s;\n' % (ptypeCpp, getterName, non_raw_modifies))
                 cpp.write('%s %s::%s() {\n' %
                           (ptypeCpp, nameProperties, getterName))
                 cpp.write('return vx::PropertyValueConvertRaw<%s, %s>::fromRaw(_node->getNodePropertyTyped<%s>(%s));\n' %

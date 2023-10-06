@@ -24,8 +24,6 @@
 
 #include <Main/Root.hpp>
 
-#include <Main/Gui/PlaneView.hpp>
-
 #include <Voxie/Component/Plugin.hpp>
 
 #include <QtCore/QDebug>
@@ -145,7 +143,6 @@ SliceView::SliceView(PlaneNode* slice, QWidget* parent)
                 SliceView::pastePos(posRotValid);
                 delete posRotValid;
 
-                if (this->planeView) this->planeView->update();
                 SliceView::sliceChanged();
 
               });
@@ -160,7 +157,6 @@ SliceView::SliceView(PlaneNode* slice, QWidget* parent)
                 SliceView::pasteRot(posRotValid);
                 delete posRotValid;
 
-                if (this->planeView) this->planeView->update();
                 SliceView::sliceChanged();
 
               });
@@ -177,7 +173,6 @@ SliceView::SliceView(PlaneNode* slice, QWidget* parent)
                 SliceView::pasteRot(posRotValid);
                 delete posRotValid;
 
-                if (this->planeView) this->planeView->update();
                 SliceView::sliceChanged();
 
               });
@@ -260,21 +255,6 @@ SliceView::SliceView(PlaneNode* slice, QWidget* parent)
       form->addRow("Rotation Z", this->rotationEditX3);
     }
     rootLayout->addLayout(form);
-
-    QHBoxLayout* glView = new QHBoxLayout();
-    {
-      this->planeView = nullptr;
-      // TODO: create a PlaneView somehow?
-      /*
-      this->planeView = new PlaneView(this->slice);
-
-      this->planeView->setSizePolicy(QSizePolicy::Expanding,
-                                     QSizePolicy::Expanding);
-
-      glView->addWidget(this->planeView);
-      */
-    }
-    rootLayout->addLayout(glView);
   }
   this->setLayout(rootLayout);
 }
@@ -321,8 +301,6 @@ void SliceView::changedRotation() {
     this->rotationEditX3->setText(
         QString::number(this->slice->plane()->rotation.toEulerAngles().z()));
   }
-
-  if (this->planeView) this->planeView->update();
 }
 
 /**
@@ -336,7 +314,6 @@ void SliceView::positionEdited() {
     this->slice->setOrigin(QVector3D(this->positionEditX->text().toFloat(),
                                      this->positionEditY->text().toFloat(),
                                      this->positionEditZ->text().toFloat()));
-    if (this->planeView) this->planeView->update();
   } else {
     this->positionEditX->setText(
         QString::number(this->slice->plane()->origin.x()));
@@ -361,7 +338,6 @@ void SliceView::rotationEdited() {
                                          this->rotationEditX2->text().toFloat(),
                                          this->rotationEditX3->text().toFloat())
                                  .normalized());
-    if (this->planeView) this->planeView->update();
   } else {
     SliceView::changedRotation();
   }

@@ -58,7 +58,8 @@ class VOXIECLIENT_EXPORT DebugOptionBool : public DebugOption {
       changeHandlers;
 
  public:
-  DebugOptionBool(const char* name) : DebugOption(name), valueAtomic(0) {}
+  DebugOptionBool(const char* name, bool initialValue = false)
+      : DebugOption(name), valueAtomic(initialValue ? 1 : 0) {}
   bool get() { return valueAtomic.load(); }
   void set(bool value);
   bool enabled() { return get(); }

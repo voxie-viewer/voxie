@@ -27,11 +27,11 @@
 
 #include "VolumeNodeView.hpp"
 
-#include <Voxie/Data/Slice.hpp>
-
 #include <Voxie/IVoxie.hpp>
 
 #include <Voxie/Component/Plugin.hpp>
+
+#include <Voxie/Data/VolumeNode.hpp>
 
 #include <QtWidgets/QAction>
 #include <QtWidgets/QLabel>
@@ -49,7 +49,7 @@ using namespace vx::filter;
 
 VolumeNodeView::VolumeNodeView(vx::VolumeNode* dataSet, QWidget* parent)
     : QWidget(parent), sequenceNumber(0), dataSet(dataSet) {
-  this->setMaximumHeight(400);
+  this->setMaximumHeight(400 / 96.0 * this->logicalDpiY());
   splitLayout = new QVBoxLayout();
 
   form = new QFormLayout();
@@ -71,10 +71,13 @@ VolumeNodeView::VolumeNodeView(vx::VolumeNode* dataSet, QWidget* parent)
   splitLayout->addLayout(form);
 
   this->setLayout(splitLayout);
-  this->setWindowTitle(this->dataSet->displayName());
   this->update();
+  /*
+  this->setWindowTitle(this->dataSet->displayName());
   connect(this->dataSet, &Node::displayNameChanged, this,
           &VolumeNodeView::setWindowTitle);
+  */
+  this->setWindowTitle("Volume");
 
   connect(this->dataSet, &VolumeNode::changed, this, &VolumeNodeView::update);
 
@@ -152,9 +155,9 @@ void VolumeNodeView::update() {
     fields << std::make_tuple("Origin", "");
   } else {
     fields << std::make_tuple(
-        "Size", QString::number(data->volumeSize().x()) + " x " +
-                    QString::number(data->volumeSize().y()) + " x " +
-                    QString::number(data->volumeSize().z()));
+        "Size", QString::number(data->volumeSize().access<0>()) + " x " +
+                    QString::number(data->volumeSize().access<1>()) + " x " +
+                    QString::number(data->volumeSize().access<2>()));
 
     fields << std::make_tuple(
         "Origin", QString::number(data->origin().x(), 'g', precision) + " x " +
@@ -181,6 +184,4 @@ void VolumeNodeView::update() {
   setValues(fields);
 }
 
-VolumeNodeView::~VolumeNodeView() {
-  if (this->dataSet != nullptr) this->dataSet->deleteLater();
-}
+VolumeNodeView::~VolumeNodeView() {}

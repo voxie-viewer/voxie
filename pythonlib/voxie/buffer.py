@@ -34,6 +34,8 @@ endianMap = {
     "none": "|",
     "little": "<",
     "big": ">",
+    # TODO: ?
+    "native": "",
 }
 
 # TODO: Remove when all scripts are switched to new interface

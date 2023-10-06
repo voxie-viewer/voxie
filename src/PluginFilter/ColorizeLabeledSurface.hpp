@@ -59,7 +59,8 @@ class ColorizeLabeledSurface : public FilterNode {
 
   QSharedPointer<HistogramProvider> histogramProvider;
 
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
 
   void setTable(TableNode* table);
 

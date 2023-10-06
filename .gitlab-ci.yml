@@ -8,11 +8,40 @@ check-formatting:
   tags:
     - docker
 
-  image: "debian:11.5"
+  image: "debian:12.0"
 
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 git python3-pycodestyle"
     - "tools/check-formatting.py"
+
+
+build-linux-12:
+  stage: build
+
+  tags:
+    - docker
+
+  image: "debian:12.0"
+
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
+    - "tools/create-release.sh"
+
+  artifacts:
+    paths:
+      - voxie*.tar.gz
+
+build-linux-12-nointern:
+  stage: build
+
+  tags:
+    - docker
+
+  image: "debian:12.0"
+
+  script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
+    - "tools/create-release.sh --no-intern"
 
 
 build-linux-11:
@@ -30,18 +59,6 @@ build-linux-11:
   artifacts:
     paths:
       - voxie*.tar.gz
-
-build-linux-11-nointern:
-  stage: build
-
-  tags:
-    - docker
-
-  image: "debian:11.5"
-
-  script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
-    - "tools/create-release.sh --no-intern"
 
 
 build-linux-2004:

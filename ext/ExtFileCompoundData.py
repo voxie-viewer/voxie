@@ -44,6 +44,7 @@ if args.voxie_action == 'Export':
 
         result = {}
 
+        # TODO: This should be named "de.uni_stuttgart.Voxie.FileFormat.ContainerData.Json" or "de.uni_stuttgart.Voxie.FileFormat.ContainerData.VxCo" or something like that (the importer also has to be changed and has to allow the old names)
         result['Type'] = "de.uni_stuttgart.Voxie.FileFormat.ContainerData.Json.Export"
         result['Name'] = containerData.GetName()
 
@@ -115,7 +116,7 @@ if args.voxie_action == 'Export':
         f = io.StringIO()
         json.dump(result, f, allow_nan=False, sort_keys=True,
                   ensure_ascii=False, indent=2)
-        s = bytes(f.getvalue(), 'utf-8')
+        s = bytes(f.getvalue() + '\n', 'utf-8')
         with open(filename, 'wb') as file:
             file.write(s)
 
@@ -157,7 +158,7 @@ elif args.voxie_action == 'Import':
 
 
 else:
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 
 context.client.destroy()

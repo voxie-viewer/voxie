@@ -34,7 +34,7 @@ class NormalizeFilter2D : public vx::filter::Filter2D {
   Q_DISABLE_COPY(NormalizeFilter2D)
 
  public:
-  NormalizeFilter2D(QObject* parent = 0);
+  NormalizeFilter2D(vx::plugin::MetaFilter2D* metaFilter);
   ~NormalizeFilter2D();
 
   virtual void applyTo(vx::FloatImage input, vx::FloatImage output) override;
@@ -67,5 +67,6 @@ class NormalizeMetaFilter2D : public vx::plugin::MetaFilter2D {
   NormalizeMetaFilter2D()
       : vx::plugin::MetaFilter2D("de.uni_stuttgart.Voxie.NormalizeFilter2D") {}
 
-  vx::filter::Filter2D* createFilter() const override;
+  vx::filter::Filter2D* createFilter() override;
+  QString displayName() override;
 };

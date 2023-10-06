@@ -29,7 +29,7 @@
   "de.uni_stuttgart.Voxie.PropertyType.Float": {
     "CompareFunction": "defaultValueCompare",
     "DBusSignature": "d",
-    "DisplayName": "Floating pointer number"
+    "DisplayName": "Floating point number"
   },
   "de.uni_stuttgart.Voxie.PropertyType.GeometricPrimitive": {
     "DBusSignature": "t",

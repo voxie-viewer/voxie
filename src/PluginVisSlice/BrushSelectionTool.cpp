@@ -47,10 +47,8 @@ void BrushSelectionTool::activateTool() {
   if (!getStepManager()) return;
   valueButton->setChecked(true);
 
-  if (this->sv->slice()) {
-    this->stepManager->setBrushSelectionProperties(
-        this->sv->slice()->getCuttingPlane(), this->sv);
-  }
+  this->stepManager->setBrushSelectionProperties(this->sv->getCuttingPlane(),
+                                                 this->sv);
 }
 
 void BrushSelectionTool::deactivateTool() {
@@ -133,7 +131,7 @@ void inline BrushSelectionTool::runBrushSelection(QPoint middlePoint) {
   QPointF planepoint =
       this->sv->sliceImage().pixelToPlanePoint(middlePoint, true);
   QVector3D threeDPoint =
-      sv->slice()->getCuttingPlane().get3DPoint(planepoint.x(), planepoint.y());
+      sv->getCuttingPlane().get3DPoint(planepoint.x(), planepoint.y());
 
   // TODO: Add a meter calculation function
   double brushRadiusMeter = this->sv->sliceImage().distanceInMeter(
@@ -141,7 +139,7 @@ void inline BrushSelectionTool::runBrushSelection(QPoint middlePoint) {
 
   this->stepManager->addVoxelsToBrushSelection(
       std::tuple<QVector3D, double>(threeDPoint, brushRadiusMeter),
-      sv->slice()->getCuttingPlane(), this->sv);
+      sv->getCuttingPlane(), this->sv);
 }
 
 BrushSelectionTool::BrushSelectionTool(QWidget* parent, SliceVisualizer* sv)
@@ -190,11 +188,11 @@ BrushSelectionLayer::BrushSelectionLayer(SliceVisualizer* sv) : sv(sv) {
 
   QObject::connect(sv, &SliceVisualizer::imageMouseMove, this,
                    [this](QMouseEvent* e, const QPointF& pointPlane,
-                          const QVector3D& threeDPoint, double valUnf,
-                          double valFilt, double valNearest, double valLinear) {
+                          const QVector3D& threeDPoint,
+                          const vx::Vector<double, 3>* posVoxelPtr,
+                          double valNearest, double valLinear) {
                      Q_UNUSED(pointPlane);
-                     Q_UNUSED(valUnf);
-                     Q_UNUSED(valFilt);
+                     Q_UNUSED(posVoxelPtr);
                      Q_UNUSED(valNearest);
                      Q_UNUSED(valLinear);
 

@@ -1,0 +1,170 @@
+#!/usr/bin/python3
+#
+# Copyright (c) 2014-2022 The Voxie Authors
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+import sys
+import os
+import subprocess
+import json
+import shutil
+
+
+def main():
+    base = os.path.join(os.path.dirname(__file__), '..') + '/'
+
+    options = {}
+
+    options['boost_include_path'] = ''
+    options['lapacke_path'] = ''
+    options['hdf5_path'] = ''
+    options['additional_licenses_file'] = ''
+    options['help_browser'] = 'enabled'
+    options['hdf5'] = 'enabled'
+    options['lapack'] = 'enabled'
+    options['intern'] = 'enabled'
+
+    options['lib'] = 'enabled'
+    options['libvoxieclient'] = 'enabled'
+    options['libvoxiebackend'] = 'enabled'
+    options['libvoxie'] = 'enabled'
+    options['main'] = 'enabled'
+    options['plugins'] = 'enabled'
+    options['ext'] = 'enabled'
+    options['extra'] = 'enabled'
+    options['test'] = 'enabled'
+
+    args = sys.argv[1:]
+    have_debug = False
+    meson = 'meson'
+    ninja_flags = []
+    while True:
+        if len(args) == 0:
+            break
+        arg = args[0]
+        args = args[1:]
+        if arg == '--meson':
+            pass
+        elif arg == '--debug':
+            have_debug = True
+        elif arg.startswith('--meson-binary='):
+            meson = arg[len('--meson-binary='):]
+        elif arg == '--unpack-meson':
+            mesonversion = '0.56.2'
+            # mesonversion = '0.57.0'
+            subprocess.run([base + 'tools/download_dep.py', '--unpack', 'meson-' + mesonversion + '.tar.gz'], check=True)
+            meson = base + 'tools/unpack-build-dep/meson-' + mesonversion + '.tar.gz/meson-' + mesonversion + '/meson.py'
+        elif arg == '--verbose':
+            ninja_flags += ['-v']
+        elif arg.startswith('--hdf5-path='):
+            options['hdf5_path'] = arg[len('--hdf5-path='):]
+        elif arg.startswith('--additional-licenses-file='):
+            if options['additional_licenses_file'] != '':
+                raise Exception('Got multiple --additional-licenses-file= options')
+            options['additional_licenses_file'] = arg[len('--additional-licenses-file='):]
+        elif arg == '--disable-help-browser':
+            options['help_browser'] = 'disabled'
+        elif arg == '--disable-hdf5':
+            options['hdf5'] = 'disabled'
+        elif arg == '--disable-lapack':
+            options['lapack'] = 'disabled'
+        elif arg == '--no-intern':
+            options['intern'] = 'disabled'
+        elif arg == '--only-lib':
+            options['libvoxie'] = 'disabled'
+            options['main'] = 'disabled'
+            options['plugins'] = 'disabled'
+            options['ext'] = 'disabled'
+            options['extra'] = 'disabled'
+            options['test'] = 'disabled'
+        else:
+            args = [arg] + args
+            break
+    # print(args)
+
+    if not have_debug:
+        options['debug'] = 'false'
+        options['optimization'] = '3'
+        default_build_dir = base + 'build'
+    else:
+        options['debug'] = 'true'
+        options['optimization'] = '0'
+        default_build_dir = base + 'build-debug'
+
+    build_dir = os.environ.get('VOXIE_BUILD_DIR', default_build_dir)
+
+    if os.path.exists(build_dir + '/Makefile'):
+        # Remove qmake build directory
+        shutil.rmtree(build_dir)
+
+    try:
+        os.mkdir(build_dir)
+    except FileExistsError:
+        pass
+    os.chdir(build_dir)
+
+    # print(options)
+    old_options = {}
+    if os.path.exists('meson-info/intro-buildoptions.json'):
+        # Python 3.5 does not like 'rb' here
+        # https://github.com/python/cpython/issues/62109
+        with open('meson-info/intro-buildoptions.json', 'r') as file:
+            old_data = json.load(file)
+            for entry in old_data:
+                val = entry['value']
+                if type(val) == bool:
+                    if not val:
+                        val = 'false'
+                    else:
+                        val = 'true'
+                elif type(val) == int:
+                    val = str(val)
+                old_options[entry['name']] = val
+    changed_options = {}
+    for key in options:
+        if key not in old_options or options[key] != old_options[key]:
+            changed_options[key] = options[key]
+    if len(changed_options):
+        print('Options changed: ' + repr(changed_options), flush=True)
+
+    meson_opt_args = []
+    for key in options:
+        meson_opt_args += ['-D' + key + '=' + options[key]]
+
+    # source_dir = '..'
+    source_dir = base
+
+    if os.path.exists('build.ninja'):
+        if len(changed_options):
+            subprocess.run([meson, 'configure'] + meson_opt_args, check=True)
+    else:
+        subprocess.run([meson, 'setup', source_dir, '.'] + meson_opt_args, check=True)
+
+    subprocess.run(['ninja'] + ninja_flags + args, check=True)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except subprocess.CalledProcessError as e:
+        sys.exit(e.returncode)
+    except KeyboardInterrupt:
+        sys.exit(2)

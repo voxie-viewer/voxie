@@ -144,12 +144,6 @@ bool GeometricPrimitivePropertiesCopy::visibleRaw() {
   return vx::Node::parseVariant<bool>(
       (*_properties)["de.uni_stuttgart.Voxie.Object3D.Generic.Visible"]);
 }
-vx::Node* GeometricPrimitivePropertiesCopy::geometricPrimitive() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Object3D.GeometricPrimitive."
-                         "GeometricPrimitive"]));
-}
 QDBusObjectPath GeometricPrimitivePropertiesCopy::geometricPrimitiveRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.Object3D.GeometricPrimitive."
@@ -426,11 +420,6 @@ std::tuple<double, double, double, double> PlanePropertiesCopy::colorRaw() {
   return vx::Node::parseVariant<std::tuple<double, double, double, double>>(
       (*_properties)["de.uni_stuttgart.Voxie.Object3D.Plane.Color"]);
 }
-vx::Node* PlanePropertiesCopy::plane() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Object3D.Plane.Plane"]));
-}
 QDBusObjectPath PlanePropertiesCopy::planeRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.Object3D.Plane.Plane"]);
@@ -472,11 +461,6 @@ PlanePropertiesCopy::sliceValueColorMappingRaw() {
       std::tuple<double, std::tuple<double, double, double, double>, qint32>>>(
       (*_properties)
           ["de.uni_stuttgart.Voxie.Object3D.Plane.SliceValueColorMapping"]);
-}
-vx::Node* PlanePropertiesCopy::sliceVolume() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Object3D.Plane.SliceVolume"]));
 }
 QDBusObjectPath PlanePropertiesCopy::sliceVolumeRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -1159,11 +1143,6 @@ QString SurfacePropertiesCopy::shadingTechniqueRaw() {
   return vx::Node::parseVariant<QString>(
       (*_properties)
           ["de.uni_stuttgart.Voxie.Object3D.Surface.ShadingTechnique"]);
-}
-vx::Node* SurfacePropertiesCopy::surface() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Object3D.Surface.Surface"]));
 }
 QDBusObjectPath SurfacePropertiesCopy::surfaceRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -1960,11 +1939,6 @@ double View3DPropertiesCopy::zoomLogRaw() {
   return vx::Node::parseVariant<double>((
       *_properties)["de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ZoomLog"]);
 }
-QList<vx::Node*> View3DPropertiesCopy::objects() {
-  return vx::PropertyValueConvertRaw<QList<QDBusObjectPath>, QList<vx::Node*>>::
-      fromRaw(vx::Node::parseVariant<QList<QDBusObjectPath>>(
-          (*_properties)["de.uni_stuttgart.Voxie.Visualizer.View3D.Objects"]));
-}
 QList<QDBusObjectPath> View3DPropertiesCopy::objectsRaw() {
   return vx::Node::parseVariant<QList<QDBusObjectPath>>(
       (*_properties)["de.uni_stuttgart.Voxie.Visualizer.View3D.Objects"]);
@@ -2558,11 +2532,6 @@ VolumeRenderingPropertiesBase::~VolumeRenderingPropertiesBase() {}
 VolumeRenderingPropertiesCopy::VolumeRenderingPropertiesCopy(
     const QSharedPointer<const QMap<QString, QVariant>>& properties)
     : _properties(properties) {}
-QList<vx::Node*> VolumeRenderingPropertiesCopy::input() {
-  return vx::PropertyValueConvertRaw<QList<QDBusObjectPath>, QList<vx::Node*>>::
-      fromRaw(vx::Node::parseVariant<QList<QDBusObjectPath>>(
-          (*_properties)["de.uni_stuttgart.Voxie.Input"]));
-}
 QList<QDBusObjectPath> VolumeRenderingPropertiesCopy::inputRaw() {
   return vx::Node::parseVariant<QList<QDBusObjectPath>>(
       (*_properties)["de.uni_stuttgart.Voxie.Input"]);

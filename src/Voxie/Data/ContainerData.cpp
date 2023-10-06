@@ -68,13 +68,20 @@ void ContainerData::removeElement(QString key,
   }
 }
 
-QSharedPointer<Data> ContainerData::getElement(QString key) {
+QSharedPointer<Data> ContainerData::getElementOrNull(const QString& key) {
   if (this->dataMap.contains(key))
     return this->dataMap[key];
   else
+    return QSharedPointer<Data>();
+}
+
+QSharedPointer<Data> ContainerData::getElement(const QString& key) {
+  auto result = getElementOrNull(key);
+  if (!result)
     throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
                         "Could not find element. Key: " + key +
                             " is not contained in ContainerData");
+  return result;
 }
 
 QList<QString> ContainerData::getKeys() { return this->dataMap.keys(); }
@@ -116,9 +123,7 @@ class ContainerDataAdaptorImpl : public ContainerDataAdaptor {
       return vx::ExportedObject::getPath(object->getElement(key));
 
     } catch (Exception& e) {
-      e.handle(object);
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Error in getElement of ContainerDataAdaptorImpl");
+      return e.handle(object);
     }
   }
 
@@ -129,9 +134,7 @@ class ContainerDataAdaptorImpl : public ContainerDataAdaptor {
       return object->getName();
 
     } catch (Exception& e) {
-      e.handle(object);
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Error in getName of ContainerDataAdaptorImpl");
+      return e.handle(object);
     }
   }
 
@@ -148,9 +151,7 @@ class ContainerDataAdaptorImpl : public ContainerDataAdaptor {
       return values;
 
     } catch (Exception& e) {
-      e.handle(object);
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Error in getValues of ContainerDataAdaptorImpl");
+      return e.handle(object);
     }
   }
 
@@ -160,9 +161,7 @@ class ContainerDataAdaptorImpl : public ContainerDataAdaptor {
       return object->getKeys();
 
     } catch (Exception& e) {
-      e.handle(object);
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Error in getValues of ContainerDataAdaptorImpl");
+      return e.handle(object);
     }
   }
 
@@ -177,8 +176,6 @@ class ContainerDataAdaptorImpl : public ContainerDataAdaptor {
 
     } catch (Exception& e) {
       e.handle(object);
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Error in InsertElement of ContainerDataAdaptorImpl");
     }
   }
 };

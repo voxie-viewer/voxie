@@ -80,7 +80,7 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
 
   bool zoomInitialized = false;
 
-  QPoint mouseLast;
+  vx::Vector<double, 2> mouseLast;
 
   vx::visualization::View3D* view3d;
   const AxisFilter* axisFilter;
@@ -135,9 +135,9 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
    * @param end Contains the 3D Position of the mouse ray's end point. This is
    * the point on the far plane in the view space.
    */
-  void getTransformedMouseRay(QMouseEvent* event, QVector3D translation,
-                              QQuaternion rotation, QVector3D* start,
-                              QVector3D* end);
+  void getTransformedMouseRay(const vx::Vector<double, 2>& mousePos,
+                              QVector3D translation, QQuaternion rotation,
+                              QVector3D* start, QVector3D* end);
 
   /**
    * @brief loadShaders Compiles and loads the vertex and fragment shader.

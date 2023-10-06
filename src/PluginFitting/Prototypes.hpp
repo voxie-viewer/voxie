@@ -86,7 +86,6 @@ class FitPlanePropertiesEntry : public vx::PropertiesEntryBase {
 class FitPlanePropertiesBase {
  public:
   virtual ~FitPlanePropertiesBase();
-  virtual vx::Node* geometricPrimitive() = 0;
   virtual QDBusObjectPath geometricPrimitiveRaw() = 0;
   virtual double maximumDistance() = 0;
   virtual double maximumDistanceRaw() = 0;
@@ -96,7 +95,6 @@ class FitPlanePropertiesBase {
   virtual quint64 point2Raw() = 0;
   virtual quint64 point3() = 0;
   virtual quint64 point3Raw() = 0;
-  virtual vx::Node* surface() = 0;
   virtual QDBusObjectPath surfaceRaw() = 0;
 };
 class FitPlanePropertiesCopy : public FitPlanePropertiesBase {
@@ -105,7 +103,6 @@ class FitPlanePropertiesCopy : public FitPlanePropertiesBase {
  public:
   FitPlanePropertiesCopy(
       const QSharedPointer<const QMap<QString, QVariant>>& properties);
-  vx::Node* geometricPrimitive() override final;
   QDBusObjectPath geometricPrimitiveRaw() override final;
   double maximumDistance() override final;
   double maximumDistanceRaw() override final;
@@ -115,7 +112,6 @@ class FitPlanePropertiesCopy : public FitPlanePropertiesBase {
   quint64 point2Raw() override final;
   quint64 point3() override final;
   quint64 point3Raw() override final;
-  vx::Node* surface() override final;
   QDBusObjectPath surfaceRaw() override final;
 };
 class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
@@ -128,7 +124,7 @@ class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
   FitPlaneProperties(vx::Node* parent);
   ~FitPlaneProperties();
 
-  vx::Node* geometricPrimitive() override final;
+  vx::Node* geometricPrimitive();
   QDBusObjectPath geometricPrimitiveRaw() override final;
   static QSharedPointer<NodeProperty> geometricPrimitiveProperty();
   static NodePropertyTyped<vx::types::NodeReference>
@@ -186,7 +182,7 @@ class FitPlaneProperties : public QObject, public FitPlanePropertiesBase {
  public:
   // Q_PROPERTY(quint64 Point3 READ point3 WRITE setPoint3 NOTIFY point3Changed)
 
-  vx::Node* surface() override final;
+  vx::Node* surface();
   QDBusObjectPath surfaceRaw() override final;
   static QSharedPointer<NodeProperty> surfaceProperty();
   static NodePropertyTyped<vx::types::NodeReference> surfacePropertyTyped();

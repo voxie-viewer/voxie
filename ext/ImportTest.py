@@ -32,7 +32,7 @@ args = voxie.parser.parse_args()
 instance = voxie.Voxie(args)
 
 if args.voxie_action is not None and args.voxie_action != 'Import':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 with instance.createClient() as client:
     with instance.claimExternalOperation(client, args.voxie_operation) as op:

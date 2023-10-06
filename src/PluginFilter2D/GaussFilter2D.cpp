@@ -33,7 +33,8 @@
 using namespace vx;
 using namespace vx::plugin;
 
-GaussFilter2D::GaussFilter2D(QObject* parent) : vx::filter::Filter2D(parent) {}
+GaussFilter2D::GaussFilter2D(vx::plugin::MetaFilter2D* metaFilter)
+    : vx::filter::Filter2D(metaFilter) {}
 
 GaussFilter2D::~GaussFilter2D() {}
 
@@ -133,9 +134,8 @@ void GaussFilter2D::importFilterSettingsXML(QXmlStreamAttributes attributes) {
   this->radius = attributes.value("radius").toInt();
 }
 
-vx::filter::Filter2D* GaussMetaFilter2D::createFilter() const {
-  GaussFilter2D* filter = new GaussFilter2D();
-  // filter->setName("Gauss Filter");
-  filter->setMetaName(this->objectName());
-  return filter;
+vx::filter::Filter2D* GaussMetaFilter2D::createFilter() {
+  return new GaussFilter2D(this);
 }
+
+QString GaussMetaFilter2D::displayName() { return "Gauss Filter"; }

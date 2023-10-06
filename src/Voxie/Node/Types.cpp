@@ -25,7 +25,9 @@
 #include <VoxieClient/DBusTypeList.hpp>
 #include <VoxieClient/DBusUtil.hpp>
 #include <VoxieClient/JsonDBus.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 
+#include <Voxie/DebugOptions.hpp>
 #include <Voxie/IVoxie.hpp>
 
 #include <Voxie/Component/HelpCommon.hpp>
@@ -218,18 +220,25 @@ class LabelListUI : public PropertyUI {
 
       if (!containerData.isNull()) {
         this->labelTable = qSharedPointerDynamicCast<TableData>(
-            containerData->getElement("labelTable"));
+            containerData->getElementOrNull("labelTable"));
 
-        labelViewModel = new LabelViewModel(this->labelTable, nullptr);
-        this->input = setLabelTableView(this->input, labelViewModel);
+        // TODO: What happens if there is no labelTable or it is not a
+        // TableData?
 
-        // visual sugar
-        this->input->setColumnHidden(
-            labelViewModel->getLabelTable()->getColumnIndexByName("Visibility"),
-            true);
+        if (this->labelTable) {
+          labelViewModel = new LabelViewModel(this->labelTable, nullptr);
+          this->input = setLabelTableView(this->input, labelViewModel);
 
-        QObject::connect(this->labelViewModel, &QAbstractItemModel::dataChanged,
-                         this, &LabelListUI::updateExtractLabelProperty);
+          // visual sugar
+          this->input->setColumnHidden(
+              labelViewModel->getLabelTable()->getColumnIndexByName(
+                  "Visibility"),
+              true);
+
+          QObject::connect(this->labelViewModel,
+                           &QAbstractItemModel::dataChanged, this,
+                           &LabelListUI::updateExtractLabelProperty);
+        }
       }
     }
   }
@@ -517,43 +526,23 @@ class FileNameUI : public PropertyUI {
   QWidget* widget() override { return widget_; }
 };
 
-class StringUI : public PropertyUI {
+class StringUI : public PropertyUIImplBase<vx::types::String> {
   QLineEdit* input;
 
  public:
   StringUI(const QSharedPointer<NodeProperty>& property, Node* node)
-      : PropertyUI(property, node) {
+      : PropertyUIImplBase(property, node) {
     input = new QLineEdit();
     QObject::connect(this, &QObject::destroyed, input, &QObject::deleteLater);
 
     // TODO: Use textEdited or textChanged?
     QObject::connect(
-        input, (void (QLineEdit::*)(const QString&)) & QLineEdit::textEdited,
+        input, (void(QLineEdit::*)(const QString&)) & QLineEdit::textEdited,
         this, [this](const QString& value) {
-          // qDebug() << "Value in QLineEdit changed to" << value;
-          if (!this->node()) return;
-          try {
-            this->node()->setNodeProperty(this->property(),
-                                          QVariant::fromValue<QString>(value));
-          } catch (Exception& e) {
-            qCritical() << "Error while updating property value:" << e.what();
-          }
+          if (vx::debug_option::Log_Properties_UI()->enabled())
+            qDebug() << "Value in QLineEdit changed to" << value;
+          this->setValueChecked(value);
         });
-
-    QObject::connect(node, &Node::propertyChanged, this,
-                     [this](const QSharedPointer<NodeProperty>& property2,
-                            const QVariant& value) {
-                       // qDebug() << "Property change of" <<
-                       // property->name()
-                       // << "to" << value;
-                       if (property2 != this->property()) return;
-                       if (!this->node()) return;
-                       // qDebug() << "Property change of" <<
-                       // property->name()
-                       // << "to" << value;
-                       auto valueCast = value.value<QString>();
-                       this->input->setText(valueCast);
-                     });
 
     try {
       auto value = this->node()->getNodeProperty(this->property());
@@ -562,6 +551,12 @@ class StringUI : public PropertyUI {
     } catch (Exception& e) {
       qCritical() << "Error while setting initial value:" << e.what();
     }
+  }
+
+  void updateUIValue(const QString& value) override {
+    if (vx::debug_option::Log_Properties_UI()->enabled())
+      qDebug() << "Property change of" << property()->name() << "to" << value;
+    this->input->setText(value);
   }
 
   QWidget* widget() override { return input; }
@@ -1757,10 +1752,14 @@ T parseJson(const QJsonValue& value) {
 template <>
 struct ParseJsonFun<double> {
   static double parse(const QJsonValue& value) {
-    if (!value.isDouble())
-      throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
-                      "JSON value is not a number");
-    return value.toDouble();
+    // TODO: Move to vx::expectDouble()?
+    if (value.isString() && value.toString() == "NaN")
+      return std::numeric_limits<double>::quiet_NaN();
+    if (value.isString() && value.toString() == "Infinity")
+      return std::numeric_limits<double>::infinity();
+    if (value.isString() && value.toString() == "-Infinity")
+      return -std::numeric_limits<double>::infinity();
+    return vx::expectDouble(value);
   }
 };
 
@@ -1782,6 +1781,23 @@ return val;
 */
 
 template <>
+struct ParseJsonFun<qint32> {
+  static qint32 parse(const QJsonValue& value) {
+    if (!value.isDouble())
+      throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
+                      "JSON value is not a number");
+    auto val = value.toDouble();
+    if (val < std::numeric_limits<qint32>::min())
+      throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
+                      "JSON value is too small");
+    if (val > std::numeric_limits<qint32>::max())
+      throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
+                      "JSON value is too large");
+    return (qint32)val;
+  }
+};
+
+template <>
 struct ParseJsonFun<quint32> {
   static quint32 parse(const QJsonValue& value) {
     if (!value.isDouble())
@@ -1794,7 +1810,7 @@ struct ParseJsonFun<quint32> {
     if (val > std::numeric_limits<quint32>::max())
       throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
                       "JSON value is too large");
-    return (uint32_t)val;
+    return (quint32)val;
   }
 };
 
@@ -1810,7 +1826,7 @@ struct ParseJsonFun<quint64> {
                       "JSON value is negative");
     // TODO: Large values will be rounded during JSON parsing. Avoid that
     // somehow?
-    return (uint64_t)val;
+    return (quint64)val;
   }
 };
 
@@ -1823,7 +1839,7 @@ struct ParseJsonFun<qint64> {
     auto val = value.toDouble();
     // TODO: Large values will be rounded during JSON parsing. Avoid that
     // somehow?
-    return (int64_t)val;
+    return (qint64)val;
   }
 };
 
@@ -1844,6 +1860,21 @@ struct ParseJsonFun<QString> {
       throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
                       "JSON value is not a string");
     return value.toString();
+  }
+};
+
+template <typename T>
+struct ParseJsonFun<QList<T>> {
+  static QList<T> parse(const QJsonValue& value) {
+    if (!value.isArray())
+      throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
+                      "JSON value is not an array");
+    QJsonArray array = value.toArray();
+    QList<T> result;
+    for (const auto& member : array) {
+      result << parseJson<T>(member);
+    }
+    return result;
   }
 };
 
@@ -1893,10 +1924,11 @@ struct ParseJsonFun<std::tuple<T, T, T, T>> {
   }
 };
 
-// TODO: Make this generic?
-template <>
-struct ParseJsonFun<std::tuple<QString, quint32, QString>> {
-  static std::tuple<QString, quint32, QString> parse(const QJsonValue& value) {
+// TODO: Make this independent of the number of parameters, avoid special case
+// when all the parameters are the same?
+template <typename T, typename U, typename V>
+struct ParseJsonFun<std::tuple<T, U, V>> {
+  static std::tuple<T, U, V> parse(const QJsonValue& value) {
     if (!value.isArray())
       throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
                       "JSON value is not an array");
@@ -1904,9 +1936,8 @@ struct ParseJsonFun<std::tuple<QString, quint32, QString>> {
     if (array.size() != 3)
       throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
                       "JSON array does not contain 3 entries");
-    return std::make_tuple(parseJson<QString>(array[0]),
-                           parseJson<quint32>(array[1]),
-                           parseJson<QString>(array[2]));
+    return std::tuple<T, U, V>(parseJson<T>(array[0]), parseJson<U>(array[1]),
+                               parseJson<V>(array[2]));
   }
 };
 
@@ -2017,8 +2048,7 @@ return res;
 }
 */
 
-void verifyDataType(NodeProperty& property,
-                    const std::tuple<QString, quint32, QString>& value) {
+void verifyDataType(const std::tuple<QString, quint32, QString>& value) {
   try {
     vx::parseDataTypeStruct(value);
   } catch (Exception& e) {
@@ -2026,15 +2056,12 @@ void verifyDataType(NodeProperty& property,
                     "Value ('" + std::get<0>(value) + "', " +
                         QString::number(std::get<1>(value)) + ", '" +
                         std::get<2>(value) +
-                        "' is not a valid enum entry for property " +
-                        property.name() + ": " + e.message());
+                        "' is not a valid data type: " + e.message());
   }
 }
 
 void verifyValueColorMapping(
-    NodeProperty& property,
     const QList<std::tuple<double, vx::TupleVector<double, 4>, int>>& value) {
-  Q_UNUSED(property);
   double lastVal = -std::numeric_limits<double>::infinity();
   bool isFirst = true;
   for (const auto& entry : value) {

@@ -39,7 +39,7 @@ instance = context.createInstance()
 # Note: The order of the entries is preserved, but the RowID is *not* stored
 
 if args.voxie_action != 'Export' and args.voxie_action != 'Import':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 if args.voxie_action == 'Export':
     with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationExport']).ClaimOperationAndCatch() as op:
@@ -80,7 +80,7 @@ if args.voxie_action == 'Export':
         f = io.StringIO()
         json.dump(result, f, allow_nan=False, sort_keys=True,
                   ensure_ascii=False, indent=2)
-        s = bytes(f.getvalue(), 'utf-8')
+        s = bytes(f.getvalue() + '\n', 'utf-8')
         with open(filename, 'wb') as file:
             file.write(s)
 

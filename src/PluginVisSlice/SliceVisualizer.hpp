@@ -41,7 +41,6 @@
 
 #include <QRadioButton>
 #include <Voxie/Data/InitializeColorizeWorker.hpp>
-#include <Voxie/Data/Slice.hpp>
 #include <Voxie/PropertyObjects/PlaneNode.hpp>
 #include <VoxieBackend/Data/SliceImage.hpp>
 
@@ -115,10 +114,14 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   InfoWidget* infoWidget;
   // data
   vx::VolumeNode* mainVolumeNode = nullptr;
-  vx::PlaneNode* planeProperty = nullptr;
-  vx::Slice* _slice = nullptr;
   vx::SliceImage _sliceImage;
   vx::SliceImage _filteredSliceImage;
+
+  // Only used if no plane is connected
+  vx::TupleVector<double, 4> standaloneOrientation =
+      vx::TupleVector<double, 4>(1, 0, 0, 0);
+  vx::TupleVector<double, 3> standaloneOrigin =
+      vx::TupleVector<double, 3>(0, 0, 0);
 
   QSharedPointer<vx::HistogramProvider> sliceHistogramProvider;
   QSharedPointer<vx::HistogramProvider> histogramProvider;
@@ -179,8 +182,9 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
    */
   ToolSelection* selectionTool;
 
-  void doGenerateSliceImage(vx::Slice* slice, const QRectF& sliceArea,
-                            const QSize& imageSize,
+  void doGenerateSliceImage(vx::PlaneInfo cuttingPlane,
+                            const QSharedPointer<vx::VolumeData>& volumeData,
+                            const QRectF& sliceArea, const QSize& imageSize,
                             vx::InterpolationMethod interpolation =
                                 vx::InterpolationMethod::NearestNeighbor);
   void runSliceImageGeneratorWorker();
@@ -281,6 +285,14 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
    */
   vx::VolumeNode* dataSet() { return this->mainVolumeNode; }
 
+  QSharedPointer<vx::VolumeData> volumeData() {
+    auto volume = dataSet();
+    if (!volume)
+      return QSharedPointer<vx::VolumeData>();
+    else
+      return volume->volumeData();
+  }
+
   /**
    * @return the current unfiltered slice image
    */
@@ -342,28 +354,7 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
                                     const QSize& canvasSize);
   QRectF currentPlaneArea();
 
-  /**
-   * @return the slice associated with this visualizer. This pointer originates
-   * from outside the plugin.
-   */
-  virtual vx::Slice* slice() final { return this->_slice; }
-
   void updateBoundingBox();
-
-  /**
-   * Resets the current plane area to the bounding rectangle putting it into the
-   * upper left corner.
-   */
-  void resetPlaneArea() {
-    // TODO: Replace this with code based on View3D / the volume bounding box?
-
-    //_currentPlaneArea = slice()->getBoundingRectangle();
-    QRectF bbox = slice()->getBoundingRectangle();
-    this->properties->setCenterPoint(bbox.center());
-    this->properties->setVerticalSize(
-        bbox.height() *
-        1.1);  // TODO: Use diagonal though entire volume instead?
-  }
 
   /**
    * @param multiplier zooms the plane area by a given delta. Multiplier is
@@ -414,31 +405,12 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
 
   static QRectF zoomedArea(const QRectF& area, qreal zoom);
 
-  /**
-   * @brief rotationChanged is called when the rotation of the plane is changed
-   * by the user.
-   * @param rotation is the new rotation of the plane
-   */
-  void rotationChanged(QQuaternion rotation);
-
-  /**
-   * @brief originChanged is called when the origin of the plane is changed by
-   * the user.
-   * @param origin is the new origin of the plane
-   */
-  void originChanged(QVector3D origin);
-
-  void setRotation(QQuaternion rotation) override {
-    if (this->slice()) {
-      this->slice()->setRotation(rotation);
-    }
-  }
-
-  void setOrigin(QVector3D origin) {
-    if (this->slice()) {
-      this->slice()->setOrigin(origin);
-    }
-  }
+  // These methods will update either the internal plane settings or the
+  // settings of the connected plane
+  void setRotation(QQuaternion rotation) override;
+  void setOrigin(QVector3D origin);
+  // Set both rotation and origin
+  void setPlaneInfo(const vx::PlaneInfo& plane, bool adjustCenterPoint);
 
   QVariant getNodePropertyCustom(QString key) override;
   void setNodePropertyCustom(QString key, QVariant value) override;
@@ -454,6 +426,15 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
 
   vx::SharedFunPtr<RenderFunction> getRenderFunction() override;
 
+  // TODO: Should probably be removed
+  vx::PlaneInfo getCuttingPlane();
+
+  /**
+   * @brief shifts slice plane's origin to another point on the plane.
+   * @param planePoint point on this slice's plane.
+   */
+  void movePlaneOrigin(const QPointF& planePoint);
+
  public Q_SLOTS:
   /**
    * @brief onSliceImageGenerated is called when a slice image has been
@@ -467,20 +448,6 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
    * @param image
    */
   void onSliceImageFiltered(vx::SliceImage image);
-  /**
-   * @brief onSliceChanged is called when the slice changes
-   * @param slice
-   * @param oldPlane
-   * @param newPlane
-   * @param equivalent
-   */
-  void onSliceChanged(const vx::Slice* slice, const vx::PlaneInfo& oldPlane,
-                      const vx::PlaneInfo& newPlane, bool equivalent);
-  /**
-   * @brief onDatasetChanged is called when the dataset associated with the
-   * slice changes
-   */
-  void onDatasetChanged();
   /**
    * @brief applyFilters is called when the threaded filter call should be
    * invoked. It clones the currently generated sliceimage.
@@ -524,8 +491,9 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   void signalRequestHistogram(vx::SliceImage& image);
 
   void imageMouseMove(QMouseEvent* e, const QPointF& pointPlane,
-                      const QVector3D& threeDPoint, double valUnf,
-                      double valFilt, double valNearest, double valLinear);
+                      const QVector3D& threeDPoint,
+                      const vx::Vector<double, 3>* posVoxelPtr,
+                      double valNearest, double valLinear);
 
   // Signals forwarded from GeometricPrimitiveNode
   void newMeasurement();

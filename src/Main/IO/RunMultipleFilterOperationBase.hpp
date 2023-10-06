@@ -177,7 +177,7 @@ class FilterGraph {
   FilterGraph(
       QSharedPointer<RunMultipleFilterOperationBase> runMultipleFilterOperation,
       QList<vx::FilterNode*> filterList) {
-    this->root = QSharedPointer<RunFilterNode>(new RunFilterNode(nullptr));
+    this->root = makeSharedQObject<RunFilterNode>(nullptr);
     this->operation = runMultipleFilterOperation;
     for (vx::FilterNode* filter : filterList) {
       // add top level filter to root
@@ -185,7 +185,7 @@ class FilterGraph {
         // dont add filters which are not allowed to run (e.g. filters w/o
         // parent Nodes)
         if (canFilterRun(filter)) {
-          QSharedPointer<RunFilterNode> node(new RunFilterNode(filter));
+          auto node = makeSharedQObject<RunFilterNode>(filter);
           node->rootNode = root;
           node->operation = operation;
           root->children.append(node);
@@ -286,7 +286,7 @@ class FilterGraph {
   QSharedPointer<RunFilterNode> getOrCreateNode(vx::FilterNode* filterNode) {
     QSharedPointer<RunFilterNode> node = getNodeInChildren(filterNode, root);
     if (node.isNull()) {
-      node = QSharedPointer<RunFilterNode>(new RunFilterNode(filterNode));
+      node = makeSharedQObject<RunFilterNode>(filterNode);
       node->rootNode = root;
       node->operation = operation;
     }

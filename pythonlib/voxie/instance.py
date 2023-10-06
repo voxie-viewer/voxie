@@ -129,6 +129,10 @@ class InstanceImpl(voxie.DBusObject):
             print('Error while opening file: ' + str(e), file=sys.stderr)
             return None
 
+    # Automatically set the timeout for Import
+    def Import(self, fileName, options={}, *, DBusObject_timeout=timeoutValue):
+        return self._getDBusMethod('Import')(fileName, options, DBusObject_timeout=DBusObject_timeout)
+
     @property
     def DebugOptions(self):
         if self.__DebugOptions is not None:

@@ -133,12 +133,18 @@ SliceVisualizer::SliceVisualizer()
       properties, &SliceProperties::plane, &SliceProperties::planeChanged,
       &vx::PlaneNode::rotationChanged, this,
       &SliceVisualizer::rotationChangedForward);
-  QObject::connect(this, &SliceVisualizer::rotationChangedForward, this,
-                   [this]() {
-                     // qDebug() << "&SliceVisualizer::rotationChangedForward";
-                     this->emitCustomPropertyChanged(
-                         this->properties->orientationProperty());
-                   });
+  QObject::connect(
+      this, &SliceVisualizer::rotationChangedForward, this, [this]() {
+        // qDebug() << "&SliceVisualizer::rotationChangedForward";
+        this->emitCustomPropertyChanged(
+            this->properties->orientationProperty());
+        // Keep standalone value updated to keep value when plane is
+        // disconnected
+        this->standaloneOrientation =
+            PropertyValueConvertRaw<vx::TupleVector<double, 4>,
+                                    QQuaternion>::toRaw(this->properties
+                                                            ->orientation());
+      });
 
   forwardSignalFromPropertyNodeOnReconnect(
       properties, &SliceProperties::plane, &SliceProperties::planeChanged,
@@ -148,6 +154,12 @@ SliceVisualizer::SliceVisualizer()
       this, &SliceVisualizer::originChangedForward, this, [this]() {
         // qDebug() << "&SliceVisualizer::originChangedForward";
         this->emitCustomPropertyChanged(this->properties->originProperty());
+        // Keep standalone value updated to keep value when plane is
+        // disconnected
+        this->standaloneOrigin =
+            PropertyValueConvertRaw<vx::TupleVector<double, 3>,
+                                    QVector3D>::toRaw(this->properties
+                                                          ->origin());
       });
 
   forwardSignalFromPropertyNodeOnReconnect(
@@ -168,6 +180,10 @@ SliceVisualizer::SliceVisualizer()
       &SliceProperties::labelContainerChanged, &DataNode::dataChangedFinished,
       this, &SliceVisualizer::labelContainerChangedFinished);
 
+  // TODO: Remove?
+  QObject::connect(this, &SliceVisualizer::volumeDataChangedFinished, this,
+                   &SliceVisualizer::signalRequestSliceImageUpdate);
+
   this->view = new QWidget();
   this->setAutomaticDisplayName("Slice Visualizer");
 
@@ -182,69 +198,29 @@ SliceVisualizer::SliceVisualizer()
             if (dataset == this->mainVolumeNode) return;
 
             if (this->mainVolumeNode) {
+              // TODO: What does this disconnect do? Remove displayNameChanged
+              // connection?
               this->disconnect(this->mainVolumeNode, 0, this, 0);
-              this->disconnect(this->_slice, 0, this, 0);
               this->setAutomaticDisplayName("Slice Visualizer");
               this->mainVolumeNode = nullptr;
-              this->_slice = nullptr;
-              updateCreatePlaneNode();
               this->redraw();
               Q_EMIT this->signalRequestSliceImageUpdate();
             }
             if (dataset) {
               this->mainVolumeNode = dataset;
-              this->_slice = new Slice(dataset);
-              updateCreatePlaneNode();
-              if (this->planeProperty) {
-                this->slice()->setPlane(*planeProperty->plane().data());
-              }
               this->initializeSV();
             }
           });
 
-  connect(properties, &SliceProperties::planeChanged, this,
-          [this](vx::Node* value) {
-            auto plane = dynamic_cast<PlaneNode*>(value);
-            if (value && !plane) {
-              qWarning() << "Cannot cast Plane property to PlaneNode";
-              return;
-            }
-            if (plane == this->planeProperty) return;
-
-            if (plane) {
-              this->planeProperty = plane;
-              if (this->slice())
-                this->slice()->setPlane(*planeProperty->plane().data());
-
-              connect(this->planeProperty, &PlaneNode::rotationChanged, this,
-                      [this](QQuaternion rotation) {
-                        propagateToPlaneNode = false;
-                        this->setRotation(rotation);
-                        propagateToPlaneNode = true;
-                      });
-              connect(this->planeProperty, &PlaneNode::originChanged, this,
-                      [this](QVector3D origin) {
-                        propagateToPlaneNode = false;
-                        this->setOrigin(origin);
-                        propagateToPlaneNode = true;
-                      });
-
-            } else {
-              // TODO: Don't use broad disconnect() calls
-              disconnect(this->planeProperty, 0, this, 0);
-              this->planeProperty = nullptr;
-            }
-            updateCreatePlaneNode();
-          });
-
   // Update image when interpolation is changed
   connect(properties, &SliceProperties::interpolationChanged, this, [this]() {
-    doGenerateSliceImage(this->_slice, currentPlaneArea(), canvasSize(),
+    doGenerateSliceImage(this->getCuttingPlane(), this->volumeData(),
+                         currentPlaneArea(), canvasSize(),
                          getInterpolation(this->properties));
   });
 
   this->view->setMinimumSize(300 / 96.0 * this->view->logicalDpiX(),
-                             200 / 96.0 * this->view->logicalDpiX());
+                             200 / 96.0 * this->view->logicalDpiY());
 
   this->_imageDisplayingWidget =
       new ImagePaintWidget(this);  // has dependencies in tools
@@ -340,7 +316,7 @@ SliceVisualizer::SliceVisualizer()
             // send over the new color mappings to the histogram widget and
             // update it
             QSharedPointer<Colorizer> colorizer =
-                QSharedPointer<Colorizer>(new Colorizer());
+                makeSharedQObject<Colorizer>();
             colorizer->setEntries(value);
             _histogramWidget->setColorizer(colorizer);
           });
@@ -467,41 +443,12 @@ SliceVisualizer::SliceVisualizer()
   createPlaneNodeAction = new QAction("Create plane property node", this);
   QObject::connect(createPlaneNodeAction, &QAction::triggered, this,
                    &SliceVisualizer::createPlaneNode);
+  connect(properties, &SliceProperties::planeChanged, this,
+          &SliceVisualizer::updateCreatePlaneNode);
   updateCreatePlaneNode();
   addContextMenuAction(createPlaneNodeAction);
 
   addSegmentationFunctionality(10);
-}
-
-QWidget* SliceVisualizer::getCustomPropertySectionContent(const QString& name) {
-  if (name == "de.uni_stuttgart.Voxie.SliceVisualizer.Histogram") {
-    return histogramBox;
-  } else if (name == "de.uni_stuttgart.Voxie.SliceVisualizer.Info") {
-    return infoWidget;
-  } else {
-    return Node::getCustomPropertySectionContent(name);
-  }
-}
-
-void SliceVisualizer::initializeSV() {
-  resetPlaneArea();
-
-  // Slice update
-  // This has to be before the Slice::planeChanged connections below to make
-  // sure the slice has been updated before the redraw is started. TODO: clean
-  // this up to avoid dependencies on the order of the connections.
-  connect(this->_slice, &Slice::planeChanged, this,
-          &SliceVisualizer::onSliceChanged);
-  connect(this->_slice->getDataset(), &VolumeNode::changed, this,
-          &SliceVisualizer::onDatasetChanged);
-
-  if (mainVolumeNode != nullptr) {
-    this->setAutomaticDisplayName(this->dataSet()->displayName());
-
-    connect(this->mainVolumeNode, &Node::displayNameChanged, this, [this] {
-      this->setAutomaticDisplayName(this->dataSet()->displayName());
-    });
-  }
 
   for (const auto& layer : this->layers()) {
     connect(this, &SliceVisualizer::resized, layer.data(),
@@ -524,32 +471,45 @@ void SliceVisualizer::initializeSV() {
           parameters = ParameterCopy::getParameters(this);
         },
         Qt::DirectConnection);
+  }
+}
+
+QWidget* SliceVisualizer::getCustomPropertySectionContent(const QString& name) {
+  if (name == "de.uni_stuttgart.Voxie.SliceVisualizer.Histogram") {
+    return histogramBox;
+  } else if (name == "de.uni_stuttgart.Voxie.SliceVisualizer.Info") {
+    return infoWidget;
+  } else {
+    return Node::getCustomPropertySectionContent(name);
+  }
+}
+
+// TODO: Clean up, remove SliceVisualizer::initializeSV()
+void SliceVisualizer::initializeSV() {
+  // updateBoundingBox() is needed otherwise the zoom will be reset to the wrong
+  // value
+  this->updateBoundingBox();
+  view3d()->resetView(View3DProperty::LookAt | View3DProperty::ZoomLog);
+
+  if (mainVolumeNode != nullptr) {
+    this->setAutomaticDisplayName(this->dataSet()->displayName());
+
+    connect(this->mainVolumeNode, &Node::displayNameChanged, this, [this] {
+      this->setAutomaticDisplayName(this->dataSet()->displayName());
+    });
+  }
+
+  for (const auto& layer : this->layers()) {
     layer->triggerRedraw();  // Make sure all layers are drawn at least once
   }
 
+  // TODO: This was broken by the removal of the vx::Slice class, fix this?
+  // (Without this, the filter won't be notified if the plane gets changed.)
+  /*
   connect(this->_slice, &Slice::planeChanged,
           this->_filterChain2DWidget->getFilterChain(),
           &vx::filter::FilterChain2D::onPlaneChanged, Qt::DirectConnection);
-
-  if (mainVolumeNode) {
-    //_colorizerWidget->setVolumeNode(this->dataSet());  // TODO
-
-    connect(this->_slice->getDataset(), &VolumeNode::changed, this,
-            &SliceVisualizer::onDatasetChanged);
-
-    // TODO
-    /*
-    this->initializeWorker = new InitializeColorizeWorker(dataSet());
-    this->initializeWorker->setAutoDelete(false);
-    connect(initializeWorker, &InitializeColorizeWorker::init, this,
-            &SliceVisualizer::initializeFinished);
-    connect(
-        this->_colorizerWidget, &SliceImageColorizerWidget::startInitProcess,
-        [this]() { QThreadPool::globalInstance()->start(initializeWorker); });
-    */
-  }
-
-  Q_EMIT this->signalRequestSliceImageUpdate();
+  */
 }
 
 double SliceVisualizer::getCurrentPixelSize(SlicePropertiesBase* properties,
@@ -603,39 +563,35 @@ void SliceVisualizer::switchToolTo(Visualizer2DTool* tool) {
 }
 
 void SliceVisualizer::updateSliceImageFromSlice() {
-  if (slice() == nullptr) {
-    return;
-  }
-
   int width = this->canvasWidth();
   int height = this->canvasHeight();
   if (width > 0 && height > 0 && currentPlaneArea().height() > 0 &&
       currentPlaneArea().width() > 0) {
-    doGenerateSliceImage(this->_slice, currentPlaneArea(), QSize(width, height),
+    doGenerateSliceImage(this->getCuttingPlane(), this->volumeData(),
+                         currentPlaneArea(), QSize(width, height),
                          getInterpolation(this->properties));
   }
 }
 
 void SliceVisualizer::doGenerateSliceImage(
-    vx::Slice* slice, const QRectF& sliceArea, const QSize& imageSize,
-    vx::InterpolationMethod interpolation) {
-  if (slice == nullptr) {
-    return;
-  }
+    vx::PlaneInfo cuttingPlane,
+    const QSharedPointer<vx::VolumeData>& volumeData, const QRectF& sliceArea,
+    const QSize& imageSize, vx::InterpolationMethod interpolation) {
+  if (!volumeData) return;
+
   if (_imageQueueWorker != nullptr) {
     delete _imageQueueWorker;
   }
 
   if (mainVolumeNode) {
-    auto plane = slice->getCuttingPlane();
+    auto plane = cuttingPlane;
     auto adjustedRotation = this->dataSet()->getAdjustedRotation();
     auto adjustedPosition = this->dataSet()->getAdjustedPosition();
     plane.origin =
         adjustedRotation.inverted() * (plane.origin - adjustedPosition);
     plane.rotation = (adjustedRotation.inverted() * plane.rotation);
-    _imageQueueWorker =
-        new ImageGeneratorWorker(slice->getDataset()->volumeData(), plane,
-                                 sliceArea, imageSize, interpolation);
+    _imageQueueWorker = new ImageGeneratorWorker(volumeData, plane, sliceArea,
+                                                 imageSize, interpolation);
     if (!_imageWorkerRunning) {
       runSliceImageGeneratorWorker();
     }
@@ -647,25 +603,24 @@ QVariant SliceVisualizer::getNodePropertyCustom(QString key) {
     return this->_filterChain2DWidget->getFilterChain()->toXMLString();
   } else if (key ==
              "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Orientation") {
-    // TODO: This probably should return something even if no volume is
-    // connected
-    if (this->_slice)
-      return QVariant::fromValue(
-          PropertyValueConvertRaw<vx::TupleVector<double, 4>, QQuaternion>::
-              toRaw(this->_slice->getCuttingPlane().rotation));
+    auto plane = dynamic_cast<PlaneNode*>(this->properties->plane());
+    if (plane)
+      return QVariant::fromValue<vx::TupleVector<double, 4>>(
+          PropertyValueConvertRaw<vx::TupleVector<double, 4>,
+                                  QQuaternion>::toRaw(plane->plane()
+                                                          ->rotation));
     else
       return QVariant::fromValue<vx::TupleVector<double, 4>>(
-          vx::TupleVector<double, 4>(1, 0, 0, 0));
+          this->standaloneOrientation);
   } else if (key == "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Origin") {
-    // TODO: This probably should return something even if no volume is
-    // connected
-    if (this->_slice)
+    auto plane = dynamic_cast<PlaneNode*>(this->properties->plane());
+    if (plane)
       return QVariant::fromValue(
           PropertyValueConvertRaw<vx::TupleVector<double, 3>, QVector3D>::toRaw(
-              this->_slice->getCuttingPlane().origin));
+              plane->plane()->origin));
     else
       return QVariant::fromValue<vx::TupleVector<double, 3>>(
-          vx::TupleVector<double, 3>(0, 0, 0));
+          this->standaloneOrigin);
   } else {
     return VisualizerNode::getNodePropertyCustom(key);
   }
@@ -677,18 +632,16 @@ void SliceVisualizer::setNodePropertyCustom(QString key, QVariant value) {
   } else if (key ==
              "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Orientation") {
     // Note: If there is a plane, setting the origin / orientation is ignored
-    // TODO: This probably should do something even if no volume is connected
-    if (this->_slice && !properties->plane())
-      this->_slice->setRotation(
-          PropertyValueConvertRaw<vx::TupleVector<double, 4>, QQuaternion>::
-              fromRaw(Node::parseVariant<vx::TupleVector<double, 4>>(value)));
+    // TODO: Should this be the case?
+    if (!properties->plane())
+      this->standaloneOrientation =
+          Node::parseVariant<vx::TupleVector<double, 4>>(value);
   } else if (key == "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Origin") {
     // Note: If there is a plane, setting the origin / orientation is ignored
-    // TODO: This probably should do something even if no volume is connected
-    if (this->_slice && !properties->plane())
-      this->_slice->setOrigin(
-          PropertyValueConvertRaw<vx::TupleVector<double, 3>, QVector3D>::
-              fromRaw(Node::parseVariant<vx::TupleVector<double, 3>>(value)));
+    // TODO: Should this be the case?
+    if (!properties->plane())
+      this->standaloneOrigin =
+          Node::parseVariant<vx::TupleVector<double, 3>>(value);
   } else {
     VisualizerNode::setNodePropertyCustom(key, value);
   }
@@ -740,23 +693,21 @@ void SliceVisualizer::initializeFinished(QVector<float> values) {
 }
 
 void SliceVisualizer::createPlaneNode() {
-  if (this->slice()) {
-    if (this->properties->plane()) {
-      qWarning() << "SliceVisualizer::createPlaneNode(): SliceVisualizer "
-                    "already has a plane";
-      return;
-    }
-    auto plane = this->slice()->getPlane();
-    auto planeProperty = createNode<PlaneNode>({
-        {Prop::Orientation, plane.rotation},
-        {Prop::Origin, plane.origin},
-    });
-    this->properties->setPlane(planeProperty.data());
+  if (this->properties->plane()) {
+    qWarning() << "SliceVisualizer::createPlaneNode(): SliceVisualizer "
+                  "already has a plane";
+    return;
   }
+  auto plane = this->getCuttingPlane();
+  auto planeProperty = createNode<PlaneNode>({
+      {Prop::Orientation, plane.rotation},
+      {Prop::Origin, plane.origin},
+  });
+  this->properties->setPlane(planeProperty.data());
 }
 
 void SliceVisualizer::updateCreatePlaneNode() {
-  createPlaneNodeAction->setEnabled(this->slice() && !planeProperty);
+  createPlaneNodeAction->setEnabled(!this->properties->plane());
 }
 
 void SliceVisualizer::redraw() { _imageDisplayingWidget->update(); }
@@ -771,9 +722,8 @@ void SliceVisualizer::applyFilters() {
 }
 
 void SliceVisualizer::runFilterWorker() {
-  if (this->slice() == nullptr) {
-    return;
-  }
+  if (!this->volumeData()) return;
+
   if (_filterWorkerRunning || _filterImageWorked) {
     return;
   }
@@ -782,25 +732,56 @@ void SliceVisualizer::runFilterWorker() {
   this->_filterChain2DWidget->applyFilter(this->_filterQueueImage);
 }
 
-void SliceVisualizer::onSliceChanged(const vx::Slice* slice,
-                                     const vx::PlaneInfo& oldPlane,
-                                     const vx::PlaneInfo& newPlane,
-                                     bool equivalent) {
-  Q_UNUSED(slice);
-  if (equivalent && oldPlane.origin != newPlane.origin) {
+vx::PlaneInfo SliceVisualizer::getCuttingPlane() {
+  return vx::PlaneInfo(this->properties->origin(),
+                       this->properties->orientation());
+}
+
+void SliceVisualizer::movePlaneOrigin(const QPointF& planePoint) {
+  auto oldPlane = this->getCuttingPlane();
+  auto origin = oldPlane.get3DPoint(planePoint.x(), planePoint.y());
+
+  // TODO: Allow for rounding errors here?
+  if (origin == oldPlane.origin) return;
+
+  auto newPlane = oldPlane;
+  newPlane.origin = origin;
+  setPlaneInfo(newPlane, true);
+}
+
+// TODO: Remove setRotation() and setOrigin()?
+void SliceVisualizer::setRotation(QQuaternion rotation) {
+  // TODO: What should be passed for adjustCenterPoint here? Was:
+  // old.isOnPlane(origin)
+  this->setPlaneInfo(vx::PlaneInfo(this->properties->origin(), rotation),
+                     false);
+}
+void SliceVisualizer::setOrigin(QVector3D origin) {
+  // TODO: What should be passed for adjustCenterPoint here? Was:
+  // (old.normal() - this->cuttingPlane.normal()).lengthSquared() < 1e-8
+  this->setPlaneInfo(vx::PlaneInfo(origin, this->properties->orientation()),
+                     false);
+}
+void SliceVisualizer::setPlaneInfo(const vx::PlaneInfo& newPlane,
+                                   bool adjustCenterPoint) {
+  auto oldPlane = getCuttingPlane();
+
+  if (adjustCenterPoint && oldPlane.origin != newPlane.origin) {
     QPointF difference = newPlane.get2DPlanePoint(oldPlane.origin);
     this->properties->setCenterPoint(this->properties->centerPoint() +
                                      difference);
   }
 
-  if (this->propagateToPlaneNode) {
-    this->originChanged(newPlane.origin);
-    this->rotationChanged(newPlane.rotation);
+  auto plane = dynamic_cast<PlaneNode*>(this->properties->plane());
+  if (plane) {
+    plane->setRotation(newPlane.rotation);
+    plane->setOrigin(newPlane.origin);
+  } else {
+    this->properties->setOrientation(newPlane.rotation);
+    this->properties->setOrigin(newPlane.origin);
   }
-  Q_EMIT signalRequestSliceImageUpdate();
-}
 
-void SliceVisualizer::onDatasetChanged() {
+  // TODO: Is this needed?
   Q_EMIT signalRequestSliceImageUpdate();
 }
 
@@ -826,7 +807,10 @@ QSize SliceVisualizer::canvasSize() {
   return this->_imageDisplayingWidget->size();
 }
 
+// TODO: Lookups should not be done by object name (and the object name for the
+// layers probably should not be set in the constructor)
 int SliceVisualizer::getLayerIndexByName(QString name) {
+  // TODO: This is broken
   int layerIndex = 0;
   for (int i = 0; i < this->layers().size(); i++) {
     if (this->layers()[0]->objectName().compare(name)) layerIndex = i;
@@ -1068,28 +1052,6 @@ void SliceVisualizer::addToDrawStack(Layer* self, const QImage& image) {
   }
   _drawStack.remove(idx);
   _drawStack.insert(idx, image);
-}
-
-// TODO: clean up the plane change notification code
-
-void SliceVisualizer::rotationChanged(QQuaternion rotation) {
-  if (this->planeProperty) {
-    this->planeProperty->setRotation(rotation);
-  } else {
-    // When there is a slice connected, the rotationChangedForward signal will
-    // already be triggered by setRotation()
-    this->emitCustomPropertyChanged(this->properties->orientationProperty());
-  }
-}
-
-void SliceVisualizer::originChanged(QVector3D origin) {
-  if (this->planeProperty) {
-    this->planeProperty->setOrigin(origin);
-  } else {
-    // When there is a slice connected, the originChangedForward signal will
-    // already be triggered by setOrigin()
-    this->emitCustomPropertyChanged(this->properties->originProperty());
-  }
 }
 
 bool SliceVisualizer::isAllowedParent(vx::NodeKind object) {

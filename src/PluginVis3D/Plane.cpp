@@ -29,11 +29,16 @@
 #include <PluginVis3D/Helper/PlaneShader.hpp>
 
 #include <Voxie/Data/Color.hpp>
+#include <Voxie/Data/Slice.hpp>
+#include <Voxie/Data/VolumeNode.hpp>
+
 #include <Voxie/Node/NodePrototype.hpp>
 
 #include <Voxie/PropertyObjects/PlaneNode.hpp>
 
 #include <Voxie/Vis/OpenGLWidget.hpp>
+
+#include <VoxieBackend/Data/SliceImage.hpp>
 
 #include <QtCore/QTimer>
 
@@ -149,9 +154,13 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
               if (textureTimer.isActive()) textureTimer.stop();
               loadSliceImage(planeData->resolution());
               shareContext->select();
-              auto slice = planeData->getSlice();
+              // TODO: Properly calculate bounding box for slice
+              /*
+              auto volume = planeData->getVolume();
               auto bbox = slice ? slice->getBoundingRectangle()
                                 : planeData->getBoundingRectangle();  // TODO
+              */
+              auto bbox = planeData->getBoundingRectangle();
               planeShader.updateBuffers(planeData, bbox);
               // TODO: update();
               shareContext->unselect();
@@ -159,9 +168,13 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
 
     // TODO
     shareContext->select();
-    auto slice = planeData->getSlice();
+    // TODO: Properly calculate bounding box for slice
+    /*
+    auto volume = planeData->getVolume();
     auto bbox = slice ? slice->getBoundingRectangle()
                       : planeData->getBoundingRectangle();  // TODO
+    */
+    auto bbox = planeData->getBoundingRectangle();
     planeShader.updateBuffers(planeDataPtr, bbox);
 
     planeData = planeDataPtr;
@@ -185,7 +198,7 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
 
               if (!value) {
                 planeData->setDrawTexture(false);
-                planeData->removeSlice();
+                planeData->removeVolume();
                 if (this->planeObj) this->planeObj->triggerRendering();
               } else {
                 auto volumeNode = dynamic_cast<VolumeNode*>(value);
@@ -198,23 +211,13 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
 
                 planeData->setDrawTexture(properties->showVolumeSlice());
 
-                auto slice2 = QSharedPointer<Slice>(new Slice(volumeNode));
-
-                slice2->setOrigin(plane->plane()->origin);
-                connect(plane, &PlaneNode::originChanged,
-                        [=] { slice2->setOrigin(plane->plane()->origin); });
-                connect(volumeNode, &VolumeNode::adjustedPositionChanged, [=] {
-                  slice2->setOrigin(plane->plane()->origin);
-                  requestLoadSliceImage();
-                });
-                slice2->setRotation(plane->plane()->rotation);
-                connect(plane, &PlaneNode::rotationChanged,
-                        [=] { slice2->setRotation(plane->plane()->rotation); });
-                connect(volumeNode, &VolumeNode::adjustedRotationChanged, [=] {
-                  slice2->setRotation(plane->plane()->rotation);
-                  requestLoadSliceImage();
-                });
-                planeData->setSlice(slice2);
+                // TODO: Where is this disconnected?
+                connect(volumeNode, &VolumeNode::adjustedPositionChanged, this,
+                        &PlanePerShareGroup::requestLoadSliceImage);
+                // TODO: Where is this disconnected?
+                connect(volumeNode, &VolumeNode::adjustedRotationChanged, this,
+                        &PlanePerShareGroup::requestLoadSliceImage);
+                planeData->setVolume(volumeNode->thisShared());
                 requestLoadSliceImage();
               }
             });
@@ -269,16 +272,26 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
 
     qDebug() << "LSI";
 
-    auto slice = planeData->getSlice();
+    auto volume = planeData->getVolume();
     // auto bbox = planeData->getBoundingRectangle();
     // TODO: actually make the slice this large
+    // TODO: Properly calculate bounding box for slice
+    /*
+    auto volume = planeData->getVolume();
     auto bbox = slice ? slice->getBoundingRectangle()
                       : planeData->getBoundingRectangle();  // TODO
+    */
+    auto bbox = planeData->getBoundingRectangle();
     QSharedPointer<Texture> texture;
 
-    if (!slice.isNull()) {
-      auto sliceImage =
-          slice->generateImage(bbox, QSize(resolution, resolution));
+    if (volume) {
+      auto plane = *planeData->getPlane()->plane();
+      plane.origin = volume->getAdjustedRotation().inverted() *
+                     (plane.origin - volume->getAdjustedPosition());
+      plane.rotation =
+          (volume->getAdjustedRotation().inverted() * plane.rotation);
+      auto sliceImage = generateSliceImage(volume->volumeData().data(), plane,
+                                           bbox, QSize(resolution, resolution));
       // TODO: Don't use QGLWidget here
       /*
       qDebug() << "toQImage" << planeData->colorizer().data();
@@ -306,9 +319,13 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
       });
 
       shareContext->select();
-      auto slice2 = planeData->getSlice();
-      auto bbox2 = slice2 ? slice2->getBoundingRectangle()
-                          : planeData->getBoundingRectangle();  // TODO
+      // TODO: Check what this is doing and should be doing
+      /*
+        auto volume = planeData->getVolume();
+        auto bbox2 = slice ? slice->getBoundingRectangle()
+        : planeData->getBoundingRectangle();  // TODO
+      */
+      auto bbox2 = planeData->getBoundingRectangle();
       planeShader.updateBuffers(planeData, bbox2);
       // shareContext->unselect();
       // TODO

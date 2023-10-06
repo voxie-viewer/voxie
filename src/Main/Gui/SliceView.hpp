@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include <Main/Gui/PlaneView.hpp>
-
 #include <Voxie/PropertyObjects/PlaneNode.hpp>
 
 #include <Voxie/Vis/QVecLineEdit.hpp>
@@ -50,8 +48,6 @@ class SliceView : public QWidget {
   QLineEdit* positionEditX;
   QLineEdit* positionEditY;
   QLineEdit* positionEditZ;
-
-  PlaneView* planeView;
 
  public:
   explicit SliceView(vx::PlaneNode* slice, QWidget* parent = 0);

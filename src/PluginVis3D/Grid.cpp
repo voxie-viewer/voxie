@@ -50,7 +50,6 @@ Grid::Grid()
 
   // TODO: expose this as properties
   Grid3DWidget* gridWid = new Grid3DWidget(nullptr, grid3D);
-  gridWid->setObjectName("GridWidget");
   gridWid->setWindowTitle("Grid");
 
   this->addPropertySection(gridWid);

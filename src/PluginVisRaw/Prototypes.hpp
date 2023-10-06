@@ -142,7 +142,6 @@ class TomographyRawDataPropertiesBase {
   virtual double imagesPerSecondRaw() = 0;
   virtual QString interpolation() = 0;
   virtual QString interpolationRaw() = 0;
-  virtual vx::Node* rawData() = 0;
   virtual QDBusObjectPath rawDataRaw() = 0;
   virtual QList<vx::ColorizerEntry> valueColorMapping() = 0;
   virtual QList<
@@ -171,7 +170,6 @@ class TomographyRawDataPropertiesCopy : public TomographyRawDataPropertiesBase {
   double imagesPerSecondRaw() override final;
   QString interpolation() override final;
   QString interpolationRaw() override final;
-  vx::Node* rawData() override final;
   QDBusObjectPath rawDataRaw() override final;
   QList<vx::ColorizerEntry> valueColorMapping() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
@@ -276,7 +274,7 @@ class TomographyRawDataProperties : public QObject,
   // Q_PROPERTY(QString Interpolation READ interpolation WRITE setInterpolation
   // NOTIFY interpolationChanged)
 
-  vx::Node* rawData() override final;
+  vx::Node* rawData();
   QDBusObjectPath rawDataRaw() override final;
   static QSharedPointer<NodeProperty> rawDataProperty();
   static NodePropertyTyped<vx::types::NodeReference> rawDataPropertyTyped();

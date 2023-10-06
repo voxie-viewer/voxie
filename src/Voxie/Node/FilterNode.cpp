@@ -39,6 +39,8 @@
 
 #include <Voxie/Data/VolumeNode.hpp>
 
+#include <Voxie/Gui/NodeNameLineEdit.hpp>
+
 #include <Voxie/Node/FilterNode.hpp>
 #include <Voxie/Node/ParameterCopy.hpp>
 #include <Voxie/Node/WeakParameterCopy.hpp>
@@ -97,7 +99,7 @@ class FilterNodeAdaptorImpl : public FilterNodeAdaptor,
                         "Cannot find client object");
       }
 
-      auto op = object->run();
+      auto op = object->run(false);
       auto result = OperationResult::create(op);
 
       clientPtr->incRefCount(result);
@@ -116,18 +118,28 @@ FilterNode::FilterNode(const QSharedPointer<NodePrototype>& prototype)
 
   if (voxieRoot().isHeadless()) return;
 
+  auto mainVBoxLayout = new QVBoxLayout();
+
+  // TODO: Unify this between different node kinds
+  auto nameLayout = new QHBoxLayout();
+  mainVBoxLayout->addLayout(nameLayout);
+  auto nameLabel = new QLabel("Node name");
+  nameLayout->addWidget(nameLabel);
+  auto nameEdit = new NodeNameLineEdit(this);
+  nameLayout->addWidget(nameEdit);
+
+  auto CalculateButtonLayout = new QHBoxLayout();
+  mainVBoxLayout->addLayout(CalculateButtonLayout);
+  CalculateButtonLayout->setContentsMargins(0, 0, 0, 0);
   this->calculateButton = new QPushButton("Calculate");
   this->calculateButton->setEnabled(false);
+  CalculateButtonLayout->addWidget(this->calculateButton);
   this->stopProcessButton = new QToolButton();
   this->stopProcessButton->setIcon(QIcon(":/icons/cross.png"));
   this->stopProcessButton->setToolTip("Stop process");
   this->stopProcessButton->setEnabled(false);
-  auto mainVBoxLayout = new QVBoxLayout();
-  auto CalculateButtonLayout = new QHBoxLayout();
-  CalculateButtonLayout->setContentsMargins(0, 0, 0, 0);
-  CalculateButtonLayout->addWidget(this->calculateButton);
   CalculateButtonLayout->addWidget(this->stopProcessButton);
-  mainVBoxLayout->addLayout(CalculateButtonLayout);
+
   this->mainPropertyWidget = new QWidget();
 
   this->displayLabel = new QLabel();
@@ -165,8 +177,9 @@ FilterNode::FilterNode(const QSharedPointer<NodePrototype>& prototype)
       }
     }
   });
+  // TODO: This probably should call run() instead of calculate()
   connect(this->calculateButton, &QPushButton::released, this,
-          &FilterNode::calculate);
+          [this]() { this->calculate(); });
   connect(this, &Node::parentChanged, this,
           &FilterNode::displayLabelParentChildChanged);
   connect(this, &Node::childChanged, this,
@@ -184,6 +197,13 @@ FilterNode::FilterNode(const QSharedPointer<NodePrototype>& prototype)
             });
   }
   updateCalculateButtonState();
+
+  // TODO: Add runFilterAutomatically property to NodePrototype
+  // TODO: Make this more configurable, allow changing this in the UI?
+  if (this->prototype()->rawJson()["RunFilterAutomatically"].toBool()) {
+    connect(this, &Node::propertyChanged, this,
+            &FilterNode::triggerAutomaticFilterRun);
+  }
 }
 
 FilterNode::~FilterNode() {
@@ -256,13 +276,15 @@ void FilterNode::updateDisplayLabel() {
   this->displayLabel->setText(displayText);
 }
 
-QSharedPointer<vx::io::RunFilterOperation> FilterNode::run() {
+QSharedPointer<vx::io::RunFilterOperation> FilterNode::run(
+    bool isAutomaticFilterRun) {
   // create a copy of the current parameters that we will use to later know if
   // parameters changed and that we can also pass to the calculate() method for
   // the filter to use
   runParameters = ParameterCopy::getParameters(this)->createWeakCopy();
 
-  QSharedPointer<vx::io::RunFilterOperation> op = this->calculate();
+  QSharedPointer<vx::io::RunFilterOperation> op =
+      this->calculate(isAutomaticFilterRun);
 
   op->onFinished(
       this,
@@ -302,4 +324,24 @@ bool FilterNode::needsRecalculation() {
   if (currentParams == runParameters) return false;
   if (!currentParams || !runParameters) return true;
   return *currentParams != *runParameters;
+}
+
+void FilterNode::triggerAutomaticFilterRun() {
+  if (this->automaticFilterRunRunning) {
+    this->automaticFilterRunPending = true;
+    return;
+  }
+
+  this->automaticFilterRunPending = false;
+  this->automaticFilterRunRunning = true;
+  auto op = this->run(true);
+  op->onFinished(
+      this,
+      [this](const QSharedPointer<vx::io::Operation::ResultError>& result) {
+        Q_UNUSED(result);
+        this->automaticFilterRunRunning = false;
+        if (this->automaticFilterRunPending) {
+          triggerAutomaticFilterRun();
+        }
+      });
 }

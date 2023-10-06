@@ -38,7 +38,7 @@ context = voxie.VoxieContext(args)
 instance = context.createInstance()
 
 if args.voxie_action != 'Export':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationExport']).ClaimOperationAndCatch() as op:
     filename = op.Filename
@@ -176,7 +176,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
     f = io.StringIO()
     json.dump(jsonData, f, allow_nan=False, sort_keys=True,
               ensure_ascii=False, indent=2)
-    s = bytes(f.getvalue(), 'utf-8')
+    s = bytes(f.getvalue() + '\n', 'utf-8')
     with open(filename, 'wb') as file:
         file.write(s)
 

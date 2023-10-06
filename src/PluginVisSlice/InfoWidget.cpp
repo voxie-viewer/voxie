@@ -49,6 +49,9 @@ InfoWidget::InfoWidget(SliceVisualizer* sv, QWidget* parent)
   auto labelPos3D = new QLabel("");
   this->layout->addWidget(labelPos3D);
 
+  auto labelPosVoxel = new QLabel("");
+  this->layout->addWidget(labelPosVoxel);
+
   auto labelVal = new QLabel("");
   this->layout->addWidget(labelVal);
 
@@ -58,21 +61,27 @@ InfoWidget::InfoWidget(SliceVisualizer* sv, QWidget* parent)
   QObject::connect(
       sv, &SliceVisualizer::imageMouseMove, this,
       [=](QMouseEvent* e, const QPointF& pointPlane,
-          const QVector3D& threeDPoint, double valUnf, double valFilt,
-          double valNearest, double valLinear) {
+          const QVector3D& threeDPoint,
+          const vx::Vector<double, 3>* posVoxelPtr, double valNearest,
+          double valLinear) {
         labelPosMouse->setText(QString("Mouse position: %1 %2")
                                    .arg(e->pos().x())
                                    .arg(e->pos().y()));
         labelPosPlane->setText(QString("Plane position: %1 %2")
                                    .arg(pointPlane.x())
                                    .arg(pointPlane.y()));
-        labelPos3D->setText(QString("3D position: %1 %2 %3")
+        labelPos3D->setText(QString("3D position: %1 %2 %3 m")
                                 .arg(threeDPoint.x())
                                 .arg(threeDPoint.y())
                                 .arg(threeDPoint.z()));
-        labelVal->setText(QString("Value: %1 -> %2 / %3 / %4")
-                              .arg(valUnf)
-                              .arg(valFilt)
+        if (posVoxelPtr)
+          labelPosVoxel->setText(QString("Position: %1 %2 %3 vx")
+                                     .arg(posVoxelPtr->access<0>())
+                                     .arg(posVoxelPtr->access<1>())
+                                     .arg(posVoxelPtr->access<2>()));
+        else
+          labelPosVoxel->setText(QString("Position: - - - vx"));
+        labelVal->setText(QString("Value (nearest): %1\nValue (trilinear): %2")
                               .arg(valNearest)
                               .arg(valLinear));
 

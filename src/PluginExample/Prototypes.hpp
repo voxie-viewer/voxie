@@ -60,7 +60,6 @@ class TheSphereGeneratorPropertiesBase {
   virtual qint64 seedRaw() = 0;
   virtual qint64 size() = 0;
   virtual qint64 sizeRaw() = 0;
-  virtual vx::Node* output() = 0;
   virtual QDBusObjectPath outputRaw() = 0;
 };
 class TheSphereGeneratorPropertiesCopy
@@ -74,7 +73,6 @@ class TheSphereGeneratorPropertiesCopy
   qint64 seedRaw() override final;
   qint64 size() override final;
   qint64 sizeRaw() override final;
-  vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
 };
 class TheSphereGeneratorProperties : public QObject,
@@ -110,7 +108,7 @@ class TheSphereGeneratorProperties : public QObject,
  public:
   // Q_PROPERTY(qint64 Size READ size WRITE setSize NOTIFY sizeChanged)
 
-  vx::Node* output() override final;
+  vx::Node* output();
   QDBusObjectPath outputRaw() override final;
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>

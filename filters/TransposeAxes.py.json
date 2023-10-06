@@ -1,0 +1,243 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Transpose and/or mirror the axes of a volume.",
+            "DisplayName": "Transpose or mirror axes",
+            "Name": "de.uni_stuttgart.Voxie.Filter.TransposeAxes",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation": {
+                    "DisplayName": "Transformation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NX_NY_NZ_to_X_Y_Z": {
+                            "DisplayName": "0/7  -X -Y -Z -> XYZ  |  XYZ -> -X -Y -Z (improper)",
+                            "UIPosition": 8
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NX_NY_Z_to_X_Y_Z": {
+                            "DisplayName": "0/6  -X -Y  Z -> XYZ  |  XYZ -> -X -Y  Z",
+                            "UIPosition": 7
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NX_NZ_NY_to_X_Y_Z": {
+                            "DisplayName": "1/7  -X -Z -Y -> XYZ  |  XYZ -> -X -Z -Y",
+                            "UIPosition": 16
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NX_NZ_Y_to_X_Y_Z": {
+                            "DisplayName": "1/6  -X -Z  Y -> XYZ  |  XYZ -> -X  Z -Y (improper)",
+                            "UIPosition": 15
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NX_Y_NZ_to_X_Y_Z": {
+                            "DisplayName": "0/5  -X  Y -Z -> XYZ  |  XYZ -> -X  Y -Z",
+                            "UIPosition": 6
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NX_Y_Z_to_X_Y_Z": {
+                            "DisplayName": "0/4  -X  Y  Z -> XYZ  |  XYZ -> -X  Y  Z (improper)",
+                            "UIPosition": 5
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NX_Z_NY_to_X_Y_Z": {
+                            "DisplayName": "1/5  -X  Z -Y -> XYZ  |  XYZ -> -X -Z  Y (improper)",
+                            "UIPosition": 14
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NX_Z_Y_to_X_Y_Z": {
+                            "DisplayName": "1/4  -X  Z  Y -> XYZ  |  XYZ -> -X  Z  Y",
+                            "UIPosition": 13
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NY_NX_NZ_to_X_Y_Z": {
+                            "DisplayName": "2/7  -Y -X -Z -> XYZ  |  XYZ -> -Y -X -Z",
+                            "UIPosition": 24
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NY_NX_Z_to_X_Y_Z": {
+                            "DisplayName": "2/6  -Y -X  Z -> XYZ  |  XYZ -> -Y -X  Z (improper)",
+                            "UIPosition": 23
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NY_NZ_NX_to_X_Y_Z": {
+                            "DisplayName": "3/7  -Y -Z -X -> XYZ  |  XYZ -> -Z -X -Y (improper)",
+                            "UIPosition": 32
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NY_NZ_X_to_X_Y_Z": {
+                            "DisplayName": "3/6  -Y -Z  X -> XYZ  |  XYZ ->  Z -X -Y",
+                            "UIPosition": 31
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NY_X_NZ_to_X_Y_Z": {
+                            "DisplayName": "2/5  -Y  X -Z -> XYZ  |  XYZ ->  Y -X -Z (improper)",
+                            "UIPosition": 22
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NY_X_Z_to_X_Y_Z": {
+                            "DisplayName": "2/4  -Y  X  Z -> XYZ  |  XYZ ->  Y -X  Z",
+                            "UIPosition": 21
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NY_Z_NX_to_X_Y_Z": {
+                            "DisplayName": "3/5  -Y  Z -X -> XYZ  |  XYZ -> -Z -X  Y",
+                            "UIPosition": 30
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NY_Z_X_to_X_Y_Z": {
+                            "DisplayName": "3/4  -Y  Z  X -> XYZ  |  XYZ ->  Z -X  Y (improper)",
+                            "UIPosition": 29
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NZ_NX_NY_to_X_Y_Z": {
+                            "DisplayName": "4/7  -Z -X -Y -> XYZ  |  XYZ -> -Y -Z -X (improper)",
+                            "UIPosition": 40
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NZ_NX_Y_to_X_Y_Z": {
+                            "DisplayName": "4/6  -Z -X  Y -> XYZ  |  XYZ -> -Y  Z -X",
+                            "UIPosition": 39
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NZ_NY_NX_to_X_Y_Z": {
+                            "DisplayName": "5/7  -Z -Y -X -> XYZ  |  XYZ -> -Z -Y -X",
+                            "UIPosition": 48
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NZ_NY_X_to_X_Y_Z": {
+                            "DisplayName": "5/6  -Z -Y  X -> XYZ  |  XYZ ->  Z -Y -X (improper)",
+                            "UIPosition": 47
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NZ_X_NY_to_X_Y_Z": {
+                            "DisplayName": "4/5  -Z  X -Y -> XYZ  |  XYZ ->  Y -Z -X",
+                            "UIPosition": 38
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NZ_X_Y_to_X_Y_Z": {
+                            "DisplayName": "4/4  -Z  X  Y -> XYZ  |  XYZ ->  Y  Z -X (improper)",
+                            "UIPosition": 37
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NZ_Y_NX_to_X_Y_Z": {
+                            "DisplayName": "5/5  -Z  Y -X -> XYZ  |  XYZ -> -Z  Y -X (improper)",
+                            "UIPosition": 46
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.NZ_Y_X_to_X_Y_Z": {
+                            "DisplayName": "5/4  -Z  Y  X -> XYZ  |  XYZ ->  Z  Y -X",
+                            "UIPosition": 45
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_NY_NZ_to_X_Y_Z": {
+                            "DisplayName": "0/3   X -Y -Z -> XYZ  |  XYZ ->  X -Y -Z",
+                            "UIPosition": 4
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_NY_Z_to_X_Y_Z": {
+                            "DisplayName": "0/2   X -Y  Z -> XYZ  |  XYZ ->  X -Y  Z (improper)",
+                            "UIPosition": 3
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_NZ_NY_to_X_Y_Z": {
+                            "DisplayName": "1/3   X -Z -Y -> XYZ  |  XYZ ->  X -Z -Y (improper)",
+                            "UIPosition": 12
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_NZ_Y_to_X_Y_Z": {
+                            "DisplayName": "1/2   X -Z  Y -> XYZ  |  XYZ ->  X  Z -Y",
+                            "UIPosition": 11
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_Y_NZ_to_X_Y_Z": {
+                            "DisplayName": "0/1   X  Y -Z -> XYZ  |  XYZ ->  X  Y -Z (improper)",
+                            "UIPosition": 2
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_Y_Z_to_X_Y_Z": {
+                            "DisplayName": "0/0   X  Y  Z -> XYZ (identity)",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_Z_NY_to_X_Y_Z": {
+                            "DisplayName": "1/1   X  Z -Y -> XYZ  |  XYZ ->  X -Z  Y",
+                            "UIPosition": 10
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_Z_Y_to_X_Y_Z": {
+                            "DisplayName": "1/0   X  Z  Y -> XYZ  |  XYZ ->  X  Z  Y (improper)",
+                            "UIPosition": 9
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Y_NX_NZ_to_X_Y_Z": {
+                            "DisplayName": "2/3   Y -X -Z -> XYZ  |  XYZ -> -Y  X -Z (improper)",
+                            "UIPosition": 20
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Y_NX_Z_to_X_Y_Z": {
+                            "DisplayName": "2/2   Y -X  Z -> XYZ  |  XYZ -> -Y  X  Z",
+                            "UIPosition": 19
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Y_NZ_NX_to_X_Y_Z": {
+                            "DisplayName": "3/3   Y -Z -X -> XYZ  |  XYZ -> -Z  X -Y",
+                            "UIPosition": 28
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Y_NZ_X_to_X_Y_Z": {
+                            "DisplayName": "3/2   Y -Z  X -> XYZ  |  XYZ ->  Z  X -Y (improper)",
+                            "UIPosition": 27
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Y_X_NZ_to_X_Y_Z": {
+                            "DisplayName": "2/1   Y  X -Z -> XYZ  |  XYZ ->  Y  X -Z",
+                            "UIPosition": 18
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Y_X_Z_to_X_Y_Z": {
+                            "DisplayName": "2/0   Y  X  Z -> XYZ  |  XYZ ->  Y  X  Z (improper)",
+                            "UIPosition": 17
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Y_Z_NX_to_X_Y_Z": {
+                            "DisplayName": "3/1   Y  Z -X -> XYZ  |  XYZ -> -Z  X  Y (improper)",
+                            "UIPosition": 26
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Y_Z_X_to_X_Y_Z": {
+                            "DisplayName": "3/0   Y  Z  X -> XYZ  |  XYZ ->  Z  X  Y",
+                            "UIPosition": 25
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Z_NX_NY_to_X_Y_Z": {
+                            "DisplayName": "4/3   Z -X -Y -> XYZ  |  XYZ -> -Y -Z  X",
+                            "UIPosition": 36
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Z_NX_Y_to_X_Y_Z": {
+                            "DisplayName": "4/2   Z -X  Y -> XYZ  |  XYZ -> -Y  Z  X (improper)",
+                            "UIPosition": 35
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Z_NY_NX_to_X_Y_Z": {
+                            "DisplayName": "5/3   Z -Y -X -> XYZ  |  XYZ -> -Z -Y  X (improper)",
+                            "UIPosition": 44
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Z_NY_X_to_X_Y_Z": {
+                            "DisplayName": "5/2   Z -Y  X -> XYZ  |  XYZ ->  Z -Y  X",
+                            "UIPosition": 43
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Z_X_NY_to_X_Y_Z": {
+                            "DisplayName": "4/1   Z  X -Y -> XYZ  |  XYZ ->  Y -Z  X (improper)",
+                            "UIPosition": 34
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Z_X_Y_to_X_Y_Z": {
+                            "DisplayName": "4/0   Z  X  Y -> XYZ  |  XYZ ->  Y  Z  X",
+                            "UIPosition": 33
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Z_Y_NX_to_X_Y_Z": {
+                            "DisplayName": "5/1   Z  Y -X -> XYZ  |  XYZ -> -Z  Y  X",
+                            "UIPosition": 42
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.Z_Y_X_to_X_Y_Z": {
+                            "DisplayName": "5/0   Z  Y  X -> XYZ  |  XYZ ->  Z  Y  X (improper)",
+                            "UIPosition": 41
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation.X_Y_Z_to_X_Y_Z"
+                }
+            },
+            "UI": {
+                "SidePanelSections": [
+                    {
+                        "Name": "Transformation",
+                        "DisplayName": "Transformation",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.Filter.TransposeAxes.Transformation",
+                                "LabelStyle": "None"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

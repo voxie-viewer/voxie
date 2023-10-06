@@ -53,6 +53,7 @@
 
 using namespace vx;
 using namespace vx::opencl;
+using namespace vx::visualization;
 
 // TODO: Add real properties to this visualizer
 
@@ -166,6 +167,7 @@ void VolumeRenderingVisualizer::setVolumeScale(int scale) {
 
 VolumeRenderingView::VolumeRenderingView(VolumeRenderingVisualizer* visualizer)
     : visualizer(visualizer),
+      mouseLast{0, 0},
       view3d(new vx::visualization::View3D(
           this, vx::visualization::View3DProperty::All)) {
   if (!CLInstance::getDefaultInstance()->isValid()) {
@@ -276,7 +278,8 @@ VolumeRenderingView::VolumeRenderingView(VolumeRenderingVisualizer* visualizer)
     sidePanel->setLayout(layout);
   }
 
-  this->setMinimumSize(300, 200);
+  this->setMinimumSize(300 / 96.0 * this->logicalDpiX(),
+                       200 / 96.0 * this->logicalDpiY());
 
   connect(view3d, &vx::visualization::View3D::changed, this,
           [this] { this->update(); });
@@ -635,22 +638,26 @@ void VolumeRenderingView::resizeEvent(QResizeEvent* event) {
   this->update();
 }
 void VolumeRenderingView::mousePressEvent(QMouseEvent* event) {
-  view3d->mousePressEvent(mouseLast, event, size());
-  this->mouseLast = event->pos();
+  auto pos = getMousePosition(this, event);
+  view3d->mousePressEvent(mouseLast, pos, event, size());
+  this->mouseLast = pos;
 }
 
 void VolumeRenderingView::mouseMoveEvent(QMouseEvent* event) {
-  view3d->mouseMoveEvent(mouseLast, event, size());
-  this->mouseLast = event->pos();
+  auto pos = getMousePosition(this, event);
+  view3d->mouseMoveEvent(mouseLast, pos, event, size());
+  this->mouseLast = pos;
 }
 
 void VolumeRenderingView::mouseReleaseEvent(QMouseEvent* event) {
-  view3d->mouseReleaseEvent(mouseLast, event, size());
-  this->mouseLast = event->pos();
+  auto pos = getMousePosition(this, event);
+  view3d->mouseReleaseEvent(mouseLast, pos, event, size());
+  this->mouseLast = pos;
 }
 
 void VolumeRenderingView::wheelEvent(QWheelEvent* event) {
-  view3d->wheelEvent(event, size());
+  auto pos = getMousePosition(this, event);
+  view3d->wheelEvent(pos, event, size());
 }
 
 RandomNumberGenerationTask::RandomNumberGenerationTask(
@@ -682,7 +689,6 @@ void RandomNumberGenerationTask::run() {
 // #### Visualizer ####
 
 void VolumeRenderingVisualizer::settingUpObjectProperties() {
-  objProp->setObjectName("Property Widget");
   objProp->setWindowTitle("Object Properties");
   // Properties changed by input in the GUI
   connect(objProp, &ObjectProperties::positionChanged, this,
@@ -720,7 +726,6 @@ void VolumeRenderingVisualizer::settingUpObjectProperties() {
 
 void VolumeRenderingVisualizer::settingUpLightSourceProperties() {
   if (this->view && lightSrcProp) {
-    this->lightSrcProp->setObjectName("Property Widget");
     this->lightSrcProp->setWindowTitle("Light Source Properties");
 
     connect(this->view, &VolumeRenderingView::ambientLightRequest,
@@ -755,7 +760,6 @@ void VolumeRenderingVisualizer::settingUpLightSourceProperties() {
 
 void VolumeRenderingVisualizer::settingUpRenderImplementationSelection(
     RenderImplementationSelection* renderImpl) {
-  renderImpl->setObjectName("Property Widget");
   renderImpl->setWindowTitle("Render Implementation Selection");
 
   connect(renderImpl, &RenderImplementationSelection::renderImplChanged,

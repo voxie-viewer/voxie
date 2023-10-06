@@ -30,7 +30,6 @@
 #include <QtGui/QFontDatabase>
 
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QVBoxLayout>
 

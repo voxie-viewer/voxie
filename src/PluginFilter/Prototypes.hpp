@@ -116,11 +116,8 @@ class ColorizeLabeledSurfacePropertiesBase {
   virtual QList<
       std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   inputColorizerRaw() = 0;
-  virtual vx::Node* inputSurface() = 0;
   virtual QDBusObjectPath inputSurfaceRaw() = 0;
-  virtual vx::Node* inputTable() = 0;
   virtual QDBusObjectPath inputTableRaw() = 0;
-  virtual vx::Node* output() = 0;
   virtual QDBusObjectPath outputRaw() = 0;
 };
 class ColorizeLabeledSurfacePropertiesCopy
@@ -133,11 +130,8 @@ class ColorizeLabeledSurfacePropertiesCopy
   QList<vx::ColorizerEntry> inputColorizer() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   inputColorizerRaw() override final;
-  vx::Node* inputSurface() override final;
   QDBusObjectPath inputSurfaceRaw() override final;
-  vx::Node* inputTable() override final;
   QDBusObjectPath inputTableRaw() override final;
-  vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
 };
 class ColorizeLabeledSurfaceProperties
@@ -166,7 +160,7 @@ class ColorizeLabeledSurfaceProperties
   // Q_PROPERTY(QList<vx::ColorizerEntry> InputColorizer READ inputColorizer
   // WRITE setInputColorizer NOTIFY inputColorizerChanged)
 
-  vx::Node* inputSurface() override final;
+  vx::Node* inputSurface();
   QDBusObjectPath inputSurfaceRaw() override final;
   static QSharedPointer<NodeProperty> inputSurfaceProperty();
   static NodePropertyTyped<vx::types::NodeReference>
@@ -179,7 +173,7 @@ class ColorizeLabeledSurfaceProperties
   // Q_PROPERTY(vx::Node* InputSurface READ inputSurface WRITE setInputSurface
   // NOTIFY inputSurfaceChanged)
 
-  vx::Node* inputTable() override final;
+  vx::Node* inputTable();
   QDBusObjectPath inputTableRaw() override final;
   static QSharedPointer<NodeProperty> inputTableProperty();
   static NodePropertyTyped<vx::types::NodeReference> inputTablePropertyTyped();
@@ -191,7 +185,7 @@ class ColorizeLabeledSurfaceProperties
   // Q_PROPERTY(vx::Node* InputTable READ inputTable WRITE setInputTable NOTIFY
   // inputTableChanged)
 
-  vx::Node* output() override final;
+  vx::Node* output();
   QDBusObjectPath outputRaw() override final;
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
@@ -226,9 +220,7 @@ class ColorizeSurfaceFromAttributePropertiesBase {
   virtual QList<
       std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   inputColorizerRaw() = 0;
-  virtual vx::Node* inputSurface() = 0;
   virtual QDBusObjectPath inputSurfaceRaw() = 0;
-  virtual vx::Node* output() = 0;
   virtual QDBusObjectPath outputRaw() = 0;
 };
 class ColorizeSurfaceFromAttributePropertiesCopy
@@ -241,9 +233,7 @@ class ColorizeSurfaceFromAttributePropertiesCopy
   QList<vx::ColorizerEntry> inputColorizer() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   inputColorizerRaw() override final;
-  vx::Node* inputSurface() override final;
   QDBusObjectPath inputSurfaceRaw() override final;
-  vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
 };
 class ColorizeSurfaceFromAttributeProperties
@@ -272,7 +262,7 @@ class ColorizeSurfaceFromAttributeProperties
   // Q_PROPERTY(QList<vx::ColorizerEntry> InputColorizer READ inputColorizer
   // WRITE setInputColorizer NOTIFY inputColorizerChanged)
 
-  vx::Node* inputSurface() override final;
+  vx::Node* inputSurface();
   QDBusObjectPath inputSurfaceRaw() override final;
   static QSharedPointer<NodeProperty> inputSurfaceProperty();
   static NodePropertyTyped<vx::types::NodeReference>
@@ -285,7 +275,7 @@ class ColorizeSurfaceFromAttributeProperties
   // Q_PROPERTY(vx::Node* InputSurface READ inputSurface WRITE setInputSurface
   // NOTIFY inputSurfaceChanged)
 
-  vx::Node* output() override final;
+  vx::Node* output();
   QDBusObjectPath outputRaw() override final;
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
@@ -317,13 +307,10 @@ class CreateSurfacePropertiesBase {
   virtual ~CreateSurfacePropertiesBase();
   virtual QString algorithm() = 0;
   virtual QString algorithmRaw() = 0;
-  virtual vx::Node* inputVolume() = 0;
   virtual QDBusObjectPath inputVolumeRaw() = 0;
-  virtual vx::Node* labelVolume() = 0;
   virtual QDBusObjectPath labelVolumeRaw() = 0;
   virtual double threshold() = 0;
   virtual double thresholdRaw() = 0;
-  virtual vx::Node* output() = 0;
   virtual QDBusObjectPath outputRaw() = 0;
 };
 class CreateSurfacePropertiesCopy : public CreateSurfacePropertiesBase {
@@ -334,13 +321,10 @@ class CreateSurfacePropertiesCopy : public CreateSurfacePropertiesBase {
       const QSharedPointer<const QMap<QString, QVariant>>& properties);
   QString algorithm() override final;
   QString algorithmRaw() override final;
-  vx::Node* inputVolume() override final;
   QDBusObjectPath inputVolumeRaw() override final;
-  vx::Node* labelVolume() override final;
   QDBusObjectPath labelVolumeRaw() override final;
   double threshold() override final;
   double thresholdRaw() override final;
-  vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
 };
 class CreateSurfaceProperties : public QObject,
@@ -366,7 +350,7 @@ class CreateSurfaceProperties : public QObject,
   // Q_PROPERTY(QString Algorithm READ algorithm WRITE setAlgorithm NOTIFY
   // algorithmChanged)
 
-  vx::Node* inputVolume() override final;
+  vx::Node* inputVolume();
   QDBusObjectPath inputVolumeRaw() override final;
   static QSharedPointer<NodeProperty> inputVolumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> inputVolumePropertyTyped();
@@ -378,7 +362,7 @@ class CreateSurfaceProperties : public QObject,
   // Q_PROPERTY(vx::Node* InputVolume READ inputVolume WRITE setInputVolume
   // NOTIFY inputVolumeChanged)
 
-  vx::Node* labelVolume() override final;
+  vx::Node* labelVolume();
   QDBusObjectPath labelVolumeRaw() override final;
   static QSharedPointer<NodeProperty> labelVolumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> labelVolumePropertyTyped();
@@ -402,7 +386,7 @@ class CreateSurfaceProperties : public QObject,
   // Q_PROPERTY(double Threshold READ threshold WRITE setThreshold NOTIFY
   // thresholdChanged)
 
-  vx::Node* output() override final;
+  vx::Node* output();
   QDBusObjectPath outputRaw() override final;
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
@@ -429,9 +413,7 @@ class TableFilterPropertiesEntry : public vx::PropertiesEntryBase {
 class TableFilterPropertiesBase {
  public:
   virtual ~TableFilterPropertiesBase();
-  virtual QList<vx::Node*> input() = 0;
   virtual QList<QDBusObjectPath> inputRaw() = 0;
-  virtual vx::Node* output() = 0;
   virtual QDBusObjectPath outputRaw() = 0;
 };
 class TableFilterPropertiesCopy : public TableFilterPropertiesBase {
@@ -440,9 +422,7 @@ class TableFilterPropertiesCopy : public TableFilterPropertiesBase {
  public:
   TableFilterPropertiesCopy(
       const QSharedPointer<const QMap<QString, QVariant>>& properties);
-  QList<vx::Node*> input() override final;
   QList<QDBusObjectPath> inputRaw() override final;
-  vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
 };
 class TableFilterProperties : public QObject, public TableFilterPropertiesBase {
@@ -455,7 +435,7 @@ class TableFilterProperties : public QObject, public TableFilterPropertiesBase {
   TableFilterProperties(vx::Node* parent);
   ~TableFilterProperties();
 
-  QList<vx::Node*> input() override final;
+  QList<vx::Node*> input();
   QList<QDBusObjectPath> inputRaw() override final;
   static QSharedPointer<NodeProperty> inputProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList> inputPropertyTyped();
@@ -467,7 +447,7 @@ class TableFilterProperties : public QObject, public TableFilterPropertiesBase {
   // Q_PROPERTY(QList<vx::Node*> Input READ input WRITE setInput NOTIFY
   // inputChanged)
 
-  vx::Node* output() override final;
+  vx::Node* output();
   QDBusObjectPath outputRaw() override final;
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>

@@ -1072,6 +1072,11 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalOperationRunFilterInterface
     return qvariant_cast<QDBusObjectPath>(property("FilterObject"));
   }
 
+  Q_PROPERTY(bool IsAutomaticFilterRun READ isAutomaticFilterRun)
+  inline bool isAutomaticFilterRun() const {
+    return qvariant_cast<bool>(property("IsAutomaticFilterRun"));
+  }
+
   Q_PROPERTY(
       VX_IDENTITY_TYPE((QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>))
           Parameters READ parameters)
@@ -1154,6 +1159,82 @@ class VOXIECLIENT_EXPORT
     argumentList << QVariant::fromValue(labelDataVersion)
                  << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("Finish"), argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.ExternalTask
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalTaskInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.ExternalTask";
+  }
+
+ public:
+  DeUni_stuttgartVoxieExternalTaskInterface(const QString& service,
+                                            const QString& path,
+                                            const QDBusConnection& connection,
+                                            QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieExternalTaskInterface();
+
+  Q_PROPERTY(bool FinishAutomatically READ finishAutomatically WRITE
+                 setFinishAutomatically)
+  inline bool finishAutomatically() const {
+    return qvariant_cast<bool>(property("FinishAutomatically"));
+  }
+  inline void setFinishAutomatically(bool value) {
+    setProperty("FinishAutomatically", QVariant::fromValue(value));
+  }
+
+  Q_PROPERTY(QDBusObjectPath Task READ task)
+  inline QDBusObjectPath task() const {
+    return qvariant_cast<QDBusObjectPath>(property("Task"));
+  }
+
+ public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> SetDisplayName(
+      const QString& displayName,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(displayName)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("SetDisplayName"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> SetProgress(
+      double progress,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(progress)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("SetProgress"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> SetState(
+      const QString& state,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(state) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("SetState"), argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> SetSubTasks(
+      const VX_IDENTITY_TYPE((QList<std::tuple<QDBusObjectPath, double>>)) &
+          subtasks,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(subtasks)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("SetSubTasks"),
+                                     argumentList);
   }
 
  Q_SIGNALS:  // SIGNALS
@@ -1633,6 +1714,21 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
   }
 
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
+  CreateSeriesDimension(const QDBusObjectPath& client, const QString& name,
+                        const QString& displayName, const QDBusObjectPath& type,
+                        const QDBusVariant& entries,
+                        const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                            options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(client) << QVariant::fromValue(name)
+                 << QVariant::fromValue(displayName)
+                 << QVariant::fromValue(type) << QVariant::fromValue(entries)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("CreateSeriesDimension"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
   CreateSurfaceDataTriangleIndexed(
       const QDBusObjectPath& client, qulonglong triangleCount,
       qulonglong vertexCount, const QDBusObjectPath& triangleSource,
@@ -1718,6 +1814,23 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
                                      argumentList);
   }
 
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
+  CreateVolumeSeriesData(
+      const QDBusObjectPath& client, const QList<QDBusObjectPath>& dimensions,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) &
+          volumeOrigin,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) & volumeSize,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(client)
+                 << QVariant::fromValue(dimensions)
+                 << QVariant::fromValue(volumeOrigin)
+                 << QVariant::fromValue(volumeSize)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("CreateVolumeSeriesData"),
+                                     argumentList);
+  }
+
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath> GetComponent(
       const QString& componentType, const QString& name,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
@@ -1773,7 +1886,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
     return asyncCallWithArgumentList(QStringLiteral("ListNodes"), argumentList);
   }
 
-  inline Q_DECL_DEPRECATED Q_REQUIRED_RESULT
+  Q_DECL_DEPRECATED Q_REQUIRED_RESULT
       vx::QDBusPendingReplyWrapper<QList<QDBusObjectPath>>
       ListObjects(const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
                   options) {
@@ -1800,7 +1913,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
                                      argumentList);
   }
 
-  inline Q_DECL_DEPRECATED Q_REQUIRED_RESULT
+  Q_DECL_DEPRECATED Q_REQUIRED_RESULT
       vx::QDBusPendingReplyWrapper<QDBusObjectPath>
       OpenFile(const QString& file,
                const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
@@ -2556,6 +2669,135 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxiePropertyTypeInterface
 };
 
 /*
+ * Proxy class for interface de.uni_stuttgart.Voxie.SeriesData
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieSeriesDataInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.SeriesData";
+  }
+
+ public:
+  DeUni_stuttgartVoxieSeriesDataInterface(const QString& service,
+                                          const QString& path,
+                                          const QDBusConnection& connection,
+                                          QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieSeriesDataInterface();
+
+  Q_PROPERTY(qulonglong DimensionCount READ dimensionCount)
+  inline qulonglong dimensionCount() const {
+    return qvariant_cast<qulonglong>(property("DimensionCount"));
+  }
+
+  Q_PROPERTY(QList<QDBusObjectPath> Dimensions READ dimensions)
+  inline QList<QDBusObjectPath> dimensions() const {
+    return qvariant_cast<QList<QDBusObjectPath>>(property("Dimensions"));
+  }
+
+ public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> AddEntry(
+      const QDBusObjectPath& update, const QList<quint64>& key,
+      const QDBusObjectPath& value,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(update) << QVariant::fromValue(key)
+                 << QVariant::fromValue(value) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("AddEntry"), argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QList<QList<quint64>>>
+  ListKeys(const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("ListKeys"), argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath> LookupEntry(
+      const QList<quint64>& key,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(key) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("LookupEntry"),
+                                     argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.SeriesDimension
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieSeriesDimensionInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.SeriesDimension";
+  }
+
+ public:
+  DeUni_stuttgartVoxieSeriesDimensionInterface(
+      const QString& service, const QString& path,
+      const QDBusConnection& connection, QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieSeriesDimensionInterface();
+
+  Q_PROPERTY(QString DisplayName READ displayName)
+  inline QString displayName() const {
+    return qvariant_cast<QString>(property("DisplayName"));
+  }
+
+  Q_PROPERTY(qulonglong Length READ length)
+  inline qulonglong length() const {
+    return qvariant_cast<qulonglong>(property("Length"));
+  }
+
+  Q_PROPERTY(QString Name READ name)
+  inline QString name() const {
+    return qvariant_cast<QString>(property("Name"));
+  }
+
+  Q_PROPERTY(QDBusObjectPath Type READ type)
+  inline QDBusObjectPath type() const {
+    return qvariant_cast<QDBusObjectPath>(property("Type"));
+  }
+
+ public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusVariant> GetEntryValue(
+      qulonglong entryKey,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(entryKey)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetEntryValue"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusVariant> ListEntries(
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("ListEntries"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<qulonglong> LookupEntryByValue(
+      const QDBusVariant& entryValue,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(entryValue)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("LookupEntryByValue"),
+                                     argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
  * Proxy class for interface de.uni_stuttgart.Voxie.SurfaceData
  */
 class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieSurfaceDataInterface
@@ -2785,6 +3027,33 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieTableDataInterface
   }
 
  Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.Task
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieTaskInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.Task";
+  }
+
+ public:
+  DeUni_stuttgartVoxieTaskInterface(const QString& service, const QString& path,
+                                    const QDBusConnection& connection,
+                                    QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieTaskInterface();
+
+  Q_PROPERTY(QString State READ state)
+  inline QString state() const {
+    return qvariant_cast<QString>(property("State"));
+  }
+
+ public Q_SLOTS:  // METHODS
+ Q_SIGNALS:       // SIGNALS
 };
 
 /*
@@ -3408,6 +3677,44 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataVoxelInterface
 };
 
 /*
+ * Proxy class for interface de.uni_stuttgart.Voxie.VolumeSeriesData
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeSeriesDataInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.VolumeSeriesData";
+  }
+
+ public:
+  DeUni_stuttgartVoxieVolumeSeriesDataInterface(
+      const QString& service, const QString& path,
+      const QDBusConnection& connection, QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieVolumeSeriesDataInterface();
+
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+                 VolumeOrigin READ volumeOrigin)
+  inline VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+      volumeOrigin() const {
+    return qvariant_cast<VX_IDENTITY_TYPE(
+        (std::tuple<double, double, double>))>(property("VolumeOrigin"));
+  }
+
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+                 VolumeSize READ volumeSize)
+  inline VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+      volumeSize() const {
+    return qvariant_cast<VX_IDENTITY_TYPE(
+        (std::tuple<double, double, double>))>(property("VolumeSize"));
+  }
+
+ public Q_SLOTS:  // METHODS
+ Q_SIGNALS:       // SIGNALS
+};
+
+/*
  * Proxy class for interface de.uni_stuttgart.Voxie.VolumeStructure
  */
 class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeStructureInterface
@@ -3495,6 +3802,7 @@ typedef ::DeUni_stuttgartVoxieExternalOperationRunFilterInterface
     ExternalOperationRunFilter;
 typedef ::DeUni_stuttgartVoxieExternalOperationRunSegmentationStepInterface
     ExternalOperationRunSegmentationStep;
+typedef ::DeUni_stuttgartVoxieExternalTaskInterface ExternalTask;
 typedef ::DeUni_stuttgartVoxieFilterNodeInterface FilterNode;
 typedef ::DeUni_stuttgartVoxieFilterObjectInterface FilterObject;
 typedef ::DeUni_stuttgartVoxieGeometricPrimitiveDataInterface
@@ -3523,10 +3831,13 @@ typedef ::DeUni_stuttgartVoxieOperationResultImportObjectInterface
 typedef ::DeUni_stuttgartVoxiePluginInterface Plugin;
 typedef ::DeUni_stuttgartVoxiePropertyInterface Property;
 typedef ::DeUni_stuttgartVoxiePropertyTypeInterface PropertyType;
+typedef ::DeUni_stuttgartVoxieSeriesDataInterface SeriesData;
+typedef ::DeUni_stuttgartVoxieSeriesDimensionInterface SeriesDimension;
 typedef ::DeUni_stuttgartVoxieSurfaceDataInterface SurfaceData;
 typedef ::DeUni_stuttgartVoxieSurfaceDataTriangleIndexedInterface
     SurfaceDataTriangleIndexed;
 typedef ::DeUni_stuttgartVoxieTableDataInterface TableData;
+typedef ::DeUni_stuttgartVoxieTaskInterface Task;
 typedef ::DeUni_stuttgartVoxieTomographyRawDataInterface TomographyRawData;
 typedef ::DeUni_stuttgartVoxieTomographyRawData2DAccessorInterface
     TomographyRawData2DAccessor;
@@ -3543,6 +3854,7 @@ typedef ::DeUni_stuttgartVoxieVisualizerNodeInterface VisualizerNode;
 typedef ::DeUni_stuttgartVoxieVisualizerObjectInterface VisualizerObject;
 typedef ::DeUni_stuttgartVoxieVolumeDataInterface VolumeData;
 typedef ::DeUni_stuttgartVoxieVolumeDataVoxelInterface VolumeDataVoxel;
+typedef ::DeUni_stuttgartVoxieVolumeSeriesDataInterface VolumeSeriesData;
 typedef ::DeUni_stuttgartVoxieVolumeStructureInterface VolumeStructure;
 typedef ::DeUni_stuttgartVoxieVolumeStructureVoxelInterface
     VolumeStructureVoxel;

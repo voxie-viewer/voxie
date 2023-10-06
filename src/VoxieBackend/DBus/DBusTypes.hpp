@@ -23,12 +23,18 @@
 #pragma once
 
 #include <VoxieClient/DBusTypeList.hpp>
+#include <VoxieClient/Vector.hpp>
 
 #include <QtGui/QQuaternion>
 #include <QtGui/QVector2D>
 #include <QtGui/QVector3D>
 
 namespace vx {
+template <typename T>
+TupleVector<T, 3> toTupleVector(const vx::Vector<T, 3>& value) {
+  return std::make_tuple(value.template access<0>(), value.template access<1>(),
+                         value.template access<2>());
+}
 
 inline TupleVector<double, 2> toTupleVector(const QVector2D& vec) {
   return TupleVector<double, 2>(vec.x(), vec.y());
@@ -64,6 +70,9 @@ struct VectorSizeT3 {
       : x(std::get<0>(vector)),
         y(std::get<1>(vector)),
         z(std::get<2>(vector)) {}
+
+  VectorSizeT3(const vx::Vector<size_t, 3>& vector)
+      : x(vector.access<0>()), y(vector.access<1>()), z(vector.access<2>()) {}
 
   QVector3D toQVector3D() const { return QVector3D(x, y, z); }
 

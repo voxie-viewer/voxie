@@ -39,7 +39,7 @@ typeListHeaderFilename = 'src/Voxie/Node/Types.List.hpp'
 jsonData = {}
 for typeName in property_types.types:
     type = dict(property_types.types[typeName])
-    for key in ['ShortName', 'QtType', 'DefaultValueExpression', 'JSONParseFunction', 'VerifyFunction', 'CanonicalizeFunction']:
+    for key in ['ShortName', 'Name', 'QtType', 'DefaultValueExpression', 'JSONParseFunction', 'VerifyFunctionSimple', 'VerifyFunctionProperty', 'CanonicalizeFunction']:
         if key in type:
             del type[key]
     jsonData[typeName] = type
@@ -180,6 +180,15 @@ with open(typeListFilename + '.new', 'w') as typeList, open(typeListHeaderFilena
         if 'CompatibilityNames' in ptype:
             compatNames = ptype['CompatibilityNames']
 
+        verifyCodeProp = 'Q_UNUSED(property);'
+        verifyCodeNoProp = ''
+        if 'VerifyFunctionSimple' in ptype:
+            verifyCodeNoProp = '{VerifyFunction}(value.value<{RawType}>());'.format(VerifyFunction=ptype['VerifyFunctionSimple'], RawType=rawType)
+            verifyCodeProp = 'Q_UNUSED(property);' + verifyCodeNoProp
+        if 'VerifyFunctionProperty' in ptype:
+            verifyCodeProp = '{VerifyFunction}(property, value.value<{RawType}>());'.format(VerifyFunction=ptype['VerifyFunctionProperty'], RawType=rawType)
+            verifyCodeNoProp = 'throw vx::Exception("de.uni_stuttgart.Voxie.Error", {});'.format(escapeCppString('Property type {} cannot be used without a property'.format(name)))
+
         typeList.write('''
 namespace {{
 class PropertyType{sname} : public PropertyType {{
@@ -190,7 +199,6 @@ public:
 
   void verifyValue(NodeProperty &property,
                    const QVariant &value) override {{
-    Q_UNUSED(property);
     if (value.userType() != qMetaTypeId<{RawType}>())
       throw Exception(
           "de.uni_stuttgart.Voxie.InvalidPropertyValue",
@@ -198,7 +206,17 @@ public:
               .arg(QMetaType::typeName(qMetaTypeId<{RawType}>()))
               .arg(QMetaType::typeName(value.userType()))
               .arg(value.userType()));
-{verifyCode}
+{verifyCodeProp}
+  }}
+  void verifyValueWithoutProperty(const QVariant &value) override {{
+    if (value.userType() != qMetaTypeId<{RawType}>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString("Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<{RawType}>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+{verifyCodeNoProp}
   }}
   QVariant canonicalize(NodeProperty &property,
                    const QVariant &value) override {{
@@ -235,8 +253,32 @@ public:
     auto valueRaw = value.value<{RawType}>();
     return dbusMakeVariant<{DBusType}>(PropertyValueConvertDBus<{RawType}, {DBusType}>::fromRaw(valueRaw));
   }}
+  QDBusVariant rawToDBusList(const QList<QVariant>& list) override {{
+    QList<{DBusType}> result;
+    for (const auto& entry : list) {{
+      if (entry.userType() != qMetaTypeId<{RawType}>())
+        throw Exception(
+            "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+            QString("Property value has unexpected type, expected %1, got %2 (%3)")
+                .arg(QMetaType::typeName(qMetaTypeId<{RawType}>()))
+                .arg(QMetaType::typeName(entry.userType()))
+                .arg(entry.userType()));
+      auto valueRaw = entry.value<{RawType}>();
+      auto valueDBus = PropertyValueConvertDBus<{RawType}, {DBusType}>::fromRaw(valueRaw);
+      result << valueDBus;
+    }}
+    return dbusMakeVariant<QList<{DBusType}>>(result);
+  }}
   QVariant dbusToRaw(const QDBusVariant& value) override {{
     return QVariant::fromValue<{RawType}>(PropertyValueConvertDBus<{RawType}, {DBusType}>::toRaw(dbusGetVariantValue<{DBusType}>(value)));
+  }}
+  QList<QVariant> dbusToRawList(const QDBusVariant& value) override {{
+    QList<QVariant> result;
+    auto entries = dbusGetVariantValue<QList<{DBusType}>>(value);
+    for (const auto& entry : entries) {{
+      result << QVariant::fromValue<{RawType}>(PropertyValueConvertDBus<{RawType}, {DBusType}>::toRaw(entry));
+    }}
+    return result;
   }}
 
   QDBusSignature dbusSignature() override {{
@@ -262,7 +304,8 @@ QSharedPointer<PropertyType> vx::types::{sname}::type() {{
             'defaultValue': defValExpr,
             'compareSnippet': compareSnippet,
             # TODO
-            'verifyCode': ('{VerifyFunction}(property, value.value<{RawType}>());'.format(VerifyFunction=ptype['VerifyFunction'], RawType=rawType)) if 'VerifyFunction' in ptype else '',
+            'verifyCodeProp': verifyCodeProp,
+            'verifyCodeNoProp': verifyCodeNoProp,
             'canonicalizeCode': ('return QVariant::fromValue<{RawType}>({CanonicalizeFunction}(property, value.value<{RawType}>()));'.format(CanonicalizeFunction=ptype['CanonicalizeFunction'], RawType=rawType)) if 'CanonicalizeFunction' in ptype else 'verifyValue(property, value); return value;',
             'parseFun': parseFun,
         }))

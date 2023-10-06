@@ -321,7 +321,6 @@ class GeometricPrimitivePropertiesBase {
   virtual ~GeometricPrimitivePropertiesBase();
   virtual bool visible() = 0;
   virtual bool visibleRaw() = 0;
-  virtual vx::Node* geometricPrimitive() = 0;
   virtual QDBusObjectPath geometricPrimitiveRaw() = 0;
 };
 class GeometricPrimitivePropertiesCopy
@@ -333,7 +332,6 @@ class GeometricPrimitivePropertiesCopy
       const QSharedPointer<const QMap<QString, QVariant>>& properties);
   bool visible() override final;
   bool visibleRaw() override final;
-  vx::Node* geometricPrimitive() override final;
   QDBusObjectPath geometricPrimitiveRaw() override final;
 };
 class GeometricPrimitiveProperties : public QObject,
@@ -359,7 +357,7 @@ class GeometricPrimitiveProperties : public QObject,
   // Q_PROPERTY(bool Visible READ visible WRITE setVisible NOTIFY
   // visibleChanged)
 
-  vx::Node* geometricPrimitive() override final;
+  vx::Node* geometricPrimitive();
   QDBusObjectPath geometricPrimitiveRaw() override final;
   static QSharedPointer<NodeProperty> geometricPrimitiveProperty();
   static NodePropertyTyped<vx::types::NodeReference>
@@ -426,7 +424,6 @@ class PlanePropertiesBase {
   virtual QString clippingDirectionRaw() = 0;
   virtual vx::Color color() = 0;
   virtual std::tuple<double, double, double, double> colorRaw() = 0;
-  virtual vx::Node* plane() = 0;
   virtual QDBusObjectPath planeRaw() = 0;
   virtual bool showVolumeSlice() = 0;
   virtual bool showVolumeSliceRaw() = 0;
@@ -436,7 +433,6 @@ class PlanePropertiesBase {
   virtual QList<
       std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   sliceValueColorMappingRaw() = 0;
-  virtual vx::Node* sliceVolume() = 0;
   virtual QDBusObjectPath sliceVolumeRaw() = 0;
 };
 class PlanePropertiesCopy : public PlanePropertiesBase {
@@ -449,7 +445,6 @@ class PlanePropertiesCopy : public PlanePropertiesBase {
   QString clippingDirectionRaw() override final;
   vx::Color color() override final;
   std::tuple<double, double, double, double> colorRaw() override final;
-  vx::Node* plane() override final;
   QDBusObjectPath planeRaw() override final;
   bool showVolumeSlice() override final;
   bool showVolumeSliceRaw() override final;
@@ -458,7 +453,6 @@ class PlanePropertiesCopy : public PlanePropertiesBase {
   QList<vx::ColorizerEntry> sliceValueColorMapping() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   sliceValueColorMappingRaw() override final;
-  vx::Node* sliceVolume() override final;
   QDBusObjectPath sliceVolumeRaw() override final;
 };
 class PlaneProperties : public QObject, public PlanePropertiesBase {
@@ -495,7 +489,7 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
  public:
   // Q_PROPERTY(vx::Color Color READ color WRITE setColor NOTIFY colorChanged)
 
-  vx::Node* plane() override final;
+  vx::Node* plane();
   QDBusObjectPath planeRaw() override final;
   static QSharedPointer<NodeProperty> planeProperty();
   static NodePropertyTyped<vx::types::NodeReference> planePropertyTyped();
@@ -546,7 +540,7 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
   // sliceValueColorMapping WRITE setSliceValueColorMapping NOTIFY
   // sliceValueColorMappingChanged)
 
-  vx::Node* sliceVolume() override final;
+  vx::Node* sliceVolume();
   QDBusObjectPath sliceVolumeRaw() override final;
   static QSharedPointer<NodeProperty> sliceVolumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> sliceVolumePropertyTyped();
@@ -598,7 +592,6 @@ class SurfacePropertiesBase {
   virtual bool highlightCurrentTriangleRaw() = 0;
   virtual QString shadingTechnique() = 0;
   virtual QString shadingTechniqueRaw() = 0;
-  virtual vx::Node* surface() = 0;
   virtual QDBusObjectPath surfaceRaw() = 0;
 };
 class SurfacePropertiesCopy : public SurfacePropertiesBase {
@@ -625,7 +618,6 @@ class SurfacePropertiesCopy : public SurfacePropertiesBase {
   bool highlightCurrentTriangleRaw() override final;
   QString shadingTechnique() override final;
   QString shadingTechniqueRaw() override final;
-  vx::Node* surface() override final;
   QDBusObjectPath surfaceRaw() override final;
 };
 class SurfaceProperties : public QObject, public SurfacePropertiesBase {
@@ -748,7 +740,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   // Q_PROPERTY(QString ShadingTechnique READ shadingTechnique WRITE
   // setShadingTechnique NOTIFY shadingTechniqueChanged)
 
-  vx::Node* surface() override final;
+  vx::Node* surface();
   QDBusObjectPath surfaceRaw() override final;
   static QSharedPointer<NodeProperty> surfaceProperty();
   static NodePropertyTyped<vx::types::NodeReference> surfacePropertyTyped();
@@ -789,7 +781,6 @@ class View3DPropertiesBase {
   virtual double viewSizeUnzoomedRaw() = 0;
   virtual double zoomLog() = 0;
   virtual double zoomLogRaw() = 0;
-  virtual QList<vx::Node*> objects() = 0;
   virtual QList<QDBusObjectPath> objectsRaw() = 0;
   virtual bool showViewCenter() = 0;
   virtual bool showViewCenterRaw() = 0;
@@ -810,7 +801,6 @@ class View3DPropertiesCopy : public View3DPropertiesBase {
   double viewSizeUnzoomedRaw() override final;
   double zoomLog() override final;
   double zoomLogRaw() override final;
-  QList<vx::Node*> objects() override final;
   QList<QDBusObjectPath> objectsRaw() override final;
   bool showViewCenter() override final;
   bool showViewCenterRaw() override final;
@@ -885,7 +875,7 @@ class View3DProperties : public QObject, public View3DPropertiesBase {
   // Q_PROPERTY(double ZoomLog READ zoomLog WRITE setZoomLog NOTIFY
   // zoomLogChanged)
 
-  QList<vx::Node*> objects() override final;
+  QList<vx::Node*> objects();
   QList<QDBusObjectPath> objectsRaw() override final;
   static QSharedPointer<NodeProperty> objectsProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList> objectsPropertyTyped();
@@ -922,7 +912,6 @@ class VolumeRenderingPropertiesEntry : public vx::PropertiesEntryBase {
 class VolumeRenderingPropertiesBase {
  public:
   virtual ~VolumeRenderingPropertiesBase();
-  virtual QList<vx::Node*> input() = 0;
   virtual QList<QDBusObjectPath> inputRaw() = 0;
 };
 class VolumeRenderingPropertiesCopy : public VolumeRenderingPropertiesBase {
@@ -931,7 +920,6 @@ class VolumeRenderingPropertiesCopy : public VolumeRenderingPropertiesBase {
  public:
   VolumeRenderingPropertiesCopy(
       const QSharedPointer<const QMap<QString, QVariant>>& properties);
-  QList<vx::Node*> input() override final;
   QList<QDBusObjectPath> inputRaw() override final;
 };
 class VolumeRenderingProperties : public QObject,
@@ -945,7 +933,7 @@ class VolumeRenderingProperties : public QObject,
   VolumeRenderingProperties(vx::Node* parent);
   ~VolumeRenderingProperties();
 
-  QList<vx::Node*> input() override final;
+  QList<vx::Node*> input();
   QList<QDBusObjectPath> inputRaw() override final;
   static QSharedPointer<NodeProperty> inputProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList> inputPropertyTyped();

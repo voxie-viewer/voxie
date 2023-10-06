@@ -56,8 +56,10 @@ QSharedPointer<vx::VolumeDataVoxel> TheSphereGenerator::genSphereImpl(
   QVector3D origin(-size / 2.0f, -size / 2.0f, -size / 2.0f);
   origin *= spacing;
 
-  auto data = VolumeDataVoxel::createVolume(size, size, size);
-  data->setOrigin(origin);
+  auto data = VolumeDataVoxel::createVolume(
+      {(size_t)size, (size_t)size, (size_t)size}, DataType::Float32,
+      vectorCast<double>(toVector(origin)),
+      vectorCast<double>(toVector(spacing)));
   // TODO: Get rid of srand()/rand() (because of multi-threading etc.)
   srand(seed);  // Seed some random data
 
@@ -93,13 +95,13 @@ QSharedPointer<vx::VolumeDataVoxel> TheSphereGenerator::genSphereImpl(
       return (v - range.first) / (range.second - range.first);
     });
     */
-
-    data2.setSpacing(spacing);
   });
   return data;
 }
 
-QSharedPointer<vx::io::RunFilterOperation> TheSphereGenerator::calculate() {
+QSharedPointer<vx::io::RunFilterOperation> TheSphereGenerator::calculate(
+    bool isAutomaticFilterRun) {
+  Q_UNUSED(isAutomaticFilterRun);
   QSharedPointer<vx::io::RunFilterOperation> operation =
       RunFilterOperation::createRunFilterOperation();
   auto data = genSphereImpl(this->properties->size(), this->properties->seed());

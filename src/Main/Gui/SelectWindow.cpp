@@ -47,7 +47,7 @@ using namespace vx;
 SelectWindow::SelectWindow(
     QString windowName, SidePanel* sidepanel, Node* currentNode,
     const QList<QSharedPointer<NodePrototype>>& factories, vx::NodeKind kind)
-    : QDialog() {
+    : QDialog(vx::voxieRoot().mainWindow()) {
   Q_UNUSED(sidepanel);  // TODO
 
   this->currentNode = currentNode;

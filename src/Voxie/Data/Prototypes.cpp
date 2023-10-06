@@ -990,6 +990,224 @@ VolumeProperties::VolumeProperties(vx::Node* parent) : QObject(parent) {
 }
 
 }  // namespace data_prop
+inline namespace data_prop {
+VolumeSeriesPropertiesEntry::~VolumeSeriesPropertiesEntry() {}
+VolumeSeriesPropertiesEntry::VolumeSeriesPropertiesEntry(vx::PropType::Rotation,
+                                                         QQuaternion value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.MovableDataNode.Rotation",
+          QVariant::fromValue<std::tuple<double, double, double, double>>(
+              vx::PropertyValueConvertRaw<
+                  std::tuple<double, double, double, double>,
+                  QQuaternion>::toRaw(value_))) {}
+VolumeSeriesPropertiesEntry::VolumeSeriesPropertiesEntry(
+    vx::PropType::Translation, QVector3D value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.MovableDataNode.Translation",
+          QVariant::fromValue<std::tuple<double, double, double>>(
+              vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
+                                          QVector3D>::toRaw(value_))) {}
+VolumeSeriesPropertiesBase::~VolumeSeriesPropertiesBase() {}
+VolumeSeriesPropertiesCopy::VolumeSeriesPropertiesCopy(
+    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    : _properties(properties) {}
+QQuaternion VolumeSeriesPropertiesCopy::rotation() {
+  return vx::PropertyValueConvertRaw<
+      std::tuple<double, double, double, double>,
+      QQuaternion>::fromRaw(vx::Node::parseVariant<std::tuple<double, double,
+                                                              double, double>>(
+      (*_properties)["de.uni_stuttgart.Voxie.MovableDataNode.Rotation"]));
+}
+std::tuple<double, double, double, double>
+VolumeSeriesPropertiesCopy::rotationRaw() {
+  return vx::Node::parseVariant<std::tuple<double, double, double, double>>(
+      (*_properties)["de.uni_stuttgart.Voxie.MovableDataNode.Rotation"]);
+}
+QVector3D VolumeSeriesPropertiesCopy::translation() {
+  return vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
+                                     QVector3D>::
+      fromRaw(vx::Node::parseVariant<std::tuple<double, double, double>>((
+          *_properties)["de.uni_stuttgart.Voxie.MovableDataNode.Translation"]));
+}
+std::tuple<double, double, double>
+VolumeSeriesPropertiesCopy::translationRaw() {
+  return vx::Node::parseVariant<std::tuple<double, double, double>>(
+      (*_properties)["de.uni_stuttgart.Voxie.MovableDataNode.Translation"]);
+}
+static const char _prototype_VolumeSeries_[] = {
+    123, 34,  68,  101, 115, 99,  114, 105, 112, 116, 105, 111, 110, 34,  58,
+    32,  34,  65,  32,  51,  68,  32,  118, 111, 108, 117, 109, 101, 32,  115,
+    101, 114, 105, 101, 115, 32,  110, 111, 100, 101, 46,  34,  44,  32,  34,
+    68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,
+    86,  111, 108, 117, 109, 101, 34,  44,  32,  34,  78,  97,  109, 101, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116, 97,
+    46,  86,  111, 108, 117, 109, 101, 83,  101, 114, 105, 101, 115, 34,  44,
+    32,  34,  78,  111, 100, 101, 75,  105, 110, 100, 34,  58,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  78,  111, 100, 101, 75,  105, 110, 100,
+    46,  68,  97,  116, 97,  34,  44,  32,  34,  80,  114, 111, 112, 101, 114,
+    116, 105, 101, 115, 34,  58,  32,  123, 34,  100, 101, 46,  117, 110, 105,
+    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
+    101, 46,  77,  111, 118, 97,  98,  108, 101, 68,  97,  116, 97,  78,  111,
+    100, 101, 46,  82,  111, 116, 97,  116, 105, 111, 110, 34,  58,  32,  123,
+    34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121, 78,
+    97,  109, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105,
+    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
+    101, 46,  77,  111, 118, 97,  98,  108, 101, 68,  97,  116, 97,  79,  98,
+    106, 101, 99,  116, 46,  82,  111, 116, 97,  116, 105, 111, 110, 34,  93,
+    44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,
+    58,  32,  34,  82,  111, 116, 97,  116, 105, 111, 110, 34,  44,  32,  34,
+    73,  115, 67,  117, 115, 116, 111, 109, 83,  116, 111, 114, 97,  103, 101,
+    34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  73,  115, 67,  117, 115,
+    116, 111, 109, 85,  73,  34,  58,  32,  116, 114, 117, 101, 44,  32,  34,
+    84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
+    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
+    46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  79,
+    114, 105, 101, 110, 116, 97,  116, 105, 111, 110, 51,  68,  34,  125, 44,
+    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  77,  111, 118, 97,  98,
+    108, 101, 68,  97,  116, 97,  78,  111, 100, 101, 46,  84,  114, 97,  110,
+    115, 108, 97,  116, 105, 111, 110, 34,  58,  32,  123, 34,  67,  111, 109,
+    112, 97,  116, 105, 98,  105, 108, 105, 116, 121, 78,  97,  109, 101, 115,
+    34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  77,  111,
+    118, 97,  98,  108, 101, 68,  97,  116, 97,  79,  98,  106, 101, 99,  116,
+    46,  84,  114, 97,  110, 115, 108, 97,  116, 105, 111, 110, 34,  93,  44,
+    32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,
+    32,  34,  84,  114, 97,  110, 115, 108, 97,  116, 105, 111, 110, 34,  44,
+    32,  34,  73,  115, 67,  117, 115, 116, 111, 109, 83,  116, 111, 114, 97,
+    103, 101, 34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  73,  115, 67,
+    117, 115, 116, 111, 109, 85,  73,  34,  58,  32,  116, 114, 117, 101, 44,
+    32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110,
+    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
+    105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101,
+    46,  80,  111, 115, 105, 116, 105, 111, 110, 51,  68,  34,  125, 125, 44,
+    32,  34,  83,  117, 112, 112, 111, 114, 116, 101, 100, 68,  97,  116, 97,
+    68,  66,  117, 115, 73,  110, 116, 101, 114, 102, 97,  99,  101, 115, 34,
+    58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
+    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  111, 108,
+    117, 109, 101, 83,  101, 114, 105, 101, 115, 68,  97,  116, 97,  34,  93,
+    44,  32,  34,  84,  79,  68,  79,  95,  68,  101, 102, 97,  117, 108, 116,
+    69,  120, 112, 111, 114, 116, 101, 114, 34,  58,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  70,  105, 108, 101, 70,  111, 114, 109, 97,  116,
+    46,  86,  111, 108, 117, 109, 101, 83,  101, 114, 105, 101, 115, 46,  86,
+    120, 86,  111, 108, 83,  101, 114, 46,  69,  120, 112, 111, 114, 116, 34,
+    44,  32,  34,  84,  79,  68,  79,  95,  73,  99,  111, 110, 34,  58,  32,
+    34,  58,  47,  105, 99,  111, 110, 115, 45,  118, 111, 120, 105, 101, 47,
+    118, 111, 120, 101, 108, 45,  100, 97,  116, 97,  45,  51,  50,  46,  112,
+    110, 103, 34,  125, 0};
+const char* VolumeSeriesProperties::_getPrototypeJson() {
+  return _prototype_VolumeSeries_;
+}
+
+VolumeSeriesProperties::~VolumeSeriesProperties() {}
+
+QQuaternion VolumeSeriesProperties::rotation() {
+  return vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
+                                     QQuaternion>::
+      fromRaw(_node->getNodePropertyTyped<
+              std::tuple<double, double, double, double>>(
+          "de.uni_stuttgart.Voxie.MovableDataNode.Rotation"));
+}
+std::tuple<double, double, double, double>
+VolumeSeriesProperties::rotationRaw() {
+  return _node
+      ->getNodePropertyTyped<std::tuple<double, double, double, double>>(
+          "de.uni_stuttgart.Voxie.MovableDataNode.Rotation");
+}
+QSharedPointer<NodeProperty> VolumeSeriesProperties::rotationProperty() {
+  return VolumeSeriesProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.MovableDataNode.Rotation", false);
+}
+NodePropertyTyped<vx::types::Orientation3D>
+VolumeSeriesProperties::rotationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Orientation3D>(rotationProperty());
+}
+void VolumeSeriesProperties::setRotation(QQuaternion value) {
+  _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
+      "de.uni_stuttgart.Voxie.MovableDataNode.Rotation",
+      vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
+                                  QQuaternion>::toRaw(value));
+}
+QVector3D VolumeSeriesProperties::translation() {
+  return vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
+                                     QVector3D>::
+      fromRaw(_node->getNodePropertyTyped<std::tuple<double, double, double>>(
+          "de.uni_stuttgart.Voxie.MovableDataNode.Translation"));
+}
+std::tuple<double, double, double> VolumeSeriesProperties::translationRaw() {
+  return _node->getNodePropertyTyped<std::tuple<double, double, double>>(
+      "de.uni_stuttgart.Voxie.MovableDataNode.Translation");
+}
+QSharedPointer<NodeProperty> VolumeSeriesProperties::translationProperty() {
+  return VolumeSeriesProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.MovableDataNode.Translation", false);
+}
+NodePropertyTyped<vx::types::Position3D>
+VolumeSeriesProperties::translationPropertyTyped() {
+  return NodePropertyTyped<vx::types::Position3D>(translationProperty());
+}
+void VolumeSeriesProperties::setTranslation(QVector3D value) {
+  _node->setNodePropertyTyped<std::tuple<double, double, double>>(
+      "de.uni_stuttgart.Voxie.MovableDataNode.Translation",
+      vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
+                                  QVector3D>::toRaw(value));
+}
+VolumeSeriesProperties::VolumeSeriesProperties(vx::Node* parent)
+    : QObject(parent) {
+  this->_node = parent;
+  auto _prop_Rotation = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.MovableDataNode.Rotation", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Rotation](const QSharedPointer<NodeProperty>& property,
+                             const QVariant& value) {
+        if (property != _prop_Rotation) return;
+        QQuaternion valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<
+              std::tuple<double, double, double, double>, QQuaternion>::
+              fromRaw(Node::parseVariant<
+                      std::tuple<double, double, double, double>>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property \"de.uni_stuttgart.Voxie.MovableDataNode.Rotation\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->rotationChanged(valueCasted);
+      });
+  auto _prop_Translation = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.MovableDataNode.Translation", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Translation](const QSharedPointer<NodeProperty>& property,
+                                const QVariant& value) {
+        if (property != _prop_Translation) return;
+        QVector3D valueCasted;
+        try {
+          valueCasted =
+              vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
+                                          QVector3D>::
+                  fromRaw(
+                      Node::parseVariant<std::tuple<double, double, double>>(
+                          value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.MovableDataNode.Translation\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->translationChanged(valueCasted);
+      });
+}
+
+}  // namespace data_prop
 inline namespace node_prop {
 NodeGroupPropertiesEntry::~NodeGroupPropertiesEntry() {}
 NodeGroupPropertiesBase::~NodeGroupPropertiesBase() {}

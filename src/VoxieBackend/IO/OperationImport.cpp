@@ -35,7 +35,10 @@ OperationImport::~OperationImport() {}
 OperationImport::Result::Result(
     const QSharedPointer<vx::Data>& data,
     const QSharedPointer<vx::DataVersion>& dataVersion)
-    : data_(data), dataVersion_(dataVersion) {}
+    : data_(data),
+      dataVersion_(dataVersion),
+      dataNode_(nullptr),
+      dataNodePath_("/") {}
 OperationImport::Result::~Result() {}
 
 vx::DataNode* OperationImport::Result::dataNode() {

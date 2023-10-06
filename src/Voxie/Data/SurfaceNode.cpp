@@ -30,7 +30,6 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QVBoxLayout>
@@ -68,7 +67,8 @@ SurfaceNode::SurfaceNode()
   if (!voxieRoot().isHeadless()) {
     QWidget* propertySection = new QWidget();
 
-    propertySection->setMaximumHeight(400);
+    propertySection->setMaximumHeight(400 / 96.0 *
+                                      propertySection->logicalDpiY());
     QVBoxLayout* splitLayout = new QVBoxLayout();
     {
       this->numberOfVerticesLabel = new QLabel();

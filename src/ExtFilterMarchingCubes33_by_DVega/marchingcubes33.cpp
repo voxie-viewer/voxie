@@ -1105,9 +1105,9 @@ Surface* MC33::calculate_isosurface(MC33_real iso) {
   unsigned int x, y, z;
   MC33_real Vt[12];
   MC33_real* w = Vt;
-  v = Vt + 4;
   if (!FG)  // The set_grid3d function was not executed
     return 0;
+  v = Vt + 4;
   surface = new Surface;
   surface->isovalue = iso;
   for (z = 0; z != nz; ++z) {
@@ -1156,6 +1156,10 @@ Surface* MC33::calculate_isosurface(MC33_real iso) {
     std::swap(Dx, Ux);
     std::swap(Dy, Uy);
   }
+  // Prevent "warning: storing the address of local variable ‘Vt’ in
+  // ‘*this.MC33::v’ [-Wdangling-pointer=]" (pointer to local should not be
+  // stored after return from function)
+  v = nullptr;
   return surface;
 }
 

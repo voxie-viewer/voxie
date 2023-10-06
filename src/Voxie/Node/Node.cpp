@@ -39,6 +39,7 @@
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
 #include <Voxie/Node/Types.hpp>
 
+#include <Voxie/DebugOptions.hpp>
 #include <Voxie/IVoxie.hpp>
 
 #include <QtCore/QDebug>
@@ -72,7 +73,11 @@ QString Node::stateToString(State state) {
 }
 
 Node::~Node() {
-  // qDebug() << "Node::~Node()";
+  if (vx::debug_option::Log_TrackNodeLifecycle()->get())
+    qDebug() << "Calling destructor for node" << this;
+
+  if (this->state_ != State::Destroyed)
+    qWarning() << "Destructor called for node not in Destroyed state" << this;
 
   // TODO: check whether this is also safe to do in the dtor.
   // removeChildNode() calls setNodeProperty() but should only call it for
@@ -282,6 +287,9 @@ QString Node::displayName() const {
 void Node::destroy() {
   vx::checkOnMainThread("Node::destroy");
 
+  if (vx::debug_option::Log_TrackNodeLifecycle()->get())
+    qDebug() << "Calling destroy() for node" << this;
+
   if (this->state_ == State::Destroyed) {
     qWarning() << "Node::destroy() called for destroyed node";
     return;
@@ -294,6 +302,9 @@ void Node::destroy() {
   // If the state is still initial, the teardown step can be skipped because
   // there are no references to this node from other nodes.
   if (this->state_ != State::Initial) {
+    if (vx::debug_option::Log_TrackNodeLifecycle()->get())
+      qDebug() << "Doing teardown for node" << this;
+
     this->state_ = State::Teardown;
     Q_EMIT this->stateChanged(State::Teardown);
 
@@ -306,6 +317,9 @@ void Node::destroy() {
       return;
     }
   }
+
+  if (vx::debug_option::Log_TrackNodeLifecycle()->get())
+    qDebug() << "Node is now destroyed" << this;
 
   this->state_ = State::Destroyed;
   Q_EMIT this->stateChanged(State::Destroyed);
@@ -944,6 +958,9 @@ Node::Node(const QString& type, const QSharedPointer<NodePrototype>& prototype)
                            << e.message();
                      }
                    });
+
+  if (vx::debug_option::Log_TrackNodeLifecycle()->get())
+    qDebug() << "Calling constructor for node" << this;
 
   if (!voxieRoot().isHeadless()) {
     for (const auto& spSection_ : this->prototype()

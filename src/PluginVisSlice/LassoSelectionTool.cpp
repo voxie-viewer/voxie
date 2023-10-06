@@ -129,13 +129,13 @@ void LassoSelectionTool::toolMouseReleaseEvent(QMouseEvent* ev) {
           QPoint yetAnotherKindOfPoint((int)node.x(), (int)node.y());
           QPointF planepoint = this->sv->sliceImage().pixelToPlanePoint(
               yetAnotherKindOfPoint, true);
-          QVector3D threeDPoint = sv->slice()->getCuttingPlane().get3DPoint(
-              planepoint.x(), planepoint.y());
+          QVector3D threeDPoint =
+              sv->getCuttingPlane().get3DPoint(planepoint.x(), planepoint.y());
           nodes3D.append(threeDPoint);
         }
 
         this->stepManager->setLassoSelection(
-            nodes3D, this->sv->slice()->getCuttingPlane(), this->sv);
+            nodes3D, this->sv->getCuttingPlane(), this->sv);
 
       } else {
         vx::showErrorMessage(
@@ -180,10 +180,6 @@ void LassoSelectionTool::toolMouseMoveEvent(QMouseEvent* ev) {
 }
 
 void LassoSelectionTool::savePoint(QPointF point) {
-  if (!this->sv->slice()) {
-    return;
-  }
-
   // save in nodes
   this->nodes.append(point);
   // save in Layer

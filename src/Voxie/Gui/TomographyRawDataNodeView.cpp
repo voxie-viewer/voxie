@@ -39,7 +39,7 @@ using namespace vx::gui;
 
 class JsonInfoDialog : public QDialog {
  public:
-  JsonInfoDialog(const QString& data) {
+  JsonInfoDialog(const QString& data) : QDialog(vx::voxieRoot().mainWindow()) {
     this->resize(500 / 96.0 * this->logicalDpiX(),
                  450 / 96.0 * this->logicalDpiY());
     QVBoxLayout* layout = new QVBoxLayout();
@@ -57,7 +57,8 @@ class JsonInfoDialog : public QDialog {
 TomographyRawDataNodeView::TomographyRawDataNodeView(
     vx::TomographyRawDataNode* rawObject, QWidget* parent)
     : QWidget(parent), rawObject(rawObject) {
-  this->setMaximumHeight(400);
+  this->setWindowTitle("Tomography raw data");
+  this->setMaximumHeight(400 / 96.0 * this->logicalDpiY());
   QVBoxLayout* splitLayout = new QVBoxLayout();
 
   QFormLayout* form = new QFormLayout();

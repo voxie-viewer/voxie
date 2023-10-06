@@ -77,6 +77,7 @@ textFilenames = [
     'meson_options.txt',
     'meson-ext-template.build',
     'meson-plugin-template.build',
+    'build',
 ]
 textIgnoreDirs = [
     'lib',
@@ -172,7 +173,8 @@ files = [f for f in files if f not in exclude]
 pyFiles = []
 for file in files:
     if not file.endswith('.py'):
-        continue
+        if file != 'tools/build':
+            continue
     # print(file)
     pyFiles.append(file)
     # res = subprocess.run(['python3', '-m', 'pycodestyle', file])

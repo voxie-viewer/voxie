@@ -350,7 +350,6 @@ class SlicePropertiesBase {
   virtual double verticalSizeRaw() = 0;
   virtual QString filter2DConfiguration() = 0;
   virtual QString filter2DConfigurationRaw() = 0;
-  virtual vx::Node* geometricPrimitive() = 0;
   virtual QDBusObjectPath geometricPrimitiveRaw() = 0;
   virtual vx::Color geometricPrimitiveColorBehindSlice() = 0;
   virtual std::tuple<double, double, double, double>
@@ -371,13 +370,10 @@ class SlicePropertiesBase {
   virtual double gridSpacingRaw() = 0;
   virtual bool gridSpacingAutomatic() = 0;
   virtual bool gridSpacingAutomaticRaw() = 0;
-  virtual vx::Node* infoTable() = 0;
   virtual QDBusObjectPath infoTableRaw() = 0;
   virtual QString interpolation() = 0;
   virtual QString interpolationRaw() = 0;
-  virtual vx::Node* labelContainer() = 0;
   virtual QDBusObjectPath labelContainerRaw() = 0;
-  virtual vx::Node* plane() = 0;
   virtual QDBusObjectPath planeRaw() = 0;
   virtual QQuaternion orientation() = 0;
   virtual std::tuple<double, double, double, double> orientationRaw() = 0;
@@ -391,7 +387,6 @@ class SlicePropertiesBase {
   virtual double rulerSpacingRaw() = 0;
   virtual bool rulerSpacingAutomatic() = 0;
   virtual bool rulerSpacingAutomaticRaw() = 0;
-  virtual vx::Node* segmentationFilter() = 0;
   virtual QDBusObjectPath segmentationFilterRaw() = 0;
   virtual qint64 show2DFilterMask() = 0;
   virtual qint64 show2DFilterMaskRaw() = 0;
@@ -399,13 +394,11 @@ class SlicePropertiesBase {
   virtual bool showSliceCenterRaw() = 0;
   virtual bool showViewCenter() = 0;
   virtual bool showViewCenterRaw() = 0;
-  virtual QList<vx::Node*> surface() = 0;
   virtual QList<QDBusObjectPath> surfaceRaw() = 0;
   virtual QList<vx::ColorizerEntry> valueColorMapping() = 0;
   virtual QList<
       std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   valueColorMappingRaw() = 0;
-  virtual vx::Node* volume() = 0;
   virtual QDBusObjectPath volumeRaw() = 0;
   virtual vx::Color volumeGridColor() = 0;
   virtual std::tuple<double, double, double, double> volumeGridColorRaw() = 0;
@@ -424,7 +417,6 @@ class SlicePropertiesCopy : public SlicePropertiesBase {
   double verticalSizeRaw() override final;
   QString filter2DConfiguration() override final;
   QString filter2DConfigurationRaw() override final;
-  vx::Node* geometricPrimitive() override final;
   QDBusObjectPath geometricPrimitiveRaw() override final;
   vx::Color geometricPrimitiveColorBehindSlice() override final;
   std::tuple<double, double, double, double>
@@ -445,13 +437,10 @@ class SlicePropertiesCopy : public SlicePropertiesBase {
   double gridSpacingRaw() override final;
   bool gridSpacingAutomatic() override final;
   bool gridSpacingAutomaticRaw() override final;
-  vx::Node* infoTable() override final;
   QDBusObjectPath infoTableRaw() override final;
   QString interpolation() override final;
   QString interpolationRaw() override final;
-  vx::Node* labelContainer() override final;
   QDBusObjectPath labelContainerRaw() override final;
-  vx::Node* plane() override final;
   QDBusObjectPath planeRaw() override final;
   QQuaternion orientation() override final;
   std::tuple<double, double, double, double> orientationRaw() override final;
@@ -465,7 +454,6 @@ class SlicePropertiesCopy : public SlicePropertiesBase {
   double rulerSpacingRaw() override final;
   bool rulerSpacingAutomatic() override final;
   bool rulerSpacingAutomaticRaw() override final;
-  vx::Node* segmentationFilter() override final;
   QDBusObjectPath segmentationFilterRaw() override final;
   qint64 show2DFilterMask() override final;
   qint64 show2DFilterMaskRaw() override final;
@@ -473,12 +461,10 @@ class SlicePropertiesCopy : public SlicePropertiesBase {
   bool showSliceCenterRaw() override final;
   bool showViewCenter() override final;
   bool showViewCenterRaw() override final;
-  QList<vx::Node*> surface() override final;
   QList<QDBusObjectPath> surfaceRaw() override final;
   QList<vx::ColorizerEntry> valueColorMapping() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   valueColorMappingRaw() override final;
-  vx::Node* volume() override final;
   QDBusObjectPath volumeRaw() override final;
   vx::Color volumeGridColor() override final;
   std::tuple<double, double, double, double> volumeGridColorRaw()
@@ -533,7 +519,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // Q_PROPERTY(QString Filter2DConfiguration READ filter2DConfiguration WRITE
   // setFilter2DConfiguration NOTIFY filter2DConfigurationChanged)
 
-  vx::Node* geometricPrimitive() override final;
+  vx::Node* geometricPrimitive();
   QDBusObjectPath geometricPrimitiveRaw() override final;
   static QSharedPointer<NodeProperty> geometricPrimitiveProperty();
   static NodePropertyTyped<vx::types::NodeReference>
@@ -660,7 +646,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // Q_PROPERTY(bool GridSpacingAutomatic READ gridSpacingAutomatic WRITE
   // setGridSpacingAutomatic NOTIFY gridSpacingAutomaticChanged)
 
-  vx::Node* infoTable() override final;
+  vx::Node* infoTable();
   QDBusObjectPath infoTableRaw() override final;
   static QSharedPointer<NodeProperty> infoTableProperty();
   static NodePropertyTyped<vx::types::NodeReference> infoTablePropertyTyped();
@@ -684,7 +670,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // Q_PROPERTY(QString Interpolation READ interpolation WRITE setInterpolation
   // NOTIFY interpolationChanged)
 
-  vx::Node* labelContainer() override final;
+  vx::Node* labelContainer();
   QDBusObjectPath labelContainerRaw() override final;
   static QSharedPointer<NodeProperty> labelContainerProperty();
   static NodePropertyTyped<vx::types::NodeReference>
@@ -697,7 +683,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // Q_PROPERTY(vx::Node* LabelContainer READ labelContainer WRITE
   // setLabelContainer NOTIFY labelContainerChanged)
 
-  vx::Node* plane() override final;
+  vx::Node* plane();
   QDBusObjectPath planeRaw() override final;
   static QSharedPointer<NodeProperty> planeProperty();
   static NodePropertyTyped<vx::types::NodeReference> planePropertyTyped();
@@ -781,7 +767,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // Q_PROPERTY(bool RulerSpacingAutomatic READ rulerSpacingAutomatic WRITE
   // setRulerSpacingAutomatic NOTIFY rulerSpacingAutomaticChanged)
 
-  vx::Node* segmentationFilter() override final;
+  vx::Node* segmentationFilter();
   QDBusObjectPath segmentationFilterRaw() override final;
   static QSharedPointer<NodeProperty> segmentationFilterProperty();
   static NodePropertyTyped<vx::types::NodeReference>
@@ -830,7 +816,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // Q_PROPERTY(bool ShowViewCenter READ showViewCenter WRITE setShowViewCenter
   // NOTIFY showViewCenterChanged)
 
-  QList<vx::Node*> surface() override final;
+  QList<vx::Node*> surface();
   QList<QDBusObjectPath> surfaceRaw() override final;
   static QSharedPointer<NodeProperty> surfaceProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList> surfacePropertyTyped();
@@ -857,7 +843,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // valueColorMapping WRITE setValueColorMapping NOTIFY
   // valueColorMappingChanged)
 
-  vx::Node* volume() override final;
+  vx::Node* volume();
   QDBusObjectPath volumeRaw() override final;
   static QSharedPointer<NodeProperty> volumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> volumePropertyTyped();

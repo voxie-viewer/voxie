@@ -123,7 +123,7 @@ void ToolSelection::activateTool() {
       polygonButton->setChecked(true);
     }
   } else {
-    QMessageBox messageBox;
+    QMessageBox messageBox(vx::voxieRoot().mainWindow());
     messageBox.critical(
         0, "Error",
         "Can't activate mask tool without enabling it via FilterChain first.");

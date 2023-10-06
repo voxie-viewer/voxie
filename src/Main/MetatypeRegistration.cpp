@@ -22,7 +22,6 @@
 
 #include "MetatypeRegistration.hpp"
 
-#include <Voxie/Data/Slice.hpp>
 #include <Voxie/Data/TomographyRawDataNode.hpp>
 #include <Voxie/Data/VolumeNode.hpp>
 #include <VoxieBackend/Data/Data.hpp>
@@ -43,7 +42,6 @@ void MetatypeRegistration::registerMetatypes() {
   qRegisterMetaType<QSharedPointer<vx::Data>>();
   qRegisterMetaType<vx::DataNode*>();
   qRegisterMetaType<vx::VolumeNode*>();
-  qRegisterMetaType<vx::Slice*>();
   qRegisterMetaType<vx::TomographyRawDataNode*>();
 
   qRegisterMetaType<vx::VisualizerNode*>();

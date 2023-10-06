@@ -111,4 +111,13 @@ inline QMatrix4x4 toQMatrix4x4(const vx::Matrix<float, 4, 4>& m) {
   return QMatrix4x4(toQGenericMatrix(m));
 }
 
+// QPoint / QPointF
+
+inline vx::Vector<int, 2> pointToVector(const QPoint& v) {
+  return {v.x(), v.y()};
+}
+inline vx::Vector<qreal, 2> pointToVector(const QPointF& v) {
+  return {v.x(), v.y()};
+}
+
 }  // namespace vx

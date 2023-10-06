@@ -25,7 +25,6 @@
 #include <VoxieBackend/Data/FloatImage.hpp>
 #include <VoxieBackend/Data/SliceImage.hpp>
 
-#include <Voxie/Data/Slice.hpp>
 #include <Voxie/OldFilter/Filter2D.hpp>
 
 #include <QtCore/QObject>
@@ -135,8 +134,8 @@ class VOXIECORESHARED_EXPORT FilterChain2D : public QObject {
   void fromXMLString(const QString& data);
 
  public Q_SLOTS:
-  void onPlaneChanged(const vx::Slice* slice, const PlaneInfo& oldPlane,
-                      const PlaneInfo& newPlane, bool equivalent);
+  void onPlaneChanged(const PlaneInfo& oldPlane, const PlaneInfo& newPlane,
+                      bool equivalent);
 
  Q_SIGNALS:
   void filterChanged(Filter2D* filter);

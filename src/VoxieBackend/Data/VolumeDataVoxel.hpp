@@ -92,8 +92,8 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
   QFileInfo fileInfo;
 
   size_t size;
-  vx::VectorSizeT3 dimensions;
-  QVector3D spacing;
+  vx::Vector<size_t, 3> arrayShape_;
+  vx::Vector<double, 3> gridSpacing_;
   DataType dataType = DataType::Float32;
 
   QMap<quint32, QWeakPointer<vx::HistogramProvider>> histogramProviders;
@@ -103,12 +103,15 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
   bool minMaxValid = false;
 
   bool isInBounds(size_t x, size_t y, size_t z,
-                  vx::VectorSizeT3 dimensions) const {
-    return x < dimensions.x && y < dimensions.y && z < dimensions.z;
+                  const vx::Vector<size_t, 3>& arrayShape) const {
+    return x < arrayShape.access<0>() && y < arrayShape.access<1>() &&
+           z < arrayShape.access<2>();
   }
 
   // throws Exception
-  VolumeDataVoxel(size_t width, size_t height, size_t depth, DataType dataType);
+  VolumeDataVoxel(const vx::Vector<size_t, 3> arrayShape, DataType dataType,
+                  const vx::Vector<double, 3>& volumeOrigin,
+                  const vx::Vector<double, 3>& gridSpacing);
 
  public:
   // throws Exception
@@ -117,8 +120,9 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
 
   // Implementation is in VolumeDataVoxelInst.cpp
   static QSharedPointer<VolumeDataVoxel> createVolume(
-      size_t width, size_t height, size_t depth,
-      DataType dataType = DataType::Float32);
+      const vx::Vector<size_t, 3> arrayShape, DataType dataType,
+      const vx::Vector<double, 3>& gridOrigin,
+      const vx::Vector<double, 3>& gridSpacing);
 
   ~VolumeDataVoxel();
 
@@ -140,29 +144,25 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
    * @return number of Voxels in dataset
    */
   // TODO: rename
-  inline size_t getSize() const { return this->size; }
+  size_t getSize() const { return this->size; }
 
   /**
    * @return x, y, z dimensions of the dataset
    */
-  inline const vx::VectorSizeT3& getDimensions() const {
-    return this->dimensions;
-  }
+  const vx::Vector<size_t, 3> arrayShape() { return arrayShape_; }
+  // TODO: Remove
+  vx::VectorSizeT3 getDimensions() { return arrayShape(); }
 
   /**
    * @return spacing/scaling of the dataset.
    */
-  inline const QVector3D& getSpacing() const { return this->spacing; }
-
-  /**
-   * @brief setSpacing sets the spacing/scaling of the data set.
-   */
-  inline void setSpacing(QVector3D spacing) {
-    this->spacing = spacing;
-    this->setDimensionsMetric(this->dimensions.toQVector3D() * this->spacing);
+  const vx::Vector<double, 3>& gridSpacing() { return gridSpacing_; }
+  // TODO: Remove
+  QVector3D getSpacing() {
+    return toQVector(vectorCastNarrow<float>(this->gridSpacing()));
   }
 
-  DataType inline getDataType() override { return this->dataType; }
+  DataType getDataType() override { return this->dataType; }
 
   /**
    * @brief Calculates voxel to 3D [m] transformation matrix (Affine-Trafo:
@@ -181,7 +181,10 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
    * matrix (Trans+Scale)
    * @return transformation matrix
    */
-  AffineMap<double, 3UL, 3UL> getVoxelToObjectTrafo();
+  AffineMap<double, 3, 3> getVoxelToObjectTrafo();
+
+  AffineMap<double, 3, 3> getObjectToVoxelTrafo();
+
   // throws Exception
   QSharedPointer<VolumeDataVoxel> reducedSize(uint xStepsize = 2,
                                               uint yStepsize = 2,
@@ -237,10 +240,8 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
     this->performInGenericContext([&](auto& data) {
       auto dataPtr = data.getData();
       auto dim = this->getDimensions();
-      const vx::Vector<double, 3> origin{this->origin().x(), this->origin().y(),
-                                         this->origin().z()};
-      const vx::Vector<double, 3> spacing{this->spacing.x(), this->spacing.y(),
-                                          this->spacing.z()};
+      const vx::Vector<double, 3> origin = this->volumeOrigin();
+      const vx::Vector<double, 3> spacing = this->gridSpacing();
 
       for (size_t z = 0; z < dim.z; z++) {
         const double posZ = origin.access<2>() + z * spacing.access<2>();

@@ -31,7 +31,6 @@
 
 #include <Voxie/Data/BoundingBox3D.hpp>
 #include <Voxie/Data/Prototypes.hpp>
-#include <Voxie/Data/Slice.hpp>
 
 #include <VoxieBackend/Data/VolumeData.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxel.hpp>
@@ -72,7 +71,8 @@ VolumeNode::VolumeNode()
 
   // TODO: This should be created with a nullptr volumeData, but there probably
   // are some null checks missing somewhere
-  volumeDataPointer = VolumeDataVoxel::createVolume(1, 1, 1, DataType::Float32);
+  volumeDataPointer = VolumeDataVoxel::createVolume(
+      {1, 1, 1}, DataType::Float32, {0, 0, 0}, {1, 1, 1});
 
   if (!voxieRoot().isHeadless())
     this->addPropertySection(new vx::gui::VolumeNodeView(this));

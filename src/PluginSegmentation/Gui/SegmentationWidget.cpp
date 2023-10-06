@@ -44,7 +44,7 @@ SegmentationWidget::SegmentationWidget(LabelViewModel* labelViewModel,
       stepManager(stepManager) {
   QVBoxLayout* mainVBox = new QVBoxLayout();
   setLayout(mainVBox);
-  setObjectName("Segmentation");
+  setWindowTitle("Segmentation");
 
   QHBoxLayout* labelActions = new QHBoxLayout();
   QLabel* labelLabel = new QLabel("Labels");

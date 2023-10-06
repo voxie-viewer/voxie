@@ -437,6 +437,74 @@ class VOXIECORESHARED_EXPORT VolumeProperties : public QObject,
 };
 
 }  // namespace data_prop
+inline namespace data_prop {
+class VOXIECORESHARED_EXPORT VolumeSeriesPropertiesEntry
+    : public vx::PropertiesEntryBase {
+  VolumeSeriesPropertiesEntry() = delete;
+
+ public:
+  ~VolumeSeriesPropertiesEntry();
+  VolumeSeriesPropertiesEntry(vx::PropType::Rotation, QQuaternion);
+  VolumeSeriesPropertiesEntry(vx::PropType::Translation, QVector3D);
+};
+class VOXIECORESHARED_EXPORT VolumeSeriesPropertiesBase {
+ public:
+  virtual ~VolumeSeriesPropertiesBase();
+  virtual QQuaternion rotation() = 0;
+  virtual std::tuple<double, double, double, double> rotationRaw() = 0;
+  virtual QVector3D translation() = 0;
+  virtual std::tuple<double, double, double> translationRaw() = 0;
+};
+class VOXIECORESHARED_EXPORT VolumeSeriesPropertiesCopy
+    : public VolumeSeriesPropertiesBase {
+  QSharedPointer<const QMap<QString, QVariant>> _properties;
+
+ public:
+  VolumeSeriesPropertiesCopy(
+      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+  QQuaternion rotation() override final;
+  std::tuple<double, double, double, double> rotationRaw() override final;
+  QVector3D translation() override final;
+  std::tuple<double, double, double> translationRaw() override final;
+};
+class VOXIECORESHARED_EXPORT VolumeSeriesProperties
+    : public QObject,
+      public VolumeSeriesPropertiesBase {
+  Q_OBJECT
+  vx::Node* _node;
+
+ public:
+  static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
+  VolumeSeriesProperties(vx::Node* parent);
+  ~VolumeSeriesProperties();
+
+  QQuaternion rotation() override final;
+  std::tuple<double, double, double, double> rotationRaw() override final;
+  static QSharedPointer<NodeProperty> rotationProperty();
+  static NodePropertyTyped<vx::types::Orientation3D> rotationPropertyTyped();
+  void setRotation(QQuaternion value);
+ Q_SIGNALS:
+  void rotationChanged(QQuaternion value);
+
+ public:
+  // Q_PROPERTY(QQuaternion Rotation READ rotation WRITE setRotation NOTIFY
+  // rotationChanged)
+
+  QVector3D translation() override final;
+  std::tuple<double, double, double> translationRaw() override final;
+  static QSharedPointer<NodeProperty> translationProperty();
+  static NodePropertyTyped<vx::types::Position3D> translationPropertyTyped();
+  void setTranslation(QVector3D value);
+ Q_SIGNALS:
+  void translationChanged(QVector3D value);
+
+ public:
+  // Q_PROPERTY(QVector3D Translation READ translation WRITE setTranslation
+  // NOTIFY translationChanged)
+};
+
+}  // namespace data_prop
 inline namespace node_prop {
 class VOXIECORESHARED_EXPORT NodeGroupPropertiesEntry
     : public vx::PropertiesEntryBase {

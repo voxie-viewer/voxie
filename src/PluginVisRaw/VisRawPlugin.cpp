@@ -28,8 +28,6 @@
 
 #include <PluginVisRaw/RawData2DVisualizer.hpp>
 
-#include <QtWidgets/QMessageBox>
-
 VisRawPlugin::VisRawPlugin(QObject* parent) : QGenericPlugin(parent) {}
 
 QObject* VisRawPlugin::create(const QString& key,

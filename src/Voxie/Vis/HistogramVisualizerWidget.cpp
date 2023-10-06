@@ -35,7 +35,7 @@ HistogramVisualizerWidget::HistogramVisualizerWidget(QWidget* parent)
 
 void HistogramVisualizerWidget::setYAxisLogScale(const bool yAxisLogScale) {
   this->yAxisLogScale = yAxisLogScale;
-  repaint();
+  update();
 }
 
 bool HistogramVisualizerWidget::isYAxisLogScale() const {
@@ -49,7 +49,7 @@ QSharedPointer<Colorizer> HistogramVisualizerWidget::colorizer() const {
 void HistogramVisualizerWidget::setColorizer(
     const QSharedPointer<Colorizer>& colorizer) {
   this->colorizer_ = colorizer;
-  repaint();
+  update();
 }
 
 QSharedPointer<HistogramProvider> HistogramVisualizerWidget::histogramProvider()
@@ -66,13 +66,13 @@ void HistogramVisualizerWidget::setHistogramProvider(
   this->histogramProvider_ = histogramProvider;
   connect(histogramProvider_.data(), &HistogramProvider::dataChanged, this,
           &HistogramVisualizerWidget::onHistogramProviderDataChanged);
-  repaint();
+  update();
 }
 
 void HistogramVisualizerWidget::setForegroundColor(
     const QColor foregroundColor) {
   foregroundColor_ = foregroundColor;
-  repaint();
+  update();
 }
 
 QColor HistogramVisualizerWidget::foregroundColor() const {
@@ -82,7 +82,7 @@ QColor HistogramVisualizerWidget::foregroundColor() const {
 void HistogramVisualizerWidget::setBackgroundColor(
     const QColor backgroundColor) {
   backgroundColor_ = backgroundColor;
-  repaint();
+  update();
 }
 
 QColor HistogramVisualizerWidget::backgroundColor() const {
@@ -91,14 +91,14 @@ QColor HistogramVisualizerWidget::backgroundColor() const {
 
 void HistogramVisualizerWidget::setYAxisLabel(const QString label) {
   yAxisLabel_ = label;
-  repaint();
+  update();
 }
 
 QString HistogramVisualizerWidget::yAxisLabel() const { return yAxisLabel_; }
 
 void HistogramVisualizerWidget::setXAxisLabel(const QString label) {
   xAxisLabel_ = label;
-  repaint();
+  update();
 }
 
 QString HistogramVisualizerWidget::xAxisLabel() const { return xAxisLabel_; }
@@ -114,8 +114,14 @@ bool HistogramVisualizerWidget::isHoverValueSnappingEnabled() const {
 void HistogramVisualizerWidget::paintEvent(QPaintEvent* event) {
   Q_UNUSED(event);
 
-  static const float axisMarginsBL = 40.f;
-  static const float axisMarginsTR = 5.f;
+  auto dpiScaleX = 1.0 / 96.0 * this->logicalDpiX();
+  // auto dpiScaleY = 1.0 / 96.0 * this->logicalDpiY();
+
+  // TODO: Distinguish between axisMarginsB and axisMarginsL (same for
+  // axisMarginsTR) to allow different dpiScaleX and dpiScaleY?
+  auto dpiScale = dpiScaleX;
+  static const float axisMarginsBL = 40.f * dpiScale;
+  static const float axisMarginsTR = 5.f * dpiScale;
 
   QRectF rect(axisMarginsBL, axisMarginsTR,
               width() - axisMarginsTR - axisMarginsBL,
@@ -209,7 +215,7 @@ void HistogramVisualizerWidget::paintEvent(QPaintEvent* event) {
   axisX.setRect(axisRect);
   axisX.setLogScale(histogramData->xAxisLog);
   axisX.setLabel(xAxisLabel());
-  axisX.draw(painter);
+  axisX.draw(dpiScale, painter);
 
   LabeledAxis axisY(LabeledAxis::Vertical);
   axisY.setColor(foregroundColor());
@@ -218,7 +224,7 @@ void HistogramVisualizerWidget::paintEvent(QPaintEvent* event) {
   axisY.setRect(axisRect);
   axisY.setLogScale(isYAxisLogScale());
   axisY.setLabel(yAxisLabel());
-  axisY.draw(painter);
+  axisY.draw(dpiScale, painter);
 
   // drawing lines with x- and y-values on mouse hover
   QPoint cursorPos = mapFromGlobal(QCursor::pos());
@@ -292,14 +298,14 @@ void HistogramVisualizerWidget::mouseMoveEvent(QMouseEvent* event) {
   // force repaint if mouse is in widget bounds so the value displayed on hover
   // is updated
   if (underMouse()) {
-    repaint();
+    update();
   }
 }
 
 void HistogramVisualizerWidget::onHistogramProviderDataChanged(
     HistogramProvider::DataPtr data) {
   Q_UNUSED(data);
-  repaint();
+  update();
 }
 
 QRgb HistogramVisualizerWidget::defaultBackgroundColor() {

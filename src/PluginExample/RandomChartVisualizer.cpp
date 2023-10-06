@@ -37,7 +37,8 @@ using namespace vx;
 
 RandomChartVisualizer::RandomChartVisualizer()
     : SimpleVisualizer(getPrototypeSingleton()) {
-  this->view()->setMinimumSize(300, 200);
+  this->view()->setMinimumSize(300 / 96.0 * this->view()->logicalDpiX(),
+                               200 / 96.0 * this->view()->logicalDpiY());
 
   // Init function + section
   {

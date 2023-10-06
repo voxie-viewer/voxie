@@ -55,7 +55,8 @@ class VOXIECORESHARED_EXPORT FilterNode : public vx::Node {
   /**
    * @brief Starts the external script.
    */
-  QSharedPointer<vx::io::RunFilterOperation> run();
+  QSharedPointer<vx::io::RunFilterOperation> run(
+      bool isAutomaticFilterRun = false);
 
   bool isAllowedChild(NodeKind kind) override;
   bool isAllowedParent(NodeKind kind) override;
@@ -76,7 +77,8 @@ class VOXIECORESHARED_EXPORT FilterNode : public vx::Node {
    */
   // TODO: create a subclass for built-in filters which handles the
   // go-to-background-thread stuff
-  virtual QSharedPointer<vx::io::RunFilterOperation> calculate() = 0;
+  virtual QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun = false) = 0;
 
   /**
    * @brief Updates the calculate button's enable/disable state depending on the
@@ -107,9 +109,15 @@ class VOXIECORESHARED_EXPORT FilterNode : public vx::Node {
   PreviewBox* previewBox_ = new PreviewBox(QVector3D(), QVector3D(), false);
   // VolumeNode* previewVolumeNode = nullptr;
 
- protected:
   QSharedPointer<WeakParameterCopy> runParameters;
+
+ protected:
   QLabel* sourceCodeButton = nullptr;
   QCheckBox* debuggerSupportEnabled = nullptr;
+
+ private:
+  bool automaticFilterRunPending = false;
+  bool automaticFilterRunRunning = false;
+  void triggerAutomaticFilterRun();
 };
 }  // namespace vx

@@ -27,116 +27,143 @@ import sys
 import json
 import codecs
 import os
+import io
 
 import numpy as np
 
-# Copied from ctscripts
-import imagearchive
+import data_source
 
 args = voxie.parser.parse_args()
 context = voxie.VoxieContext(args)
 instance = context.createInstance()
 
-if args.voxie_action != 'Import':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+if args.voxie_action != 'Export' and args.voxie_action != 'Import':
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
-# TODO: Test whether the StorageOrder stuff work properly
 
-# TODO: Check checksum in iai file?
+def throwOnUnexpectedMember(data, desc, expected):
+    expected = set(expected)
+    optional = set()
+    if 'OptionalMembers' in data:
+        optional = set(data['OptionalMembers'])
+    for key in data:
+        if key not in expected and key not in optional:
+            raise Exception('Unexpected member {!r} in {}'.format(key, desc))
 
-with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationImport']).ClaimOperationAndCatch() as op:
-    filename = op.Filename
 
-    with open(filename, 'rb') as file:
-        jsonData = json.load(codecs.getreader('utf-8')(file))
+if args.voxie_action == 'Export':
+    with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationExport']).ClaimOperationAndCatch() as op:
+        filename = op.Filename
+        data = op.Data.CastTo('de.uni_stuttgart.Voxie.VolumeData')
+        # TODO: Non-voxel data types?
+        data = data.CastTo('de.uni_stuttgart.Voxie.VolumeDataVoxel')
 
-    if jsonData['Type'] != 'de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol':
-        raise Exception('Expected type %s, got %s' % (
-            repr('de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol'), repr(jsonData['Type'])))
+        baseFilename = filename
+        if baseFilename.endswith('.json'):
+            baseFilename = baseFilename[:-len('.json')]
+        dataFilename = baseFilename + '.dat'
+        dataFilenameBase = os.path.basename(dataFilename)
 
-    if jsonData['VolumeType'] != 'Voxel':
-        raise Exception('Expected volume type %s, got %s' % (
-            repr('Voxel'), repr(jsonData['VolumeType'])))
+        # print('Export %s %s' % (filename, data))
 
-    dataType = (str(jsonData['DataType'][0]), int(jsonData['DataType'][1]), str(jsonData['DataType'][2]))
-    arrayShape = [int(jsonData['ArrayShape'][i]) for i in range(3)]
-    gridSpacing = [float(jsonData['GridSpacing'][i]) for i in range(3)]
-    volumeOrigin = [float(jsonData['VolumeOrigin'][i]) for i in range(3)]
+        shape = data.ArrayShape
+        spacing = data.GridSpacing
+        origin = data.VolumeOrigin
+        ty = data.DataType
 
-    dataSourceType = str(jsonData['DataSourceType'])
-    if dataSourceType != 'ImageArchive':
-        raise Exception('Unknown DataSourceType: %s' % (repr(dataSourceType)))
+        fileType = ty
+        if fileType[1] % 8 != 0:
+            raise Exception('Data type size is not multiple of 8')
 
-    dataFilename = str(jsonData['DataSource']['DataFilename'])
-    storageOrder = [int(jsonData['DataSource']['StorageOrder'][i]) for i in range(3)]
+        # TODO: Create wrapper function in voxie namespace for this
+        fileDtype = voxie.buffer.endianMap[fileType[2]] + voxie.buffer.typeNameMap[fileType[0]] + str(fileType[1] // 8)
 
-    rawDataFilename = os.path.join(os.path.dirname(filename), dataFilename)
-    # iaiFilename = rawDataFilename + '.iai'
+        expectedCount = fileType[1] // 8 * shape[0] * shape[1]
 
-    # print (dataType)
-    # print (arrayShape)
-    # print (gridSpacing)
-    # print (volumeOrigin)
-    # print (storageOrder)
-    # print (rawDataFilename)
-    # # print (iaiFilename)
+        result = {
+            'Type': 'de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol',
+            'VolumeType': 'Voxel',
+            'DataType': fileType,
+            'ArrayShape': shape,
+            'GridSpacing': spacing,
+            'VolumeOrigin': origin,
+            'DataSourceType': 'DenseBinaryFile',
+            'DataSource': {
+                'DataFilename': dataFilenameBase,
+                # 'Offset': 0,
+                # 'StorageOrder': [1, 2, 3],
+                # 'ValueOffset': 0,
+                # 'ValueScalingFactor': 1.0,
+            },
+        }
+        # print(result)
 
-    expectedSize = [None, None, None]
-    for resDim in range(3):
-        so = storageOrder[resDim]
-        aso = abs(so)
-        if aso not in [1, 2, 3]:
-            raise Exception('Got invalid StorageOrder value: %s' % (so,))
-        if expectedSize[aso - 1] is not None:
-            raise Exception('Got StorageOrder value %s multiple time' % (aso,))
-        expectedSize[aso - 1] = arrayShape[resDim]
+        # TODO: Support scaling and different data types?
 
-    ia = imagearchive.ImageArchive(rawDataFilename)
+        with data.GetBufferReadonly() as inputArray:
+            progressMax = 0
+            progressSave = 1
 
-    if ia.count != expectedSize[2]:
-        raise Exception('ia.count != expectedSize[2]')
-    for z in range(expectedSize[2]):
-        info = ia.info[z]
-        if info['TypeName'] != dataType[0]:
-            raise Exception("info['TypeName'] != dataType[0]")
-        if int(info['TypeSize']) != dataType[1]:
-            raise Exception("int(info['TypeSize']) (%d) != dataType[1] (%d)" % (int(info['TypeSize']), dataType[1]))
-        if info['TypeEndian'] != dataType[2]:
-            raise Exception("info['TypeEndian'] (%s) != dataType[2] (%s)", (repr(info['TypeEndian']), repr(dataType[2])))
-        if int(info['Width']) != expectedSize[0]:
-            raise Exception("int(info['Width']) != expectedSize[0]")
-        if int(info['Height']) != expectedSize[1]:
-            raise Exception("int(info['Height']) != expectedSize[1]")
+            with open(dataFilename, 'wb') as file:
+                # TODO: Avoid doing copy? Might cause problems if e.g. voxie no longer uses continuous arrays
+                img = np.zeros((shape[1], shape[0]), dtype=fileDtype)
+                imgT = img.T
+                for z in range(shape[2]):
+                    op.SetProgress(progressMax + progressSave * z / shape[2])
+                    imgT[:, :] = inputArray[:, :, z]
+                    count = file.write(img)
+                    if count != expectedCount:
+                        raise Exception('count != expectedCount')
+            op.SetProgress(progressMax + progressSave)
 
-    dataType2 = (dataType[0], dataType[1], 'native')
+        f = io.StringIO()
+        json.dump(result, f, allow_nan=False, sort_keys=True,
+                  ensure_ascii=False, indent=2)
+        s = bytes(f.getvalue() + '\n', 'utf-8')
+        with open(filename, 'wb') as file:
+            file.write(s)
 
-    with instance.CreateVolumeDataVoxel(arrayShape, dataType2, volumeOrigin, gridSpacing) as resultData:
-        with resultData.CreateUpdate() as update, resultData.GetBufferWritable(update) as buffer:
-            outData = buffer[()]
-            # Apply storageOrder inverted
-            mirror = []
-            dim = []
-            for i in range(3):
-                if storageOrder[i] < 0:
-                    mirror.append(slice(None, None, -1))
-                else:
-                    mirror.append(slice(None, None))
-                dim.append(abs(storageOrder[i]) - 1)
-            outData = outData[tuple(mirror)].transpose(dim)
-            if outData.shape != tuple(expectedSize):
-                raise Exception('outData.shape != tuple(expectedSize)')
+        op.Finish()
+else:
+    with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationImport']).ClaimOperationAndCatch() as op:
+        filename = op.Filename
 
-            op.ThrowIfCancelled()
-            for z in range(expectedSize[2]):
-                # TODO: Avoid memory allocations here?
-                img = ia.readImage(z)
-                outData[:, :, z] = img
+        with open(filename, 'rb') as file:
+            jsonData = json.load(codecs.getreader('utf-8')(file))
 
-                op.ThrowIfCancelled()
-                op.SetProgress((z + 1) / expectedSize[2])
+        if jsonData['Type'] != 'de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol':
+            raise Exception('Expected type %s, got %s' % (
+                repr('de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol'), repr(jsonData['Type'])))
 
-            version = update.Finish()
-        with version:
-            op.Finish(resultData, version)
+        if jsonData['VolumeType'] != 'Voxel':
+            raise Exception('Expected volume type %s, got %s' % (
+                repr('Voxel'), repr(jsonData['VolumeType'])))
+
+        throwOnUnexpectedMember(jsonData, 'JSON file', ('Type', 'VolumeType', 'DataType', 'ArrayShape', 'GridSpacing', 'VolumeOrigin', 'DataSourceType', 'DataSource'))
+
+        dataType = (str(jsonData['DataType'][0]), int(jsonData['DataType'][1]), str(jsonData['DataType'][2]))
+        arrayShape = [int(jsonData['ArrayShape'][i]) for i in range(3)]
+        gridSpacing = [float(jsonData['GridSpacing'][i]) for i in range(3)]
+        volumeOrigin = [float(jsonData['VolumeOrigin'][i]) for i in range(3)]
+
+        dataSourceType = jsonData['DataSourceType']
+
+        with data_source.get(filename, dataSourceType, jsonData['DataSource'], array_shape=arrayShape, data_type=dataType) as source:
+            with instance.CreateVolumeDataVoxel(arrayShape, source.memType, volumeOrigin, gridSpacing) as resultData:
+                with resultData.CreateUpdate() as update, resultData.GetBufferWritable(update) as buffer:
+                    outData = buffer[()]
+                    # Apply storageOrder
+                    outData = source.with_storage_order_output(outData)
+
+                    op.ThrowIfCancelled()
+                    for z in range(source.diskSize[2]):
+                        outData[:, :, z] = source.read_image_disk_coord(z)
+
+                        op.ThrowIfCancelled()
+                        op.SetProgress((z + 1) / source.diskSize[2])
+
+                    version = update.Finish()
+                with version:
+                    op.Finish(resultData, version)
 
 context.client.destroy()

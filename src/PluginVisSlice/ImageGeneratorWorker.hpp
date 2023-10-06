@@ -23,6 +23,9 @@
 #pragma once
 
 #include <Voxie/Data/Slice.hpp>
+
+#include <VoxieBackend/Data/PlaneInfo.hpp>
+#include <VoxieBackend/Data/SliceImage.hpp>
 #include <VoxieBackend/Data/VolumeData.hpp>
 
 #include <QtCore/QRunnable>

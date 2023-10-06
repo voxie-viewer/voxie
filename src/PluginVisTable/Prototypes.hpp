@@ -199,9 +199,7 @@ class AutoScaleTableUnitsPropertiesEntry : public vx::PropertiesEntryBase {
 class AutoScaleTableUnitsPropertiesBase {
  public:
   virtual ~AutoScaleTableUnitsPropertiesBase();
-  virtual vx::Node* table() = 0;
   virtual QDBusObjectPath tableRaw() = 0;
-  virtual vx::Node* output() = 0;
   virtual QDBusObjectPath outputRaw() = 0;
 };
 class AutoScaleTableUnitsPropertiesCopy
@@ -211,9 +209,7 @@ class AutoScaleTableUnitsPropertiesCopy
  public:
   AutoScaleTableUnitsPropertiesCopy(
       const QSharedPointer<const QMap<QString, QVariant>>& properties);
-  vx::Node* table() override final;
   QDBusObjectPath tableRaw() override final;
-  vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
 };
 class AutoScaleTableUnitsProperties : public QObject,
@@ -227,7 +223,7 @@ class AutoScaleTableUnitsProperties : public QObject,
   AutoScaleTableUnitsProperties(vx::Node* parent);
   ~AutoScaleTableUnitsProperties();
 
-  vx::Node* table() override final;
+  vx::Node* table();
   QDBusObjectPath tableRaw() override final;
   static QSharedPointer<NodeProperty> tableProperty();
   static NodePropertyTyped<vx::types::NodeReference> tablePropertyTyped();
@@ -238,7 +234,7 @@ class AutoScaleTableUnitsProperties : public QObject,
  public:
   // Q_PROPERTY(vx::Node* Table READ table WRITE setTable NOTIFY tableChanged)
 
-  vx::Node* output() override final;
+  vx::Node* output();
   QDBusObjectPath outputRaw() override final;
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
@@ -285,7 +281,6 @@ class HistogramPropertiesBase {
   virtual bool logarithmicYRaw() = 0;
   virtual double lowerBoundXFraction() = 0;
   virtual double lowerBoundXFractionRaw() = 0;
-  virtual vx::Node* table() = 0;
   virtual QDBusObjectPath tableRaw() = 0;
   virtual double upperBoundXFraction() = 0;
   virtual double upperBoundXFractionRaw() = 0;
@@ -309,7 +304,6 @@ class HistogramPropertiesCopy : public HistogramPropertiesBase {
   bool logarithmicYRaw() override final;
   double lowerBoundXFraction() override final;
   double lowerBoundXFractionRaw() override final;
-  vx::Node* table() override final;
   QDBusObjectPath tableRaw() override final;
   double upperBoundXFraction() override final;
   double upperBoundXFractionRaw() override final;
@@ -397,7 +391,7 @@ class HistogramProperties : public QObject, public HistogramPropertiesBase {
   // Q_PROPERTY(double LowerBoundXFraction READ lowerBoundXFraction WRITE
   // setLowerBoundXFraction NOTIFY lowerBoundXFractionChanged)
 
-  vx::Node* table() override final;
+  vx::Node* table();
   QDBusObjectPath tableRaw() override final;
   static QSharedPointer<NodeProperty> tableProperty();
   static NodePropertyTyped<vx::types::NodeReference> tablePropertyTyped();
@@ -461,7 +455,6 @@ class ScatterPlotPropertiesBase {
   virtual qint64 pointLimitRaw() = 0;
   virtual double pointScale() = 0;
   virtual double pointScaleRaw() = 0;
-  virtual vx::Node* table() = 0;
   virtual QDBusObjectPath tableRaw() = 0;
   virtual double viewMargin() = 0;
   virtual double viewMarginRaw() = 0;
@@ -491,7 +484,6 @@ class ScatterPlotPropertiesCopy : public ScatterPlotPropertiesBase {
   qint64 pointLimitRaw() override final;
   double pointScale() override final;
   double pointScaleRaw() override final;
-  vx::Node* table() override final;
   QDBusObjectPath tableRaw() override final;
   double viewMargin() override final;
   double viewMarginRaw() override final;
@@ -606,7 +598,7 @@ class ScatterPlotProperties : public QObject, public ScatterPlotPropertiesBase {
   // Q_PROPERTY(double PointScale READ pointScale WRITE setPointScale NOTIFY
   // pointScaleChanged)
 
-  vx::Node* table() override final;
+  vx::Node* table();
   QDBusObjectPath tableRaw() override final;
   static QSharedPointer<NodeProperty> tableProperty();
   static NodePropertyTyped<vx::types::NodeReference> tablePropertyTyped();
@@ -663,7 +655,6 @@ class TablePropertiesBase {
   virtual QString sortColumnRaw() = 0;
   virtual QString sortOrder() = 0;
   virtual QString sortOrderRaw() = 0;
-  virtual vx::Node* table() = 0;
   virtual QDBusObjectPath tableRaw() = 0;
 };
 class TablePropertiesCopy : public TablePropertiesBase {
@@ -678,7 +669,6 @@ class TablePropertiesCopy : public TablePropertiesBase {
   QString sortColumnRaw() override final;
   QString sortOrder() override final;
   QString sortOrderRaw() override final;
-  vx::Node* table() override final;
   QDBusObjectPath tableRaw() override final;
 };
 class TableProperties : public QObject, public TablePropertiesBase {
@@ -727,7 +717,7 @@ class TableProperties : public QObject, public TablePropertiesBase {
   // Q_PROPERTY(QString SortOrder READ sortOrder WRITE setSortOrder NOTIFY
   // sortOrderChanged)
 
-  vx::Node* table() override final;
+  vx::Node* table();
   QDBusObjectPath tableRaw() override final;
   static QSharedPointer<NodeProperty> tableProperty();
   static NodePropertyTyped<vx::types::NodeReference> tablePropertyTyped();

@@ -27,8 +27,6 @@
 #include <PluginVisTable/ScatterPlotVisualizer.hpp>
 #include <PluginVisTable/TableVisualizer.hpp>
 
-#include <QtWidgets/QMessageBox>
-
 VisTablePlugin::VisTablePlugin(QObject* parent) : QGenericPlugin(parent) {}
 
 QObject* VisTablePlugin::create(const QString& key,

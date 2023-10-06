@@ -74,56 +74,11 @@ class DynamicObjectAdaptorImplPlugin : public DynamicObjectAdaptor {
 }  // namespace
 }  // namespace vx
 
-template <typename T>
-static inline T* getPtr(T* ptr) {
-  return ptr;
-}
-template <typename T>
-static inline T* getPtr(QSharedPointer<T> ptr) {
-  return ptr.data();
-}
-
-template <typename T>
-static inline bool isSharedPtr(T* ptr) {
-  Q_UNUSED(ptr);
-  return false;
-}
-template <typename T>
-static inline bool isSharedPtr(QSharedPointer<T> ptr) {
-  Q_UNUSED(ptr);
-  return true;
-}
-
-// TODO: Remove this
-template <typename ListT>
-static inline void registerChildren(Plugin* plugin, const ListT& children,
-                                    const QString& type) {
-  QObject* container = new QObject(plugin);
-  container->setObjectName(type);
-  for (auto child : children) {
-    if (child->objectName() == "") {
-      if (auto prototype = dynamic_cast<vx::NodePrototype*>(getPtr(child)))
-        child->setObjectName(prototype->name());
-      else
-        child->setObjectName(child->metaObject()->className());
-    }
-    if (!isSharedPtr(child)) child->setParent(container);
-  }
-}
-
 PluginInstance::PluginInstance() {}
 PluginInstance::~PluginInstance() {}
 
 template <typename ListT>
-void Plugin::addObjects(const QString& typeShort, const ListT& objects,
-                        bool doRegisterChildren) {
-  if (doRegisterChildren) registerChildren(this, objects, typeShort);
-
-  for (const auto& child : objects)
-    if (child->objectName() == "")
-      if (auto prototype = dynamic_cast<vx::NodePrototype*>(getPtr(child)))
-        child->setObjectName(prototype->name());
-
+void Plugin::addObjects(const QString& typeShort, const ListT& objects) {
   QString type = "de.uni_stuttgart.Voxie.ComponentType." + typeShort;
 
   allObjects[type] = QList<QSharedPointer<Component>>();
@@ -149,7 +104,7 @@ void Plugin::addObjects(const QString& typeShort, const ListT& objects,
 }
 
 void Plugin::reAddPrototypes() {
-  addObjects("NodePrototype", allObjectPrototypes, false);
+  addObjects("NodePrototype", allObjectPrototypes);
 }
 
 Plugin::Plugin(QObject* plugin, const QString& name,
@@ -167,9 +122,6 @@ Plugin::Plugin(QObject* plugin, const QString& name,
   new PluginAdaptorImpl(this);
 
   this->pluginName = name;
-
-  // Register in script interface
-  this->setObjectName(this->pluginName);
 }
 
 void Plugin::initialize() {
@@ -219,15 +171,6 @@ void Plugin::initialize() {
 
       for (const auto& component : components) {
         auto type = component->componentType();
-
-        // TODO: Is this needed?
-        if (component->objectName() == "") {
-          if (auto prototype =
-                  dynamic_cast<vx::NodePrototype*>(component.data()))
-            component->setObjectName(prototype->name());
-          else
-            component->setObjectName(component->metaObject()->className());
-        }
 
         if (!allObjects.contains(type) || !allObjectsByName.contains(type)) {
           qWarning() << "Encountered unknown component type" << type

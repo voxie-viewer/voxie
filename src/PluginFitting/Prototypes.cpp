@@ -51,12 +51,6 @@ FitPlanePropertiesBase::~FitPlanePropertiesBase() {}
 FitPlanePropertiesCopy::FitPlanePropertiesCopy(
     const QSharedPointer<const QMap<QString, QVariant>>& properties)
     : _properties(properties) {}
-vx::Node* FitPlanePropertiesCopy::geometricPrimitive() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)
-              ["de.uni_stuttgart.Voxie.Filter.FitPlane.GeometricPrimitive"]));
-}
 QDBusObjectPath FitPlanePropertiesCopy::geometricPrimitiveRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)
@@ -98,11 +92,6 @@ quint64 FitPlanePropertiesCopy::point3() {
 quint64 FitPlanePropertiesCopy::point3Raw() {
   return vx::Node::parseVariant<quint64>(
       (*_properties)["de.uni_stuttgart.Voxie.Filter.FitPlane.Point3"]);
-}
-vx::Node* FitPlanePropertiesCopy::surface() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Filter.FitPlane.Surface"]));
 }
 QDBusObjectPath FitPlanePropertiesCopy::surfaceRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(

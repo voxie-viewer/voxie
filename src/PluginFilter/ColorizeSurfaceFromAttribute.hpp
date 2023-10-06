@@ -51,7 +51,8 @@ class ColorizeSurfaceFromAttribute : public FilterNode {
    * @brief Gets called when the filter should run its calculation.
    * @return A pointer to the RunFilterOperation for the calculation.
    */
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
 
   QSharedPointer<QObject> getPropertyUIData(QString propertyName) override;
   /**

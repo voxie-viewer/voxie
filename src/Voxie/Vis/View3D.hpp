@@ -45,6 +45,16 @@ class SpaceNavVisualizer;
 namespace visualization {
 class MouseAction;
 
+// TODO: Move getMousePositionQt() and getMousePosition() somewhere else?
+VOXIECORESHARED_EXPORT Vector<double, 2> getMousePositionQt(QWidget* widget,
+                                                            QMouseEvent* event);
+VOXIECORESHARED_EXPORT Vector<double, 2> getMousePosition(QWidget* widget,
+                                                          QMouseEvent* event);
+VOXIECORESHARED_EXPORT Vector<double, 2> getMousePositionQt(QWidget* widget,
+                                                            QWheelEvent* event);
+VOXIECORESHARED_EXPORT Vector<double, 2> getMousePosition(QWidget* widget,
+                                                          QWheelEvent* event);
+
 enum class View3DProperty : quint32 {
   LookAt = 1 << 0,
   Orientation = 1 << 1,
@@ -155,13 +165,17 @@ class VOXIECORESHARED_EXPORT View3D : public QObject {
   vx::ProjectiveMap<double, 3> projectionMatrix(double fWidth,
                                                 double fHeight) const;
 
-  void mousePressEvent(const QPoint& mouseLast, QMouseEvent* event,
-                       const QSize& windowSize);
-  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
-                      const QSize& windowSize);
-  void mouseReleaseEvent(const QPoint& mouseLast, QMouseEvent* event,
-                         const QSize& windowSize);
-  void wheelEvent(QWheelEvent* event, const QSize& windowSize);
+  void mousePressEvent(const vx::Vector<double, 2>& mousePosLast,
+                       const vx::Vector<double, 2>& mousePosNow,
+                       QMouseEvent* event, const QSize& windowSize);
+  void mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast,
+                      const vx::Vector<double, 2>& mousePosNow,
+                      QMouseEvent* event, const QSize& windowSize);
+  void mouseReleaseEvent(const vx::Vector<double, 2>& mousePosLast,
+                         const vx::Vector<double, 2>& mousePosNow,
+                         QMouseEvent* event, const QSize& windowSize);
+  void wheelEvent(const vx::Vector<double, 2>& mousePosNow, QWheelEvent* event,
+                  const QSize& windowSize);
   void keyPressEvent(QKeyEvent* event, const QSize& windowSize);
   void setFixedAngle(QString direction);
   void switchProjection();

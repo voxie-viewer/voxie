@@ -127,6 +127,8 @@ class FrameBuffer : protected QOpenGLFunctions {
   }
 
   std::tuple<quint32, quint32, quint32> lookupRaw(int x, int y) const {
+    // qDebug() << "lookupRaw" << x << y << width << height;
+
     if (x < 0 || (quint32)x >= width || y < 0 || (quint32)y >= height) {
       // This is normal when dragging the mouse and the leaving the window
       // qWarning() << "Attempting to look up position outside pick image";
@@ -161,12 +163,19 @@ class FrameBuffer : protected QOpenGLFunctions {
     return std::make_tuple(data.data(), std::get<1>(result),
                            std::get<2>(result));
   }
+
+  // TODO: Support having a different resolution for the pick image?
+  std::tuple<Object3DPickImageData*, quint32, quint32> lookupNew(
+      const vx::Vector<double, 2>& pos) const {
+    return lookupNew(std::floor(pos[0]), std::floor(pos[1]));
+  }
 };
 
-Visualizer3DView::Visualizer3DView(
-    View3DProperties* properties, vx::visualization::View3D* view3d,
-    AxisFilter* axisFilter)
+Visualizer3DView::Visualizer3DView(View3DProperties* properties,
+                                   vx::visualization::View3D* view3d,
+                                   AxisFilter* axisFilter)
     : properties(properties),
+      mouseLast{0, 0},
       view3d(view3d),
       axisFilter(axisFilter) {
   this->resize(500 / 96.0 * this->logicalDpiX(),
@@ -421,8 +430,11 @@ void Visualizer3DView::resizeGL(int w, int h) {
 
   if (!initialized()) return;
 
-  if (w != (int)pickFrameBuffer->width || h != (int)pickFrameBuffer->height)
-    pickFrameBuffer.reset(new FrameBuffer(w, h, GL_RGBA32UI));
+  if (this->widthPhysInt() != (int)pickFrameBuffer->width ||
+      this->heightPhysInt() != (int)pickFrameBuffer->height)
+    // TODO: Support having a different resolution for the pick image?
+    pickFrameBuffer.reset(new FrameBuffer(this->widthPhysInt(),
+                                          this->heightPhysInt(), GL_RGBA32UI));
 }
 
 // TODO: cache bounding box?
@@ -557,7 +569,7 @@ void Visualizer3DView::renderScreenshot(
   //          projectionMatrix, createQSharedPointer<Object3DPickImageInfo>());
   framebuffer.unbind();
 
-  glViewport(0, 0, this->width(), this->height());
+  glViewport(0, 0, this->widthPhys(), this->heightPhys());
 
   framebuffer.download(QSharedPointer<Object3DPickImageInfo>(), GL_RGBA,
                        GL_FLOAT);
@@ -594,11 +606,11 @@ void Visualizer3DView::renderScreenshot(
 void Visualizer3DView::paint() {
   glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
 
-  glViewport(0, 0, width(), height());
+  glViewport(0, 0, this->widthPhys(), this->heightPhys());
 
   auto viewMatrix = view3d->viewMatrix();
   auto projectionMatrix =
-      view3d->projectionMatrix(this->width(), this->height());
+      view3d->projectionMatrix(this->widthDIP(), this->heightDIP());
   auto cameraPosition = view3d->getCameraPosition();
 
   // TODO: cache bounding box / clipping planes?
@@ -640,7 +652,7 @@ void Visualizer3DView::paint() {
 
   auto pickInfo = createQSharedPointer<Object3DPickImageInfo>();
 
-  glViewport(0, 0, width(), height());
+  glViewport(0, 0, this->widthPhys(), this->heightPhys());
 
   Object3DRenderContext renderContextPick(
       context(), context()->surface(), pickFrameBuffer->frameBuffer,
@@ -799,7 +811,7 @@ void Visualizer3DView::paintPick(
 
   // TODO: Reduce code duplication with paintImg()
 
-  // glViewport(0, 0, width(), height());
+  // glViewport(0, 0, this->widthPhys(), this->heightPhys());
 
   // TODO: this code should probably be in Object3DRenderContext.select()
   glBindFramebuffer(GL_FRAMEBUFFER, renderContext.framebuffer());
@@ -947,14 +959,9 @@ void Visualizer3DView::addPoint(const QVector3D& point) {
   }
 }
 
-void Visualizer3DView::getTransformedMouseRay(QMouseEvent* event,
-                                              QVector3D translation,
-                                              QQuaternion rotation,
-                                              QVector3D* start,
-                                              QVector3D* end) {
-  auto mouseX = event->x() + 0.5;
-  auto mouseY = event->y() + 0.5;
-
+void Visualizer3DView::getTransformedMouseRay(
+    const vx::Vector<double, 2>& mousePos, QVector3D translation,
+    QQuaternion rotation, QVector3D* start, QVector3D* end) {
   auto viewMatrix = toQMatrix4x4(
       matrixCastNarrow<float>(view3d->viewMatrix().projectiveMatrix()));
   viewMatrix.translate(translation);
@@ -962,7 +969,7 @@ void Visualizer3DView::getTransformedMouseRay(QMouseEvent* event,
 
   // GLU unproject:
   auto fProj = toQMatrix4x4(matrixCastNarrow<float>(
-      view3d->projectionMatrix(this->width(), this->height())
+      view3d->projectionMatrix(this->widthDIP(), this->heightDIP())
           .projectiveMatrix()));
   float objNear[4] = {std::numeric_limits<float>::quiet_NaN(),
                       std::numeric_limits<float>::quiet_NaN(),
@@ -976,15 +983,13 @@ void Visualizer3DView::getTransformedMouseRay(QMouseEvent* event,
   // Calling an OpenGL function would require the correct context
   // GLint viewPort[4];
   // glGetIntegerv(GL_VIEWPORT, viewPort);
-  GLint viewPort[4] = {0, 0, (GLint)width(), (GLint)height()};
-  if (!gluhelper::glhUnProjectf(mouseX, this->height() - mouseY, 0,
-                                viewMatrix.data(), fProj.data(), viewPort,
-                                objNear)) {
+  GLint viewPort[4] = {0, 0, (GLint)this->widthDIP(), (GLint)this->heightDIP()};
+  if (!gluhelper::glhUnProjectf(mousePos[0], mousePos[1], 0, viewMatrix.data(),
+                                fProj.data(), viewPort, objNear)) {
     qWarning() << "glhUnProjectf near failed";
   }
-  if (!gluhelper::glhUnProjectf(mouseX, this->height() - mouseY, 1,
-                                viewMatrix.data(), fProj.data(), viewPort,
-                                objFar)) {
+  if (!gluhelper::glhUnProjectf(mousePos[0], mousePos[1], 1, viewMatrix.data(),
+                                fProj.data(), viewPort, objFar)) {
     qWarning() << "glhUnProjectf near failed";
   }
   *start = QVector3D(objNear[0], objNear[1], objNear[2]);
@@ -992,15 +997,19 @@ void Visualizer3DView::getTransformedMouseRay(QMouseEvent* event,
 }
 
 void Visualizer3DView::mousePressEvent(QMouseEvent* event) {
-  view3d->mousePressEvent(mouseLast, event, size());
+  auto pos = getMousePosition(this, event);
+
+  view3d->mousePressEvent(mouseLast, pos, event, size());
 
   // TODO: avoid this stuff if no one uses it?
-  auto mouseX = event->x();
-  auto mouseY = event->y();
-  auto pickData =
-      pickFrameBuffer->lookupNew(mouseX, pickFrameBuffer->height - 1 - mouseY);
+  // Note: Pick buffer coordinates are physical, not logical coordinates
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+  auto pickData = pickFrameBuffer->lookupNew(pos * devicePixelRatioF());
+#else
+  auto pickData = pickFrameBuffer->lookupNew(pos * devicePixelRatio());
+#endif
   QVector3D mouseRayStart, mouseRayEnd;
-  getTransformedMouseRay(event, QVector3D(0, 0, 0), QQuaternion(1, 0, 0, 0),
+  getTransformedMouseRay(pos, QVector3D(0, 0, 0), QQuaternion(1, 0, 0, 0),
                          &mouseRayStart, &mouseRayEnd);
 
   for (const auto& obj : properties->objects()) {
@@ -1019,17 +1028,22 @@ void Visualizer3DView::mousePressEvent(QMouseEvent* event) {
     }
   }
 
-  this->mouseLast = event->pos();
+  this->mouseLast = pos;
 }
 
 void Visualizer3DView::mouseMoveEvent(QMouseEvent* event) {
+  auto pos = getMousePosition(this, event);
+  // qDebug() << "MME" << pos;
+
   // TODO: avoid this stuff if no one uses it?
-  auto mouseX = event->x();
-  auto mouseY = event->y();
-  auto pickData =
-      pickFrameBuffer->lookupNew(mouseX, pickFrameBuffer->height - 1 - mouseY);
+  // Note: Pick buffer coordinates are physical, not logical coordinates
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+  auto pickData = pickFrameBuffer->lookupNew(pos * devicePixelRatioF());
+#else
+  auto pickData = pickFrameBuffer->lookupNew(pos * devicePixelRatio());
+#endif
   QVector3D mouseRayStart, mouseRayEnd;
-  getTransformedMouseRay(event, QVector3D(0, 0, 0), QQuaternion(1, 0, 0, 0),
+  getTransformedMouseRay(pos, QVector3D(0, 0, 0), QQuaternion(1, 0, 0, 0),
                          &mouseRayStart, &mouseRayEnd);
 
   for (const auto& obj : properties->objects()) {
@@ -1047,7 +1061,7 @@ void Visualizer3DView::mouseMoveEvent(QMouseEvent* event) {
     }
   }
 
-  view3d->mouseMoveEvent(mouseLast, event, size());
+  view3d->mouseMoveEvent(mouseLast, pos, event, size());
 
   // TODO: Make this depend on modifiers pressed during mousePressEvent
   auto modifiers =
@@ -1062,27 +1076,25 @@ void Visualizer3DView::mouseMoveEvent(QMouseEvent* event) {
     // if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
     if (event->modifiers().testFlag(Qt::AltModifier)) doMove = true;
 
-    int dxInt = event->x() - mouseLast.x();
-    int dyInt = event->y() - mouseLast.y();
+    auto diffUnscaled = pos - mouseLast;
 
-    if (dxInt == 0 && dyInt == 0) return;
+    if (diffUnscaled[0] == 0 && diffUnscaled[1] == 0) return;
 
-    double dx = dxInt * factor;
-    double dy = dyInt * factor;
+    auto diff = diffUnscaled * factor;
 
     if (!doMove) {
       // TODO: Use arcball vector
       auto matView = view3d->viewMatrix();
       vx::Rotation<double, 3> quatX = vx::rotationFromAxisAngleDeg(
           matView.map(vx::HmgVector<double, 3>({0, 1, 0}, 0)).getVectorPart(),
-          dx * 0.15);
+          diff[0] * 0.15);
       vx::Rotation<double, 3> quatY = vx::rotationFromAxisAngleDeg(
           matView.map(vx::HmgVector<double, 3>({1, 0, 0}, 0)).getVectorPart(),
-          dy * 0.15);
+          -diff[1] * 0.15);
       Q_EMIT this->objectRotationChangeRequested(
           toQQuaternion(rotationCastNarrow<float>(quatX * quatY)));
     } else {
-      vx::Vector<double, 3> move(dx, -dy, 0);
+      vx::Vector<double, 3> move(diff[0], diff[1], 0);
       move *= view3d->pixelSize(windowSize);
       auto offset = view3d->orientation().map(move);
 
@@ -1091,17 +1103,20 @@ void Visualizer3DView::mouseMoveEvent(QMouseEvent* event) {
     }
   }
 
-  this->mouseLast = event->pos();
+  this->mouseLast = pos;
 }
 
 void Visualizer3DView::mouseReleaseEvent(QMouseEvent* event) {
-  view3d->mouseReleaseEvent(mouseLast, event, size());
+  auto pos = getMousePosition(this, event);
 
-  this->mouseLast = event->pos();
+  view3d->mouseReleaseEvent(mouseLast, pos, event, size());
+
+  this->mouseLast = pos;
 }
 
 void Visualizer3DView::wheelEvent(QWheelEvent* event) {
-  view3d->wheelEvent(event, size());
+  auto pos = getMousePosition(this, event);
+  view3d->wheelEvent(pos, event, size());
 }
 
 void Visualizer3DView::keyPressEvent(QKeyEvent* event) {

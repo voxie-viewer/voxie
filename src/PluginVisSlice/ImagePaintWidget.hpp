@@ -26,6 +26,8 @@
 
 #include <QtWidgets/QLabel>
 
+#include <VoxieClient/Vector.hpp>
+
 class SliceVisualizer;
 
 /**
@@ -65,5 +67,5 @@ class ImagePaintWidget : public QLabel {
  private:
   QBrush b;
   SliceVisualizer* sv;
-  QPoint mouseLast;
+  vx::Vector<double, 2> mouseLast;
 };

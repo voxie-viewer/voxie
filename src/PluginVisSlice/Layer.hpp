@@ -22,8 +22,9 @@
 
 #pragma once
 
-#include <Voxie/Data/Slice.hpp>
 #include <VoxieBackend/Data/SliceImage.hpp>
+
+#include <VoxieClient/ObjectExport/ExportedObject.hpp>
 
 #include <QtCore/QObject>
 

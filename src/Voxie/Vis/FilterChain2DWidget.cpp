@@ -150,7 +150,8 @@ FilterChain2DWidget::FilterChain2DWidget(QWidget* parent)
          vx::voxieRoot()
              .components()
              ->listComponentsTyped<vx::plugin::MetaFilter2D>()) {
-      if (metafilter->objectName().compare(
+      // TODO: Clean up, don't compare display names
+      if (metafilter->displayName().compare(
               this->filterToAdd->currentItem()->text()) == 0) {
         Filter2D* filter = metafilter->createFilter();
         this->filterchain->addFilter(filter);
@@ -168,7 +169,7 @@ void FilterChain2DWidget::addFilter() {
        vx::voxieRoot()
            .components()
            ->listComponentsTyped<vx::plugin::MetaFilter2D>()) {
-    this->filterToAdd->addItem(metafilter->objectName());
+    this->filterToAdd->addItem(metafilter->displayName());
   }
   this->filterToAdd->setCurrentRow(0);
   int dialogResult = addDialog->exec();
@@ -244,7 +245,7 @@ void FilterChain2DWidget::updateList() {
     } else {
       item->setCheckState(Qt::Unchecked);
     }
-    item->setText(filter->getMetaName());
+    item->setText(filter->metaFilter()->displayName());
     this->list->addItem(item);
     this->list->setCurrentItem(item);
   }

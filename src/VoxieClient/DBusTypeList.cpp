@@ -38,6 +38,8 @@ void vx::initDBusTypes() {
       (std::tuple<double, double, double>))>();
   qDBusRegisterMetaType<VX_IDENTITY_TYPE(
       (std::tuple<double, double, double, double>))>();
+  qDBusRegisterMetaType<VX_IDENTITY_TYPE(
+      (std::tuple<QDBusObjectPath, double>))>();
   qDBusRegisterMetaType<VX_IDENTITY_TYPE((
       std::tuple<QString, std::tuple<QString, quint32, QString>, QString,
                  QMap<QString, QDBusVariant>, QMap<QString, QDBusVariant>>))>();
@@ -81,6 +83,8 @@ void vx::initDBusTypes() {
   qDBusRegisterMetaType<VX_IDENTITY_TYPE(
       (QList<std::tuple<double, double, double>>))>();
   qDBusRegisterMetaType<VX_IDENTITY_TYPE(
+      (QList<std::tuple<QDBusObjectPath, double>>))>();
+  qDBusRegisterMetaType<VX_IDENTITY_TYPE(
       (QList<std::tuple<QString, std::tuple<QString, quint32, QString>, QString,
                         QMap<QString, QDBusVariant>,
                         QMap<QString, QDBusVariant>>>))>();
@@ -103,6 +107,7 @@ void vx::initDBusTypes() {
                         QMap<QString, QDBusVariant>>>))>();
   qDBusRegisterMetaType<VX_IDENTITY_TYPE(
       (QList<std::tuple<quint32, quint32, quint32>>))>();
+  qDBusRegisterMetaType<QList<QList<quint64>>>();
   qDBusRegisterMetaType<VX_IDENTITY_TYPE(
       (QList<QMap<QString, QDBusVariant>>))>();
   qDBusRegisterMetaType<QList<quint64>>();

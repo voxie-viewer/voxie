@@ -27,6 +27,7 @@
 
 #include "CoreWindow.hpp"
 
+#include <Voxie/DebugOptions.hpp>
 #include <Voxie/Util.hpp>
 
 #include <VoxieClient/DBusAdaptors.hpp>
@@ -335,6 +336,15 @@ CoreWindow::CoreWindow(vx::Root* root, QWidget* parent)
   this->guiDBusObject = new Gui(this);
 
   this->setWindowIcon(QIcon(":/icons-voxie/voxel-data-32.png"));
+
+  if (vx::debug_option::Log_HighDPI()->get())
+    qDebug() << "DPI" << this->logicalDpiX() << this->logicalDpiY()
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+             << "devicePixelRatioF" << this->window()->devicePixelRatioF()
+#else
+             << "devicePixelRatio" << this->window()->devicePixelRatio()
+#endif
+        ;
 }
 CoreWindow::~CoreWindow() { isBeginDestroyed = true; }
 
@@ -627,7 +637,7 @@ void CoreWindow::initMenu() {
                           "Error while starting python console",
                           QString() + "Error while starting python console: " +
                               QVariant::fromValue(error).toString(),
-                          QMessageBox::Ok)
+                          QMessageBox::Ok, Root::instance()->mainWindow())
                   .exec();
             });
 #endif
@@ -649,7 +659,7 @@ void CoreWindow::initMenu() {
                                 QVariant::fromValue(exitStatus).toString() +
                                 ", code = " + QString::number(exitCode) +
                                 scriptOutputString,
-                            QMessageBox::Ok)
+                            QMessageBox::Ok, Root::instance()->mainWindow())
                     .exec();
               } else {
                 /*
@@ -660,7 +670,7 @@ void CoreWindow::initMenu() {
                               QString() +
                                   "Warnings while starting python console:\n" +
                                   scriptOutputString,
-                              QMessageBox::Ok)
+                              QMessageBox::Ok, Root::instance()->mainWindow())
                       .exec();
                 }
                 */
@@ -867,7 +877,7 @@ void CoreWindow::populateScriptsMenu() {
                 QMessageBox(QMessageBox::Critical, this->windowTitle(),
                             QString("Failed to find interpreter for script " +
                                     scriptFile),
-                            QMessageBox::Ok, this)
+                            QMessageBox::Ok, Root::instance()->mainWindow())
                     .exec();
             });
       }
@@ -883,7 +893,7 @@ bool CoreWindow::newSession() {
     // loaded
     QMessageBox::StandardButton confirmation;
     confirmation =
-        QMessageBox::warning(this, "Voxie",
+        QMessageBox::warning(Root::instance()->mainWindow(), "Voxie",
                              "Warning: This will close all currently loaded "
                              "nodes.\nAre you sure?",
                              QMessageBox::Yes | QMessageBox::No);
@@ -947,7 +957,7 @@ void CoreWindow::closeEvent(QCloseEvent* event) {
   // Skip the close dialog if there are no nodes
   // TODO: Also skip the close dialog if there was no change since the last save
   if (vx::Root::instance()->nodes().size() > 0) {
-    QMessageBox closeDialog;
+    QMessageBox closeDialog(Root::instance()->mainWindow());
     closeDialog.setText("Do you want to save your current project?");
     closeDialog.setStandardButtons(QMessageBox::Save | QMessageBox::Discard |
                                    QMessageBox::Cancel);

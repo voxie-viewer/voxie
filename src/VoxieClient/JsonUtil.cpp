@@ -124,6 +124,7 @@ QJsonArray vx::expectArray(const QJsonValue& value) {
   return value.toArray();
 }
 double vx::expectDouble(const QJsonValue& value) {
+  // TODO: Support strings for NaN etc. here? (Or e.g. in Types.cpp)
   if (value.type() != QJsonValue::Double)
     throw Exception("de.uni_stuttgart.Voxie.JsonError",
                     "Error in JSON data: Expected a number, got a " +

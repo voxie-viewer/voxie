@@ -51,6 +51,8 @@ class BlockIDManager:
             id = 0
             self.usedIDs.add(id)
             return id
+        if name.startswith('minecraft:'):
+            name = name[len('minecraft:'):]
         if name in self.nameToID:
             id = self.nameToID[name]
             self.usedIDs.add(id)
@@ -96,7 +98,7 @@ context = voxie.VoxieContext(args)
 instance = context.createInstance()
 
 if args.voxie_action != 'RunFilter':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationRunFilter']).ClaimOperationAndCatch() as op:
     filterPath = op.FilterObject

@@ -42,8 +42,10 @@
 
 #include <QtWidgets/QProgressBar>
 
+using namespace vx::visualization;
+
 ImagePaintWidget::ImagePaintWidget(SliceVisualizer* sv, QWidget* parent)
-    : QLabel(parent), sv(sv) {
+    : QLabel(parent), sv(sv), mouseLast{0, 0} {
   // TODO: High-DPI displays (should use larger checkerboard with higher
   // resolution)
   QImage image(":/icons-voxie/transparency_.png");
@@ -57,7 +59,8 @@ ImagePaintWidget::ImagePaintWidget(SliceVisualizer* sv, QWidget* parent)
 ImagePaintWidget::~ImagePaintWidget() {}
 
 void ImagePaintWidget::wheelEvent(QWheelEvent* event) {
-  sv->view3d()->wheelEvent(event, size());
+  auto pos = getMousePosition(this, event);
+  sv->view3d()->wheelEvent(pos, event, size());
 
   sv->currentTool()->toolWheelEvent(event);
 }
@@ -65,19 +68,23 @@ void ImagePaintWidget::wheelEvent(QWheelEvent* event) {
 void ImagePaintWidget::mousePressEvent(QMouseEvent* event) {
   // qDebug() << "click";
 
-  sv->view3d()->mousePressEvent(mouseLast, event, size());
+  auto pos = getMousePosition(this, event);
+
+  sv->view3d()->mousePressEvent(mouseLast, pos, event, size());
 
   sv->currentTool()->toolMousePressEvent(event);
 
-  this->mouseLast = event->pos();
+  this->mouseLast = pos;
 }
 
 void ImagePaintWidget::mouseReleaseEvent(QMouseEvent* event) {
-  sv->view3d()->mouseReleaseEvent(mouseLast, event, size());
+  auto pos = getMousePosition(this, event);
+
+  sv->view3d()->mouseReleaseEvent(mouseLast, pos, event, size());
 
   sv->currentTool()->toolMouseReleaseEvent(event);
 
-  this->mouseLast = event->pos();
+  this->mouseLast = pos;
 }
 
 void ImagePaintWidget::keyPressEvent(QKeyEvent* event) {
@@ -107,37 +114,28 @@ void ImagePaintWidget::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void ImagePaintWidget::mouseMoveEvent(QMouseEvent* event) {
-  sv->view3d()->mouseMoveEvent(mouseLast, event, size());
+  auto pos = getMousePosition(this, event);
 
-  // TODO: only calculate values when needed?
-  bool doValueLookup =
-      false;  // TODO: currently this triggers a race condition ("what():
-              // Exception: de.uni_stuttgart.Voxie.InternalError: clInstance ==
-              // nullptr")
+  sv->view3d()->mouseMoveEvent(mouseLast, pos, event, size());
 
   auto& imgUnf = this->sv->sliceImage();
-  auto& imgFilt = this->sv->filteredSliceImage();
-  const auto& pos = event->pos();
   auto planePoint = imgUnf.pixelToPlanePoint(event->pos(), true);
-  auto slice = this->sv->slice();
-  auto threeDPoint = slice ? slice->getCuttingPlane().get3DPoint(planePoint.x(),
-                                                                 planePoint.y())
-                           : QVector3D(NAN, NAN, NAN);
-  double valUnf = NAN;
-  if (doValueLookup && pos.x() >= 0 && ((size_t)pos.x()) < imgUnf.getWidth() &&
-      pos.y() >= 0 && ((size_t)pos.y()) < imgUnf.getHeight())
-    valUnf = imgUnf.getPixel(pos.x(), imgUnf.getHeight() - 1 - pos.y());
-  double valFilt = NAN;
-  if (doValueLookup && pos.x() >= 0 && ((size_t)pos.x()) < imgFilt.getWidth() &&
-      pos.y() >= 0 && ((size_t)pos.y()) < imgFilt.getHeight())
-    valFilt = imgFilt.getPixel(pos.x(), imgFilt.getHeight() - 1 - pos.y());
+  auto threeDPoint =
+      this->sv->getCuttingPlane().get3DPoint(planePoint.x(), planePoint.y());
+
   // TODO: rotation and translation of object
+  vx::Vector<double, 3> posVoxel;
+  const vx::Vector<double, 3>* posVoxelPtr = nullptr;
   double valNearest = NAN, valLinear = NAN;
   auto vol = dynamic_cast<vx::VolumeNode*>(this->sv->properties->volume());
   if (vol) {
     auto data =
         qSharedPointerDynamicCast<vx::VolumeDataVoxel>(vol->volumeData());
     if (data) {
+      posVoxel = data->getObjectToVoxelTrafo().map(
+          vx::vectorCast<double>(vx::toVector(threeDPoint)));
+      posVoxelPtr = &posVoxel;
+
       valNearest = data->performInGenericContext([threeDPoint](auto& volInst) {
         return (double)volInst.getVoxelMetric(
             threeDPoint, vx::InterpolationMethod::NearestNeighbor);
@@ -149,12 +147,12 @@ void ImagePaintWidget::mouseMoveEvent(QMouseEvent* event) {
     }
     // TODO: Non-voxel datasets
   }
-  Q_EMIT this->sv->imageMouseMove(event, planePoint, threeDPoint, valUnf,
-                                  valFilt, valNearest, valLinear);
+  Q_EMIT this->sv->imageMouseMove(event, planePoint, threeDPoint, posVoxelPtr,
+                                  valNearest, valLinear);
 
   sv->currentTool()->toolMouseMoveEvent(event);
 
-  this->mouseLast = event->pos();
+  this->mouseLast = pos;
 }
 
 void ImagePaintWidget::leaveEvent(QEvent* e) {

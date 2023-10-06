@@ -247,11 +247,8 @@ class SegmentationPropertiesEntry : public vx::PropertiesEntryBase {
 class SegmentationPropertiesBase {
  public:
   virtual ~SegmentationPropertiesBase();
-  virtual vx::Node* input() = 0;
   virtual QDBusObjectPath inputRaw() = 0;
-  virtual vx::Node* output() = 0;
   virtual QDBusObjectPath outputRaw() = 0;
-  virtual QList<vx::Node*> stepList() = 0;
   virtual QList<QDBusObjectPath> stepListRaw() = 0;
 };
 class SegmentationPropertiesCopy : public SegmentationPropertiesBase {
@@ -260,11 +257,8 @@ class SegmentationPropertiesCopy : public SegmentationPropertiesBase {
  public:
   SegmentationPropertiesCopy(
       const QSharedPointer<const QMap<QString, QVariant>>& properties);
-  vx::Node* input() override final;
   QDBusObjectPath inputRaw() override final;
-  vx::Node* output() override final;
   QDBusObjectPath outputRaw() override final;
-  QList<vx::Node*> stepList() override final;
   QList<QDBusObjectPath> stepListRaw() override final;
 };
 class SegmentationProperties : public QObject,
@@ -278,7 +272,7 @@ class SegmentationProperties : public QObject,
   SegmentationProperties(vx::Node* parent);
   ~SegmentationProperties();
 
-  vx::Node* input() override final;
+  vx::Node* input();
   QDBusObjectPath inputRaw() override final;
   static QSharedPointer<NodeProperty> inputProperty();
   static NodePropertyTyped<vx::types::NodeReference> inputPropertyTyped();
@@ -289,7 +283,7 @@ class SegmentationProperties : public QObject,
  public:
   // Q_PROPERTY(vx::Node* Input READ input WRITE setInput NOTIFY inputChanged)
 
-  vx::Node* output() override final;
+  vx::Node* output();
   QDBusObjectPath outputRaw() override final;
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
@@ -302,7 +296,7 @@ class SegmentationProperties : public QObject,
   // Q_PROPERTY(vx::Node* Output READ output WRITE setOutput NOTIFY
   // outputChanged)
 
-  QList<vx::Node*> stepList() override final;
+  QList<vx::Node*> stepList();
   QList<QDBusObjectPath> stepListRaw() override final;
   static QSharedPointer<NodeProperty> stepListProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList>
@@ -891,7 +885,6 @@ class MultiThresholdStepPropertiesBase {
   virtual QList<
       std::tuple<double, std::tuple<double, double, double, double>, qint64>>
   thresholdListRaw() = 0;
-  virtual vx::Node* volume() = 0;
   virtual QDBusObjectPath volumeRaw() = 0;
 };
 class MultiThresholdStepPropertiesCopy
@@ -905,7 +898,6 @@ class MultiThresholdStepPropertiesCopy
   thresholdList() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint64>>
   thresholdListRaw() override final;
-  vx::Node* volume() override final;
   QDBusObjectPath volumeRaw() override final;
 };
 class MultiThresholdStepProperties : public QObject,
@@ -941,7 +933,7 @@ class MultiThresholdStepProperties : public QObject,
   // double>, qint64>> ThresholdList READ thresholdList WRITE setThresholdList
   // NOTIFY thresholdListChanged)
 
-  vx::Node* volume() override final;
+  vx::Node* volume();
   QDBusObjectPath volumeRaw() override final;
   static QSharedPointer<NodeProperty> volumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> volumePropertyTyped();
@@ -1068,7 +1060,6 @@ class ThresholdSelectionStepPropertiesBase {
   virtual double lowerThresholdRaw() = 0;
   virtual double upperThreshold() = 0;
   virtual double upperThresholdRaw() = 0;
-  virtual vx::Node* volume() = 0;
   virtual QDBusObjectPath volumeRaw() = 0;
 };
 class ThresholdSelectionStepPropertiesCopy
@@ -1082,7 +1073,6 @@ class ThresholdSelectionStepPropertiesCopy
   double lowerThresholdRaw() override final;
   double upperThreshold() override final;
   double upperThresholdRaw() override final;
-  vx::Node* volume() override final;
   QDBusObjectPath volumeRaw() override final;
 };
 class ThresholdSelectionStepProperties
@@ -1121,7 +1111,7 @@ class ThresholdSelectionStepProperties
   // Q_PROPERTY(double UpperThreshold READ upperThreshold WRITE
   // setUpperThreshold NOTIFY upperThresholdChanged)
 
-  vx::Node* volume() override final;
+  vx::Node* volume();
   QDBusObjectPath volumeRaw() override final;
   static QSharedPointer<NodeProperty> volumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> volumePropertyTyped();

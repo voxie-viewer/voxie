@@ -33,6 +33,9 @@
 #include <QtWidgets/QDialog>
 
 namespace vx {
+namespace plugin {
+class MetaFilter2D;
+}
 namespace filter {
 
 /**
@@ -48,18 +51,21 @@ class VOXIECORESHARED_EXPORT Filter2D : public QObject {
 
   // private attributes
  private:
+  vx::plugin::MetaFilter2D* metaFilter_;
   bool enabled = true;
-  QString metaName;
+  // TODO: Is this still used?
   vx::filter::Selection2DMask* mask;
 
   // public constructor
  public:
-  Filter2D(QObject* parent = nullptr, Selection2DMask* mask = nullptr);
+  Filter2D(vx::plugin::MetaFilter2D* metaFilter);
 
   quint64 filterID;
 
   // public methods
  public:
+  vx::plugin::MetaFilter2D* metaFilter() { return metaFilter_; }
+
   /**
    * @brief applyToCopy
    * Already implemented apply method.
@@ -91,20 +97,6 @@ class VOXIECORESHARED_EXPORT Filter2D : public QObject {
    * @param enable true if filter shall enabled else false
    */
   virtual void setEnabled(bool enable);
-
-  /**
-   * @brief setMetaName
-   * Setter for filter name
-   * @param metaName name to set
-   */
-  void setMetaName(QString metaName) { this->metaName = metaName; }
-
-  /**
-   * @brief getMetaName
-   * Getter for filter name
-   * @return filtername
-   */
-  QString getMetaName() { return this->metaName; }
 
   /**
    * @brief exportFilterSettingsXML

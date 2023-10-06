@@ -27,20 +27,9 @@ AutoScaleTableUnitsPropertiesBase::~AutoScaleTableUnitsPropertiesBase() {}
 AutoScaleTableUnitsPropertiesCopy::AutoScaleTableUnitsPropertiesCopy(
     const QSharedPointer<const QMap<QString, QVariant>>& properties)
     : _properties(properties) {}
-vx::Node* AutoScaleTableUnitsPropertiesCopy::table() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)
-              ["de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits.Table"]));
-}
 QDBusObjectPath AutoScaleTableUnitsPropertiesCopy::tableRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>((
       *_properties)["de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits.Table"]);
-}
-vx::Node* AutoScaleTableUnitsPropertiesCopy::output() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Output"]));
 }
 QDBusObjectPath AutoScaleTableUnitsPropertiesCopy::outputRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -341,11 +330,6 @@ double HistogramPropertiesCopy::lowerBoundXFractionRaw() {
   return vx::Node::parseVariant<double>(
       (*_properties)
           ["de.uni_stuttgart.Voxie.Visualizer.Histogram.LowerBoundXFraction"]);
-}
-vx::Node* HistogramPropertiesCopy::table() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Histogram.Table"]));
 }
 QDBusObjectPath HistogramPropertiesCopy::tableRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -1086,12 +1070,6 @@ double ScatterPlotPropertiesCopy::pointScaleRaw() {
   return vx::Node::parseVariant<double>(
       (*_properties)
           ["de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointScale"]);
-}
-vx::Node* ScatterPlotPropertiesCopy::table() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)
-              ["de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.Table"]));
 }
 QDBusObjectPath ScatterPlotPropertiesCopy::tableRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -1914,11 +1892,6 @@ QString TablePropertiesCopy::sortOrder() {
 QString TablePropertiesCopy::sortOrderRaw() {
   return vx::Node::parseVariant<QString>(
       (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder"]);
-}
-vx::Node* TablePropertiesCopy::table() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Visualizer.Table.Table"]));
 }
 QDBusObjectPath TablePropertiesCopy::tableRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(

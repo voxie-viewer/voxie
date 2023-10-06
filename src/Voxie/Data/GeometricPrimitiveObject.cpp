@@ -44,7 +44,6 @@ GeometricPrimitiveNode::GeometricPrimitiveNode()
 
   this->pointList = new PointList(this);
 
-  pointList->setObjectName("PointList");
   pointList->setWindowTitle("Geometric Analysis");
   QObject::connect(this, &DataNode::dataChanged, pointList,
                    &PointList::reloadUIData);

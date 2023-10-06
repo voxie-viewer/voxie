@@ -58,7 +58,8 @@ class CreateSurface : public FilterNode {
   QComboBox* algorithmInput;
   bool inverted = false;
 
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
 
   void updateSurface(
       VolumeNode* dataSet,

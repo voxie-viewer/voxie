@@ -162,12 +162,17 @@ void ColorizeSurfaceFromAttribute::onSelectedAttributeChanged(
   }
 }
 
-QSharedPointer<RunFilterOperation> ColorizeSurfaceFromAttribute::calculate() {
+QSharedPointer<RunFilterOperation> ColorizeSurfaceFromAttribute::calculate(
+    bool isAutomaticFilterRun) {
+  Q_UNUSED(isAutomaticFilterRun);
+  // TODO: Get parameter from somewhere else, don't create RunFilterOperation
+  // here
+  auto parameterCopy = ParameterCopy::getParameters(this);
   QSharedPointer<RunFilterOperation> operation(
       new RunFilterOperation(), [](QObject* obj) { obj->deleteLater(); });
 
   ColorizeSurfaceFromAttributePropertiesCopy properties =
-      runParameters->properties()[runParameters->mainNodePath()];
+      parameterCopy->properties()[parameterCopy->mainNodePath()];
 
   auto colorizeOperation = new ColorizeSurfaceFromAttributeOperation(operation);
 
@@ -175,23 +180,34 @@ QSharedPointer<RunFilterOperation> ColorizeSurfaceFromAttribute::calculate() {
   Colorizer* colorizer = new Colorizer();
   colorizer->setEntries(colorizerEntries);
 
-  SurfaceNode* inputSurface =
-      dynamic_cast<SurfaceNode*>(properties.inputSurface());
+  // abort if we couldn't get inputSurface
+  if (properties.inputSurfaceRaw() == QDBusObjectPath("/")) {
+    qWarning() << "ColorizeSurfaceFromAttribute::calculate(): No surface node "
+                  "connected";
+    // TODO: What should be done here?
+    return operation;
+  }
 
+  // TODO: Don't use the input surface object here / in colorizeModel()
+  auto inputSurface = dynamic_cast<SurfaceNode*>(
+      PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
+          properties.inputSurfaceRaw()));
   // abort if we couldn't get inputSurface
   if (!inputSurface) {
     qWarning() << "ColorizeSurfaceFromAttribute::calculate(): Could not find a "
                   "SurfaceNode parent node";
+    // TODO: What should be done here?
     return operation;
   }
 
-  auto* surfData =
-      dynamic_cast<SurfaceDataTriangleIndexed*>(inputSurface->surface().data());
+  auto surfData = qSharedPointerDynamicCast<SurfaceDataTriangleIndexed>(
+      parameterCopy->getData(properties.inputSurfaceRaw()).data());
   // abort if input surface data could not be cast to what we need
   if (!surfData) {
     qWarning()
         << "ColorizeSurfaceFromAttribute::calculate(): Input surface data is "
-           "not VolumeDataVoxel";
+           "not SurfaceDataTriangleIndexed";
+    // TODO: What should be done here?
     return operation;
   }
 
@@ -202,6 +218,8 @@ QSharedPointer<RunFilterOperation> ColorizeSurfaceFromAttribute::calculate() {
         << "ColorizeSurfaceFromAttribute::calculate(): Selected attribute "
            "from surface to be colorized "
            "could not be found in the surface!";
+    // TODO: What should be done here?
+    return operation;
   }
 
   SharpThread* thread = new SharpThread([=]() -> void {

@@ -30,26 +30,23 @@ import os
 
 import numpy as np
 
-# Copied from ctscripts
-import imagearchive
+import data_source
 
 args = voxie.parser.parse_args()
 context = voxie.VoxieContext(args, enableService=True)
 instance = context.createInstance()
 
 if args.voxie_action != 'Import':
-    raise Exception('Invalid operation: ' + args.voxie_action)
-
-# TODO: Check checksum in iai file?
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 clientManager = voxie.clientimpl.ClientManagerImpl(context, context.bus)
 
 
 class Stream:
-    def __init__(self, *, name, imageCount, ia, perImageMetadata):
+    def __init__(self, *, name, imageCount, source, perImageMetadata):
         self.name = name
         self.imageCount = imageCount
-        self.ia = ia
+        self.source = source
         self.perImageMetadata = perImageMetadata
 
 
@@ -98,7 +95,7 @@ class TomographyRawData2DAccessorOperationsImpl(voxie.DBusExportObject):
         streamData = self.streamByName[stream]
         if id < 0 or id >= streamData.imageCount:
             raise Exception('Invalid image ID: ' + id)
-        return (streamData.ia.info[id]['Width'], streamData.ia.info[id]['Height'])
+        return streamData.source.get_image_size(id)
 
     def GetPerImageMetadata(self, stream, id, options):
         if stream not in self.streamByName:
@@ -128,7 +125,7 @@ class TomographyRawData2DAccessorOperationsImpl(voxie.DBusExportObject):
                 region = buffer[outputRegionStart[0]:outputRegionStart[0] + regionSize[0],
                                 outputRegionStart[1]:outputRegionStart[1] + regionSize[1],
                                 firstOutputImageId + i]
-                img = streamData.ia.readImage(id)
+                img = streamData.source.read_image(id)
                 region[:] = img[inputRegionStart[0]:inputRegionStart[0] + regionSize[0],
                                 inputRegionStart[1]:inputRegionStart[1] + regionSize[1]]
 
@@ -165,38 +162,24 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
 
         imageCount = int(streamData['ImageCount'])
         imageShape = None
+        arrayShape = [None, None, imageCount]
         if 'ImageShape' in streamData:
             imageShape = [int(streamData['ImageShape'][i]) for i in range(2)]
+            arrayShape = [imageShape[0], imageShape[1], imageCount]
         # TODO: gridSpacing / imageOrigin is not used currently. Should gridSpacing / imageOrigin be optional or removed? (It could be different per image)
         # gridSpacing = [float(streamData['GridSpacing'][i]) for i in range(2)]
         # imageOrigin = [float(streamData['ImageOrigin'][i]) for i in range(2)]
 
-        perImageMetadata = streamData['PerImageMetadata']
+        if 'PerImageMetadata' in streamData:
+            perImageMetadata = streamData['PerImageMetadata']
+        else:
+            perImageMetadata = [{}] * imageCount
         if len(perImageMetadata) != imageCount:
             raise Exception('Unexpected number of PerImageMetadata entries')
 
-        dataSourceType = str(streamData['DataSourceType'])
-        if dataSourceType != 'ImageArchive':
-            raise Exception('Unknown DataSourceType: %s' % (repr(dataSourceType)))
+        source = data_source.get(filename, streamData['DataSourceType'], streamData['DataSource'], array_shape=arrayShape, data_type=None)
 
-        dataFilename = str(streamData['DataSource']['DataFilename'])
-
-        rawDataFilename = os.path.join(os.path.dirname(filename), dataFilename)
-        # iaiFilename = rawDataFilename + '.iai'
-
-        ia = imagearchive.ImageArchive(rawDataFilename)
-
-        if ia.count != imageCount:
-            raise Exception('ia.count != imageCount')
-        for id in range(imageCount):
-            info = ia.info[id]
-            if imageShape is not None:
-                if int(info['Width']) != imageShape[0]:
-                    raise Exception("int(info['Width']) != imageShape[0]")
-                if int(info['Height']) != imageShape[1]:
-                    raise Exception("int(info['Height']) != imageShape[1]")
-
-        streams.append(Stream(name=name, imageCount=imageCount, ia=ia, perImageMetadata=perImageMetadata))
+        streams.append(Stream(name=name, imageCount=imageCount, source=source, perImageMetadata=perImageMetadata))
 
     provider = TomographyRawData2DAccessorOperationsImpl(context.bus, imageKind=imageKind, streams=streams, metadata=metadata, geometries=geometries)
     clientManager.objects[provider.path] = provider

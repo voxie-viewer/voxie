@@ -20,39 +20,6 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include <Main/Version.hpp>
 
-#include <Voxie/Data/Slice.hpp>
-#include <Voxie/Vis/OpenGLWidget.hpp>
-#include <Voxie/Vis/View3D.hpp>
-
-namespace vx {
-namespace gui {
-
-class PlaneView : public vx::visualization::OpenGLDrawWidget {
-  Q_OBJECT
- private:
-  vx::Slice* slice;
-
-  QPoint mouseLast;
-
-  vx::visualization::View3D* view3d;
-
- public:
-  explicit PlaneView(vx::Slice* slice, QWidget* parent = 0);
-
- protected:
-  virtual void paint() override;
-
-  virtual void mousePressEvent(QMouseEvent* event) override;
-  virtual void mouseMoveEvent(QMouseEvent* event) override;
-  virtual void mouseReleaseEvent(QMouseEvent* event) override;
-  virtual void wheelEvent(QWheelEvent* event) override;
-
- Q_SIGNALS:
-
- public Q_SLOTS:
-};
-
-}  // namespace gui
-}  // namespace vx
+QString vx::getGitRevisionDescribe() { return QString("@VCS_TAG@"); }

@@ -57,10 +57,9 @@ QSharedPointer<OperationResult> ThresholdSelectionStep::calculate(
 
         auto originalVolume = QSharedPointer<VolumeDataVoxel>();
 
-        if (propertyCopy.volume()) {
+        if (propertyCopy.volumeRaw() != QDBusObjectPath("/")) {
           originalVolume = qSharedPointerDynamicCast<VolumeDataVoxel>(
-              dynamic_cast<VolumeNode*>(propertyCopy.volume())->data());
-
+              parameterCopy->getData(propertyCopy.volumeRaw()).data());
         }  // no volume in properties --> take inputVolume of Segmentation
         else {
           originalVolume = qSharedPointerDynamicCast<VolumeDataVoxel>(

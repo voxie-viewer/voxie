@@ -277,10 +277,9 @@ void Segmentation::initData() {
     // create output volume from input volume
     QSharedPointer<vx::VolumeDataVoxel> outputData =
         VolumeDataVoxel::createVolume(
-            inputSize.x, inputSize.y, inputSize.z,
-            vx::DataTypeTraitsByType<SegmentationType>::dataType);
-    outputData->setOrigin(inputVoxelData->origin());
-    outputData->setSpacing(inputVoxelData->getSpacing());
+            {inputSize.x, inputSize.y, inputSize.z},
+            vx::DataTypeTraitsByType<SegmentationType>::dataType,
+            inputVoxelData->volumeOrigin(), inputVoxelData->gridSpacing());
 
     // TODO: Why is another operation being created here?
     // auto op = Operation::create();
@@ -448,7 +447,9 @@ QSharedPointer<QObject> Segmentation::getPropertyUIData(QString propertyName) {
   return Node::getPropertyUIData(propertyName);
 }
 
-QSharedPointer<RunFilterOperation> Segmentation::calculate() {
+QSharedPointer<RunFilterOperation> Segmentation::calculate(
+    bool isAutomaticFilterRun) {
+  Q_UNUSED(isAutomaticFilterRun);
   QSharedPointer<RunFilterOperation> operation(
       new RunFilterOperation(), [](QObject* obj) { obj->deleteLater(); });
 

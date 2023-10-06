@@ -73,7 +73,8 @@ TableVisualizer::TableVisualizer()
     : SimpleVisualizer(getPrototypeSingleton()),
       properties(new visualizer_prop::TableProperties(this)) {
   this->viewRoot = new QWidget;
-  this->viewRoot->setMinimumSize(300, 200);
+  this->viewRoot->setMinimumSize(300 / 96.0 * this->viewRoot->logicalDpiX(),
+                                 200 / 96.0 * this->viewRoot->logicalDpiY());
 
   QGridLayout* layout = new QGridLayout;
   this->viewRoot->setLayout(layout);

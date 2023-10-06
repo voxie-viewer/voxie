@@ -68,19 +68,29 @@ qt5_dep = dependency('qt5', modules : qt_modules, include_type : 'system')
 qt5_dep_moc = dependency('qt5', modules : qt_modules)
 
 # get git revision in c++
-GIT_REVISION = run_command(['git', 'rev-parse', 'HEAD'], check : true).stdout().strip()
-GIT_REVISION_DESCRIBE = run_command(['git', 'describe', '--always', '--tags'], check : true).stdout().strip()
-# Build the git revision into a static library to avoid passing GIT_VERSION to the compilation of every file
+git_revision = vcs_tag(
+  command : ['git', 'rev-parse', 'HEAD'],
+  fallback : 'no-git-information',
+  input : 'Version.git_revision.cpp.in',
+  output : 'Version.git_revision.cpp',
+)
+git_revision_describe = vcs_tag(
+  command : ['git', 'describe', '--always', '--tags'],
+  fallback : 'no-git-information',
+  input : 'Version.git_revision_describe.cpp.in',
+  output : 'Version.git_revision_describe.cpp',
+)
+# Build Version.cpp into a static library to avoid recompiling things when additional_version_cpp_args changes
 if not is_variable('additional_version_cpp_args')
    additional_version_cpp_args = []
 endif
 gitVersionLibrary = static_library(
   'GitVersion',
-  [ 'Version.cpp' ],
+  [
+    'Version.cpp',
+  ],
   implicit_include_directories : false,
   cpp_args : [
-    '-DGIT_REVISION="' + GIT_REVISION + '"',
-    '-DGIT_REVISION_DESCRIBE="' + GIT_REVISION_DESCRIBE + '"',
     additional_version_cpp_args,
   ],
   dependencies : [
@@ -143,7 +153,6 @@ moc_files = qt5.preprocess(
     'Gui/GraphWidget.hpp',
     'Gui/HelpWindow.hpp',
     'Gui/OpenFileDialog.hpp',
-    'Gui/PlaneView.hpp',
     #'Gui/PosRotValid.hpp',
     'Gui/ScriptConsole.hpp',
     'Gui/ScriptLineEdit.hpp',
@@ -214,7 +223,6 @@ main = executable(
     'Gui/GraphWidget.cpp',
     'Gui/HelpWindow.cpp',
     'Gui/OpenFileDialog.cpp',
-    'Gui/PlaneView.cpp',
     'Gui/PosRotValid.cpp',
     'Gui/ScriptConsole.cpp',
     'Gui/ScriptLineEdit.cpp',
@@ -251,6 +259,8 @@ main = executable(
     'Help/HelpPageSourceTopic.cpp',
 
     additional_main_sources,
+    git_revision,
+    git_revision_describe,
   ],
   include_directories : [
     project_incdir,

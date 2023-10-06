@@ -509,7 +509,37 @@
     <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.EventListDataAccessorOperations" />
   </interface>
 
+  <interface name="de.uni_stuttgart.Voxie.Task">
+    <!--
+        State:
+
+        An enum value indicating the current state of the task. Can be one of:
+        - "de.uni_stuttgart.Voxie.TaskState.NotStarted": The task has not yet been started. In this state the progress always is 0.
+        - "de.uni_stuttgart.Voxie.TaskState.Running": The task is currently running. In this state the progress can be between 0 and 1 (including).
+        - "de.uni_stuttgart.Voxie.TaskState.Finished": The task has been finished. In this state the progress always is 1.
+
+        A state with subtasks can be "Running" while all of its subtasks are
+        either "NotStarted" or "Finished".
+
+        The state can revert from "Finished" to "Running" or from "Running" to
+        "NotStarted" in some cases.
+
+        If the task has subtasks the state of the task will change automatically
+        to "Running" if any of the subtasks is "Running", if any
+        of the subtasks is "Finished" while the task is "NotStarted" or if any
+        of the subtasks is "NotStarted" while the task is "Finished".
+
+        If the task has no subtasks the state will be automatically set to
+        "Running" whenever the progress is changed.
+    -->
+    <property access="read" name="State" type="s" />
+
+    <!-- TODO: Add methods / properties, e.g. for progress, subtasks, ... -->
+  </interface>
+
   <interface name="de.uni_stuttgart.Voxie.Operation">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Task" />
+
     <property access="read" name="IsFinished" type="b" />
     <property access="read" name="IsCancelled" type="b" />
 
@@ -620,6 +650,98 @@
   </interface>
 
   <!--
+      de.uni_stuttgart.Voxie.ExternalTask:
+
+      A task implemented by an extension.
+
+      This is used e.g. for progress reporting.
+
+      This object should only be used by the extension implementing the
+      operation and references to it also should only be held by this extension.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.ExternalTask">
+    <!-- TODO: Implement, make this a parent inteface of ExternalOperation -->
+
+    <!-- TODO: Add CreateExternalTask method to Instance interface -->
+
+    <property access="read" name="Task" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Task" />
+    </property>
+
+    <!-- TODO: Turn into writable property? -->
+    <!--
+        SetState:
+
+        Set the state to a new value, which can be one of:
+        - "de.uni_stuttgart.Voxie.TaskState.NotStarted"
+        - "de.uni_stuttgart.Voxie.TaskState.Running"
+        - "de.uni_stuttgart.Voxie.TaskState.Finished"
+
+        Setting a task with subtasks to an incompatible state will silently
+        fail and the resulting state will be "Running". Attempting to set the
+        state to "Finished" will also always set the FinishAutomatically
+        property to true.
+
+        Setting a task without subtasks to "NotStarted" will set the progress
+        to 0, setting it to "Finished" will set the progress to 1.
+
+        Attempting to set the state of an Operation to "NotStarted" will
+        silently fail.
+
+        Attempting to set the state of an Operation to "Finished" will silently
+        fail (this should be done by calling the Finish() method of the
+        Operation.
+    -->
+    <method name="SetState">
+      <arg direction="in" name="state" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        FinishAutomatically:
+
+        If this property is set to true and the task has subtasks, the state
+        will automatically change to "Finished" once all subtasks are finished.
+    -->
+    <property access="readwrite" name="FinishAutomatically" type="b" />
+
+    <!-- TODO: Turn into writable property? -->
+    <method name="SetDisplayName">
+      <arg direction="in" name="displayName" type="s" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        SetProgress:
+
+        Set the progress of the task to this value. This will also clear the
+        list of subtasks and set the state to running.
+    -->
+    <method name="SetProgress">
+      <arg direction="in" name="progress" type="d" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        SetSubTasks:
+
+        Set the list of subtasks of this task. This will also cause any
+        progress set with SetProgress previously to be discarded. The state
+        will be set to running if any of the subtasks are in a state not
+        compatible with the current state.
+
+        The subtasks parameter contains a list of subtasks and the weight for
+        each subtask.
+    -->
+    <method name="SetSubTasks">
+      <arg direction="in" name="subtasks" type="a(od)">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Task" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <!--
       de.uni_stuttgart.Voxie.ExternalOperation:
       
       An operation implemented by an extension.
@@ -634,6 +756,7 @@
         The name of the importer / exporter / filter prototype.
     -->
     <property access="read" name="Name" type="s" />
+    <!-- TODO: Also add an attribute with the component type to interpret Name? Or add an 'o' attribute pointing to the component instead? Or remove Name? (Is Name used anywhere?) -->
     
     <property access="read" name="Action" type="s" />
     
@@ -725,6 +848,7 @@
   -->
   <interface name="de.uni_stuttgart.Voxie.ExternalOperationRunFilter">
     <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.ExternalOperation" />
+
     <!--
         FilterNode:
         
@@ -733,6 +857,7 @@
     <property access="read" name="FilterNode" type="o">
       <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.FilterNode" />
     </property>
+
     <!--
         FilterObject:
         
@@ -742,6 +867,10 @@
       <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
       <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.FilterObject" />
     </property>
+
+    <!-- TODO: Should this be an enum with the reason instead? -->
+    <property access="read" name="IsAutomaticFilterRun" type="b" />
+
     <!--
         Parameters:
         
@@ -760,6 +889,7 @@
         - For data nodes: "DataVersion": A reference ('o') to the data version which was the current version when the script was started. When "Data" is '/' this is missing.
     -->
     <property access="read" name="Parameters" type="a{oa{sv}}" />
+
     <!--
         Finish:
         
@@ -1363,6 +1493,7 @@
       </arg>
     </method>
 
+    <!-- TODO: Remove, should use GetElement instead? -->
     <method name="GetValues">
       <arg direction="in" name="options" type="a{sv}" />
       <arg direction="out" name="data" type="ao">
@@ -1370,13 +1501,18 @@
       </arg>
     </method>
 
+    <!-- TODO: Rename to ListKeys() or turn into property? -->
     <method name="GetKeys">
       <arg direction="in" name="options" type="a{sv}" />
       <arg direction="out" name="data" type="as">
         <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
       </arg>
     </method>
-    
+
+    <!-- TODO: Use same parameters as in SeriesData.AddEntry? -->
+    <!-- TODO: Rename to AddElement -->
+    <!-- TODO: Rename to AddEntry or something like that? -->
+    <!-- TODO: Also, update parameter should be before key and value parameters -->
     <method name="InsertElement">
       <arg direction="in" name="key" type="s" />
       <arg direction="in" name="value" type="o">
@@ -1387,7 +1523,93 @@
       </arg>
       <arg direction="in" name="options" type="a{sv}" />
     </method>
+  </interface>
 
+  <interface name="de.uni_stuttgart.Voxie.SeriesDimension">
+    <property access="read" name="Name" type="s" />
+    <property access="read" name="DisplayName" type="s" />
+    <property access="read" name="Type" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.PropertyType" />
+    </property>
+    <property access="read" name="Length" type="t" />
+
+    <!-- TODO: Methods for listing only a subset of the entries? Or add an option to do that? -->
+    <!-- Note: The order of the entries matters -->
+    <method name="ListEntries">
+      <arg direction="in" name="options" type="a{sv}" />
+      <!-- Note: This is always an array type -->
+      <arg direction="out" name="entries" type="v" />
+    </method>
+
+    <method name="GetEntryValue">
+      <arg direction="in" name="entryKey" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="entryValue" type="v" />
+    </method>
+
+    <!-- TODO: Add method which will also look up nearby values? -->
+    <!-- Returns 2**64-1 when there is no such entry -->
+    <method name="LookupEntryByValue">
+      <arg direction="in" name="entryValue" type="v" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="entryKey" type="t" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.SeriesData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+
+    <property access="read" name="Dimensions" type="ao">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.SeriesDimension" />
+    </property>
+
+    <property access="read" name="DimensionCount" type="t" />
+
+    <!-- TODO: Methods for listing only a subset of the keys? Or add an option to do that? -->
+    <method name="ListKeys">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="keys" type="aat" />
+    </method>
+
+    <!-- Returns '/' when there is no such entry -->
+    <!-- TODO: Should this increase the reference count of the returned value? -->
+    <method name="LookupEntry">
+      <arg direction="in" name="key" type="at" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="data" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+    </method>
+
+    <!--
+        AddEntry:
+        
+        Set entry for some key to some value.
+        If 'value' is '/', the entry will be removed.
+        
+        Valid options:
+        - 'ReplaceMode' ('s'): How to handle already existing keys. Value values are:
+          'de.uni_stuttgart.Voxie.ReplaceMode.Insert' (default): Throw on existing key
+          'de.uni_stuttgart.Voxie.ReplaceMode.Set': Overwrite existing value
+          'de.uni_stuttgart.Voxie.ReplaceMode.ReplaceExisting': Overwrite existing value, throw on missing value
+    -->
+    <method name="AddEntry">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="key" type="at" />
+      <arg direction="in" name="value" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Data" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.VolumeSeriesData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.SeriesData" />
+
+    <property access="read" name="VolumeOrigin" type="(ddd)" />
+    <property access="read" name="VolumeSize" type="(ddd)" />
   </interface>
 
   <interface name="de.uni_stuttgart.Voxie.TableData">
@@ -2254,6 +2476,51 @@
     </method>
 
     <!--
+        CreateSeriesDimension:
+        
+        Create a new SeriesDimension object.
+       
+    -->
+    <method name="CreateSeriesDimension">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.SeriesDimension" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="displayName" type="s" />
+      <arg direction="in" name="type" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.PropertyType" />
+      </arg>
+      <arg direction="in" name="entries" type="v" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        CreateVolumeSeriesData:
+        
+        Create a new VolumeSeriesData object.
+       
+    -->
+    <method name="CreateVolumeSeriesData">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeSeriesData" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="dimensions" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.SeriesDimension" />
+      </arg>
+      <arg direction="in" name="volumeOrigin" type="(ddd)" />
+      <arg direction="in" name="volumeSize" type="(ddd)" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
         CreateGeometricPrimitiveData:
         
         Create a new GeometricPrimitiveData object.
@@ -2444,6 +2711,7 @@
     <property access="read" name="Name" type="s" />
     <property access="read" name="DBusSignature" type="g" />
 
+    <!-- TODO: Should GetValue() / SetValue() be a property instead? -->
     <method name="GetValue">
       <arg direction="in" name="options" type="a{sv}" />
       <arg direction="out" name="value" type="v" />

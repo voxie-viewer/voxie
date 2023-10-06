@@ -32,17 +32,67 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/QTimer>
 
+#include <QtGui/QGuiApplication>
+
+// TODO: Move getMousePositionQt() somewhere else, remove this include
+#include <QtWidgets/QWidget>
+
 using namespace vx::visualization;
 
+// Get the floating point mouse position of an event relative to the widget,
+// (0,0) is upper left
+// Note that event->localPos() seems to return integer values
+vx::Vector<double, 2> vx::visualization::getMousePositionQt(
+    QWidget* widget, QMouseEvent* event) {
+  vx::Vector<double, 2> screenPos = pointToVector(event->screenPos());
+  screenPos -= vectorCastNarrow<double>(
+      pointToVector(widget->mapToGlobal(QPoint(0, 0))));
+  // qDebug() << event->screenPos() << widget->mapToGlobal(QPoint(0, 0));
+  // TODO: Why is this needed?
+  // This seems to work both for X (where coordinates will be integer up to now
+  // and .5 will be appended) and Wayland (where values will go down to -0.5 and
+  // this will change the lower bound to 0)
+  // TODO: But it seems to fail for the X part of detached visualizers?
+  screenPos += vx::Vector<double, 2>(0.5, 0.5);
+  return screenPos;
+}
+// Get the floating point mouse position of an event relative to the widget,
+// (0,0) is lower left
+vx::Vector<double, 2> vx::visualization::getMousePosition(QWidget* widget,
+                                                          QMouseEvent* event) {
+  auto pos = getMousePositionQt(widget, event);
+  return {pos[0], widget->height() - pos[1]};
+}
+
+vx::Vector<double, 2> vx::visualization::getMousePositionQt(
+    QWidget* widget, QWheelEvent* event) {
+  Q_UNUSED(widget);
+  // Note: Unlike a QMouseEvent, a QWheelEvent does not seem to have any
+  // subpixel mouse position information
+  // qDebug() << "QWheelEvent" << event->posF() << event->globalPosF();
+  vx::Vector<double, 2> screenPos = pointToVector(event->posF());
+  // Hope this makes sense
+  screenPos += vx::Vector<double, 2>(0.5, 0.5);
+  return screenPos;
+}
+// Get the floating point mouse position of an event relative to the widget,
+// (0,0) is lower left
+vx::Vector<double, 2> vx::visualization::getMousePosition(QWidget* widget,
+                                                          QWheelEvent* event) {
+  auto pos = getMousePositionQt(widget, event);
+  return {pos[0], widget->height() - pos[1]};
+}
+
 // Give a mouse position / window size, return a vector with x, y in [-1;1]
-static vx::Vector<double, 3> toVector(const QPoint& pos, const QSize& size) {
-  return vx::Vector<double, 3>(2.0 * (pos.x() + 0.5) / size.width() - 1.0,
-                               1.0 - 2.0 * (pos.y() + 0.5) / size.height(), 0);
+static vx::Vector<double, 3> toVector(const vx::Vector<double, 2>& pos,
+                                      const QSize& size) {
+  return vx::Vector<double, 3>(2.0 * pos[0] / size.width() - 1.0,
+                               2.0 * pos[1] / size.height() - 1.0, 0);
 }
 
 // Information about arcball:
 // https://en.wikibooks.org/w/index.php?title=OpenGL_Programming/Modern_OpenGL_Tutorial_Arcball&oldid=2356903
-static vx::Vector<double, 3> getArcballVector(const QPoint& pos,
+static vx::Vector<double, 3> getArcballVector(const vx::Vector<double, 2>& pos,
                                               const QSize& size) {
   vx::Vector<double, 3> p = toVector(pos, size);
   if (squaredNorm(p) < 1)
@@ -110,25 +160,23 @@ void View3DValues::updateFrom(const View3DValues& values) {
 
 class MouseAction {
   View3D* view_;
-  QPoint pressEventPos_;
+  Vector<double, 2> pressPos_;
   QSize pressWindowSize_;
 
   View3DValues origValues;
 
  public:
-  MouseAction(View3D* view, QMouseEvent* pressEvent,
+  MouseAction(View3D* view, const vx::Vector<double, 2>& pressPos,
               const QSize& pressWindowSize)
-      : view_(view),
-        pressEventPos_(pressEvent->pos()),
-        pressWindowSize_(pressWindowSize) {}
+      : view_(view), pressPos_(pressPos), pressWindowSize_(pressWindowSize) {}
   virtual ~MouseAction() {}
 
-  static QSharedPointer<MouseAction> create(View3D* view,
-                                            QMouseEvent* pressEvent,
-                                            const QSize& pressWindowSize);
+  static QSharedPointer<MouseAction> create(
+      View3D* view, QMouseEvent* pressEvent,
+      const vx::Vector<double, 2>& pressPos, const QSize& pressWindowSize);
 
   const View3D* view() { return view_; }
-  const QPoint& pressEventPos() { return pressEventPos_; }
+  const vx::Vector<double, 2>& pressPos() { return pressPos_; }
   const QSize& pressWindowSize() { return pressWindowSize_; }
 
   void finish() {}
@@ -138,7 +186,7 @@ class MouseAction {
     view_->update(origValues);
   }
 
-  virtual void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
+  virtual void mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast, const vx::Vector<double, 2>& mousePosNow, QMouseEvent* event,
                               const QSize& windowSize) = 0;
 
  protected:
@@ -170,26 +218,25 @@ class MouseAction {
 
 class MouseActionPan : public MouseAction {
  public:
-  MouseActionPan(View3D* view, QMouseEvent* pressEvent,
+  MouseActionPan(View3D* view, const vx::Vector<double, 2>& pressPos,
                  const QSize& pressWindowSize)
-      : MouseAction(view, pressEvent, pressWindowSize) {}
+      : MouseAction(view, pressPos, pressWindowSize) {}
 
-  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
-                      const QSize& windowSize) override {
+  void mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast,
+                      const vx::Vector<double, 2>& mousePosNow,
+                      QMouseEvent* event, const QSize& windowSize) override {
     // qDebug() << "Pan mouseMoveEvent" << mouseLast << event;
 
     double factor = 1.0;
     if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
 
-    int dxInt = event->x() - mouseLast.x();
-    int dyInt = event->y() - mouseLast.y();
+    auto diffUnscaled = mousePosNow - mousePosLast;
 
-    if (dxInt == 0 && dyInt == 0) return;
+    if (diffUnscaled[0] == 0 && diffUnscaled[1] == 0) return;
 
-    double dx = dxInt * factor;
-    double dy = dyInt * factor;
+    auto diff = diffUnscaled * factor;
 
-    vx::Vector<double, 3> move(dx, -dy, 0);
+    vx::Vector<double, 3> move(diff[0], diff[1], 0);
     move *= view()->pixelSize(windowSize);
     auto rotation = view()->orientation();
     auto offset = rotation.map(move);
@@ -201,23 +248,25 @@ class MouseActionPan : public MouseAction {
 
 class MouseActionPanZ : public MouseAction {
  public:
-  MouseActionPanZ(View3D* view, QMouseEvent* pressEvent,
+  MouseActionPanZ(View3D* view, const vx::Vector<double, 2>& pressPos,
                   const QSize& pressWindowSize)
-      : MouseAction(view, pressEvent, pressWindowSize) {}
+      : MouseAction(view, pressPos, pressWindowSize) {}
 
   // TODO: Combine code with wheel pan code?
-  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
-                      const QSize& windowSize) override {
+  void mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast,
+                      const vx::Vector<double, 2>& mousePosNow,
+                      QMouseEvent* event, const QSize& windowSize) override {
     // qDebug() << "Pan mouseMoveEvent" << mouseLast << event;
 
     double factor = 1.0;
     if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
 
-    int dyInt = event->y() - mouseLast.y();
+    auto diffUnscaled = mousePosNow - mousePosLast;
 
-    if (dyInt == 0) return;
+    if (diffUnscaled[1] == 0) return;
 
-    double dy = dyInt * factor;
+    auto diff = diffUnscaled * factor;
+    auto dy = diff[1];
 
     // Choose direction so that object under the mouse stays the same
     // Calculate projection*view matrix
@@ -229,12 +278,12 @@ class MouseActionPanZ : public MouseAction {
     vx::ProjectiveMap<double, 3> projectionViewInv = inverse(projectionView);
     // Invert vector from mouse pos into the direction -1 in Z direction
     vx::Vector<double, 3> mousePos =
-        toVector(pressEventPos(), pressWindowSize());
+        toVector(pressPos(), pressWindowSize());
     vx::Vector<double, 3> mousePos2 =
         mousePos + vx::Vector<double, 3>(0, 0, -1);
     vx::Vector<double, 3> direction = normalize(
         projectionViewInv.map(mousePos2) - projectionViewInv.map(mousePos));
-    vx::Vector<double, 3> move = direction * -dy;
+    vx::Vector<double, 3> move = direction * dy;
 
     move *= view()->pixelSize(windowSize);
     auto lookAt = view()->lookAt();
@@ -245,19 +294,20 @@ class MouseActionPanZ : public MouseAction {
 
 class MouseActionRotate : public MouseAction {
  public:
-  MouseActionRotate(View3D* view, QMouseEvent* pressEvent,
+  MouseActionRotate(View3D* view, const vx::Vector<double, 2>& pressPos,
                     const QSize& pressWindowSize)
-      : MouseAction(view, pressEvent, pressWindowSize) {}
+      : MouseAction(view, pressPos, pressWindowSize) {}
 
-  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
-                      const QSize& windowSize) override {
+  void mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast,
+                      const vx::Vector<double, 2>& mousePosNow,
+                      QMouseEvent* event, const QSize& windowSize) override {
     // qDebug() << "Rotate mouseMoveEvent" << mouseLast << event;
 
     double factor = 1.0;
     if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
 
-    vx::Vector<double, 3> va = getArcballVector(mouseLast, windowSize);
-    vx::Vector<double, 3> vb = getArcballVector(event->pos(), windowSize);
+    vx::Vector<double, 3> va = getArcballVector(mousePosLast, windowSize);
+    vx::Vector<double, 3> vb = getArcballVector(mousePosNow, windowSize);
     double angle = std::acos(std::min(1.0, dotProduct(va, vb)));
     vx::Vector<double, 3> axis = crossProduct(va, vb);
     angle = angle * factor;
@@ -269,35 +319,37 @@ class MouseActionRotate : public MouseAction {
 
 class MouseActionZoom : public MouseAction {
  public:
-  MouseActionZoom(View3D* view, QMouseEvent* pressEvent,
+  MouseActionZoom(View3D* view, const vx::Vector<double, 2>& pressPos,
                   const QSize& pressWindowSize)
-      : MouseAction(view, pressEvent, pressWindowSize) {}
+      : MouseAction(view, pressPos, pressWindowSize) {}
 
   // TODO: Combine code with wheel zoom code?
-  void mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
-                      const QSize& windowSize) override {
+  void mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast,
+                      const vx::Vector<double, 2>& mousePosNow,
+                      QMouseEvent* event, const QSize& windowSize) override {
     // qDebug() << "Rotate mouseMoveEvent" << mouseLast << event;
 
     double factor = 1.0;
     if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;
 
-    int dyInt = event->y() - mouseLast.y();
+    auto diffUnscaled = mousePosNow - mousePosLast;
 
-    if (dyInt == 0) return;
+    if (diffUnscaled[1] == 0) return;
 
-    double dy = dyInt * factor;
+    auto diff = diffUnscaled * factor;
+    auto dy = diff[1];
 
     double zoomLogNew =
         view()->limitZoomLog(view()->zoomLog() + view()->mouseActionZoomFactor *
-                                                     -dy / windowSize.height());
+                                                     dy / windowSize.height());
 
     View3DValues upd;
     // Change lookAt so that the object under the mouse when the button was
     // pressed stays the same while zooming
     if (true) {
-      vx::Vector<double, 3> p(pressEventPos().x(), -pressEventPos().y(), 0);
+      vx::Vector<double, 3> p(pressPos()[0], pressPos()[1], 0);
       p -= vx::Vector<double, 3>(pressWindowSize().width(),
-                                 -pressWindowSize().height(), 0) /
+                                 pressWindowSize().height(), 0) /
            2;
       p *= view()->pixelSize(pressWindowSize());
       auto lookAt = view()->lookAt();
@@ -311,23 +363,23 @@ class MouseActionZoom : public MouseAction {
   }
 };
 
-QSharedPointer<MouseAction> MouseAction::create(View3D* view,
-                                                QMouseEvent* pressEvent,
-                                                const QSize& pressWindowSize) {
+QSharedPointer<MouseAction> MouseAction::create(
+    View3D* view, QMouseEvent* pressEvent,
+    const vx::Vector<double, 2>& pressPos, const QSize& pressWindowSize) {
   auto modifiers =
       pressEvent->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier);
 
   if (modifiers == Qt::NoModifier)
-    return createQSharedPointer<MouseActionPan>(view, pressEvent,
+    return createQSharedPointer<MouseActionPan>(view, pressPos,
                                                 pressWindowSize);
   else if (modifiers == Qt::ShiftModifier)
-    return createQSharedPointer<MouseActionRotate>(view, pressEvent,
+    return createQSharedPointer<MouseActionRotate>(view, pressPos,
                                                    pressWindowSize);
   else if (modifiers == Qt::ControlModifier)
-    return createQSharedPointer<MouseActionZoom>(view, pressEvent,
+    return createQSharedPointer<MouseActionZoom>(view, pressPos,
                                                  pressWindowSize);
   else if (modifiers == (Qt::ShiftModifier | Qt::ControlModifier))
-    return createQSharedPointer<MouseActionPanZ>(view, pressEvent,
+    return createQSharedPointer<MouseActionPanZ>(view, pressPos,
                                                  pressWindowSize);
   return QSharedPointer<MouseAction>();
 }
@@ -450,9 +502,10 @@ vx::HmgVector<double, 3> View3D::getCameraPosition() {
       (std::exp(this->zoomLog()) * sine));
 }
 
-void View3D::mousePressEvent(const QPoint& mouseLast, QMouseEvent* event,
-                             const QSize& windowSize) {
-  Q_UNUSED(mouseLast);
+void View3D::mousePressEvent(const vx::Vector<double, 2>& mousePosLast,
+                             const vx::Vector<double, 2>& mousePosNow,
+                             QMouseEvent* event, const QSize& windowSize) {
+  Q_UNUSED(mousePosLast);
   Q_UNUSED(windowSize);
 
   // qDebug() << "mousePressEvent" << event;
@@ -472,20 +525,25 @@ void View3D::mousePressEvent(const QPoint& mouseLast, QMouseEvent* event,
     currentMouseAction_->finish();
     currentMouseAction_.reset();
   }
-  currentMouseAction_ = MouseAction::create(this, event, windowSize);
+  currentMouseAction_ =
+      MouseAction::create(this, event, mousePosNow, windowSize);
 }
 
-void View3D::mouseMoveEvent(const QPoint& mouseLast, QMouseEvent* event,
-                            const QSize& windowSize) {
+void View3D::mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast,
+                            const vx::Vector<double, 2>& mousePosNow,
+                            QMouseEvent* event, const QSize& windowSize) {
   // qDebug() << "mouseMoveEvent" << event;
 
   if (currentMouseAction_) {
-    currentMouseAction_->mouseMoveEvent(mouseLast, event, windowSize);
+    currentMouseAction_->mouseMoveEvent(mousePosLast, mousePosNow, event,
+                                        windowSize);
   }
 }
-void View3D::mouseReleaseEvent(const QPoint& mouseLast, QMouseEvent* event,
-                               const QSize& windowSize) {
-  Q_UNUSED(mouseLast);
+void View3D::mouseReleaseEvent(const vx::Vector<double, 2>& mousePosLast,
+                               const vx::Vector<double, 2>& mousePosNow,
+                               QMouseEvent* event, const QSize& windowSize) {
+  Q_UNUSED(mousePosLast);
+  Q_UNUSED(mousePosNow);
   Q_UNUSED(windowSize);
 
   if (currentMouseAction_ && event->button() == Qt::MiddleButton) {
@@ -494,7 +552,12 @@ void View3D::mouseReleaseEvent(const QPoint& mouseLast, QMouseEvent* event,
   }
 }
 
-void View3D::wheelEvent(QWheelEvent* event, const QSize& windowSize) {
+void View3D::wheelEvent(const vx::Vector<double, 2>& mousePosNow,
+                        QWheelEvent* event, const QSize& windowSize) {
+  if (vx::debug_option::Log_Vis_Mouse()->enabled())
+    qDebug() << "View3D::wheelEvent" << event->buttons() << event->modifiers()
+             << event->angleDelta();
+
   // Ignore wheel events while the middle mouse button is pressed
   if ((event->buttons() & Qt::MiddleButton) != 0) {
     return;
@@ -505,17 +568,25 @@ void View3D::wheelEvent(QWheelEvent* event, const QSize& windowSize) {
 
   if (event->modifiers().testFlag(Qt::AltModifier)) {
     mult = 0.1;
-    wheelAngle = event->angleDelta().x() / 8.0;
+    // Note: X seems to set angleDelta().x() instead of angleDelta().y() when
+    // the alt key is pressed.
+    auto delta = event->angleDelta().y();
+    if (!delta && qApp->platformName() == "xcb") {
+      delta = event->angleDelta().x();
+      if (vx::debug_option::Log_Vis_Mouse()->enabled())
+        qDebug() << "Mouse wheel xcb workaround: Using angleDelta of" << delta;
+    }
+    wheelAngle = delta / 8.0;
   } else {
     wheelAngle = event->angleDelta().y() / 8.0;
   }
-  // qDebug() << "wheelEvent" << event->angleDelta() << wheelAngle
-  //          << event->modifiers();
+  if (vx::debug_option::Log_Vis_Mouse()->enabled())
+    qDebug() << "wheelEvent" << wheelAngle
+             << event->modifiers().testFlag(Qt::ShiftModifier);
 
   if (event->modifiers().testFlag(Qt::ShiftModifier)) {
     double distance =
-        mult * wheelPanFactor * wheelAngle / 360 * viewSizeZoomed()
-;
+        mult * wheelPanFactor * wheelAngle / 360 * viewSizeZoomed();
     // Choose direction so that object under the mouse stays the same
     // Calculate projection*view matrix
     vx::ProjectiveMap<double, 3> projectionView =
@@ -524,7 +595,7 @@ void View3D::wheelEvent(QWheelEvent* event, const QSize& windowSize) {
     // Invert matrix
     vx::ProjectiveMap<double, 3> projectionViewInv = inverse(projectionView);
     // Invert vector from mouse pos into the direction -1 in Z direction
-    vx::Vector<double, 3> mousePos = toVector(event->pos(), windowSize);
+    vx::Vector<double, 3> mousePos = toVector(mousePosNow, windowSize);
     vx::Vector<double, 3> mousePos2 =
         mousePos + vx::Vector<double, 3>(0, 0, -1);
     vx::Vector<double, 3> direction = normalize(
@@ -543,9 +614,9 @@ void View3D::wheelEvent(QWheelEvent* event, const QSize& windowSize) {
     // Change lookAt so that the object under the mouse stays the same
     // while zooming
     if (true) {
-      vx::Vector<double, 3> p(event->pos().x(), -event->pos().y(), 0);
-      p -= vx::Vector<double, 3>(windowSize.width(), -windowSize.height(), 0) /
-           2;
+      vx::Vector<double, 3> p(mousePosNow[0], mousePosNow[1], 0);
+      p -=
+          vx::Vector<double, 3>(windowSize.width(), windowSize.height(), 0) / 2;
       p *= pixelSize(windowSize);
       upd.setLookAt(this->lookAt() +
                     this->orientation().map(
@@ -569,10 +640,33 @@ void View3D::wheelEvent(QWheelEvent* event, const QSize& windowSize) {
 void View3D::keyPressEvent(QKeyEvent* event, const QSize& windowSize) {
   Q_UNUSED(windowSize);
 
-  // qDebug() << event->key() << event->modifiers();
   bool isKeypad = (event->modifiers() & Qt::KeypadModifier) != 0;
   bool hasShift = (event->modifiers() & Qt::ShiftModifier) != 0;
   bool hasCtrl = (event->modifiers() & Qt::ControlModifier) != 0;
+  if (vx::debug_option::Log_Vis_Keyboard()->enabled())
+    qDebug() << event->key() << event->modifiers() << event->text()
+             << qApp->platformName() << event->nativeModifiers()
+             << event->nativeScanCode() << event->nativeVirtualKey();
+
+  // https://bugreports.qt.io/browse/QTBUG-111503
+  if (!isKeypad && qApp->platformName() == "wayland") {
+    // From xkbcommon-keysyms.h.h
+#ifndef XKB_KEY_KP_Space
+#define XKB_KEY_KP_Space 0xff80 /* Space */
+#endif
+#ifndef XKB_KEY_KP_9
+#define XKB_KEY_KP_9 0xffb9
+#endif
+
+    auto keysym = event->nativeVirtualKey();
+    if (keysym >= XKB_KEY_KP_Space && keysym <= XKB_KEY_KP_9) {
+      isKeypad = true;
+
+      if (vx::debug_option::Log_Vis_Keyboard()->enabled())
+        qDebug() << "QTBUG-111503 workaround: Setting isKeypad based on keysym "
+                    "value";
+    }
+  }
 
   double factor = 1.0;
   if (event->modifiers().testFlag(Qt::AltModifier)) factor = 0.1;

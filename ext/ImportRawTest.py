@@ -35,7 +35,7 @@ context = voxie.VoxieContext(args, enableService=True)
 instance = context.createInstance()
 
 if args.voxie_action is not None and args.voxie_action != 'Import':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 clientManager = voxie.clientimpl.ClientManagerImpl(context, context.bus)
 

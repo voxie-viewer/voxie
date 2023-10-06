@@ -58,7 +58,8 @@ class TableFilter : public FilterNode {
    * constraints.
    * no python script is executed
    */
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
 
   /**
    * @brief createConstraint creates a new constraint, adds it to the list

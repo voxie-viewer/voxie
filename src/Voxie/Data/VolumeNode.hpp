@@ -58,6 +58,7 @@ class BoundingBox3D;
 
 class VOXIECORESHARED_EXPORT VolumeNode : public PositionInterface {
   Q_OBJECT
+  REFCOUNTEDOBJ_DECL(VolumeNode)
 
  private:
   VolumeProperties* properties;

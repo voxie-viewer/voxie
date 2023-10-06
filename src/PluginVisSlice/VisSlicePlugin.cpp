@@ -20,6 +20,11 @@
  * THE SOFTWARE.
  */
 
+// QDBusConnection should be included as early as possible:
+// https://bugreports.qt.io/browse/QTBUG-48351 /
+// https://bugreports.qt.io/browse/QTBUG-48377
+#include <QtDBus/QDBusConnection>
+
 #include "VisSlicePlugin.hpp"
 
 #include <PluginVisSlice/SliceVisualizer.hpp>

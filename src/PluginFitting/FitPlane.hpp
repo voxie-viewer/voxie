@@ -47,7 +47,8 @@ class FitPlane : public FilterNode {
   ~FitPlane();
 
  private:
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
 };
 }  // namespace vis3d
 }  // namespace vx

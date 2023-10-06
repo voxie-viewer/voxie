@@ -102,8 +102,7 @@ void PointProperties::on_pushButton_2_clicked() { this->sv->createPlaneNode(); }
 void PointProperties::changePlane(QVector3D one, QVector3D two,
                                   QVector3D three) {
   auto newPlane = this->createNewPlaneFromCoordinates(one, two, three);
-  this->sv->setOrigin(newPlane.origin);
-  this->sv->setRotation(newPlane.rotation);
+  this->sv->setPlaneInfo(newPlane, false);
 }
 
 PlaneInfo PointProperties::createNewPlaneFromCoordinates(QVector3D one,

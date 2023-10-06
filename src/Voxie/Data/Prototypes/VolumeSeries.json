@@ -1,0 +1,35 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A 3D volume series node.",
+            "DisplayName": "Volume",
+            "Name": "de.uni_stuttgart.Voxie.Data.VolumeSeries",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Data",
+            "TODO_Icon": ":/icons-voxie/voxel-data-32.png",
+            "SupportedDataDBusInterfaces": [
+                "de.uni_stuttgart.Voxie.VolumeSeriesData"
+            ],
+            "TODO_DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.VolumeSeries.VxVolSer.Export",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.MovableDataNode.Rotation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.MovableDataObject.Rotation"
+                    ],
+                    "DisplayName": "Rotation",
+                    "IsCustomStorage": true,
+                    "IsCustomUI": true,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D"
+                },
+                "de.uni_stuttgart.Voxie.MovableDataNode.Translation": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.MovableDataObject.Translation"
+                    ],
+                    "DisplayName": "Translation",
+                    "IsCustomStorage": true,
+                    "IsCustomUI": true,
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Position3D"
+                }
+            }
+        }
+    ]
+}

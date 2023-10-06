@@ -79,11 +79,11 @@ void SessionManager::saveSession(QString filename) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
   QObject::connect(process, &QProcess::errorOccurred, Root::instance(),
                    [](QProcess::ProcessError error) {
-                     QMessageBox(QMessageBox::Critical,
-                                 "Error while saving project",
-                                 QString() + "Error while saving project: " +
-                                     QVariant::fromValue(error).toString(),
-                                 QMessageBox::Ok)
+                     QMessageBox(
+                         QMessageBox::Critical, "Error while saving project",
+                         QString() + "Error while saving project: " +
+                             QVariant::fromValue(error).toString(),
+                         QMessageBox::Ok, Root::instance()->mainWindow())
                          .exec();
                    });
 #endif
@@ -102,7 +102,7 @@ void SessionManager::saveSession(QString filename) {
                           QVariant::fromValue(exitStatus).toString() +
                           ", code = " + QString::number(exitCode) +
                           scriptOutputString,
-                      QMessageBox::Ok)
+                      QMessageBox::Ok, Root::instance()->mainWindow())
               .exec();
         } else {
           QString scriptOutputString = *output;
@@ -110,7 +110,7 @@ void SessionManager::saveSession(QString filename) {
             QMessageBox(QMessageBox::Warning, "Warnings while saving project",
                         QString() + "Warnings while saving project:\n" +
                             scriptOutputString,
-                        QMessageBox::Ok)
+                        QMessageBox::Ok, Root::instance()->mainWindow())
                 .exec();
           }
         }
@@ -155,11 +155,11 @@ void SessionManager::saveNodeGroup(NodeGroup* nodeGroup, QString filename) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
   QObject::connect(process, &QProcess::errorOccurred, Root::instance(),
                    [](QProcess::ProcessError error) {
-                     QMessageBox(QMessageBox::Critical,
-                                 "Error while saving node group",
-                                 QString() + "Error while saving node group: " +
-                                     QVariant::fromValue(error).toString(),
-                                 QMessageBox::Ok)
+                     QMessageBox(
+                         QMessageBox::Critical, "Error while saving node group",
+                         QString() + "Error while saving node group: " +
+                             QVariant::fromValue(error).toString(),
+                         QMessageBox::Ok, Root::instance()->mainWindow())
                          .exec();
                    });
 #endif
@@ -178,7 +178,7 @@ void SessionManager::saveNodeGroup(NodeGroup* nodeGroup, QString filename) {
                           QVariant::fromValue(exitStatus).toString() +
                           ", code = " + QString::number(exitCode) +
                           scriptOutputString,
-                      QMessageBox::Ok)
+                      QMessageBox::Ok, Root::instance()->mainWindow())
               .exec();
         } else {
           QString scriptOutputString = *output;
@@ -186,7 +186,7 @@ void SessionManager::saveNodeGroup(NodeGroup* nodeGroup, QString filename) {
             QMessageBox(QMessageBox::Warning, "Warnings while saving project",
                         QString() + "Warnings while saving project:\n" +
                             scriptOutputString,
-                        QMessageBox::Ok)
+                        QMessageBox::Ok, Root::instance()->mainWindow())
                 .exec();
           }
         }

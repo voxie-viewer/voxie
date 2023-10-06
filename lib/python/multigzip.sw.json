@@ -1,0 +1,13 @@
+{
+    "Name": "Multi GZip",
+    "GitRepository": [
+        "https://github.com/ClearVoice/multigzip"
+    ],
+    "Version": "0.0.2",
+    "GitCommit": "ce821ef2a81e634eadfbc5b19fd55fcf0e30d4ce",
+    "FileFilter": [
+        "LICENSE",
+        "multigzip"
+    ],
+    "LicenseFilename": "LICENSE"
+}

@@ -56,6 +56,8 @@
 #include <Voxie/Data/GeometricPrimitiveObject.hpp>
 #include <Voxie/Data/SurfaceNode.hpp>
 #include <Voxie/Data/TomographyRawDataNode.hpp>
+#include <Voxie/Data/VolumeNode.hpp>
+#include <Voxie/Data/VolumeSeriesNode.hpp>
 
 #include <Voxie/Gui/ErrorMessage.hpp>
 
@@ -229,6 +231,7 @@ Root::Root(bool headless)
   this->corePlugin_ = corePlugin;
 
   factories_.append(VolumeNode::getPrototypeSingleton());
+  factories_.append(VolumeSeriesNode::getPrototypeSingleton());
   factories_.append(ContainerNode::getPrototypeSingleton());
   factories_.append(SurfaceNode::getPrototypeSingleton());
   factories_.append(TableNode::getPrototypeSingleton());
@@ -291,7 +294,12 @@ Root::Root(bool headless)
         }
       });
 
-  if (!headless) this->coreWindow = new CoreWindow(this);
+  if (!headless) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+    qApp->setDesktopFileName("de.uni_stuttgart.Voxie");
+#endif
+    this->coreWindow = new CoreWindow(this);
+  }
 }
 
 Root::~Root() { delete this->coreWindow; }
@@ -365,7 +373,9 @@ class FakeFilter : public FilterNode {
   }
 
  private:
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override {
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override {
+    Q_UNUSED(isAutomaticFilterRun);
     throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                         "Cannot call FakeFilter::calculate()");
   }
@@ -507,7 +517,37 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
               }
             }
 
-            if (parser.positionalArguments().size() != 0) {
+            if (parser.isSet("run-script") &&
+                parser.positionalArguments().size() != 0) {
+              // TODO: Clean up
+
+              auto directoryManager = new DirectoryManager();
+
+              QStringList args = parser.positionalArguments();
+              QString cmd = args[0];
+              args.removeAt(0);
+
+              auto process = new QProcess();
+
+              // args.append("--voxie-bus-address=" + ...);
+              QString busName =
+                  "de.uni_stuttgart.Voxie";  // TODO: use unique name?
+              args.append("--voxie-bus-name=" + busName);
+              ScriptLauncher::setupEnvironment(directoryManager,
+                                               process);  // Set PYTHONPATH
+
+              process->setProcessChannelMode(QProcess::ForwardedChannels);
+              process->setProgram(cmd);
+              process->setArguments(args);
+
+              QObject::connect<void (QProcess::*)(int, QProcess::ExitStatus)>(
+                  process, &QProcess::finished, process, &QObject::deleteLater);
+
+              process->start();
+              process->waitForFinished(-1);
+              // TODO: Display error message when process fails?
+              if (process->exitCode() != 0) retval = process->exitCode();
+            } else if (parser.positionalArguments().size() != 0) {
               auto directoryManager = new DirectoryManager();
 
               QList<QString> options;
@@ -779,34 +819,42 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
 
   bool batchMode = parser.isSet("batch");
   if (parser.positionalArguments().size() != 0) {
-    QList<QString> options;
-    QMap<QString, QList<QString>> argOptions;
-    QList<QString> allOptions = {"iso", "slice", "raw"};
-    QList<QString> allArgOptions = {"import-property"};
-    for (const auto& str : allOptions)
-      if (parser.isSet(str)) options << str;
-    for (const auto& str : allArgOptions)
-      if (parser.isSet(str)) argOptions[str] = parser.values(str);
-    QString escapedPythonLibDirs = escapePythonStringArray(
-        vx::Root::instance()->directoryManager()->allPythonLibDirs());
-    QString code =
-        "import sys; sys.path = " + escapedPythonLibDirs + " + sys.path; " +
-        "import voxie, voxie.process_command_line_args; args = "
-        "voxie.parser.parse_args(); context = voxie.VoxieContext(args); "
-        "instance = context.createInstance(); "
-        "voxie.process_command_line_args.process(instance, " +
-        vx::escapePythonString(QDir::currentPath()) + "," +
-        vx::escapePythonStringArray(parser.positionalArguments()) + ", " +
-        vx::escapePythonStringArray(options) + ", " +
-        vx::escapePython(argOptions) + "); context.client.destroy()";
-
+    QString executable;
     QStringList args;
-    args << "-c";
-    args << code;
+    if (!parser.isSet("run-script")) {
+      QList<QString> options;
+      QMap<QString, QList<QString>> argOptions;
+      QList<QString> allOptions = {"iso", "slice", "raw"};
+      QList<QString> allArgOptions = {"import-property"};
+      for (const auto& str : allOptions)
+        if (parser.isSet(str)) options << str;
+      for (const auto& str : allArgOptions)
+        if (parser.isSet(str)) argOptions[str] = parser.values(str);
+      QString escapedPythonLibDirs = escapePythonStringArray(
+          vx::Root::instance()->directoryManager()->allPythonLibDirs());
+      QString code =
+          "import sys; sys.path = " + escapedPythonLibDirs + " + sys.path; " +
+          "import voxie, voxie.process_command_line_args; args = "
+          "voxie.parser.parse_args(); context = voxie.VoxieContext(args); "
+          "instance = context.createInstance(); "
+          "voxie.process_command_line_args.process(instance, " +
+          vx::escapePythonString(QDir::currentPath()) + "," +
+          vx::escapePythonStringArray(parser.positionalArguments()) + ", " +
+          vx::escapePythonStringArray(options) + ", " +
+          vx::escapePython(argOptions) + "); context.client.destroy()";
+
+      args << "-c";
+      args << code;
+      executable = Root::instance()->directoryManager()->pythonExecutable();
+    } else {
+      args = parser.positionalArguments();
+      executable = args[0];
+      args.removeAt(0);
+    }
+
     auto scriptOutput = createQSharedPointer<QString>();
     auto process = Root::instance()->scriptLauncher()->startScript(
-        Root::instance()->directoryManager()->pythonExecutable(), nullptr, args,
-        new QProcess(), scriptOutput);
+        executable, nullptr, args, new QProcess(), scriptOutput);
 
     // TODO: Move parts to ScriptLauncher?
     // TODO: This should be done before the process is started
@@ -820,7 +868,7 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
                         QString() +
                             "Error while processing command line arguments: " +
                             QVariant::fromValue(error).toString(),
-                        QMessageBox::Ok)
+                        QMessageBox::Ok, Root::instance()->mainWindow())
                 .exec();
           }
         });
@@ -849,7 +897,7 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
                       "Error while processing command line arguments: " +
                       QVariant::fromValue(exitStatus).toString() + ", code = " +
                       QString::number(exitCode) + scriptOutputString,
-                  QMessageBox::Ok)
+                  QMessageBox::Ok, Root::instance()->mainWindow())
                   .exec();
             }
           } else {
@@ -869,7 +917,7 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
                   QString() +
                       "Warnings while processing command line arguments:\n" +
                       scriptOutputString,
-                  QMessageBox::Ok)
+                  QMessageBox::Ok, Root::instance()->mainWindow())
                   .exec();
             }
             }
@@ -1080,7 +1128,8 @@ QSharedPointer<Plugin> Root::getPluginByName(const QString& name) {
 
 void runTests() {
   qDebug() << "---- running tests ----";
-  QSharedPointer<VolumeDataVoxel> data = VolumeDataVoxel::createVolume(8, 8, 8);
+  QSharedPointer<VolumeDataVoxel> data = VolumeDataVoxel::createVolume(
+      {8, 8, 8}, DataType::Float32, {0, 0, 0}, {1, 1, 1});
   qDebug() << data->getDimensions().toQVector3D();
   qDebug() << data->getSize();
   data->performInGenericContext(

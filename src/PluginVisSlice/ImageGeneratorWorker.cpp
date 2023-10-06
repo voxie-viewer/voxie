@@ -46,8 +46,8 @@ void ImageGeneratorWorker::run() {
   // qDebug() << "started:" << ++ImageGeneratorWorker::started;
   SliceImage result;
   if (data) {
-    result = Slice::generateImage(data.data(), plane, sliceArea, imageSize,
-                                  interpolation);
+    result = generateSliceImage(data.data(), plane, sliceArea, imageSize,
+                                interpolation);
   } else {
     qWarning() << "ImageGeneratorWorker::data is null";
   }

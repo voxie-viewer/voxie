@@ -193,7 +193,7 @@ class TomographyRawData2DAccessorOperationsImpl(voxie.DBusExportObject):
                 region = buffer[outputRegionStart[0]:outputRegionStart[0] + regionSize[0],
                                 outputRegionStart[1]:outputRegionStart[1] + regionSize[1],
                                 firstOutputImageId + i]
-                pos = self.offset + self.imageShape[1] * self.imageShape[0] * id
+                pos = self.offset + self.imageShape[1] * self.imageShape[0] * self.header.BytesPerPixel * id
                 file.seek(pos)
                 data = self.file.read(self.imageShape[1] * self.imageShape[0] * self.header.BytesPerPixel)
                 # TODO: Is this correct?
@@ -225,7 +225,7 @@ context = voxie.VoxieContext(args, enableService=True)
 instance = context.createInstance()
 
 if args.voxie_action != 'Import':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 provider = None
 
@@ -250,7 +250,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
             dataType = ('uint', 16)
         elif ty == b'i':
             dataType = ('uint', 32)
-        elif ty == b'e':
+        elif ty == b'r':
             dataType = ('float', 32)
         else:
             raise Exception('Got unknown data type {!r}'.format(ty))

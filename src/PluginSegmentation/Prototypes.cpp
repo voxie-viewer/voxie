@@ -34,29 +34,13 @@ SegmentationPropertiesBase::~SegmentationPropertiesBase() {}
 SegmentationPropertiesCopy::SegmentationPropertiesCopy(
     const QSharedPointer<const QMap<QString, QVariant>>& properties)
     : _properties(properties) {}
-vx::Node* SegmentationPropertiesCopy::input() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Filter.Segmentation.Input"]));
-}
 QDBusObjectPath SegmentationPropertiesCopy::inputRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.Filter.Segmentation.Input"]);
 }
-vx::Node* SegmentationPropertiesCopy::output() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.Filter.Segmentation.Output"]));
-}
 QDBusObjectPath SegmentationPropertiesCopy::outputRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.Filter.Segmentation.Output"]);
-}
-QList<vx::Node*> SegmentationPropertiesCopy::stepList() {
-  return vx::PropertyValueConvertRaw<QList<QDBusObjectPath>, QList<vx::Node*>>::
-      fromRaw(vx::Node::parseVariant<QList<QDBusObjectPath>>(
-          (*_properties)
-              ["de.uni_stuttgart.Voxie.Filter.Segmentation.StepList"]));
 }
 QList<QDBusObjectPath> SegmentationPropertiesCopy::stepListRaw() {
   return vx::Node::parseVariant<QList<QDBusObjectPath>>(
@@ -2357,12 +2341,6 @@ MultiThresholdStepPropertiesCopy::thresholdListRaw() {
       (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
                      "MultiThresholdStep.ThresholdList"]);
 }
-vx::Node* MultiThresholdStepPropertiesCopy::volume() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
-                         "MultiThresholdStep.Volume"]));
-}
 QDBusObjectPath MultiThresholdStepPropertiesCopy::volumeRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
@@ -2854,12 +2832,6 @@ double ThresholdSelectionStepPropertiesCopy::upperThresholdRaw() {
   return vx::Node::parseVariant<double>(
       (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
                      "ThresholdSelectionStep.UpperThreshold"]);
-}
-vx::Node* ThresholdSelectionStepPropertiesCopy::volume() {
-  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
-      vx::Node::parseVariant<QDBusObjectPath>(
-          (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
-                         "ThresholdSelectionStep.Volume"]));
 }
 QDBusObjectPath ThresholdSelectionStepPropertiesCopy::volumeRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(

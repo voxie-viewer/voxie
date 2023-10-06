@@ -91,9 +91,11 @@ class CoordinatedTransformWorker : public QRunnable {
 };
 
 template <class T>
-VolumeDataVoxelInst<T>::VolumeDataVoxelInst(size_t width, size_t height,
-                                            size_t depth, DataType dataType)
-    : VolumeDataVoxel(width, height, depth, dataType) {
+VolumeDataVoxelInst<T>::VolumeDataVoxelInst(
+    const vx::Vector<size_t, 3> arrayShape, DataType dataType,
+    const vx::Vector<double, 3>& gridOrigin,
+    const vx::Vector<double, 3>& gridSpacing)
+    : VolumeDataVoxel(arrayShape, dataType, gridOrigin, gridSpacing) {
   this->dataType = dataType;
 }
 
@@ -101,7 +103,7 @@ template <class T>
 void VolumeDataVoxelInst<T>::transform(const std::function<T(T)>& f) {
   auto thisPointer = this->thisShared();
   QThreadPool pool;
-  for (size_t z = 0; z < this->dimensions.z; z++) {
+  for (size_t z = 0; z < this->arrayShape().template access<2>(); z++) {
     pool.start(new TransformWorker<T>(thisPointer, z, f));
   }
   pool.waitForDone();
@@ -113,7 +115,7 @@ void VolumeDataVoxelInst<T>::transformCoordinate(
     const std::function<T(size_t, size_t, size_t, T)>& f) {
   auto thisPointer = this->thisShared();
   QThreadPool pool;
-  for (size_t z = 0; z < this->dimensions.z; z++) {
+  for (size_t z = 0; z < this->arrayShape().template access<2>(); z++) {
     pool.start(new CoordinatedTransformWorker<T>(thisPointer, z, f));
   }
   pool.waitForDone();
@@ -123,9 +125,9 @@ void VolumeDataVoxelInst<T>::transformCoordinate(
 template <class T>
 void VolumeDataVoxelInst<T>::transformCoordinateSingledThreaded(
     const std::function<T(size_t, size_t, size_t, T)>& f) {
-  for (size_t z = 0; z < this->dimensions.z; z++) {
-    for (size_t y = 0; y < this->dimensions.y; y++) {
-      for (size_t x = 0; x < this->dimensions.x; x++) {
+  for (size_t z = 0; z < this->arrayShape().template access<2>(); z++) {
+    for (size_t y = 0; y < this->arrayShape().template access<1>(); y++) {
+      for (size_t x = 0; x < this->arrayShape().template access<0>(); x++) {
         this->setVoxel(x, y, z, f(x, y, z, this->getVoxel(x, y, z)));
       }
     }
@@ -151,14 +153,14 @@ static inline qint64 castToInt(qreal f, bool* overflow) {
 template <class GenericVoxel>
 GenericVoxel
 VolumeDataVoxelInst<GenericVoxel>::VolumeDataVoxelInst::getVoxelMetric(
-    qreal x, qreal y, qreal z, InterpolationMethod method) const {
+    qreal x, qreal y, qreal z, InterpolationMethod method) {
   // transform to 'integer' coordinatesystem
   x -= origin().x();
   y -= origin().y();
   z -= origin().z();
-  x /= this->spacing.x();
-  y /= this->spacing.y();
-  z /= this->spacing.z();
+  x /= this->gridSpacing().template access<0>();
+  y /= this->gridSpacing().template access<1>();
+  z /= this->gridSpacing().template access<2>();
   // qDebug() << "getVoxelMetric 2" << x << y << z;
 
   if (method == vx::InterpolationMethod::NearestNeighbor) {
@@ -183,9 +185,12 @@ VolumeDataVoxelInst<GenericVoxel>::VolumeDataVoxelInst::getVoxelMetric(
     // When there was an overflow during conversion or all used voxels are out
     // of range, return NaN
     if (overflow || (xi < -1) || (yi < -1) || (xi < -1) ||
-        ((size_t)xi >= dimensions.x && ((size_t)xi + 1) >= dimensions.x) ||
-        ((size_t)yi >= dimensions.y && ((size_t)yi + 1) >= dimensions.y) ||
-        ((size_t)zi >= dimensions.z && ((size_t)zi + 1) >= dimensions.z))
+        ((size_t)xi >= arrayShape().template access<0>() &&
+         ((size_t)xi + 1) >= arrayShape().template access<0>()) ||
+        ((size_t)yi >= arrayShape().template access<1>() &&
+         ((size_t)yi + 1) >= arrayShape().template access<1>()) ||
+        ((size_t)zi >= arrayShape().template access<2>() &&
+         ((size_t)zi + 1) >= arrayShape().template access<2>()))
       return static_cast<GenericVoxel>(NAN);
     // coefficients
     qreal kx = x - xi;
@@ -215,29 +220,29 @@ VolumeDataVoxelInst<GenericVoxel>::VolumeDataVoxelInst::getVoxelMetric(
 template <class GenericVoxel>
 GenericVoxel
 VolumeDataVoxelInst<GenericVoxel>::VolumeDataVoxelInst::getVoxelMetric(
-    QVector3D position, InterpolationMethod method) const {
+    QVector3D position, InterpolationMethod method) {
   return this->getVoxelMetric(position.x(), position.y(), position.z(), method);
 }
 
 template <class T>
 QSharedPointer<VolumeDataVoxel> VolumeDataVoxelInst<T>::reducedSize(
-    uint xStepsize, uint yStepsize, uint zStepsize) const {
+    uint xStepsize, uint yStepsize, uint zStepsize) {
   xStepsize = xStepsize == 0 ? 1 : xStepsize;
   yStepsize = yStepsize == 0 ? 1 : yStepsize;
   zStepsize = zStepsize == 0 ? 1 : zStepsize;
 
-  auto currentDims = this->dimensions;
+  auto currentDims = this->getDimensions();
   vx::VectorSizeT3 newDims((currentDims.x + xStepsize - 1) / xStepsize,
                            (currentDims.y + yStepsize - 1) / yStepsize,
                            (currentDims.z + zStepsize - 1) / zStepsize);
 
-  auto newVolumeDataVoxel =
-      createVolume(newDims.x, newDims.y, newDims.z, dataType);
+  auto spacing = elementwiseProduct(
+      this->gridSpacing(), vectorCastNarrow<double>(vx::Vector<uint, 3>(
+                               {xStepsize, yStepsize, zStepsize})));
 
-  QVector3D spacing =
-      this->spacing * QVector3D(xStepsize, yStepsize, zStepsize);
-  newVolumeDataVoxel->setSpacing(spacing);
-  newVolumeDataVoxel->setOrigin(this->origin());
+  auto newVolumeDataVoxel =
+      createVolume(vx::Vector<size_t, 3>(newDims.x, newDims.y, newDims.z),
+                   dataType, this->volumeOrigin(), spacing);
 
   auto newVolumeDataVoxelInst =
       qSharedPointerDynamicCast<VolumeDataVoxelInst<T>>(newVolumeDataVoxel);
@@ -267,50 +272,66 @@ cl::Image3D& VolumeDataVoxelInst<T>::getCLImage() {
         case DataType::Float16:
           this->clImage =
               vx::opencl::CLInstance::getDefaultInstance()->createImage3D(
-                  cl::ImageFormat(CL_R, CL_HALF_FLOAT), this->dimensions.x,
-                  this->dimensions.y, this->dimensions.z, this->getData());
+                  cl::ImageFormat(CL_R, CL_HALF_FLOAT),
+                  this->arrayShape().template access<0>(),
+                  this->arrayShape().template access<1>(),
+                  this->arrayShape().template access<2>(), this->getData());
           break;
         case DataType::Float32:
           this->clImage =
               vx::opencl::CLInstance::getDefaultInstance()->createImage3D(
-                  cl::ImageFormat(CL_R, CL_FLOAT), this->dimensions.x,
-                  this->dimensions.y, this->dimensions.z, this->getData());
+                  cl::ImageFormat(CL_R, CL_FLOAT),
+                  this->arrayShape().template access<0>(),
+                  this->arrayShape().template access<1>(),
+                  this->arrayShape().template access<2>(), this->getData());
           break;
         case DataType::Int8:
           this->clImage =
               vx::opencl::CLInstance::getDefaultInstance()->createImage3D(
-                  cl::ImageFormat(CL_R, CL_SIGNED_INT8), this->dimensions.x,
-                  this->dimensions.y, this->dimensions.z, this->getData());
+                  cl::ImageFormat(CL_R, CL_SIGNED_INT8),
+                  this->arrayShape().template access<0>(),
+                  this->arrayShape().template access<1>(),
+                  this->arrayShape().template access<2>(), this->getData());
           break;
         case DataType::Int16:
           this->clImage =
               vx::opencl::CLInstance::getDefaultInstance()->createImage3D(
-                  cl::ImageFormat(CL_R, CL_SIGNED_INT16), this->dimensions.x,
-                  this->dimensions.y, this->dimensions.z, this->getData());
+                  cl::ImageFormat(CL_R, CL_SIGNED_INT16),
+                  this->arrayShape().template access<0>(),
+                  this->arrayShape().template access<1>(),
+                  this->arrayShape().template access<2>(), this->getData());
           break;
         case DataType::Int32:
           this->clImage =
               vx::opencl::CLInstance::getDefaultInstance()->createImage3D(
-                  cl::ImageFormat(CL_R, CL_SIGNED_INT32), this->dimensions.x,
-                  this->dimensions.y, this->dimensions.z, this->getData());
+                  cl::ImageFormat(CL_R, CL_SIGNED_INT32),
+                  this->arrayShape().template access<0>(),
+                  this->arrayShape().template access<1>(),
+                  this->arrayShape().template access<2>(), this->getData());
           break;
         case DataType::UInt8:
           this->clImage =
               vx::opencl::CLInstance::getDefaultInstance()->createImage3D(
-                  cl::ImageFormat(CL_R, CL_UNSIGNED_INT8), this->dimensions.x,
-                  this->dimensions.y, this->dimensions.z, this->getData());
+                  cl::ImageFormat(CL_R, CL_UNSIGNED_INT8),
+                  this->arrayShape().template access<0>(),
+                  this->arrayShape().template access<1>(),
+                  this->arrayShape().template access<2>(), this->getData());
           break;
         case DataType::UInt16:
           this->clImage =
               vx::opencl::CLInstance::getDefaultInstance()->createImage3D(
-                  cl::ImageFormat(CL_R, CL_UNSIGNED_INT16), this->dimensions.x,
-                  this->dimensions.y, this->dimensions.z, this->getData());
+                  cl::ImageFormat(CL_R, CL_UNSIGNED_INT16),
+                  this->arrayShape().template access<0>(),
+                  this->arrayShape().template access<1>(),
+                  this->arrayShape().template access<2>(), this->getData());
           break;
         case DataType::UInt32:
           this->clImage =
               vx::opencl::CLInstance::getDefaultInstance()->createImage3D(
-                  cl::ImageFormat(CL_R, CL_UNSIGNED_INT32), this->dimensions.x,
-                  this->dimensions.y, this->dimensions.z, this->getData());
+                  cl::ImageFormat(CL_R, CL_UNSIGNED_INT32),
+                  this->arrayShape().template access<0>(),
+                  this->arrayShape().template access<1>(),
+                  this->arrayShape().template access<2>(), this->getData());
           break;
         default:
           this->clImage = cl::Image3D();
@@ -349,13 +370,15 @@ void VolumeDataVoxelInst<T>::updateClImage() {
 }
 
 QSharedPointer<VolumeDataVoxel> VolumeDataVoxel::createVolume(
-    size_t width, size_t height, size_t depth, DataType dataTypeInput) {
+    const vx::Vector<size_t, 3> arrayShape, DataType dataTypeInput,
+    const vx::Vector<double, 3>& gridOrigin,
+    const vx::Vector<double, 3>& gridSpacing) {
   return switchOverDataType<VolumeDataVoxel::SupportedTypes,
                             QSharedPointer<VolumeDataVoxel>>(
       dataTypeInput, [&](auto traits) {
         using T = typename decltype(traits)::Type;
-        return createBase<VolumeDataVoxelInst<T>>(width, height, depth,
-                                                  dataTypeInput);
+        return createBase<VolumeDataVoxelInst<T>>(arrayShape, dataTypeInput,
+                                                  gridOrigin, gridSpacing);
       });
 }
 

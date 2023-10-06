@@ -39,16 +39,26 @@ class VOXIECORESHARED_EXPORT OpenGLWidget : public QOpenGLWidget,
   Q_OBJECT
 
  private:
-  float fWidth, fHeight;
+  float fWidthPhys, fHeightPhys;
+  float fWidthDIP, fHeightDIP;
+  int iWidthPhys, iHeightPhys;
 
   bool initialized_ = false;
   QString initError;
 
+ private:
+  int width() const = delete;
+  int height() const = delete;
+
  public:
   explicit OpenGLWidget(QWidget* parent = 0);
 
-  float width() const { return fWidth; }
-  float height() const { return fHeight; }
+  float widthPhys() const { return fWidthPhys; }
+  float heightPhys() const { return fHeightPhys; }
+  float widthDIP() const { return fWidthDIP; }
+  float heightDIP() const { return fHeightDIP; }
+  int widthPhysInt() const { return iWidthPhys; }
+  int heightPhysInt() const { return iHeightPhys; }
 
   bool initialized() const { return initialized_; }
 
@@ -58,11 +68,15 @@ class VOXIECORESHARED_EXPORT OpenGLWidget : public QOpenGLWidget,
   virtual void paintGL() override;
 
   virtual void paintEvent(QPaintEvent* event) override;
+  virtual void resizeEvent(QResizeEvent* event) override;
 
   virtual QString initialize() = 0;
   virtual void paint() = 0;
 
   bool checkOpenGLStatus();
+
+ private:
+  bool resizePending = false;
 };
 
 class VOXIECORESHARED_EXPORT OpenGLDrawUtils : public QObject,

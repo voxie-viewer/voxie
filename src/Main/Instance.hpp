@@ -132,6 +132,18 @@ class InstanceAdaptorImpl : public InstanceAdaptor {
       const QDBusObjectPath& client, const QString& name,
       const QMap<QString, QDBusVariant>& options) override;
 
+  QDBusObjectPath CreateVolumeSeriesData(
+      const QDBusObjectPath& client, const QList<QDBusObjectPath>& dimensions,
+      const vx::TupleVector<double, 3>& volumeOrigin,
+      const vx::TupleVector<double, 3>& volumeSize,
+      const QMap<QString, QDBusVariant>& options) override;
+
+  QDBusObjectPath CreateSeriesDimension(
+      const QDBusObjectPath& client, const QString& name,
+      const QString& displayName, const QDBusObjectPath& type,
+      const QDBusVariant& entries,
+      const QMap<QString, QDBusVariant>& options) override;
+
   QDBusObjectPath CreateGeometricPrimitiveData(
       const QDBusObjectPath& client,
       const QMap<QString, QDBusVariant>& options) override;

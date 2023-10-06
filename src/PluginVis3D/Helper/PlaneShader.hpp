@@ -28,7 +28,6 @@
 #include <QtGui/QOpenGLVertexArrayObject>
 
 #include <PluginVis3D/Data/PlaneData.hpp>
-#include <Voxie/Data/Slice.hpp>
 
 using namespace vx;
 

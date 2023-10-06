@@ -60,8 +60,10 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
   }
 
  public:
-  VolumeDataVoxelInst(size_t width, size_t height, size_t depth,
-                      vx::DataType dataType);
+  VolumeDataVoxelInst(const vx::Vector<size_t, 3> arrayShape,
+                      vx::DataType dataType,
+                      const vx::Vector<double, 3>& gridOrigin,
+                      const vx::Vector<double, 3>& gridSpacing);
 
   /**
    * @brief Transform all voxels of the data set inplace.
@@ -101,7 +103,7 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
    * and retunspair(min,max). This is an expensive operation
    * @see getMinMaxValue()
    */
-  inline QPair<GenericVoxel, GenericVoxel> calcMinMaxValue() const {
+  inline QPair<GenericVoxel, GenericVoxel> calcMinMaxValue() {
     // qDebug() << "calcminmax";
     GenericVoxel min = (GenericVoxel)(std::numeric_limits<GenericVoxel>::max());
     GenericVoxel max = std::numeric_limits<GenericVoxel>::lowest();
@@ -132,7 +134,7 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
    * not be the case when changes have been made to this datasets data.
    */
   const QPair<GenericVoxel, GenericVoxel>& getMinMaxValueConst(
-      bool* valid = nullptr) const {
+      bool* valid = nullptr) {
     if (valid != nullptr) *valid = this->minMaxValid;
     return this->minMax;
   }
@@ -140,15 +142,16 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
   /**
    * @return whether cached minmax values are valid
    */
-  bool isMinMaxValid() const { return this->minMaxValid; }
+  bool isMinMaxValid() { return this->minMaxValid; }
 
   /**
    * @return voxel value at the given position. x,y,z outside the dimensions
    * will cause a crash.
    */
-  inline GenericVoxel getVoxel(size_t x, size_t y, size_t z) const {
-    return this->getData()[x + y * this->dimensions.x +
-                           z * this->dimensions.x * this->dimensions.y];
+  inline GenericVoxel getVoxel(size_t x, size_t y, size_t z) {
+    return this->getData()[x + y * this->arrayShape().template access<0>() +
+                           z * this->arrayShape().template access<0>() *
+                               this->arrayShape().template access<1>()];
   }
 
   /**
@@ -156,10 +159,11 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
    * will return NAN / minValue (for integers).
    */
   inline GenericVoxel getVoxelSafe(size_t x, size_t y, size_t z,
-                                   GenericVoxel def = defaultValue()) const {
-    if (isInBounds(x, y, z, this->getDimensions())) {
-      return this->getData()[x + y * this->dimensions.x +
-                             z * this->dimensions.x * this->dimensions.y];
+                                   GenericVoxel def = defaultValue()) {
+    if (isInBounds(x, y, z, this->arrayShape())) {
+      return this->getData()[x + y * this->arrayShape().template access<0>() +
+                             z * this->arrayShape().template access<0>() *
+                                 this->arrayShape().template access<1>()];
     } else {
       return def;
     }
@@ -169,7 +173,7 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
    * @return voxel value at the given position. pos outside the dimensions will
    * cause a crash.
    */
-  inline GenericVoxel getVoxel(const vx::VectorSizeT3& pos) const {
+  inline GenericVoxel getVoxel(const vx::VectorSizeT3& pos) {
     return getVoxel(pos.x, pos.y, pos.z);
   }
 
@@ -183,7 +187,7 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverflow"
 #endif
-  inline virtual GenericVoxel getVoxelSafe(const vx::VectorSizeT3& pos) const {
+  inline virtual GenericVoxel getVoxelSafe(const vx::VectorSizeT3& pos) {
     return getVoxelSafe(pos.x, pos.y, pos.z);
   }
 // TODO: Warning suppressed
@@ -198,19 +202,20 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
    */
   GenericVoxel getVoxelMetric(
       qreal x, qreal y, qreal z,
-      vx::InterpolationMethod method = vx::InterpolationMethod::Linear) const;
+      vx::InterpolationMethod method = vx::InterpolationMethod::Linear);
 
   GenericVoxel getVoxelMetric(
       QVector3D position,
-      vx::InterpolationMethod method = vx::InterpolationMethod::Linear) const;
+      vx::InterpolationMethod method = vx::InterpolationMethod::Linear);
 
   /**
    * @brief setVoxel sets the value of the voxel at the given position to voxel.
    * x,y,z outside the dimensions will crash.
    */
   inline void setVoxel(size_t x, size_t y, size_t z, GenericVoxel voxel) {
-    this->getData()[x + y * this->dimensions.x +
-                    z * this->dimensions.x * this->dimensions.y] = voxel;
+    this->getData()[x + y * this->arrayShape().template access<0>() +
+                    z * this->arrayShape().template access<0>() *
+                        this->arrayShape().template access<1>()] = voxel;
   }
 
   /**
@@ -218,9 +223,10 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
    * x,y,z outside the dimensions will do nothing.
    */
   inline void setVoxelSafe(size_t x, size_t y, size_t z, GenericVoxel voxel) {
-    if (isInBounds(x, y, z, this->getDimensions())) {
-      this->getData()[x + y * this->dimensions.x +
-                      z * this->dimensions.x * this->dimensions.y] = voxel;
+    if (isInBounds(x, y, z, this->arrayShape())) {
+      this->getData()[x + y * this->arrayShape().template access<0>() +
+                      z * this->arrayShape().template access<0>() *
+                          this->arrayShape().template access<1>()] = voxel;
     }
   }
 
@@ -243,25 +249,23 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
   /**
    * @return voxel data as an array; x increases fastest, then y, then z.
    */
-  inline GenericVoxel* getData() const {
+  inline GenericVoxel* getData() {
     return (GenericVoxel*)this->dataSH->getData();
   }
 
   /**
    * @return size of the voxel data set in bytes.
    */
-  inline size_t getByteSize() const {
-    return this->size * sizeof(GenericVoxel);
-  }
+  inline size_t getByteSize() { return this->size * sizeof(GenericVoxel); }
 
   /**
    * @return size of one generic voxel in bytes.
    */
-  inline size_t getSingleVoxelByteSize() const { return sizeof(GenericVoxel); }
+  inline size_t getSingleVoxelByteSize() { return sizeof(GenericVoxel); }
 
   QSharedPointer<VolumeDataVoxel> reducedSize(uint xStepsize = 2,
                                               uint yStepsize = 2,
-                                              uint zStepsize = 2) const;
+                                              uint zStepsize = 2);
 };
 
 namespace vx {

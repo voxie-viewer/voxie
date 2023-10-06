@@ -1141,6 +1141,8 @@ class VOXIECLIENT_EXPORT ExternalOperationRunFilterAdaptor
       "      <annotation value=\"de.uni_stuttgart.Voxie.FilterObject\" "
       "name=\"de.uni_stuttgart.Voxie.Interface\"/>\n"
       "    </property>\n"
+      "    <property access=\"read\" type=\"b\" "
+      "name=\"IsAutomaticFilterRun\"/>\n"
       "    <property access=\"read\" type=\"a{oa{sv}}\" name=\"Parameters\">\n"
       "      <annotation value=\"VX_IDENTITY_TYPE((QMap&lt;QDBusObjectPath, "
       "QMap&lt;QString, QDBusVariant&gt;&gt;))\" "
@@ -1170,6 +1172,9 @@ class VOXIECLIENT_EXPORT ExternalOperationRunFilterAdaptor
 
   Q_PROPERTY(QDBusObjectPath FilterObject READ filterObject)
   virtual QDBusObjectPath filterObject() const = 0;
+
+  Q_PROPERTY(bool IsAutomaticFilterRun READ isAutomaticFilterRun)
+  virtual bool isAutomaticFilterRun() const = 0;
 
   Q_PROPERTY(
       VX_IDENTITY_TYPE((QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>))
@@ -1261,6 +1266,85 @@ class VOXIECLIENT_EXPORT ExternalOperationRunSegmentationStepAdaptor
   virtual void Finish(const QDBusObjectPath& labelDataVersion,
                       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
                           options) = 0;
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Adaptor class for interface de.uni_stuttgart.Voxie.ExternalTask
+ */
+class VOXIECLIENT_EXPORT ExternalTaskAdaptor : public QDBusAbstractAdaptor {
+  Q_OBJECT
+  Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.ExternalTask")
+  Q_CLASSINFO(
+      "D-Bus Introspection",
+      ""
+      "  <interface name=\"de.uni_stuttgart.Voxie.ExternalTask\">\n"
+      "    <property access=\"read\" type=\"o\" name=\"Task\">\n"
+      "      <annotation value=\"de.uni_stuttgart.Voxie.Task\" "
+      "name=\"de.uni_stuttgart.Voxie.Interface\"/>\n"
+      "    </property>\n"
+      "    <method name=\"SetState\">\n"
+      "      <arg direction=\"in\" type=\"s\" name=\"state\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "    </method>\n"
+      "    <property access=\"readwrite\" type=\"b\" "
+      "name=\"FinishAutomatically\"/>\n"
+      "    <method name=\"SetDisplayName\">\n"
+      "      <arg direction=\"in\" type=\"s\" name=\"displayName\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "    </method>\n"
+      "    <method name=\"SetProgress\">\n"
+      "      <arg direction=\"in\" type=\"d\" name=\"progress\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "    </method>\n"
+      "    <method name=\"SetSubTasks\">\n"
+      "      <arg direction=\"in\" type=\"a(od)\" name=\"subtasks\"/>\n"
+      "      <annotation value=\"const "
+      "VX_IDENTITY_TYPE((QList&lt;std::tuple&lt;QDBusObjectPath, "
+      "double&gt;&gt;))&amp;\" name=\"org.qtproject.QtDBus.QtTypeName.In0\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "    </method>\n"
+      "  </interface>\n"
+      "")
+ public:
+  ExternalTaskAdaptor(QObject* parent) : QDBusAbstractAdaptor(parent) {}
+  virtual ~ExternalTaskAdaptor() {}
+
+ public:  // PROPERTIES
+  Q_PROPERTY(bool FinishAutomatically READ finishAutomatically WRITE
+                 setFinishAutomatically)
+  virtual bool finishAutomatically() const = 0;
+  virtual void setFinishAutomatically(bool value) = 0;
+
+  Q_PROPERTY(QDBusObjectPath Task READ task)
+  virtual QDBusObjectPath task() const = 0;
+
+ public Q_SLOTS:  // METHODS
+  virtual void SetDisplayName(
+      const QString& displayName,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual void SetProgress(
+      double progress,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual void SetState(const QString& state,
+                        const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                            options) = 0;
+  virtual void SetSubTasks(
+      const VX_IDENTITY_TYPE((QList<std::tuple<QDBusObjectPath, double>>)) &
+          subtasks,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
  Q_SIGNALS:  // SIGNALS
 };
 
@@ -1864,6 +1948,35 @@ class VOXIECLIENT_EXPORT InstanceAdaptor : public QDBusAbstractAdaptor {
       "QDBusVariant&gt;))&amp;\" "
       "name=\"org.qtproject.QtDBus.QtTypeName.In2\"/>\n"
       "    </method>\n"
+      "    <method name=\"CreateSeriesDimension\">\n"
+      "      <arg direction=\"out\" type=\"o\"/>\n"
+      "      <arg direction=\"in\" type=\"o\" name=\"client\"/>\n"
+      "      <arg direction=\"in\" type=\"s\" name=\"name\"/>\n"
+      "      <arg direction=\"in\" type=\"s\" name=\"displayName\"/>\n"
+      "      <arg direction=\"in\" type=\"o\" name=\"type\"/>\n"
+      "      <arg direction=\"in\" type=\"v\" name=\"entries\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In5\"/>\n"
+      "    </method>\n"
+      "    <method name=\"CreateVolumeSeriesData\">\n"
+      "      <arg direction=\"out\" type=\"o\"/>\n"
+      "      <arg direction=\"in\" type=\"o\" name=\"client\"/>\n"
+      "      <arg direction=\"in\" type=\"ao\" name=\"dimensions\"/>\n"
+      "      <arg direction=\"in\" type=\"(ddd)\" name=\"volumeOrigin\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((std::tuple&lt;double, "
+      "double, double&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In2\"/>\n"
+      "      <arg direction=\"in\" type=\"(ddd)\" name=\"volumeSize\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((std::tuple&lt;double, "
+      "double, double&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In3\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In4\"/>\n"
+      "    </method>\n"
       "    <method name=\"CreateGeometricPrimitiveData\">\n"
       "      <arg direction=\"out\" type=\"o\"/>\n"
       "      <arg direction=\"in\" type=\"o\" name=\"client\"/>\n"
@@ -1979,6 +2092,11 @@ class VOXIECLIENT_EXPORT InstanceAdaptor : public QDBusAbstractAdaptor {
       const VX_IDENTITY_TYPE((std::tuple<QString, quint32, QString>)) &
           dataType,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual QDBusObjectPath CreateSeriesDimension(
+      const QDBusObjectPath& client, const QString& name,
+      const QString& displayName, const QDBusObjectPath& type,
+      const QDBusVariant& entries,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
   virtual QDBusObjectPath CreateSurfaceDataTriangleIndexed(
       const QDBusObjectPath& client, qulonglong triangleCount,
       qulonglong vertexCount, const QDBusObjectPath& triangleSource,
@@ -2013,6 +2131,12 @@ class VOXIECLIENT_EXPORT InstanceAdaptor : public QDBusAbstractAdaptor {
           volumeOrigin,
       const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) &
           gridSpacing,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual QDBusObjectPath CreateVolumeSeriesData(
+      const QDBusObjectPath& client, const QList<QDBusObjectPath>& dimensions,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) &
+          volumeOrigin,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) & volumeSize,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
   virtual QDBusObjectPath GetComponent(
       const QString& componentType, const QString& name,
@@ -2535,6 +2659,8 @@ class VOXIECLIENT_EXPORT OperationAdaptor : public QDBusAbstractAdaptor {
       "D-Bus Introspection",
       ""
       "  <interface name=\"de.uni_stuttgart.Voxie.Operation\">\n"
+      "    <annotation value=\"de.uni_stuttgart.Voxie.Task\" "
+      "name=\"de.uni_stuttgart.Voxie.ParentInterface\"/>\n"
       "    <property access=\"read\" type=\"b\" name=\"IsFinished\"/>\n"
       "    <property access=\"read\" type=\"b\" name=\"IsCancelled\"/>\n"
       "    <signal name=\"Finished\">\n"
@@ -2835,6 +2961,150 @@ class VOXIECLIENT_EXPORT PropertyTypeAdaptor : public QDBusAbstractAdaptor {
 };
 
 /*
+ * Adaptor class for interface de.uni_stuttgart.Voxie.SeriesData
+ */
+class VOXIECLIENT_EXPORT SeriesDataAdaptor : public QDBusAbstractAdaptor {
+  Q_OBJECT
+  Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.SeriesData")
+  Q_CLASSINFO(
+      "D-Bus Introspection",
+      ""
+      "  <interface name=\"de.uni_stuttgart.Voxie.SeriesData\">\n"
+      "    <annotation value=\"de.uni_stuttgart.Voxie.Data\" "
+      "name=\"de.uni_stuttgart.Voxie.ParentInterface\"/>\n"
+      "    <property access=\"read\" type=\"ao\" name=\"Dimensions\">\n"
+      "      <annotation value=\"de.uni_stuttgart.Voxie.SeriesDimension\" "
+      "name=\"de.uni_stuttgart.Voxie.Interface\"/>\n"
+      "    </property>\n"
+      "    <property access=\"read\" type=\"t\" name=\"DimensionCount\"/>\n"
+      "    <method name=\"ListKeys\">\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In0\"/>\n"
+      "      <arg direction=\"out\" type=\"aat\" name=\"keys\"/>\n"
+      "      <annotation value=\"QList&lt;QList&lt;quint64&gt;&gt;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.Out0\"/>\n"
+      "    </method>\n"
+      "    <method name=\"LookupEntry\">\n"
+      "      <arg direction=\"in\" type=\"at\" name=\"key\"/>\n"
+      "      <annotation value=\"const QList&lt;quint64&gt;&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In0\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "      <arg direction=\"out\" type=\"o\" name=\"data\"/>\n"
+      "    </method>\n"
+      "    <method name=\"AddEntry\">\n"
+      "      <arg direction=\"in\" type=\"o\" name=\"update\"/>\n"
+      "      <arg direction=\"in\" type=\"at\" name=\"key\"/>\n"
+      "      <annotation value=\"const QList&lt;quint64&gt;&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "      <arg direction=\"in\" type=\"o\" name=\"value\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In3\"/>\n"
+      "    </method>\n"
+      "  </interface>\n"
+      "")
+ public:
+  SeriesDataAdaptor(QObject* parent) : QDBusAbstractAdaptor(parent) {}
+  virtual ~SeriesDataAdaptor() {}
+
+ public:  // PROPERTIES
+  Q_PROPERTY(qulonglong DimensionCount READ dimensionCount)
+  virtual qulonglong dimensionCount() const = 0;
+
+  Q_PROPERTY(QList<QDBusObjectPath> Dimensions READ dimensions)
+  virtual QList<QDBusObjectPath> dimensions() const = 0;
+
+ public Q_SLOTS:  // METHODS
+  virtual void AddEntry(const QDBusObjectPath& update,
+                        const QList<quint64>& key, const QDBusObjectPath& value,
+                        const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                            options) = 0;
+  virtual QList<QList<quint64>> ListKeys(
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual QDBusObjectPath LookupEntry(
+      const QList<quint64>& key,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Adaptor class for interface de.uni_stuttgart.Voxie.SeriesDimension
+ */
+class VOXIECLIENT_EXPORT SeriesDimensionAdaptor : public QDBusAbstractAdaptor {
+  Q_OBJECT
+  Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.SeriesDimension")
+  Q_CLASSINFO(
+      "D-Bus Introspection",
+      ""
+      "  <interface name=\"de.uni_stuttgart.Voxie.SeriesDimension\">\n"
+      "    <property access=\"read\" type=\"s\" name=\"Name\"/>\n"
+      "    <property access=\"read\" type=\"s\" name=\"DisplayName\"/>\n"
+      "    <property access=\"read\" type=\"o\" name=\"Type\">\n"
+      "      <annotation value=\"de.uni_stuttgart.Voxie.PropertyType\" "
+      "name=\"de.uni_stuttgart.Voxie.Interface\"/>\n"
+      "    </property>\n"
+      "    <property access=\"read\" type=\"t\" name=\"Length\"/>\n"
+      "    <method name=\"ListEntries\">\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In0\"/>\n"
+      "      <arg direction=\"out\" type=\"v\" name=\"entries\"/>\n"
+      "    </method>\n"
+      "    <method name=\"GetEntryValue\">\n"
+      "      <arg direction=\"in\" type=\"t\" name=\"entryKey\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "      <arg direction=\"out\" type=\"v\" name=\"entryValue\"/>\n"
+      "    </method>\n"
+      "    <method name=\"LookupEntryByValue\">\n"
+      "      <arg direction=\"in\" type=\"v\" name=\"entryValue\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "      <arg direction=\"out\" type=\"t\" name=\"entryKey\"/>\n"
+      "    </method>\n"
+      "  </interface>\n"
+      "")
+ public:
+  SeriesDimensionAdaptor(QObject* parent) : QDBusAbstractAdaptor(parent) {}
+  virtual ~SeriesDimensionAdaptor() {}
+
+ public:  // PROPERTIES
+  Q_PROPERTY(QString DisplayName READ displayName)
+  virtual QString displayName() const = 0;
+
+  Q_PROPERTY(qulonglong Length READ length)
+  virtual qulonglong length() const = 0;
+
+  Q_PROPERTY(QString Name READ name)
+  virtual QString name() const = 0;
+
+  Q_PROPERTY(QDBusObjectPath Type READ type)
+  virtual QDBusObjectPath type() const = 0;
+
+ public Q_SLOTS:  // METHODS
+  virtual QDBusVariant GetEntryValue(
+      qulonglong entryKey,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual QDBusVariant ListEntries(
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual qulonglong LookupEntryByValue(
+      const QDBusVariant& entryValue,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
  * Adaptor class for interface de.uni_stuttgart.Voxie.SurfaceData
  */
 class VOXIECLIENT_EXPORT SurfaceDataAdaptor : public QDBusAbstractAdaptor {
@@ -3129,6 +3399,30 @@ class VOXIECLIENT_EXPORT TableDataAdaptor : public QDBusAbstractAdaptor {
                          const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
                              options) = 0;
  Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Adaptor class for interface de.uni_stuttgart.Voxie.Task
+ */
+class VOXIECLIENT_EXPORT TaskAdaptor : public QDBusAbstractAdaptor {
+  Q_OBJECT
+  Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.Task")
+  Q_CLASSINFO("D-Bus Introspection",
+              ""
+              "  <interface name=\"de.uni_stuttgart.Voxie.Task\">\n"
+              "    <property access=\"read\" type=\"s\" name=\"State\"/>\n"
+              "  </interface>\n"
+              "")
+ public:
+  TaskAdaptor(QObject* parent) : QDBusAbstractAdaptor(parent) {}
+  virtual ~TaskAdaptor() {}
+
+ public:  // PROPERTIES
+  Q_PROPERTY(QString State READ state)
+  virtual QString state() const = 0;
+
+ public Q_SLOTS:  // METHODS
+ Q_SIGNALS:       // SIGNALS
 };
 
 /*
@@ -3875,6 +4169,47 @@ class VOXIECLIENT_EXPORT VolumeDataVoxelAdaptor : public QDBusAbstractAdaptor {
                       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
                           options) = 0;
  Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Adaptor class for interface de.uni_stuttgart.Voxie.VolumeSeriesData
+ */
+class VOXIECLIENT_EXPORT VolumeSeriesDataAdaptor : public QDBusAbstractAdaptor {
+  Q_OBJECT
+  Q_CLASSINFO("D-Bus Interface", "de.uni_stuttgart.Voxie.VolumeSeriesData")
+  Q_CLASSINFO(
+      "D-Bus Introspection",
+      ""
+      "  <interface name=\"de.uni_stuttgart.Voxie.VolumeSeriesData\">\n"
+      "    <annotation value=\"de.uni_stuttgart.Voxie.SeriesData\" "
+      "name=\"de.uni_stuttgart.Voxie.ParentInterface\"/>\n"
+      "    <property access=\"read\" type=\"(ddd)\" name=\"VolumeOrigin\">\n"
+      "      <annotation value=\"VX_IDENTITY_TYPE((std::tuple&lt;double, "
+      "double, double&gt;))\" name=\"org.qtproject.QtDBus.QtTypeName\"/>\n"
+      "    </property>\n"
+      "    <property access=\"read\" type=\"(ddd)\" name=\"VolumeSize\">\n"
+      "      <annotation value=\"VX_IDENTITY_TYPE((std::tuple&lt;double, "
+      "double, double&gt;))\" name=\"org.qtproject.QtDBus.QtTypeName\"/>\n"
+      "    </property>\n"
+      "  </interface>\n"
+      "")
+ public:
+  VolumeSeriesDataAdaptor(QObject* parent) : QDBusAbstractAdaptor(parent) {}
+  virtual ~VolumeSeriesDataAdaptor() {}
+
+ public:  // PROPERTIES
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+                 VolumeOrigin READ volumeOrigin)
+  virtual VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+      volumeOrigin() const = 0;
+
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+                 VolumeSize READ volumeSize)
+  virtual VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+      volumeSize() const = 0;
+
+ public Q_SLOTS:  // METHODS
+ Q_SIGNALS:       // SIGNALS
 };
 
 /*

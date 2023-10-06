@@ -118,8 +118,9 @@ bool WeakParameterCopy::operator!=(const WeakParameterCopy& other) const {
 WeakParameterCopy::WeakDataInfo WeakParameterCopy::getData(
     const QDBusObjectPath& key) const {
   if (!dataMap().contains(key))
-    throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
-                        "ParameterCopy::getData(): Cannot find key");
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.InternalError",
+        "WeakParameterCopy::getData(): Cannot find key: " + key.path());
   return dataMap().value(
       key, WeakDataInfo(QSharedPointer<Data>(), QSharedPointer<DataVersion>()));
 }

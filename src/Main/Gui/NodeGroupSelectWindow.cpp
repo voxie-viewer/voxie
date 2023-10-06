@@ -25,7 +25,8 @@
 using namespace vx;
 using namespace gui;
 
-NodeGroupSelectWindow::NodeGroupSelectWindow() : QDialog() {
+NodeGroupSelectWindow::NodeGroupSelectWindow()
+    : QDialog(vx::voxieRoot().mainWindow()) {
   setWindowFlags(Qt::Dialog);
   setWindowTitle("Select Node Group");
 

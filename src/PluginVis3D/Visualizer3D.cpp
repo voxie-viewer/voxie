@@ -68,7 +68,8 @@ Visualizer3D::Visualizer3D()
     new View3DPropertiesConnection(this->properties, this->view->getView3D());
     this->view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->setAutomaticDisplayName("3D Visualizer");
-    this->view->setMinimumSize(400, 300);
+    this->view->setMinimumSize(400 / 96.0 * this->view->logicalDpiX(),
+                               300 / 96.0 * this->view->logicalDpiY());
   }
 
   {
@@ -166,7 +167,7 @@ Visualizer3D::Visualizer3D()
         "Set unzoomed view size to physical size");
     QObject::connect(
         viewSizePhysicalButton, &QPushButton::clicked, this, [this]() {
-          auto viewSizePixel = this->view->height();
+          auto viewSizePixel = this->view->heightPhys();
           auto viewSizeM = viewSizePixel / this->view->physicalDpiY() * 0.0254;
           // qDebug() << "View size" << viewSizePixel << "px /" << viewSizeM
           //          << "m";

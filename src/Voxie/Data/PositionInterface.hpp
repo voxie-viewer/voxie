@@ -97,6 +97,7 @@ class VOXIECORESHARED_EXPORT PositionInterface : public DataNode {
   void adjustedRotationChanged(PositionInterface* positionInterface,
                                QQuaternion oldRotation);
 
+  // TODO: Remove?
   /**
    * @brief changed is signaled after changes to the node are complete.
    */

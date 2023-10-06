@@ -51,6 +51,11 @@ VolumeStructureVoxel::VolumeStructureVoxel(const VectorSizeT3& arrayShape)
     : VolumeStructure(), arrayShape_(arrayShape) {
   new VolumeStructureVoxelAdaptorImpl(this);
 }
+VolumeStructureVoxel::VolumeStructureVoxel(
+    const vx::Vector<size_t, 3>& arrayShape)
+    : VolumeStructureVoxel(VectorSizeT3(arrayShape.access<0>(),
+                                        arrayShape.access<1>(),
+                                        arrayShape.access<2>())) {}
 
 VolumeStructureVoxel::~VolumeStructureVoxel() {}
 

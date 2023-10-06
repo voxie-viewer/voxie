@@ -29,6 +29,7 @@
 #include <VoxieBackend/DBus/DBusTypes.hpp>
 
 #include <VoxieClient/DBusTypeList.hpp>
+#include <VoxieClient/Vector.hpp>
 
 namespace vx {
 class VOXIEBACKEND_EXPORT VolumeStructureVoxel : public vx::VolumeStructure {
@@ -39,6 +40,8 @@ class VOXIEBACKEND_EXPORT VolumeStructureVoxel : public vx::VolumeStructure {
 
  public:
   // throws Exception
+  VolumeStructureVoxel(const vx::Vector<size_t, 3>& arrayShape);
+  // TODO: Remove
   VolumeStructureVoxel(const VectorSizeT3& arrayShape);
 
   ~VolumeStructureVoxel();

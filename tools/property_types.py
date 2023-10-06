@@ -153,7 +153,7 @@ def dbusGetComponentTypes(sig):
 types = {
     'de.uni_stuttgart.Voxie.PropertyType.Float': {  # Name
         # 'ShortName': 'Float', # Default to suffix of Name
-        'DisplayName': 'Floating pointer number',
+        'DisplayName': 'Floating point number',
         'DBusSignature': 'd',
         # 'QtType': 'double', # Qt type which represents the property normally. Defaults to dbusToQtTypeAll[DBusSignature]
         # 'RawType: 'double', # Qt type which represents the property internally. Defaults to dbusToQtTypeAll[DBusSignature]. Should normally not be needed.
@@ -195,7 +195,7 @@ types = {
         'DisplayName': 'Enumeration',
         'DBusSignature': 's',
         'DefaultValueExpression': '""',
-        'VerifyFunction': 'verifyEnum',
+        'VerifyFunctionProperty': 'verifyEnum',
         'CanonicalizeFunction': 'canonicalizeEnum',
         # 'CompareFunction': 'compareEnum',  # Enums cannot be compared without a property reference
     },
@@ -262,7 +262,7 @@ types = {
         'QtType': 'vx::DataType',
         # 'DefaultValueExpression': 'std::tuple<QString, quint32, QString>("float", 32, vx::getNativeByteorder())',
         'DefaultValueExpression': 'std::tuple<QString, quint32, QString>("float", 32, "native")',
-        'VerifyFunction': 'verifyDataType',
+        'VerifyFunctionSimple': 'verifyDataType',
         'CompareFunction': 'defaultValueCompare',  # Will return order defined by vx::DataType
     },
 
@@ -271,8 +271,7 @@ types = {
         'DBusSignature': 'a(d(dddd)i)',
         'QtType': 'QList<vx::ColorizerEntry>',
         'DefaultValueExpression': 'QList<std::tuple<double, vx::TupleVector<double, 4>, qint32>>{std::make_tuple(NAN, vx::TupleVector<double, 4>(0, 0, 0, 0), 0), std::make_tuple(0, vx::TupleVector<double, 4>(0, 0, 0, 1), 0), std::make_tuple(50, vx::TupleVector<double, 4>(1, 1, 1, 1), 0)}',
-        'VerifyFunction': 'verifyValueColorMapping',
-        'JSONParseFunction': None,
+        'VerifyFunctionSimple': 'verifyValueColorMapping',
         # No comparison
     },
 

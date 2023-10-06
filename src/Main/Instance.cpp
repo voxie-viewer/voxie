@@ -38,7 +38,10 @@
 
 #include <VoxieBackend/Data/GeometricPrimitiveData.hpp>
 #include <VoxieBackend/Data/ImageDataPixel.hpp>
+#include <VoxieBackend/Data/SeriesData.hpp>
+#include <VoxieBackend/Data/SeriesDimension.hpp>
 #include <VoxieBackend/Data/TomographyRawData2DRegular.hpp>
+#include <VoxieBackend/Data/VolumeSeriesData.hpp>
 
 #include <VoxieBackend/IO/OperationImport.hpp>
 #include <VoxieBackend/IO/OperationResult.hpp>
@@ -78,6 +81,13 @@ using namespace vx::gui;
 using namespace vx;
 using namespace vx::plugin;
 using namespace vx;
+
+// TODO: Is it possible to make this generic (independent of the number of
+// values)? (So that it can be put into VoxieClient/Vector.hpp)
+template <typename T>
+vx::Vector<T, 3> toVectorTu(const std::tuple<T, T, T>& value) {
+  return {std::get<0>(value), std::get<1>(value), std::get<2>(value)};
+}
 
 Instance::Instance(Root* root)
     : ExportedObject("", nullptr, true), root_(root) {
@@ -291,10 +301,14 @@ QDBusObjectPath InstanceAdaptorImpl::CreateVolumeDataVoxel(
 
     auto datatype = parseDataTypeStruct(dataType);
 
+    if (std::get<0>(size) > std::numeric_limits<size_t>::max() ||
+        std::get<1>(size) > std::numeric_limits<size_t>::max() ||
+        std::get<2>(size) > std::numeric_limits<size_t>::max())
+      throw Exception("de.uni_stuttgart.Voxie.Overflow",
+                      "Volume dimensions too large");
     auto data = VolumeDataVoxel::createVolume(
-        std::get<0>(size), std::get<1>(size), std::get<2>(size), datatype);
-    data->setOrigin(toQtVector(gridOrigin));
-    data->setSpacing(toQtVector(gridSpacing));
+        vectorCastNarrow<size_t>(toVectorTu(size)), datatype,
+        toVectorTu(gridOrigin), toVectorTu(gridSpacing));
     clientPtr->incRefCount(data);
     return ExportedObject::getPath(data.data());
   } catch (Exception& e) {
@@ -498,6 +512,72 @@ QDBusObjectPath InstanceAdaptorImpl::CreateContainerData(
   } catch (Exception& e) {
     e.handle(object);
     return ExportedObject::getPath(nullptr);
+  }
+}
+
+QDBusObjectPath InstanceAdaptorImpl::CreateVolumeSeriesData(
+    const QDBusObjectPath& client, const QList<QDBusObjectPath>& dimensions,
+    const vx::TupleVector<double, 3>& volumeOrigin,
+    const vx::TupleVector<double, 3>& volumeSize,
+    const QMap<QString, QDBusVariant>& options) {
+  try {
+    ExportedObject::checkOptions(options);
+
+    Client* clientPtr =
+        qobject_cast<Client*>(ExportedObject::lookupWeakObject(client));
+    if (!clientPtr) {
+      throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                      "Cannot find client object");
+    }
+
+    QList<QSharedPointer<SeriesDimension>> dimensionsObj;
+    for (const auto& dimension : dimensions)
+      dimensionsObj << SeriesDimension::lookup(dimension);
+
+    auto seriesData = VolumeSeriesData::create(
+        dimensionsObj, toVectorTu(volumeOrigin), toVectorTu(volumeSize));
+
+    clientPtr->incRefCount(seriesData);
+    return ExportedObject::getPath(seriesData);
+  } catch (Exception& e) {
+    return e.handle(object);
+  }
+}
+
+QDBusObjectPath InstanceAdaptorImpl::CreateSeriesDimension(
+    const QDBusObjectPath& client, const QString& name,
+    const QString& displayName, const QDBusObjectPath& type,
+    const QDBusVariant& entries, const QMap<QString, QDBusVariant>& options) {
+  try {
+    ExportedObject::checkOptions(options);
+
+    Client* clientPtr =
+        qobject_cast<Client*>(ExportedObject::lookupWeakObject(client));
+    if (!clientPtr) {
+      throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                      "Cannot find client object");
+    }
+
+    // TODO: This should be able to look up the QSharedPointer directly
+    auto typeWeak =
+        qobject_cast<PropertyType*>(ExportedObject::lookupWeakObject(type));
+    if (!typeWeak)
+      throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                      "Cannot find type object '" + type.path() + "'");
+    auto typeObj =
+        vx::voxieRoot().components()->getComponentTyped<PropertyType>(
+            typeWeak->name(), false);
+    // TODO: Check whether this type is allowed here?
+
+    QList<QVariant> entriesRaw = typeObj->dbusToRawList(entries);
+
+    auto seriesDimension =
+        SeriesDimension::create(name, displayName, typeObj, entriesRaw);
+
+    clientPtr->incRefCount(seriesDimension);
+    return ExportedObject::getPath(seriesDimension);
+  } catch (Exception& e) {
+    return e.handle(object);
   }
 }
 

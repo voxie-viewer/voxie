@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Voxie
+Comment=Voxie volume data viewer
+Icon=src/Main/icons-voxie/voxel-data-483.png
+Exec=voxie.sh
+Terminal=false

@@ -24,7 +24,6 @@
 
 #include <Voxie/Voxie.hpp>
 
-#include <Voxie/Data/Slice.hpp>
 #include <Voxie/Data/TomographyRawDataNode.hpp>
 
 #include <VoxieBackend/DBus/DBusTypes.hpp>

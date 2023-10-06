@@ -70,7 +70,9 @@ void TableFilter::createConstraint() {
   this->selectProperties->addHBoxLayout(constraint);
 }
 
-QSharedPointer<vx::io::RunFilterOperation> TableFilter::calculate() {
+QSharedPointer<vx::io::RunFilterOperation> TableFilter::calculate(
+    bool isAutomaticFilterRun) {
+  Q_UNUSED(isAutomaticFilterRun);
   QSharedPointer<vx::io::RunFilterOperation> operation =
       vx::io::RunFilterOperation::createRunFilterOperation();
   TableNode* labelObj = nullptr;

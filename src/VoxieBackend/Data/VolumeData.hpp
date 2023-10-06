@@ -30,6 +30,9 @@
 #include <VoxieBackend/Data/DataType.hpp>
 #include <VoxieBackend/Data/InterpolationMethod.hpp>
 
+// TODO: Don't use this here
+#include <Voxie/MathQt.hpp>
+
 #include <QtDBus/QDBusAbstractAdaptor>
 
 #include <QtGui/QColor>
@@ -49,67 +52,47 @@ class VOXIEBACKEND_EXPORT VolumeData : public Data {
   REFCOUNTEDOBJ_DECL(VolumeData)
 
  private:
-  QVector3D dimensionsMetric;
-  QVector3D origin_;
+  vx::Vector<double, 3> volumeOrigin_;
+  vx::Vector<double, 3> volumeSize_;
   QSharedPointer<VolumeStructure> volumeStructure_;
 
  protected:
   // throws Exception
-  VolumeData(const QSharedPointer<VolumeStructure>& volumeStructure);
+  VolumeData(const vx::Vector<double, 3>& volumeOrigin,
+             const vx::Vector<double, 3>& volumeSize,
+             const QSharedPointer<VolumeStructure>& volumeStructure);
 
   ~VolumeData();
 
  public:
-  // TODO: rename dimensionsMetric?
-
   /**
    * @return x, y, z dimensions in meters of the dataset
    */
-  inline const QVector3D& getDimensionsMetric() const {
-    return this->dimensionsMetric;
+  const vx::Vector<double, 3>& volumeSize() { return volumeSize_; }
+  // TODO: Remove
+  QVector3D getDimensionsMetric() {
+    return toQVector(vectorCastNarrow<float>(this->volumeSize()));
   }
 
- protected:
-  // TODO: visibility of this function? (VolumeDataVoxel currently has a
-  // spacing/dimensions properties which should be kept consistent with this
-  // property)
-  inline void setDimensionsMetric(QVector3D dim) {
-    if (dim != this->dimensionsMetric) {
-      this->dimensionsMetric = dim;
-      Q_EMIT this->changed();
-    }
-  }
-
- public:
   /**
    * @return Position of lower left corner of the first voxel in meters.
    */
-  inline const QVector3D& origin() const { return this->origin_; }
+  const vx::Vector<double, 3>& volumeOrigin() const {
+    return this->volumeOrigin_;
+  }
+  // TODO: Remove
+  QVector3D origin() const {
+    return toQVector(vectorCastNarrow<float>(this->volumeOrigin()));
+  }
 
   const QSharedPointer<VolumeStructure>& volumeStructure() const {
     return this->volumeStructure_;
-  }
-
-  /**
-   * @brief set the position of the lower left corner of the first voxel in
-   * meters.
-   */
-  inline void setOrigin(QVector3D pos) {
-    if (pos != this->origin_) {
-      this->origin_ = pos;
-      Q_EMIT this->changed();
-    }
   }
 
  Q_SIGNALS:
   void changed();  // TODO: remove, replace by Data::dataChanged?
 
  public:
-  /**
-   * The size of the volume in x/y/z in m.
-   */
-  QVector3D volumeSize() { return getDimensionsMetric(); }
-
   virtual DataType getDataType() = 0;
 
   // throws Exception

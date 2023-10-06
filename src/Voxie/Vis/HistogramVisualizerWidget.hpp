@@ -145,7 +145,7 @@ class VOXIECORESHARED_EXPORT HistogramVisualizerWidget : public QWidget {
    */
   void setAutomaticUpperBound(const bool enabled) {
     automaticUpperBound = enabled;
-    repaint();
+    update();
   }
   /**
    * @return If true, the upper bound of the histogram y will be chosen
@@ -160,7 +160,7 @@ class VOXIECORESHARED_EXPORT HistogramVisualizerWidget : public QWidget {
    */
   void setUpperBoundOverride(const quint64 upperBound) {
     manualUpperBound = upperBound;
-    repaint();
+    update();
   }
   /**
    * @return If automaticUpperBound is set to false this value will be used as
@@ -175,7 +175,7 @@ class VOXIECORESHARED_EXPORT HistogramVisualizerWidget : public QWidget {
    */
   void setAutomaticBucketLowerBound(const bool automaticLowerBound) {
     automaticBucketLowerBound = automaticLowerBound;
-    repaint();
+    update();
   }
   /**
    * @brief setAutomaticBucketLowerBound If set to true the lower bound of the
@@ -191,7 +191,7 @@ class VOXIECORESHARED_EXPORT HistogramVisualizerWidget : public QWidget {
    */
   void setAutomaticBucketUpperBound(const bool automaticUpperBound) {
     automaticBucketUpperBound = automaticUpperBound;
-    repaint();
+    update();
   }
   /**
    * @brief setAutomaticBucketLowerBound If set to true the upper bound of the
@@ -210,7 +210,7 @@ class VOXIECORESHARED_EXPORT HistogramVisualizerWidget : public QWidget {
    */
   void setBucketLowerBoundOverrideValue(const unsigned int bucketIndex) {
     bucketLowerBoundOverride = bucketIndex;
-    repaint();
+    update();
   }
   /**
    * @brief bucketLowerBoundOverrideValue If isAutomaticBucketLowerBound is set
@@ -232,7 +232,7 @@ class VOXIECORESHARED_EXPORT HistogramVisualizerWidget : public QWidget {
    */
   void setBucketUpperBoundOverrideValue(const unsigned int bucketIndex) {
     bucketUpperBoundOverride = bucketIndex;
-    repaint();
+    update();
   }
 
   /**

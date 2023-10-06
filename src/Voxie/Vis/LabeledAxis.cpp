@@ -67,16 +67,22 @@ void LabeledAxis::setIntegerLabels(bool value) { integerLabels = value; }
 
 bool LabeledAxis::isIntegerLabels() const { return integerLabels; }
 
-void LabeledAxis::draw(QPainter& painter) {
-  static const float axisStrokeWidth = 2;
-  static const float gridStrokeWidth = 1;
-  static const float arrowSize = 12;
-  static const float arrowWidth = 6;
+void LabeledAxis::draw(double dpiScale, QPainter& painter) {
+  static const float axisStrokeWidth = 2 * dpiScale;
+  static const float gridStrokeWidth = 1 * dpiScale;
+  static const float arrowSize = 12 * dpiScale;
+  static const float arrowWidth = 6 * dpiScale;
 
-  static const float markerSize = 4;
+  static const float markerSize = 4 * dpiScale;
   static const int markerFontSize = 10;
-  static const int markerOffset = 8;
-  static const float maxTextSize = 150;
+  static const int markerOffset = 8 * dpiScale;
+  static const float maxTextSize = 150 * dpiScale;
+
+  double textDistanceV = 20 * dpiScale;
+  double textDistanceH = 25 * dpiScale;
+  double textHeight = 20 * dpiScale;
+
+  double pixelsPerMarker = 40.f * dpiScale;
 
   QColor gridColor = color;
   gridColor.setAlpha(gridColor.alpha() * 0.1f);
@@ -94,7 +100,9 @@ void LabeledAxis::draw(QPainter& painter) {
 
   // Assign font
   auto font = QApplication::font();
-  font.setPixelSize(markerFontSize);
+  // Use setPointSizeF instead of setPixelSize for high-DPI displays
+  // font.setPixelSize(markerFontSize);
+  font.setPointSizeF(markerFontSize / 96.0 * 72.0);
   painter.setFont(font);
 
   // Draw axis line
@@ -117,7 +125,7 @@ void LabeledAxis::draw(QPainter& painter) {
 
   painter.setBrush(Qt::NoBrush);
 
-  int markerCount = lineSize.length() / 40.f;
+  int markerCount = lineSize.length() / pixelsPerMarker;
 
   // Draw axis markers
   for (int i = 0; i < markerCount; ++i) {
@@ -163,9 +171,6 @@ void LabeledAxis::draw(QPainter& painter) {
   }
 
   // Draw the label of the axis
-  int textDistanceV = 20;
-  int textDistanceH = 25;
-  int textHeight = 20;
   QRectF labelTextRect(
       (orientation == Horizontal
            ? (position + QVector2D(0, textDistanceV))

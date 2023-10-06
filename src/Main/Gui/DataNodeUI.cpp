@@ -26,6 +26,7 @@
 #include <Voxie/Component/Plugin.hpp>
 
 #include <Voxie/Gui/ErrorMessage.hpp>
+#include <Voxie/Gui/NodeNameLineEdit.hpp>
 
 #include <Voxie/Node/DataNode.hpp>
 
@@ -164,6 +165,14 @@ void vx::createDataNodeUI(vx::DataNode* obj) {
 
   auto layout = new QVBoxLayout();
   widget->setLayout(layout);
+
+  // TODO: Unify this between different node kinds
+  auto nameLayout = new QHBoxLayout();
+  layout->addLayout(nameLayout);
+  auto nameLabel = new QLabel("Node name");
+  nameLayout->addWidget(nameLabel);
+  auto nameEdit = new NodeNameLineEdit(obj);
+  nameLayout->addWidget(nameEdit);
 
   if (exporters.count() != 0) {
     auto exportButton =

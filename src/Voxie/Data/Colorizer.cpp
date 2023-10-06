@@ -27,6 +27,8 @@
 
 #include "Colorizer.hpp"
 
+#include <Voxie/Data/VolumeNode.hpp>
+
 #include <VoxieBackend/Data/ImageDataPixel.hpp>
 #include <VoxieBackend/Data/ImageDataPixelInst.hpp>
 #include <VoxieBackend/Data/VolumeDataInst.hpp>
@@ -42,18 +44,14 @@
 #include <qrgb.h>
 
 #include <Voxie/Data/ColorizerEntry.hpp>
-#include <Voxie/Data/Slice.hpp>
+
 #include <VoxieBackend/Data/FloatBuffer.hpp>
 #include <VoxieBackend/Data/FloatImage.hpp>
 
 using namespace vx;
 
-int numColorizers = 0;
-
 Colorizer::Colorizer(QObject* parent)
-    : QObject(parent), nanColor(qRgba(0, 0, 0, 0)) {
-  this->setObjectName("Colorizer" + QString::number(numColorizers++));
-}
+    : QObject(parent), nanColor(qRgba(0, 0, 0, 0)) {}
 
 void Colorizer::clear() {
   entries.clear();

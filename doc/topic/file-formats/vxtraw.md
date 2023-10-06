@@ -24,15 +24,5 @@ Stream objects contain the following keys:
 - `"DataSource"`: Additional data depeneding on `DataSourceType`
 - `"PerImageMetadata"`: An array with `ImageCount` entries. Each entry contains the per-image metadata for one image.
 
-Currently the only data source type is `ImageArchive`
-
-
-Data source type `ImageArchive`
--------------------------------
-
-For the data source type `ImageArchive`, the data is stored as binary in a
-file. In addition, the is an image archive info file (`.iai`) which contains
-information where in the file each image is stored.
-
-The following keys are in `DataSourceType`:
-- `"DataFilename"`: A string containing the filename of the data file. The image archive info file has the same name with `.iai` appended.
+For the supported data source types see the [data source documentation](voxie:///help/topic/file-formats/data-sources).
+Currently the last value of the `"StorageOrder"` (if set) must always be 3.

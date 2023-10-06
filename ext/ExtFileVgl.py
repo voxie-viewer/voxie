@@ -26,9 +26,9 @@ import dbus
 import sys
 import codecs
 import os
-import gzip
 import io
 import abc
+import subprocess
 
 import xml.etree.ElementTree
 
@@ -130,9 +130,9 @@ class VglObjectRegistry:
 
         if id in self.to_resolve:
             for oref in self.to_resolve[id]:
-                if oref.objects is not None:
-                    raise Exception('oref.objects is not None')
-                oref.objects = obj
+                if oref.object is not None:
+                    raise Exception('oref.object is not None')
+                oref.object = obj
             del self.to_resolve[id]
 
     def resolve(self, id, oref):
@@ -356,8 +356,9 @@ class VglObjectLinkValue:
 
         if link.object_ref is None:
             raise Exception('link.object_ref is None')
-        if link.enum2 != 'Unknown':
-            raise Exception("link.enum2 != 'Unknown'")
+        # if link.enum2 != 'Unknown':
+        #     print('Warning: Got unknown second link enum value: {!r}'.format(link.enum2), file=sys.stderr)
+        #     # raise Exception("link.enum2 != 'Unknown'")
 
         return link
 
@@ -544,23 +545,10 @@ context = voxie.VoxieContext(args)
 instance = context.createInstance()
 
 if args.voxie_action != 'Import':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
-with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationImport']).ClaimOperationAndCatch() as op:
-    filename = op.Filename
 
-    with open(filename, 'rb') as file:
-        file_d = gzip.open(file)
-        doc = xml.etree.ElementTree.parse(file_d)
-
-    # with open('/tmp/data.xml', 'wb') as file:
-    #     doc.write(file)
-    vgl = VglFile(doc.getroot())
-    vros = VolumeRenderObject.get_render_objects(vgl)
-    if len(vros) != 1:
-        raise Exception('File does not contain exactly one VolumeRenderObject')
-    vro = vros[0]
-    raw = vro.get_full_raw_file_name(filename)
+def read_vro(vro, raw, callback, *, progressOffset=0, progressFactor=1):
     overall_size = vro.overall_size
     print(raw, overall_size, vro.type, vro.size, vro.sampling_distance)
 
@@ -580,17 +568,86 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
                 outData = buffer[()]
                 dt = outData.dtype  # TODO
                 op.ThrowIfCancelled()
+                # TODO: Check whether all the axis are correct here
                 for z in range(arrayShape[2]):
                     # TODO: Avoid memory allocations here?
                     data = np.fromfile(raw_file, dtype=dt, count=arrayShape[0] * arrayShape[1])
-                    data = data.reshape(arrayShape[0], arrayShape[1]).transpose()
+                    data = data.reshape(arrayShape[1], arrayShape[0]).transpose()
                     outData[:, :, z] = data
 
                     op.ThrowIfCancelled()
-                    op.SetProgress((z + 1) / arrayShape[2])
+                    op.SetProgress(progressOffset + progressFactor * (z + 1) / arrayShape[2])
 
                 version = update.Finish()
             with version:
-                op.Finish(resultData, version)
+                callback(resultData, version)
+
+
+with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationImport']).ClaimOperationAndCatch() as op:
+    filename = op.Filename
+
+    # Note: Only use first gzip member, allow trailing data
+    # The gzip library will not work in this case: It will print an error message "gzip.BadGzipFile: Not a gzipped file (b'4E')"
+    # The external 'gzip' program will work, but print a message "gzip: stdin: decompression OK, trailing garbage ignored" and will not work if 'gzip' is not available
+    # The 'multigzip' library should always word
+
+    # import gzip
+    # with open(filename, 'rb') as file:
+    #     file_d = gzip.open(file)
+    #     doc = xml.etree.ElementTree.parse(file_d)
+
+    # Use external gzip to avoid problems with trailing garbage
+    # with open(filename, 'rb') as file:
+    #     with subprocess.Popen(['gzip', '-cd'], stdin=file, stdout=subprocess.PIPE) as proc:
+    #         file_d = proc.stdout
+    #         doc = xml.etree.ElementTree.parse(file_d)
+
+    import multigzip
+    with open(filename, 'rb') as file:
+        file_d = multigzip.GzipFile(fileobj=file)
+        # Only read first member
+        member = file_d.read_member()
+        doc = xml.etree.ElementTree.parse(member)
+
+    # with open('/tmp/data.xml', 'wb') as file:
+    #     doc.write(file)
+    vgl = VglFile(doc.getroot())
+    vros = VolumeRenderObject.get_render_objects(vgl)
+    # for vro in vros:
+    #     print('Got vro {!r} {!r} {!r}'.format(vro.raw_file_name_full, vro.get_full_raw_file_name(filename), vro.overall_size))
+    if len(vros) == 0:
+        raise Exception('File does not contain any VolumeRenderObject')
+
+    # if len(vros) != 1:
+    #     raise Exception('File does not contain exactly one VolumeRenderObject: got {}'.format(len(vros)))
+
+    if len(vros) == 1:
+        vro = vros[0]
+        raw = vro.get_full_raw_file_name(filename)
+
+        def callback(resultData, version):
+            op.Finish(resultData, version)
+        read_vro(vro, raw, callback)
+    else:
+        with instance.CreateContainerData('VolumeSet') as resultContainer:
+            with resultContainer.CreateUpdate() as update:
+                i = 0
+                for vro in vros:
+                    # TODO: Use filename or something like that as key instead?
+                    name = 'Volume_{}'.format(i)
+                    raw = vro.get_full_raw_file_name(filename)
+
+                    def callback(resultData, version):
+                        resultContainer.InsertElement(name, resultData, update)
+                    try:
+                        read_vro(vro, raw, callback, progressOffset=i / len(vros), progressFactor=1 / len(vros))
+                    except FileNotFoundError:
+                        # TODO: What should be done in this case?
+                        print('Warning: Opening {!r} (file {}) failed with a FileNotFoundError'.format(raw, i), file=sys.stderr, flush=True)
+                    i = i + 1
+
+                version = update.Finish()
+                with version:
+                    op.Finish(resultContainer, version)
 
 context.client.destroy()

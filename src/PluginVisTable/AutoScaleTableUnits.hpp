@@ -51,7 +51,8 @@ class AutoScaleTableUnits : public FilterNode {
   QSharedPointer<TableData> getTableData() const;
 
  private:
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
 
   QSharedPointer<TableData> doCalculation(
       QSharedPointer<TableData> tableData,

@@ -123,18 +123,22 @@ static size_t calcSizeBytes(size_t width, size_t height, size_t depth,
                      getElementSizeBytes(typeReference));
 }
 
-VolumeDataVoxel::VolumeDataVoxel(size_t width, size_t height, size_t depth,
-                                 DataType dataType)
+VolumeDataVoxel::VolumeDataVoxel(const vx::Vector<size_t, 3> arrayShape,
+                                 DataType dataType,
+                                 const vx::Vector<double, 3>& volumeOrigin,
+                                 const vx::Vector<double, 3>& gridSpacing)
     : vx::VolumeData(
-          VolumeStructureVoxel::create(vx::VectorSizeT3(width, height, depth))),
+          volumeOrigin,
+          elementwiseProduct(vectorCastNarrow<double>(arrayShape), gridSpacing),
+          VolumeStructureVoxel::create(arrayShape)),
       // data(nullptr),
-      size(width * height * depth),
-      dimensions(width, height, depth),
-      spacing(1.0f, 1.0f, 1.0f),
+      size(arrayShape.access<0>() * arrayShape.access<1>() *
+           arrayShape.access<2>()),
+      arrayShape_(arrayShape),
+      gridSpacing_(gridSpacing),
       dataSH(createQSharedPointer<SharedMemory>(
-          calcSizeBytes(width, height, depth, dataType))) {
-  setDimensionsMetric(QVector3D(width, height, depth));
-  setOrigin(QVector3D(0.0f, 0.0f, 0.0f));
+          calcSizeBytes(arrayShape.access<0>(), arrayShape.access<1>(),
+                        arrayShape.access<2>(), dataType))) {
   new VolumeDataVoxelAdaptorImpl(this);
   qRegisterMetaType<QSharedPointer<VolumeDataVoxel>>();
   connect(this, &VolumeDataVoxel::changed, this, &VolumeDataVoxel::invalidate);
@@ -176,9 +180,9 @@ vx::Array3Info VolumeDataVoxel::dataFd(bool rw) {
     getDataTypeInfo(data.getDataType(), info.dataType, info.dataTypeSize,
                     info.byteorder);
 
-    info.sizeX = dimensions.x;
-    info.sizeY = dimensions.y;
-    info.sizeZ = dimensions.z;
+    info.sizeX = this->arrayShape().access<0>();
+    info.sizeY = this->arrayShape().access<1>();
+    info.sizeZ = this->arrayShape().access<2>();
     info.strideX = sizeof(Type);
     info.strideY = info.strideX * info.sizeX;
     info.strideZ = info.strideY * info.sizeY;
@@ -332,7 +336,7 @@ void VolumeDataVoxel::updateAllHistograms() {
   }
 }
 
-AffineMap<double, 3UL, 3UL> VolumeDataVoxel::getVoxelToObjectTrafo() {
+AffineMap<double, 3, 3> VolumeDataVoxel::getVoxelToObjectTrafo() {
   auto trans = mapCast<double>(createTranslation(toVector(this->origin())));
   // TODO: fix overload problem
   auto scale = Matrix<double, 3, 3>({this->getSpacing().x(), 0, 0},
@@ -341,8 +345,17 @@ AffineMap<double, 3UL, 3UL> VolumeDataVoxel::getVoxelToObjectTrafo() {
   return trans * createLinearMap(scale);
 }
 
+AffineMap<double, 3, 3> VolumeDataVoxel::getObjectToVoxelTrafo() {
+  // TODO: fix overload problem
+  auto scale = Matrix<double, 3, 3>({1.0 / this->getSpacing().x(), 0, 0},
+                                    {0, 1.0 / this->getSpacing().y(), 0},
+                                    {0, 0, 1.0 / this->getSpacing().z()});
+  auto trans = mapCast<double>(createTranslation(-toVector(this->origin())));
+  return createLinearMap(scale) * trans;
+}
+
 vx::TupleVector<double, 3> VolumeDataVoxelAdaptorImpl::gridSpacing() const {
-  return toTupleVector(object->getSpacing());
+  return toTupleVector(object->gridSpacing());
 }
 
 vx::TupleVector<quint64, 3> VolumeDataVoxelAdaptorImpl::arrayShape() const {
@@ -413,9 +426,9 @@ void VolumeDataVoxel::getVolumeInfo(
 
 double VolumeDataVoxel::getStepSize(const vx::Vector<double, 3>& dir) {
   auto dirNorm = vx::normalize(dir);
-  return dirNorm.access<0>() * dirNorm.access<0>() * spacing.x() +
-         dirNorm.access<1>() * dirNorm.access<1>() * spacing.y() +
-         dirNorm.access<2>() * dirNorm.access<2>() * spacing.z();
+  return dirNorm.access<0>() * dirNorm.access<0>() * gridSpacing().access<0>() +
+         dirNorm.access<1>() * dirNorm.access<1>() * gridSpacing().access<1>() +
+         dirNorm.access<2>() * dirNorm.access<2>() * gridSpacing().access<2>();
 }
 
 void VolumeDataVoxel::extractGrid(const QVector3D& origin,
@@ -459,7 +472,8 @@ void VolumeDataVoxel::extractGrid(const QVector3D& origin,
                                           planePoint, false);
         QVector3D volumePoint =
             plane.get3DPoint(planePoint.x(), planePoint.y());
-        QVector3D voxelIndex = (volumePoint - this->origin()) / this->spacing;
+        QVector3D voxelIndex =
+            (volumePoint - this->origin()) / this->getSpacing();
         if (voxelIndex.x() < 0 || voxelIndex.y() < 0 || voxelIndex.z() < 0) {
           nodes[(size_t)outputSize.width() * y + x] =
               std::make_tuple((uint64_t)-1, (uint64_t)-1, (uint64_t)-1);
@@ -469,7 +483,9 @@ void VolumeDataVoxel::extractGrid(const QVector3D& origin,
           size_t xi = (size_t)voxelIndex.x();
           size_t yi = (size_t)voxelIndex.y();
           size_t zi = (size_t)voxelIndex.z();
-          if (xi >= dimensions.x || yi >= dimensions.y || zi >= dimensions.z) {
+          if (xi >= arrayShape().access<0>() ||
+              yi >= arrayShape().access<1>() ||
+              zi >= arrayShape().access<2>()) {
             nodes[(size_t)outputSize.width() * y + x] =
                 std::make_tuple((uint64_t)-1, (uint64_t)-1, (uint64_t)-1);
           } else {

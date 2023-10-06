@@ -6,6 +6,7 @@ bundeled_python_packages = [
   'funcsigs-1.0.2',
   'reikna-0.7.5',
   'nbt',
+  'multigzip',
 ]
 
 if not is_variable('additional_build_voxie_path_args')

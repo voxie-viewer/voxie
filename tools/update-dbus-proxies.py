@@ -82,6 +82,9 @@ proxiesHeader = proxiesHeader.replace(' QDBusPendingReply<', ' Q_REQUIRED_RESULT
 # proxiesHeader = proxiesHeader.replace('inline Q_REQUIRED_RESULT', 'Q_REQUIRED_RESULT inline')
 proxiesHeader = proxiesHeader.replace('inline Q_REQUIRED_RESULT', 'Q_REQUIRED_RESULT')
 
+# Fix compilation on gcc 12, also remove "inline"
+proxiesHeader = proxiesHeader.replace('inline Q_DECL_DEPRECATED Q_REQUIRED_RESULT', 'Q_DECL_DEPRECATED Q_REQUIRED_RESULT')
+
 adaptorsHeaderNew = '#include <VoxieClient/DBusTypeList.hpp>\n'
 inCtor = False
 inPropMethod = False

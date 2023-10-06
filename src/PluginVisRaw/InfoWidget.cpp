@@ -52,7 +52,7 @@ InfoWidget::InfoWidget(RawVisualizer* rv, QWidget* parent)
 
   geometryInfo = new QLabel();
   this->layout->addWidget(geometryInfo);
-  geometryInfo->setMinimumHeight(50);
+  geometryInfo->setMinimumHeight(50 / 96.0 * this->logicalDpiY());
 
   auto labelPosMouse = new QLabel("");
   this->layout->addWidget(labelPosMouse);

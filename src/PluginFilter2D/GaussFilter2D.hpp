@@ -33,7 +33,7 @@ class GaussFilter2D : public vx::filter::Filter2D {
   Q_DISABLE_COPY(GaussFilter2D)
 
  public:
-  GaussFilter2D(QObject* parent = 0);
+  GaussFilter2D(vx::plugin::MetaFilter2D* metaFilter);
   ~GaussFilter2D();
 
   virtual void applyTo(vx::FloatImage input, vx::FloatImage output) override;
@@ -64,5 +64,6 @@ class GaussMetaFilter2D : public vx::plugin::MetaFilter2D {
  public:
   GaussMetaFilter2D()
       : vx::plugin::MetaFilter2D("de.uni_stuttgart.Voxie.GaussFilter2D") {}
-  vx::filter::Filter2D* createFilter() const override;
+  vx::filter::Filter2D* createFilter() override;
+  QString displayName() override;
 };

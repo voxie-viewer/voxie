@@ -366,7 +366,7 @@ echo "Building Voxie..."
 # New-Item -type directory build | Out-Null
 cd build
 # -Dbuildtype=release seems to be needed to prevent meson from using the debug version of Qt
-& $MESON "-Dboost_include_path=$BOOST_INCLUDE" "-Dhdf5_path=$PATH_HDF5" "-Dadditional_licenses_file=build/licenses/list.jsonl" "-Dlapacke_path=$PATH_LAPACKE" "-Ddebug=false" "-Doptimization=3" "-Dbuildtype=release" ..
+& $MESON setup "-Dboost_include_path=$BOOST_INCLUDE" "-Dhdf5_path=$PATH_HDF5" "-Dadditional_licenses_file=build/licenses/list.jsonl" "-Dlapacke_path=$PATH_LAPACKE" "-Ddebug=false" "-Doptimization=3" "-Dbuildtype=release" ..
 CheckErrorCode
 # & $NINJA --verbose -k0
 & $NINJA --verbose

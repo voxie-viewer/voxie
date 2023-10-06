@@ -77,7 +77,8 @@ static QWidget* labeledWidget(QString labelText, QWidget* widget) {
 HistogramVisualizer::HistogramVisualizer()
     : SimpleVisualizer(getPrototypeSingleton()),
       properties(new visualizer_prop::HistogramProperties(this)) {
-  view()->setMinimumSize(300, 200);
+  view()->setMinimumSize(300 / 96.0 * this->view()->logicalDpiX(),
+                         200 / 96.0 * this->view()->logicalDpiY());
 
   cache = decltype(cache)::create();
   histogramProvider = decltype(histogramProvider)::create();
@@ -235,7 +236,7 @@ void HistogramVisualizer::updateTable() {
 
 void HistogramVisualizer::updateData() {
   histogramWidget->setYAxisLogScale(properties->logarithmicY());
-  QSharedPointer<Colorizer> colorizer(new Colorizer());
+  QSharedPointer<Colorizer> colorizer = makeSharedQObject<Colorizer>();
   colorizer->setEntries(properties->colorMap());
   histogramWidget->setColorizer(colorizer);
   cache->updateBuckets(*properties);

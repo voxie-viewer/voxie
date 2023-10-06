@@ -8,5 +8,17 @@
                 "*.vxvol.json"
             ]
         }
+    ],
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol.Export",
+            "DisplayName": "Voxie Volume JSON",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.Volume"
+            ],
+            "Patterns": [
+                "*.vxvol.json"
+            ]
+        }
     ]
 }

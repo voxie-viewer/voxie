@@ -92,7 +92,8 @@ ExtensionFilterNode::ExtensionFilterNode(
 }
 ExtensionFilterNode::~ExtensionFilterNode() {}
 
-QSharedPointer<RunFilterOperation> ExtensionFilterNode::calculate() {
+QSharedPointer<RunFilterOperation> ExtensionFilterNode::calculate(
+    bool isAutomaticFilterRun) {
   size_t outputCounts = 0;
   for (const auto& property : this->prototype()->nodeProperties()) {
     if (!property->isReference() || !property->isOutputReference()) continue;
@@ -198,7 +199,8 @@ QSharedPointer<RunFilterOperation> ExtensionFilterNode::calculate() {
   OperationRegistry::instance()->addOperation(op);
 
   // TODO: Merge some of the code with ScriptImporter::load()?
-  auto exOp = ExternalOperationRunFilter::create(op, parameters, references);
+  auto exOp = ExternalOperationRunFilter::create(op, parameters, references,
+                                                 isAutomaticFilterRun);
 
   auto ext =
       qSharedPointerDynamicCast<Extension>(this->prototype()->container());
@@ -335,6 +337,14 @@ class ExternalOperationRunFilterAdaptorImpl
     }
   }
 
+  bool isAutomaticFilterRun() const override {
+    try {
+      return object->isAutomaticFilterRun();
+    } catch (vx::Exception& e) {
+      return e.handle(object);
+    }
+  }
+
   QMap<QDBusObjectPath, QMap<QString, QDBusVariant>> parameters()
       const override {
     try {
@@ -349,14 +359,16 @@ class ExternalOperationRunFilterAdaptorImpl
 ExternalOperationRunFilter::ExternalOperationRunFilter(
     const QSharedPointer<vx::io::RunFilterOperation>& operation,
     const QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>& parameters,
-    const QSharedPointer<QList<QSharedPointer<ExportedObject>>>& references)
+    const QSharedPointer<QList<QSharedPointer<ExportedObject>>>& references,
+    bool isAutomaticFilterRun)
     : ExternalOperation(operation),
       operation_(operation),
       filterNode_(operation->filterNode()),
       filterNodePath_(operation->filterNode()->getPath()),
       prototype_(operation->filterNode()->prototype()),
       parameters_(parameters),
-      references(references) {
+      references(references),
+      isAutomaticFilterRun_(isAutomaticFilterRun) {
   new ExternalOperationRunFilterAdaptorImpl(this);
 
   // TODO: Change ExternalOperationImport and merge this code into the

@@ -38,5 +38,6 @@ class TheSphereGenerator : public vx::FilterNode {
   QSharedPointer<vx::VolumeDataVoxel> genSphereImpl(int size, quint32 seed);
 
  private:
-  QSharedPointer<vx::io::RunFilterOperation> calculate() override;
+  QSharedPointer<vx::io::RunFilterOperation> calculate(
+      bool isAutomaticFilterRun) override;
 };

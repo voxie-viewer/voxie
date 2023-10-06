@@ -83,8 +83,7 @@ class VOXIECORESHARED_EXPORT Plugin : public vx::ComponentContainer {
       allObjectsByName;
 
   template <typename ListT>
-  void addObjects(const QString& name, const ListT& objects,
-                  bool doRegisterChildren = true);
+  void addObjects(const QString& name, const ListT& objects);
 
  public:  // TODO: should this be public?
   void reAddPrototypes();

@@ -44,7 +44,7 @@ instance = context.createInstance()
 
 
 if args.voxie_action != 'RunFilter':
-    raise Exception('Invalid operation: ' + args.voxie_action)
+    raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
 
 LOGGING = True

@@ -357,7 +357,8 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
                 this->toolBarActionExpandSidePanel->setIcon(
                     QIcon(":/icons-voxie/skip-next.png"));
               }
-              Root::instance()->mainWindow()->repaint();
+              // TODO: Is this really needed?
+              Root::instance()->mainWindow()->update();
             });
     // graph widget
     dataflowLayout->addWidget(dataflowWidget);
@@ -638,7 +639,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
       // check to make sure that user isn't trying to move a node group into
       // itself
       if (selectedNodes().contains(selectedGroup)) {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setText("Cannot move a node group into itself!");
         msgBox.exec();
         return;
@@ -916,7 +917,11 @@ void SidePanel::showContextMenu(QPoint globalPos) {
   QObject::connect(newMenu, &QMenu::aboutToHide, newMenu,
                    &QObject::deleteLater);
   newMenu->addActions(actions);
-  newMenu->popup(globalPos);
+  // Shift context menu by 2x2 pixels to prevent the user from accidentally
+  // selecting the first entry while rightclicking
+  QPoint shift(std::ceil(2 / 96.0 * this->logicalDpiX()),
+               std::ceil(2 / 96.0 * this->logicalDpiY()));
+  newMenu->popup(globalPos + shift);
   if (false) {
     qDebug() << "New menu" << newMenu;
     QObject::connect(newMenu, &QObject::destroyed,
@@ -932,10 +937,7 @@ QWidget* SidePanel::addSection(QWidget* section, bool closeable, vx::Node* obj,
 
   QString title = section->windowTitle();
   if (title.length() == 0) {
-    title = section->objectName();
-  }
-  if (title.length() == 0) {
-    title = section->metaObject()->className();
+    qDebug() << "Window title not set for section" << section;
   }
 
   QWidget* dockWidget = new QWidget();
@@ -950,9 +952,11 @@ QWidget* SidePanel::addSection(QWidget* section, bool closeable, vx::Node* obj,
       headerBox->setMargin(0);
       headerBox->setSpacing(0);
       {
+        auto spaceX = 24 / 96.0 * this->logicalDpiX();
+        auto spaceY = 24 / 96.0 * this->logicalDpiY();
         QSpacerItem* spacer =
-            new QSpacerItem(24 + (closeable ? 24 : 0), 24, QSizePolicy::Minimum,
-                            QSizePolicy::Minimum);
+            new QSpacerItem(spaceX + (closeable ? spaceX : 0), spaceY,
+                            QSizePolicy::Minimum, QSizePolicy::Minimum);
         headerBox->addSpacerItem(spacer);
 
         QLabel* header = new QLabel("<b>" + title + "</b>");
