@@ -26,7 +26,7 @@
 
 #include <VoxieBackend/OpenCL/CLUtil.hpp>
 
-#include <VoxieBackend/lib/CL/cl-patched.hpp>
+#include <VoxieBackend/OpenCL/OpenCLCPP.hpp>
 
 #include <QtCore/QFile>
 #include <QtCore/QMap>

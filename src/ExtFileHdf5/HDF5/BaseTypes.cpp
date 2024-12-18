@@ -22,43 +22,54 @@
 
 #include "BaseTypes.hpp"
 
+#include <HDF5/DataSet.hpp>
 #include <HDF5/File.hpp>
 #include <HDF5/Object.hpp>
-#include <HDF5/DataSet.hpp>
 
 namespace HDF5 {
-  H5O_type_t ObjectReference::getType (const File& file) const {
-    H5O_type_t type;
-    ObjectReference cpy = *this;
-    Exception::check ("H5Rget_obj_type", H5Rget_obj_type (file.handle (), H5R_OBJECT, &cpy.value (), &type));
-    return type;
-  }
+H5O_type_t ObjectReference::getType(const File& file) const {
+  H5O_type_t type;
+  ObjectReference cpy = *this;
+  Exception::check("H5Rget_obj_type", H5Rget_obj_type(file.handle(), H5R_OBJECT,
+                                                      &cpy.value(), &type));
+  return type;
+}
 
-  std::string ObjectReference::getName (const File& file) const {
-    ObjectReference cpy = *this;
-    ssize_t size = Exception::check ("H5Rget_name", H5Rget_name (file.handle (), H5R_OBJECT, &cpy.value (), NULL, 0));
-    std::vector<char> name (size + 1);
-    ssize_t size2 = Exception::check ("H5Rget_name", H5Rget_name (file.handle (), H5R_OBJECT, &cpy.value (), name.data (), size + 1));
-    ASSERT (size == size2);
-    ASSERT (!name[size]);
-    return std::string (name.data (), size);
-  }
+std::string ObjectReference::getName(const File& file) const {
+  ObjectReference cpy = *this;
+  ssize_t size = Exception::check(
+      "H5Rget_name",
+      H5Rget_name(file.handle(), H5R_OBJECT, &cpy.value(), NULL, 0));
+  std::vector<char> name(size + 1);
+  ssize_t size2 = Exception::check(
+      "H5Rget_name", H5Rget_name(file.handle(), H5R_OBJECT, &cpy.value(),
+                                 name.data(), size + 1));
+  ASSERT(size == size2);
+  ASSERT(!name[size]);
+  return std::string(name.data(), size);
+}
 
-  Object ObjectReference::dereference (const File& file) const {
-    ASSERT (!isNull ());
+Object ObjectReference::dereference(const File& file) const {
+  ASSERT(!isNull());
 
-    //return Object (Exception::check ("H5Rdereference", H5Rdereference (file.handle (), H5R_OBJECT, &value ()))); // doesn't work because H5Rdereference has non-const pointer argument
-    ObjectReference cpy = *this;
-#if H5_VERSION_GE (1, 10, 0)
-    //return Object (Exception::check ("H5Rdereference2", H5Rdereference2 (file.handle (), H5P_DEFAULT, H5R_OBJECT, &cpy.value ())));
-    return Object (Exception::check ("H5Rdereference2", H5Rdereference2 (file.handle (), setEFilePrefix ()/*TODO: pass as argument?*/.handle (), H5R_OBJECT, &cpy.value ())));
+  //return Object (Exception::check ("H5Rdereference", H5Rdereference (file.handle (), H5R_OBJECT, &value ()))); // doesn't work because H5Rdereference has non-const pointer argument
+  ObjectReference cpy = *this;
+#if H5_VERSION_GE(1, 10, 0)
+  //return Object (Exception::check ("H5Rdereference2", H5Rdereference2 (file.handle (), H5P_DEFAULT, H5R_OBJECT, &cpy.value ())));
+  return Object(Exception::check(
+      "H5Rdereference2",
+      H5Rdereference2(file.handle(),
+                      setEFilePrefix() /*TODO: pass as argument?*/.handle(),
+                      H5R_OBJECT, &cpy.value())));
 #else
-    /* // Does not work for anonymous datasets
+  /* // Does not work for anonymous datasets
     if (getType (file) == H5O_TYPE_DATASET) {
       return DataSet (Exception::check ("H5Dopen", H5Dopen (file.handle (), getName (file).c_str (), setEFilePrefix ().handle ())));
     } else {
     */
-    return Object (Exception::check ("H5Rdereference", H5Rdereference (file.handle (), H5R_OBJECT, &cpy.value ())));
+  return Object(Exception::check(
+      "H5Rdereference",
+      H5Rdereference(file.handle(), H5R_OBJECT, &cpy.value())));
 #endif
-  }
 }
+}  // namespace HDF5

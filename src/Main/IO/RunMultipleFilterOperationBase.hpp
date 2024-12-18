@@ -36,7 +36,7 @@ namespace io {
 
 class RunMultipleFilterOperationBase : public vx::io::Operation {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(RunMultipleFilterOperationBase)
+  VX_REFCOUNTEDOBJECT
 
  public:
   RunMultipleFilterOperationBase();

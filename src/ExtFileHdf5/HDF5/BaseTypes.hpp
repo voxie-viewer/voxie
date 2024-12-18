@@ -34,30 +34,30 @@
 #include <string>
 
 namespace HDF5 {
-  class ObjectReference {
-    hobj_ref_t value_;
-  public:
-    ObjectReference () : value_ (0) {}
-    explicit ObjectReference (hobj_ref_t value) : value_ (value) {}
-    hobj_ref_t value () const { return value_; }
-    hobj_ref_t& value () { return value_; }
-    
-    bool isNull () const {
-      return value () == 0;
-    }
+class ObjectReference {
+  hobj_ref_t value_;
 
-#define OP(op)                                                \
-    bool operator op (const ObjectReference& other) const {   \
-      return value () op other.value ();                      \
-    }
-    OP(==) OP(!=) OP(<) OP(>) OP(<=) OP(>=)
+ public:
+  ObjectReference() : value_(0) {}
+  explicit ObjectReference(hobj_ref_t value) : value_(value) {}
+  hobj_ref_t value() const { return value_; }
+  hobj_ref_t& value() { return value_; }
+
+  bool isNull() const { return value() == 0; }
+
+#define OP(op)                                           \
+  bool operator op(const ObjectReference& other) const { \
+    return value() op other.value();                     \
+  }
+  OP(==)
+  OP(!=) OP(<) OP(>) OP(<=) OP(>=)
 #undef OP
 
-    H5O_type_t getType (const File& file) const;
-    std::string getName (const File& file) const;
+      H5O_type_t getType(const File& file) const;
+  std::string getName(const File& file) const;
 
-    Object dereference (const File& file) const;
-  };
-}
+  Object dereference(const File& file) const;
+};
+}  // namespace HDF5
 
-#endif // !HDF5_BASETYPES_HPP_INCLUDED
+#endif  // !HDF5_BASETYPES_HPP_INCLUDED

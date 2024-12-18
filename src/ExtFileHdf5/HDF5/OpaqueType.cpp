@@ -25,10 +25,8 @@
 #include <HDF5/Group.hpp>
 
 namespace HDF5 {
-  void OpaqueType::checkType () const {
-    if (!isValid ())
-      return;
-    if (getClass () != H5T_OPAQUE)
-      ABORT_MSG ("Not a opaque datatype");
-  }
+void OpaqueType::checkType() const {
+  if (!isValid()) return;
+  if (getClass() != H5T_OPAQUE) ABORT_MSG("Not a opaque datatype");
 }
+}  // namespace HDF5

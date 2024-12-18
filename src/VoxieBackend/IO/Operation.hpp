@@ -56,18 +56,24 @@ is a future for the operation result (and is exported over DBus)
 // TODO: Should the Operation class be created by the OperationResult class?
 // Would probably prevent combining different types in the wrong way
 
+// TODO: Move cancellation into a separate class "CancellationToken".
+
 namespace vx {
 class OperationResult;
-
+  
 namespace io {
 class VOXIEBACKEND_EXPORT Operation : public vx::RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(Operation)
+  VX_REFCOUNTEDOBJECT
 
   friend class vx::OperationResult;
 
+  // TODO: Hack, should not be public, CancellationToken should be moved to
+  // VoxieClient
+ public:
   QAtomicInt cancelledVal;
 
+ private:
   QMutex progressMutex;
   bool progressUpdating = false;
   bool progressPending = false;
@@ -228,7 +234,7 @@ class VOXIEBACKEND_EXPORT Operation : public vx::RefCountedObject {
  */
 class VOXIEBACKEND_EXPORT OperationSimple : public vx::io::Operation {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(OperationSimple)
+  VX_REFCOUNTEDOBJECT
 
  public:
   using Result = Operation::ResultSuccess;
@@ -238,5 +244,8 @@ class VOXIEBACKEND_EXPORT OperationSimple : public vx::io::Operation {
   OperationSimple();
   ~OperationSimple();
 };
+
+// TODO: Move into separate class
+using CancellationToken = vx::io::Operation;
 
 }  // namespace vx

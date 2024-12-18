@@ -25,6 +25,8 @@ int execMatrixTest(int argc, char** argv);
 int execRotationTest(int argc, char** argv);
 int execVectorTest(int argc, char** argv);
 int execHmgVectorTest(int argc, char** argv);
+int execFractionTest(int argc, char** argv);
+int execCastFloatToIntSafeTest(int argc, char** argv);
 
 int main(int argc, char** argv) {
   int status = 0;
@@ -34,6 +36,8 @@ int main(int argc, char** argv) {
   status |= execRotationTest(argc, argv);
   status |= execVectorTest(argc, argv);
   status |= execHmgVectorTest(argc, argv);
+  status |= execFractionTest(argc, argv);
+  status |= execCastFloatToIntSafeTest(argc, argv);
 
   return status;
 }

@@ -95,8 +95,8 @@ class HelpPageSourceTopic : public HelpPageSource {
       return QSharedPointer<HelpPage>();
     }
 
-    auto rootNode =
-        vx::cmark::Node::parseDocument(QString::fromUtf8(helpFile.readAll()));
+    auto rootNode = vx::cmark::parseDocumentWithExtensions(
+        QString::fromUtf8(helpFile.readAll()));
 
     return createQSharedPointer<HelpPage>(rootNode, fileName, dependencies,
                                           title);

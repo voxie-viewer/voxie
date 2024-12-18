@@ -96,12 +96,7 @@ vx::Array3Info TomographyRawData2DRegularShmemInst<T>::getDataReadonly() {
 template <typename T>
 vx::Array3Info TomographyRawData2DRegularShmemInst<T>::getDataWritable(
     const QSharedPointer<vx::DataUpdate>& update) {
-  if (update->data().data() != this)
-    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                        "Given DataUpdate is for another object");
-  if (!update->running())
-    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                        "Given DataUpdate is already finished");
+  update->validateCanUpdate(this);
 
   Array3Info info;
 

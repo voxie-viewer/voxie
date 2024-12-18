@@ -27,42 +27,38 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/IdComponent.hpp>
 
 namespace HDF5 {
-  class PropList : public IdComponent {
-    void checkType () const;
+class PropList : public IdComponent {
+  void checkType() const;
 
-  public:
-    PropList () {
-    }
+ public:
+  PropList() {}
 
-    explicit PropList (const IdComponent& value) : IdComponent (value) {
-      checkType ();
-    }
+  explicit PropList(const IdComponent& value) : IdComponent(value) {
+    checkType();
+  }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit PropList (hid_t value) : IdComponent (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit PropList(hid_t value) : IdComponent(value) { checkType(); }
 
-    static PropList create (hid_t cls_id);
+  static PropList create(hid_t cls_id);
 
-    hid_t handleOrDefault () const {
-      if (!isValid ())
-        return H5P_DEFAULT;
-      return handle ();
-    }
+  hid_t handleOrDefault() const {
+    if (!isValid()) return H5P_DEFAULT;
+    return handle();
+  }
 
-    hid_t getClass () const;
-    bool isA (hid_t pclass) const;
-    PropList copy () const;
-  };
-}
+  hid_t getClass() const;
+  bool isA(hid_t pclass) const;
+  PropList copy() const;
+};
+}  // namespace HDF5
 
-#endif // !HDF5_PROPLIST_HPP_INCLUDED
+#endif  // !HDF5_PROPLIST_HPP_INCLUDED

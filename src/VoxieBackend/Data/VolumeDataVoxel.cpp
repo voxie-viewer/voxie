@@ -28,12 +28,16 @@
 
 #include <VoxieClient/DBusAdaptors.hpp>
 
+#include <VoxieBackend/DebugOptions.hpp>
+
+#include <VoxieBackend/Data/ExtractSlice.hpp>
 #include <VoxieBackend/Data/HistogramProvider.hpp>
 #include <VoxieBackend/Data/ImageDataPixelInst.hpp>
 #include <VoxieBackend/Data/PlaneInfo.hpp>
 #include <VoxieBackend/Data/SliceImage.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxelInst.hpp>
 #include <VoxieBackend/Data/VolumeStructureVoxel.hpp>
+#include <VoxieBackend/Data/VoxelAccessor.hpp>
 
 #include <VoxieBackend/OpenCL/CLInstance.hpp>
 
@@ -123,7 +127,7 @@ static size_t calcSizeBytes(size_t width, size_t height, size_t depth,
                      getElementSizeBytes(typeReference));
 }
 
-VolumeDataVoxel::VolumeDataVoxel(const vx::Vector<size_t, 3> arrayShape,
+VolumeDataVoxel::VolumeDataVoxel(const vx::Vector<size_t, 3>& arrayShape,
                                  DataType dataType,
                                  const vx::Vector<double, 3>& volumeOrigin,
                                  const vx::Vector<double, 3>& gridSpacing)
@@ -205,6 +209,12 @@ void VolumeDataVoxel::extractSlice(const QVector3D& origin1,
     throw vx::Exception("de.uni_stuttgart.Voxie.IndexOutOfRange",
                         "Index is out of range");
 
+  auto pixelCount = outputSize.width() * outputSize.height();
+  if (vx::debug_option::Log_ExtractSliceTime()->get())
+    qDebug() << "[Vox]extractSlice() start" << pixelCount << "pixel";
+  QElapsedTimer timer;
+  timer.start();
+
   bool useCL = true;
   // When OpenCL is not available, fall back to CPU
   if (useCL) useCL = vx::opencl::CLInstance::getDefaultInstance()->isValid();
@@ -274,28 +284,21 @@ void VolumeDataVoxel::extractSlice(const QVector3D& origin1,
   }
 
   if (!useCL || clFailed) {
-    if (outputImage.getMode() != SliceImage::STDMEMORY_MODE) {
-      outputImage.switchMode(false);  // switch mode without syncing memory
-    }
-    // qDebug() << "VolumeDataVoxel no OpenCl";
-    FloatBuffer buffer = outputImage.getBuffer();
-
-    this->performInGenericContext([&outputSize, &sliceArea, &buffer,
-                                   &outputImage, &plane,
-                                   &interpolation](auto& data) {
-      for (size_t y = 0; y < (size_t)outputSize.height(); y++) {
-        for (size_t x = 0; x < (size_t)outputSize.width(); x++) {
-          QPointF planePoint;
-          SliceImage::imagePoint2PlanePoint(x, y, outputSize, sliceArea,
-                                            planePoint, false);
-          QVector3D volumePoint =
-              plane.get3DPoint(planePoint.x(), planePoint.y());
-          buffer[y * outputImage.getWidth() + x] = (float)data.getVoxelMetric(
-              volumePoint.x(), volumePoint.y(), volumePoint.z(), interpolation);
-        }
-      }
+    this->performInGenericContext([&](auto& data) {
+      extractSliceCpu(data, origin1, rotation, outputSize, pixelSizeX,
+                      pixelSizeY, interpolation, outputImage);
     });
   }
+
+  auto time = timer.nsecsElapsed();
+  auto backend = "GPU";
+  if (!useCL || clFailed) backend = "CPU";
+  if (vx::debug_option::Log_ExtractSliceTime()->get())
+    qDebug() << "[Vox]extractSlice()" << (time / 1e9)
+             << "s"
+                //" for" << pixelCount << "pixel"
+                ","
+             << (pixelCount / (time / 1e9) / 1e6) << "MPix/s" << backend;
 }
 
 void VolumeDataVoxel::updateHistogram(
@@ -386,12 +389,7 @@ VolumeDataVoxelAdaptorImpl::GetDataWritable(
     vx::ExportedObject::checkOptions(options);
 
     auto updateObj = vx::DataUpdate::lookup(update);
-    if (updateObj->data().data() != object)
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Given DataUpdate is for another object");
-    if (!updateObj->running())
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Given DataUpdate is already finished");
+    updateObj->validateCanUpdate(object);
 
     return object->dataFd(true).toDBus();
   } catch (vx::Exception& e) {

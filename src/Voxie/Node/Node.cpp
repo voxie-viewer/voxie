@@ -24,6 +24,7 @@
 
 #include <VoxieClient/DBusAdaptors.hpp>
 #include <VoxieClient/DBusUtil.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 #include <VoxieClient/VoxieDBus.hpp>
 
 #include <Voxie/Data/Color.hpp>
@@ -531,10 +532,37 @@ QWidget* Node::getCustomPropertySectionContent(const QString& name) {
                       this->prototype()->name());
 }
 
-void Node::addPropertySection(QWidget* section) {
+void Node::addPropertySection(QWidget* section, int position,
+                              bool isInitiallyExpanded) {
+  vx::checkOnMainThread("Node::addPropertySection");
+
+  // TODO: Avoid using properties here?
+  section->setProperty("isInitiallyExpanded",
+                       QVariant::fromValue<bool>(isInitiallyExpanded));
+
+  // qDebug() << "addPropertySection" << section << position <<
+  // defaultSectionPosition_;
+  if (position == -1) {
+    if (defaultSectionPosition_ == -1) {
+      position = propertySections_.size();
+    } else {
+      position = defaultSectionPosition_;
+      defaultSectionPosition_++;
+    }
+  } else if (position < defaultSectionPosition_) {
+    defaultSectionPosition_++;
+  }
+  // qDebug() << "addPropertySection2" << section << position <<
+  // defaultSectionPosition_;
+  if (position < 0 || position > propertySections_.size()) {
+    qWarning() << "Trying to add property section at incorrect position";
+    position = propertySections_.size();
+  }
+
   connect(section, &QObject::destroyed, this,
           [this, section]() { propertySections_.removeOne(section); });
-  propertySections_ << section;
+  propertySections_.insert(position, section);
+
   connect(this, &QObject::destroyed, section, &QObject::deleteLater);
   Q_EMIT propertySectionAdded(section);
 }
@@ -657,19 +685,17 @@ class NodeAdaptorImpl : public NodeAdaptor, public ObjectAdaptor {
     try {
       return toTupleVector(voxieRoot().getGraphPosition(object));
     } catch (vx::Exception& e) {
-      e.handle(object);
       qWarning() << "Got error during DBus property:" << e.what();
-      return vx::TupleVector<double, 2>(0, 0);
+      return e.handle(object);
     }
   }
 
   void setGraphPosition(vx::TupleVector<double, 2> pos) override {
     try {
-      voxieRoot().setGraphPosition(object, toQtVector(pos));
+      voxieRoot().setGraphPosition(object, toVector(pos));
     } catch (vx::Exception& e) {
-      e.handle(object);
       qWarning() << "Got error during DBus property:" << e.what();
-      return;
+      e.handle(object);
     }
   }
 
@@ -677,9 +703,8 @@ class NodeAdaptorImpl : public NodeAdaptor, public ObjectAdaptor {
     try {
       return ExportedObject::getPath(object->prototype());
     } catch (vx::Exception& e) {
-      e.handle(object);
       qWarning() << "Got error during DBus property:" << e.what();
-      return QDBusObjectPath("/");
+      return e.handle(object);
     }
   }
 
@@ -967,15 +992,34 @@ Node::Node(const QString& type, const QSharedPointer<NodePrototype>& prototype)
                                       ->rawJson()["UI"]
                                       .toObject()["SidePanelSections"]
                                       .toArray()) {
-      auto spSection = spSection_.toObject();
-      QString name = spSection["Name"].toString();
-      QString displayName = spSection["DisplayName"].toString();
-      // qDebug() << "Section:" << name << displayName;
+      auto spSection = expectObject(spSection_);
 
-      auto section = new PropertySection(displayName);
-      this->addPropertySection(section);
+      QString sectionType = "";
+      if (spSection.contains("Type"))
+        sectionType = expectString(spSection["Type"]);
 
-      sections << section;
+      if (sectionType == "AutomaticSectionPlaceholder") {
+        if (defaultSectionPosition_ != -1) {
+          qWarning() << "Got multiple AutomaticSectionPlaceholder entries";
+        }
+        defaultSectionPosition_ = propertySections().size();
+      } else if (sectionType == "") {
+        QString name = spSection["Name"].toString();
+        QString displayName = spSection["DisplayName"].toString();
+        // qDebug() << "Section:" << name << displayName;
+
+        bool showOnStartup = true;
+        if (spSection.contains("ShowOnStartup"))
+          showOnStartup = expectBool(spSection["ShowOnStartup"]);
+
+        auto section = new PropertySection(displayName);
+        this->addPropertySection(section, propertySections().size(),
+                                 showOnStartup);
+
+        sections << section;
+      } else {
+        qWarning() << "Unknown side panel section type:" << sectionType;
+      }
     }
   }
 }
@@ -1009,47 +1053,58 @@ void Node::initializeReal() {
                                     .toArray()) {
     auto spSection = spSection_.toObject();
 
-    if (pos >= sections.size()) {
-      qCritical() << "pos >= sections.size()";
-      return;
-    }
-    PropertySection* section = sections[pos];
-    if (!section) {
-      qWarning() << "PropertySection has been destroyed";
-      continue;
-    }
+    QString sectionType = "";
+    if (spSection.contains("Type"))
+      sectionType = expectString(spSection["Type"]);
 
-    for (const auto& entry_ : spSection["Entries"].toArray()) {
-      auto entry = entry_.toObject();
-      auto type = entry["Type"].toString();
-
-      if (type == "Property") {
-        auto propertyName = entry["Property"].toString();
-        auto property = this->prototype()->getProperty(propertyName, false);
-
-        addNodePropertyUIToSection(this, section, property, entry);
-        handledProperties.insert(property);
-      } else if (type == "Custom") {
-        auto name = entry["Name"].toString();
-
-        QWidget* widget;
-        try {
-          widget = this->getCustomPropertySectionContent(name);
-        } catch (vx::Exception& e) {
-          qWarning() << "Error while creating custom section entry with name"
-                     << name << "for node of type" << this->prototype()->name();
-          continue;
-        }
-
-        auto layout = new QHBoxLayout();
-        layout->addWidget(widget);
-        section->addHBoxLayout(layout);
-      } else {
-        qWarning() << "Unknown section entry type:" << type;
+    if (sectionType == "AutomaticSectionPlaceholder") {
+      // Do nothing
+    } else if (sectionType == "") {
+      if (pos >= sections.size()) {
+        qCritical() << "pos >= sections.size()";
+        return;
       }
-    }
+      PropertySection* section = sections[pos];
+      if (!section) {
+        qWarning() << "PropertySection has been destroyed";
+        continue;
+      }
 
-    pos++;
+      for (const auto& entry_ : spSection["Entries"].toArray()) {
+        auto entry = entry_.toObject();
+        auto type = entry["Type"].toString();
+
+        if (type == "Property") {
+          auto propertyName = entry["Property"].toString();
+          auto property = this->prototype()->getProperty(propertyName, false);
+
+          addNodePropertyUIToSection(this, section, property, entry);
+          handledProperties.insert(property);
+        } else if (type == "Custom") {
+          auto name = entry["Name"].toString();
+
+          QWidget* widget;
+          try {
+            widget = this->getCustomPropertySectionContent(name);
+          } catch (vx::Exception& e) {
+            qWarning() << "Error while creating custom section entry with name"
+                       << name << "for node of type"
+                       << this->prototype()->name();
+            continue;
+          }
+
+          auto layout = new QHBoxLayout();
+          layout->addWidget(widget);
+          section->addHBoxLayout(layout);
+        } else {
+          qWarning() << "Unknown section entry type:" << type;
+        }
+      }
+
+      pos++;
+    } else {
+      qWarning() << "Unknown side panel section type:" << sectionType;
+    }
   }
 
   QList<QSharedPointer<NodeProperty>> properties =

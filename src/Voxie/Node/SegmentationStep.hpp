@@ -168,6 +168,10 @@ class VOXIECORESHARED_EXPORT SegmentationStep : public Node {
   }
 
   StepKind getStepKind();
+
+  // Get information about filename and last modification of of the extension,
+  // if any, otherwise an empty map.
+  virtual QMap<QString, QString> getExtensionInfo();
 };
 
 }  // namespace vx

@@ -38,7 +38,8 @@ namespace vx {
  * by setting the voxels to 0
  */
 class RemoveLabelStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(RemoveLabelStep)
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.SegmentationStep.RemoveLabelStep")
 
  private:
   void initializeCustomUIPropSections() override;

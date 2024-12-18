@@ -41,7 +41,7 @@ namespace vx {
 namespace filters {
 // TODO: Fully rename to TableFilter
 class TableFilter : public FilterNode {
-  NODE_PROTOTYPE_DECL(TableFilter)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Filter.TableFilter")
 
  public:
   TableFilter();

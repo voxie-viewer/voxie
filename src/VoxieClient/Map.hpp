@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <VoxieClient/Fraction.hpp>
 #include <VoxieClient/HmgVector.hpp>
 #include <VoxieClient/Matrix.hpp>
 
@@ -455,6 +456,28 @@ ProjectiveMap<T, resSrcDim, resDstDim> operator*(
     const ProjectiveMap<T, resSrcDim, intDim>& m2) {
   // return (ProjectiveMap<T, intDim, resDstDim>)m1 * m2;
   return createProjectiveMap(m1.projectiveMatrix() * m2.projectiveMatrix());
+}
+
+template <typename T, std::size_t dim>
+ProjectiveMap<T, dim, dim> createTranslation(const vx::HmgVector<T, dim>& v) {
+  return createProjectiveMap(concatColumns(
+      concatRows(identityMatrix<T, dim>(), vx::Matrix<T, 1, dim>::zero()),
+      createColumnVector(v.hmgVectorData())));
+}
+
+template <std::size_t dim, typename T>
+ProjectiveMap<T, dim, dim> createScaling(const Fraction<T>& v) {
+  vx::Matrix<T, dim + 1, dim + 1> mat = vx::Matrix<T, dim + 1, dim + 1>::zero();
+  for (std::size_t i = 0; i < dim; i++) mat(i, i) = v.numerator();
+  mat(dim, dim) = v.denominator();
+  return createProjectiveMap(mat);
+}
+template <typename T, std::size_t dim>
+ProjectiveMap<T, dim, dim> createScaling(const vx::HmgVector<T, dim>& v) {
+  vx::Matrix<T, dim + 1, dim + 1> mat = vx::Matrix<T, dim + 1, dim + 1>::zero();
+  for (std::size_t i = 0; i < dim; i++) mat(i, i) = v.hmgVectorData()(i);
+  mat(dim, dim) = v.w();
+  return createProjectiveMap(mat);
 }
 
 // Note: Only maps which do not change dimension can be invertible

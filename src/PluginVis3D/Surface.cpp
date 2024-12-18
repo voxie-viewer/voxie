@@ -25,6 +25,7 @@
 #include <VoxieBackend/Data/SurfaceAttribute.hpp>
 
 #include <Voxie/IVoxie.hpp>
+#include <Voxie/MathQt.hpp>
 
 #include <Voxie/Data/SurfaceNode.hpp>
 
@@ -50,6 +51,8 @@
 // TODO: Changes to the surface a currently not picked up (no redraw is
 // triggered, cached surface do not seem to be updated) (at least when the
 // object graph is loaded from a file).
+
+VX_NODE_INSTANTIATION(vx::vis3d::Surface)
 
 using namespace vx;
 using namespace vx::visualization;
@@ -412,22 +415,22 @@ Surface::Surface()
   forwardSignalFromPropertyNode(
       properties, &object3d_prop::SurfaceProperties::surface,
       &object3d_prop::SurfaceProperties::surfaceChanged,
-      &PositionInterface::adjustedPositionChanged, this,
+      &MovableDataNode::adjustedPositionChanged, this,
       &Surface::triggerRendering);
   forwardSignalFromPropertyNode(
       properties, &object3d_prop::SurfaceProperties::surface,
       &object3d_prop::SurfaceProperties::surfaceChanged,
-      &PositionInterface::adjustedRotationChanged, this,
+      &MovableDataNode::adjustedRotationChanged, this,
       &Surface::triggerRendering);
   forwardSignalFromPropertyNode(
       properties, &object3d_prop::SurfaceProperties::surface,
       &object3d_prop::SurfaceProperties::surfaceChanged,
-      &PositionInterface::adjustedPositionChanged, this,
+      &MovableDataNode::adjustedPositionChanged, this,
       &Surface::boundingBoxChanged);
   forwardSignalFromPropertyNode(
       properties, &object3d_prop::SurfaceProperties::surface,
       &object3d_prop::SurfaceProperties::surfaceChanged,
-      &PositionInterface::adjustedRotationChanged, this,
+      &MovableDataNode::adjustedRotationChanged, this,
       &Surface::boundingBoxChanged);
 }
 Surface::~Surface() {}
@@ -539,20 +542,20 @@ void drawBoundingBox(OpenGLDrawWidget::PrimitiveBuffer& drawingBuffer,
 
   // TODO
   /*
-  QVector3D color =
+  vx::Color color =
       (surface == selectedSurface() ? selectedBoxColor : boxColor);
   */
   // TODO
-  QVector3D DEFAULT_BOX_COLOR = QVector3D(0.5f, 0.5f, 0.5f);
+  vx::Color DEFAULT_BOX_COLOR = vx::Color(0.5f, 0.5f, 0.5f);
   /*
-  QVector3D DEFAULT_SELECTED_BOX_COLOR =
-    QVector3D(1.0f, 0.5f, 0.0f);
+  vx::Color DEFAULT_SELECTED_BOX_COLOR =
+    vx::Color(1.0f, 0.5f, 0.0f);
   QVector4D DEFAULT_DATA_POINT_COLOR =
     QVector4D(0.0f, 1.0f, 1.0f, 1.0f);
   */
-  QVector3D boxColor = DEFAULT_BOX_COLOR;
-  // QVector3D selectedBoxColor = DEFAULT_SELECTED_BOX_COLOR;
-  QVector3D color = boxColor;
+  vx::Color boxColor = DEFAULT_BOX_COLOR;
+  // vx::Color selectedBoxColor = DEFAULT_SELECTED_BOX_COLOR;
+  vx::Color color = boxColor;
 
   // Draw all edges
   drawingBuffer.addLine(color, a, b);
@@ -790,8 +793,10 @@ void Surface::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
   if (properties->drawOrigin()) {
     float halfLength = srf->diagonalSize() / 50.0f;
 
-    QVector3D min = context.boundingBox().min();
-    QVector3D max = context.boundingBox().max();
+    QVector3D min =
+        toQVector(vectorCastNarrow<float>(context.boundingBox().min()));
+    QVector3D max =
+        toQVector(vectorCastNarrow<float>(context.boundingBox().max()));
 
     float start, end;
 
@@ -799,7 +804,7 @@ void Surface::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
     end = fmax(halfLength, max.x());
 
     if (true /*TODO !canFilterAxis || !axisFilter->filterX()*/) {
-      drawingBuffer.addLine(QVector3D(1.0f, 0.0f, 0.0f),
+      drawingBuffer.addLine(vx::Color(1.0f, 0.0f, 0.0f),
                             QVector3D(start, 0.0f, 0.0f),
                             QVector3D(end, 0.0f, 0.0f));
     }
@@ -808,7 +813,7 @@ void Surface::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
       start = fmin(-halfLength, min.y());
       end = fmax(halfLength, max.y());
 
-      drawingBuffer.addLine(QVector3D(0.0f, 1.0f, 0.0f),
+      drawingBuffer.addLine(vx::Color(0.0f, 1.0f, 0.0f),
                             QVector3D(0.0f, start, 0.0f),
                             QVector3D(0.0f, end, 0.0f));
     }
@@ -817,7 +822,7 @@ void Surface::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
       start = fmin(-halfLength, min.z());
       end = fmax(halfLength, max.z());
 
-      drawingBuffer.addLine(QVector3D(0.0f, 0.0f, 1.0f),
+      drawingBuffer.addLine(vx::Color(0.0f, 0.0f, 1.0f),
                             QVector3D(0.0f, 0.0f, start),
                             QVector3D(0.0f, 0.0f, end));
     }
@@ -828,13 +833,13 @@ void Surface::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
     // TODO: Draw for every dataset
     auto dataCenter = origin + size * 0.5f;
 
-    drawingBuffer.addLine(QVector3D(0.0f, 1.0f, 0.0f), dataCenter,
+    drawingBuffer.addLine(vx::Color(0.0f, 1.0f, 0.0f), dataCenter,
                           dataCenter + QVector3D(size.x(), 0.0f, 0.0f));
 
-    drawingBuffer.addLine(QVector3D(0.0f, 0.0f, 1.0f), dataCenter,
+    drawingBuffer.addLine(vx::Color(0.0f, 0.0f, 1.0f), dataCenter,
                           dataCenter + QVector3D(0.0f, size.y(), 0.0f));
 
-    drawingBuffer.addLine(QVector3D(1.0f, 0.0f, 0.0f), dataCenter,
+    drawingBuffer.addLine(vx::Color(1.0f, 0.0f, 0.0f), dataCenter,
                           dataCenter + QVector3D(0.0f, 0.0f, size.z()));
   }
 
@@ -1022,7 +1027,7 @@ BoundingBox3D Surface::getBoundingBox() {
           auto posGlobal =
               surface->getAdjustedPosition() +
               surface->getAdjustedRotation().rotatedVector(posObject);
-          bb += BoundingBox3D::point(posGlobal);
+          bb += BoundingBox3D::point(vectorCast<double>(toVector(posGlobal)));
         }
       }
     }
@@ -1178,5 +1183,3 @@ vx::SurfaceNode* Surface::surface() {
   return dynamic_cast<vx::SurfaceNode*>(properties->surface());
 }
 QString Surface::shadingTechnique() { return properties->shadingTechnique(); }
-
-NODE_PROTOTYPE_IMPL_SEP(object3d_prop::Surface, vis3d::Surface)

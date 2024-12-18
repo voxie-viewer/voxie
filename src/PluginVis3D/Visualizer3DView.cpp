@@ -404,21 +404,21 @@ void Visualizer3DView::drawAxisIndicators(const QMatrix4x4& matViewProj) {
   QVector3D center = toQVector(vectorCastNarrow<float>(this->view3d->lookAt()));
 
   auto bb = this->getBoundingBoxWithDefault();
-  auto diagonal = (bb.max() - bb.min()).length();
+  auto diagonal = std::sqrt(squaredNorm(bb.max() - bb.min()));
 
   // Draw view center
   if (properties->showViewCenter()) {
     float halfLength = diagonal / 50.0f;
 
-    drawingBuffer.addLine(QVector3D(0.8f, 0.5f, 0.5f),
+    drawingBuffer.addLine(vx::Color(0.8f, 0.5f, 0.5f),
                           center + QVector3D(-halfLength, 0.0f, 0.0f),
                           center + QVector3D(halfLength, 0.0f, 0.0f));
 
-    drawingBuffer.addLine(QVector3D(0.5f, 0.8f, 0.5f),
+    drawingBuffer.addLine(vx::Color(0.5f, 0.8f, 0.5f),
                           center + QVector3D(0.0f, -halfLength, 0.0f),
                           center + QVector3D(0.0f, halfLength, 0.0f));
 
-    drawingBuffer.addLine(QVector3D(0.5f, 0.5f, 0.8f),
+    drawingBuffer.addLine(vx::Color(0.5f, 0.5f, 0.8f),
                           center + QVector3D(0.0f, 0.0f, -halfLength),
                           center + QVector3D(0.0f, 0.0f, halfLength));
   }
@@ -460,8 +460,9 @@ vx::BoundingBox3D Visualizer3DView::getBoundingBoxWithDefault(
     bool* isDefaultOut) {
   auto boundingBox = this->getBoundingBoxReal();
   if (boundingBox.isEmpty()) {  // Default bounding box
-    boundingBox = BoundingBox3D::point(QVector3D(-0.2, -0.2, -0.2)) +
-                  BoundingBox3D::point(QVector3D(0.2, 0.2, 0.2));
+    boundingBox =
+        BoundingBox3D::point(vx::Vector<double, 3>(-0.2, -0.2, -0.2)) +
+        BoundingBox3D::point(vx::Vector<double, 3>(0.2, 0.2, 0.2));
     if (isDefaultOut) *isDefaultOut = true;
   } else {
     if (isDefaultOut) *isDefaultOut = false;
@@ -551,8 +552,9 @@ void Visualizer3DView::renderScreenshot(
     }
   }
   if (boundingBox.isEmpty())  // Default bounding box
-    boundingBox = BoundingBox3D::point(QVector3D(-0.2, -0.2, -0.2)) +
-                  BoundingBox3D::point(QVector3D(0.2, 0.2, 0.2));
+    boundingBox =
+        BoundingBox3D::point(vx::Vector<double, 3>(-0.2, -0.2, -0.2)) +
+        BoundingBox3D::point(vx::Vector<double, 3>(0.2, 0.2, 0.2));
 
   auto pixelSize = view3d->pixelSize(this->size());
   // TODO: use highlightedObject here?
@@ -632,8 +634,9 @@ void Visualizer3DView::paint() {
     }
   }
   if (boundingBox.isEmpty())  // Default bounding box
-    boundingBox = BoundingBox3D::point(QVector3D(-0.2, -0.2, -0.2)) +
-                  BoundingBox3D::point(QVector3D(0.2, 0.2, 0.2));
+    boundingBox =
+        BoundingBox3D::point(vx::Vector<double, 3>(-0.2, -0.2, -0.2)) +
+        BoundingBox3D::point(vx::Vector<double, 3>(0.2, 0.2, 0.2));
 
   auto pixelSize = view3d->pixelSize(this->size());
   Object3DRenderContext renderContext(
@@ -802,6 +805,17 @@ void Visualizer3DView::paintImg(Object3DRenderContext& renderContext) {
     }
     renderContext.select();
   }
+
+  // While drawing transparent parts, the alpha value in the framebuffer will be
+  // changed to some value smaller than 1 (because the alpha value is also
+  // blended into the destination buffer using the blend function).
+  // When the final framebuffer is not fully opaque, this can cause problems in
+  // certain situations (e.g. on Linux with wayland).
+  // Reset the alpha values to 1 to avoid this problem.
+  glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+  glClearColor(0, 0, 0, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
 void Visualizer3DView::paintPick(

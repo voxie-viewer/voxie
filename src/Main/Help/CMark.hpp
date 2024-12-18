@@ -20,7 +20,17 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
+#ifndef VX_CMARK_USE_GFM
+#error VX_CMARK_USE_GFM not defined
+#endif
+
+#if VX_CMARK_USE_GFM
+#include <cmark-gfm.h>
+#else
 #include <cmark.h>
+#endif
 
 // C++ wrappers for CMark
 
@@ -47,6 +57,8 @@ class String {
   QString createQString();
 };
 
+class SyntaxExtension;
+
 class Node {
   cmark_node* data_;
   bool owned_;
@@ -60,7 +72,9 @@ class Node {
   static QSharedPointer<Node> newUnowned(cmark_node* data);
   static QSharedPointer<Node> newUnownedAllowNull(cmark_node* data);
 
-  static QSharedPointer<Node> newNode(cmark_node_type type);
+  static QSharedPointer<Node> newNode(
+      cmark_node_type type, const QSharedPointer<SyntaxExtension>& extension =
+                                QSharedPointer<SyntaxExtension>());
 
   static QSharedPointer<Node> parseDocument(const QString& buffer,
                                             int options = CMARK_OPT_DEFAULT);
@@ -71,6 +85,9 @@ class Node {
   cmark_node* steal();
 
   cmark_node_type type() const;
+  QString typeString() const;
+
+  QSharedPointer<SyntaxExtension> syntaxExtension() const;
 
   QSharedPointer<Node> previous() const;
   QSharedPointer<Node> next() const;
@@ -130,6 +147,60 @@ class Node {
   QList<QSharedPointer<Node>> children() const;
 
   QSharedPointer<Node> cloneDeep() const;
+
+#if VX_CMARK_USE_GFM
+  uint16_t getTableColumns() const;
+  void setTableColumns(uint16_t nColumns) const;
+
+  QList<uint8_t> getTableAlignments() const;
+  void setTableAlignments(const QList<uint8_t>& alignments) const;
+
+  bool getTableRowIsHeader() const;
+  void setTableRowIsHeader(bool isHeader) const;
+#endif
+};
+
+#if VX_CMARK_USE_GFM
+class SyntaxExtension {
+  cmark_syntax_extension* data_;
+
+  SyntaxExtension(cmark_syntax_extension* data);
+
+ public:
+  ~SyntaxExtension();
+
+  static QSharedPointer<SyntaxExtension> newUnowned(
+      cmark_syntax_extension* data);
+  static QSharedPointer<SyntaxExtension> newUnownedAllowNull(
+      cmark_syntax_extension* data);
+
+  cmark_syntax_extension* data() const { return data_; }
+
+  static QSharedPointer<SyntaxExtension> find(const QString& name);
+};
+#endif
+
+class Parser {
+  cmark_parser* data_;
+
+  Parser(cmark_parser* data);
+
+ public:
+  ~Parser();
+
+  static QSharedPointer<Parser> create(int options = CMARK_OPT_DEFAULT,
+                                       cmark_mem* mem = nullptr);
+
+  cmark_parser* data() const { return data_; }
+
+  void feed(const char* buffer, size_t len);
+
+  QSharedPointer<Node> finish();
+
+#if VX_CMARK_USE_GFM
+  void attachSyntaxExtension(
+      const QSharedPointer<SyntaxExtension>& syntax_extension);
+#endif
 };
 
 template <typename Fun>
@@ -158,6 +229,9 @@ void walkReplace(QSharedPointer<Node>& node, const Fun& fun) {
 
   fun(node);
 }
+
+QSharedPointer<Node> parseDocumentWithExtensions(
+    const QString& buffer, int options = CMARK_OPT_DEFAULT);
 
 }  // namespace cmark
 }  // namespace vx

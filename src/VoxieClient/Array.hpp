@@ -36,10 +36,17 @@ class ArrayTypeInfo;
 
 // TODO: Use DataTypeExt instead of duplicating things here
 
+// TODO: Merge Array1, Array2 and Array3?
+
 namespace half_float {
 // Defined in <half.hpp>
 class half;
 }  // namespace half_float
+
+namespace vx {
+// Defined in VoxieClient/Bool8.hpp
+class Bool8;
+}  // namespace vx
 
 #define T(tname, nm)                          \
   template <>                                 \
@@ -58,6 +65,7 @@ T(uint64_t, uint)
 T(half_float::half, float)
 T(float, float)
 T(double, float)
+T(vx::Bool8, bool)
 #undef T
 
 // TODO: This is copied from extern/util/C++/Core/CheckedCast.hpp and modified
@@ -514,6 +522,10 @@ class Array2 {
 
 template <typename T>
 class Array3 {
+  // TODO: Should not be needed, exposes via accessors
+  friend class Array3<void>;
+  friend class Array3<const void>;
+
   typedef typename std::remove_cv<T>::type TnoCV;
   typedef
       typename std::conditional<std::is_const<T>::value, const char, char>::type
@@ -532,6 +544,8 @@ class Array3 {
                                // the returned pointer is destroyed
                                [ptr](int*) {});
   }
+
+  struct DummyStruct {};
 
  public:
   Array3(const vx::Array3Info& info) {
@@ -613,6 +627,15 @@ class Array3 {
     ptr = (T*)(((char*)buffer->data()) + offset);
   }
 
+  explicit inline Array3(const Array3<void>& av);
+  // This constructor is only available if T is const
+  // template <typename U = std::enable_if_t<std::is_const<T>::value, T>>
+  // explicit inline Array3(const Array3<const void>& av);
+  template <typename U = T>
+  explicit inline Array3(
+      const Array3<const void>& av,
+      std::enable_if_t<std::is_const<U>::value, DummyStruct> = DummyStruct());
+
   template <typename BackendPtr>
   Array3(T* ptr, const std::array<size_t, 3>& shape,
          const std::array<ptrdiff_t, 3>& stride,
@@ -661,4 +684,137 @@ class Array3 {
     return std::get<dim>(stride);
   }
 };
+
+// TODO: Merge partially with Array3<T>?
+template <>
+class Array3<void> {
+  // TODO: Should not be needed, exposes via accessors
+  template <typename T>
+  friend class Array3;
+
+  typedef void T;
+  typedef char MaybeConstChar;
+
+  QSharedPointer<int> backend;
+  T* ptr;
+  std::array<size_t, 3> shape;
+  std::array<ptrdiff_t, 3> stride;
+
+  template <typename BackendPtr>
+  static QSharedPointer<int> getBackend(const QSharedPointer<BackendPtr>& ptr) {
+    // Note: Do not pass nullptr to QSharedPointer as otherwise the deleter
+    // won't get called, see https://bugreports.qt.io/browse/QTBUG-85285
+    return QSharedPointer<int>((int*)1,
+                               // This deleter works by keeping ptr alive until
+                               // the returned pointer is destroyed
+                               [ptr](int*) {});
+  }
+
+ public:
+  template <typename BackendPtr>
+  Array3(T* ptr, const std::array<size_t, 3>& shape,
+         const std::array<ptrdiff_t, 3>& stride,
+         const QSharedPointer<BackendPtr>& backend)
+      : backend(getBackend(backend)), ptr(ptr), shape(shape), stride(stride) {}
+
+  template <typename U>
+  explicit Array3(const Array3<U>& a)
+      : backend(a.backend), ptr(a.ptr), shape(a.shape), stride(a.stride) {}
+
+  T* data() const { return ptr; }
+
+  QSharedPointer<int> getBackend() const { return backend; }
+
+  template <size_t dim>
+  size_t size() const {
+    static_assert(dim < 3, "dim < 3");
+    return std::get<dim>(shape);
+  }
+
+  template <size_t dim>
+  ptrdiff_t strideBytes() const {
+    static_assert(dim < 3, "dim < 3");
+    return std::get<dim>(stride);
+  }
+};
+
+// TODO: Clean up, avoid separate implementation for const void?
+template <>
+class Array3<const void> {
+  // TODO: Should not be needed, exposes via accessors
+  template <typename T>
+  friend class Array3;
+
+  typedef const void T;
+  typedef const char MaybeConstChar;
+
+  QSharedPointer<int> backend;
+  T* ptr;
+  std::array<size_t, 3> shape;
+  std::array<ptrdiff_t, 3> stride;
+
+  template <typename BackendPtr>
+  static QSharedPointer<int> getBackend(const QSharedPointer<BackendPtr>& ptr) {
+    // Note: Do not pass nullptr to QSharedPointer as otherwise the deleter
+    // won't get called, see https://bugreports.qt.io/browse/QTBUG-85285
+    return QSharedPointer<int>((int*)1,
+                               // This deleter works by keeping ptr alive until
+                               // the returned pointer is destroyed
+                               [ptr](int*) {});
+  }
+
+ public:
+  template <typename BackendPtr>
+  Array3(T* ptr, const std::array<size_t, 3>& shape,
+         const std::array<ptrdiff_t, 3>& stride,
+         const QSharedPointer<BackendPtr>& backend)
+      : backend(getBackend(backend)), ptr(ptr), shape(shape), stride(stride) {}
+
+  template <typename U>
+  explicit Array3(const Array3<U>& a)
+      : backend(a.backend), ptr(a.ptr), shape(a.shape), stride(a.stride) {}
+
+  // Allow (implicit) conversion void->const void
+  Array3(const Array3<void>& av)
+      : backend(av.backend),
+        ptr((T*)av.ptr),
+        shape(av.shape),
+        stride(av.stride) {}
+
+  T* data() const { return ptr; }
+
+  QSharedPointer<int> getBackend() const { return backend; }
+
+  template <size_t dim>
+  size_t size() const {
+    static_assert(dim < 3, "dim < 3");
+    return std::get<dim>(shape);
+  }
+
+  template <size_t dim>
+  ptrdiff_t strideBytes() const {
+    static_assert(dim < 3, "dim < 3");
+    return std::get<dim>(stride);
+  }
+};
+
+template <typename T>
+inline Array3<T>::Array3(const Array3<void>& av)
+    : backend(av.backend),
+      ptr((T*)av.ptr),
+      shape(av.shape),
+      stride(av.stride) {}
+// This constructor is only available if T is const
+template <typename T>
+template <typename U>
+inline Array3<T>::Array3(const Array3<const void>& av,
+                         std::enable_if_t<std::is_const<U>::value, DummyStruct>)
+    : backend(av.backend),
+      ptr((const T*)av.ptr),
+      shape(av.shape),
+      stride(av.stride) {
+  static_assert(std::is_const<U>::value,
+                "This constructor is only available if T is const");
+  static_assert(std::is_same<T, U>::value, "T and U must be the same");
+}
 }  // namespace vx

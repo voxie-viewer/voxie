@@ -36,6 +36,8 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+VX_NODE_INSTANTIATION(vx::filters::TableFilter)
+
 using namespace vx;
 using namespace vx::filters;
 
@@ -150,5 +152,3 @@ QVariant TableFilter::getNodePropertyCustom(QString key) {
 void TableFilter::setNodePropertyCustom(QString key, QVariant value) {
   FilterNode::setNodePropertyCustom(key, value);
 }
-
-NODE_PROTOTYPE_IMPL(TableFilter)

@@ -70,7 +70,7 @@ VOXIEBACKEND_EXPORT QString exitStatusToString(QProcess::ExitStatus status);
 
 class VOXIEBACKEND_EXPORT Extension : public vx::ComponentContainer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(Extension)
+  VX_REFCOUNTEDOBJECT
 
   QString scriptFilename_;
 
@@ -129,11 +129,14 @@ class VOXIEBACKEND_EXPORT Extension : public vx::ComponentContainer {
 
   QSharedPointer<vx::Component> getComponent(
       const QSharedPointer<ComponentType>& componentType, const QString& name,
-      bool allowCompatibilityNames) override;
+      bool allowCompatibilityNames, bool allowMissing = false) override;
 
   QSharedPointer<const QList<QSharedPointer<ComponentType>>> componentTypes()
       override {
     return componentTypes_;
   }
+
+  // Get information about filename and last modification of of the extension.
+  QMap<QString, QString> getExtensionInfo();
 };
 }  // namespace vx

@@ -24,6 +24,105 @@
 #include <QtDBus/QtDBus>
 
 /*
+ * Proxy class for interface de.uni_stuttgart.Voxie.Buffer
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieBufferInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.Buffer";
+  }
+
+ public:
+  DeUni_stuttgartVoxieBufferInterface(const QString& service,
+                                      const QString& path,
+                                      const QDBusConnection& connection,
+                                      QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieBufferInterface();
+
+  Q_PROPERTY(qlonglong OffsetBytes READ offsetBytes)
+  inline qlonglong offsetBytes() const {
+    return qvariant_cast<qlonglong>(
+        QDBusAbstractInterface::property("OffsetBytes"));
+  }
+
+  Q_PROPERTY(qulonglong SizeBytes READ sizeBytes)
+  inline qulonglong sizeBytes() const {
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("SizeBytes"));
+  }
+
+  Q_PROPERTY(QDBusVariant Type READ type)
+  inline QDBusVariant type() const {
+    return qvariant_cast<QDBusVariant>(
+        QDBusAbstractInterface::property("Type"));
+  }
+
+ public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<
+      VX_IDENTITY_TYPE((std::tuple<QMap<QString, QDBusVariant>, qint64,
+                                   QDBusVariant, QMap<QString, QDBusVariant>>))>
+  GetDataReadonly(const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                  options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetDataReadonly"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<
+      VX_IDENTITY_TYPE((std::tuple<QMap<QString, QDBusVariant>, qint64,
+                                   QDBusVariant, QMap<QString, QDBusVariant>>))>
+  GetDataWritable(const QDBusObjectPath& update,
+                  const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                      options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(update) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetDataWritable"),
+                                     argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.BufferType
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieBufferTypeInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.BufferType";
+  }
+
+ public:
+  DeUni_stuttgartVoxieBufferTypeInterface(const QString& service,
+                                          const QString& path,
+                                          const QDBusConnection& connection,
+                                          QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieBufferTypeInterface();
+
+  Q_PROPERTY(qulonglong SizeBytes READ sizeBytes)
+  inline qulonglong sizeBytes() const {
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("SizeBytes"));
+  }
+
+  Q_PROPERTY(QDBusVariant Type READ type)
+  inline QDBusVariant type() const {
+    return qvariant_cast<QDBusVariant>(
+        QDBusAbstractInterface::property("Type"));
+  }
+
+ public Q_SLOTS:  // METHODS
+ Q_SIGNALS:       // SIGNALS
+};
+
+/*
  * Proxy class for interface de.uni_stuttgart.Voxie.Client
  */
 class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieClientInterface
@@ -44,12 +143,14 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieClientInterface
 
   Q_PROPERTY(QString DBusConnectionName READ dBusConnectionName)
   inline QString dBusConnectionName() const {
-    return qvariant_cast<QString>(property("DBusConnectionName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DBusConnectionName"));
   }
 
   Q_PROPERTY(QString UniqueConnectionName READ uniqueConnectionName)
   inline QString uniqueConnectionName() const {
-    return qvariant_cast<QString>(property("UniqueConnectionName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("UniqueConnectionName"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -152,17 +253,19 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieComponentInterface
 
   Q_PROPERTY(QDBusObjectPath ComponentContainer READ componentContainer)
   inline QDBusObjectPath componentContainer() const {
-    return qvariant_cast<QDBusObjectPath>(property("ComponentContainer"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("ComponentContainer"));
   }
 
   Q_PROPERTY(QString ComponentType READ componentType)
   inline QString componentType() const {
-    return qvariant_cast<QString>(property("ComponentType"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("ComponentType"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -295,7 +398,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataInterface
 
   Q_PROPERTY(QString CurrentVersionString READ currentVersionString)
   inline QString currentVersionString() const {
-    return qvariant_cast<QString>(property("CurrentVersionString"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("CurrentVersionString"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -315,6 +419,36 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataInterface
     QList<QVariant> argumentList;
     argumentList << QVariant::fromValue(client) << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("GetCurrentVersion"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusVariant> GetProperty(
+      const QDBusObjectPath& property,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(property)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetProperty"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QList<QDBusObjectPath>>
+  ListProperties(const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                 options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("ListProperties"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> SetProperty(
+      const QDBusObjectPath& update, const QDBusObjectPath& property,
+      const QDBusVariant& value,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(update) << QVariant::fromValue(property)
+                 << QVariant::fromValue(value) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("SetProperty"),
                                      argumentList);
   }
 
@@ -348,17 +482,19 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataNodeInterface
 
   Q_PROPERTY(QDBusObjectPath Data READ data)
   inline QDBusObjectPath data() const {
-    return qvariant_cast<QDBusObjectPath>(property("Data"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Data"));
   }
 
   Q_PROPERTY(QDBusObjectPath DefaultExporter READ defaultExporter)
   inline QDBusObjectPath defaultExporter() const {
-    return qvariant_cast<QDBusObjectPath>(property("DefaultExporter"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("DefaultExporter"));
   }
 
   Q_PROPERTY(QString FileName READ fileName)
   inline QString fileName() const {
-    return qvariant_cast<QString>(property("FileName"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("FileName"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))
@@ -366,12 +502,13 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataNodeInterface
   inline VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))
       importProperties() const {
     return qvariant_cast<VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))>(
-        property("ImportProperties"));
+        QDBusAbstractInterface::property("ImportProperties"));
   }
 
   Q_PROPERTY(QDBusObjectPath Importer READ importer)
   inline QDBusObjectPath importer() const {
-    return qvariant_cast<QDBusObjectPath>(property("Importer"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Importer"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -399,17 +536,19 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataObjectInterface
 
   Q_PROPERTY(QDBusObjectPath Data READ data)
   inline QDBusObjectPath data() const {
-    return qvariant_cast<QDBusObjectPath>(property("Data"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Data"));
   }
 
   Q_PROPERTY(QDBusObjectPath DefaultExporter READ defaultExporter)
   inline QDBusObjectPath defaultExporter() const {
-    return qvariant_cast<QDBusObjectPath>(property("DefaultExporter"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("DefaultExporter"));
   }
 
   Q_PROPERTY(QString FileName READ fileName)
   inline QString fileName() const {
-    return qvariant_cast<QString>(property("FileName"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("FileName"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))
@@ -417,13 +556,37 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataObjectInterface
   inline VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))
       importProperties() const {
     return qvariant_cast<VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))>(
-        property("ImportProperties"));
+        QDBusAbstractInterface::property("ImportProperties"));
   }
 
   Q_PROPERTY(QDBusObjectPath Importer READ importer)
   inline QDBusObjectPath importer() const {
-    return qvariant_cast<QDBusObjectPath>(property("Importer"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Importer"));
   }
+
+ public Q_SLOTS:  // METHODS
+ Q_SIGNALS:       // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.DataProperty
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataPropertyInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.DataProperty";
+  }
+
+ public:
+  DeUni_stuttgartVoxieDataPropertyInterface(const QString& service,
+                                            const QString& path,
+                                            const QDBusConnection& connection,
+                                            QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieDataPropertyInterface();
 
  public Q_SLOTS:  // METHODS
  Q_SIGNALS:       // SIGNALS
@@ -450,29 +613,32 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDataVersionInterface
 
   Q_PROPERTY(QDBusObjectPath Data READ data)
   inline QDBusObjectPath data() const {
-    return qvariant_cast<QDBusObjectPath>(property("Data"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Data"));
   }
 
   Q_PROPERTY(QString Date READ date)
   inline QString date() const {
-    return qvariant_cast<QString>(property("Date"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Date"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))
                  Metadata READ metadata)
   inline VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) metadata() const {
     return qvariant_cast<VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))>(
-        property("Metadata"));
+        QDBusAbstractInterface::property("Metadata"));
   }
 
   Q_PROPERTY(bool UpdateIsRunning READ updateIsRunning)
   inline bool updateIsRunning() const {
-    return qvariant_cast<bool>(property("UpdateIsRunning"));
+    return qvariant_cast<bool>(
+        QDBusAbstractInterface::property("UpdateIsRunning"));
   }
 
   Q_PROPERTY(QString VersionString READ versionString)
   inline QString versionString() const {
-    return qvariant_cast<QString>(property("VersionString"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("VersionString"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -500,12 +666,13 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDebugOptionInterface
 
   Q_PROPERTY(QDBusSignature DBusSignature READ dBusSignature)
   inline QDBusSignature dBusSignature() const {
-    return qvariant_cast<QDBusSignature>(property("DBusSignature"));
+    return qvariant_cast<QDBusSignature>(
+        QDBusAbstractInterface::property("DBusSignature"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -548,7 +715,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieDynamicObjectInterface
 
   Q_PROPERTY(QStringList SupportedInterfaces READ supportedInterfaces)
   inline QStringList supportedInterfaces() const {
-    return qvariant_cast<QStringList>(property("SupportedInterfaces"));
+    return qvariant_cast<QStringList>(
+        QDBusAbstractInterface::property("SupportedInterfaces"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -599,7 +767,8 @@ class VOXIECLIENT_EXPORT
 
   Q_PROPERTY(qulonglong StreamCount READ streamCount)
   inline qulonglong streamCount() const {
-    return qvariant_cast<qulonglong>(property("StreamCount"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("StreamCount"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -732,12 +901,13 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieEventListDataBufferInterface
         (QList<std::tuple<QString, std::tuple<QString, quint32, QString>,
                           QString, QMap<QString, QDBusVariant>,
                           QMap<QString, QDBusVariant>>>))>(
-        property("Attributes"));
+        QDBusAbstractInterface::property("Attributes"));
   }
 
   Q_PROPERTY(qulonglong Capacity READ capacity)
   inline qulonglong capacity() const {
-    return qvariant_cast<qulonglong>(property("Capacity"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("Capacity"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -793,7 +963,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExporterInterface
   Q_PROPERTY(VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) Filter READ filter)
   inline VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) filter() const {
     return qvariant_cast<VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))>(
-        property("Filter"));
+        QDBusAbstractInterface::property("Filter"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -806,13 +976,13 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExporterInterface
     return asyncCallWithArgumentList(QStringLiteral("Export"), argumentList);
   }
 
-  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QString> FilterAddExtension(
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QString> FilterForceMatch(
       const QString& filename,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
     QList<QVariant> argumentList;
     argumentList << QVariant::fromValue(filename)
                  << QVariant::fromValue(options);
-    return asyncCallWithArgumentList(QStringLiteral("FilterAddExtension"),
+    return asyncCallWithArgumentList(QStringLiteral("FilterForceMatch"),
                                      argumentList);
   }
 
@@ -852,7 +1022,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExtensionInterface
 
   Q_PROPERTY(QString ExecutableFilename READ executableFilename)
   inline QString executableFilename() const {
-    return qvariant_cast<QString>(property("ExecutableFilename"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("ExecutableFilename"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -879,7 +1050,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalDataUpdateInterface
 
   Q_PROPERTY(QDBusObjectPath Data READ data)
   inline QDBusObjectPath data() const {
-    return qvariant_cast<QDBusObjectPath>(property("Data"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Data"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -914,17 +1086,17 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalOperationInterface
 
   Q_PROPERTY(QString Action READ action)
   inline QString action() const {
-    return qvariant_cast<QString>(property("Action"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Action"));
   }
 
   Q_PROPERTY(bool IsCancelled READ isCancelled)
   inline bool isCancelled() const {
-    return qvariant_cast<bool>(property("IsCancelled"));
+    return qvariant_cast<bool>(QDBusAbstractInterface::property("IsCancelled"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -982,12 +1154,13 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalOperationExportInterface
 
   Q_PROPERTY(QDBusObjectPath Data READ data)
   inline QDBusObjectPath data() const {
-    return qvariant_cast<QDBusObjectPath>(property("Data"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Data"));
   }
 
   Q_PROPERTY(QString Filename READ filename)
   inline QString filename() const {
-    return qvariant_cast<QString>(property("Filename"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Filename"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1021,14 +1194,14 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalOperationImportInterface
 
   Q_PROPERTY(QString Filename READ filename)
   inline QString filename() const {
-    return qvariant_cast<QString>(property("Filename"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Filename"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))
                  Properties READ properties)
   inline VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) properties() const {
     return qvariant_cast<VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))>(
-        property("Properties"));
+        QDBusAbstractInterface::property("Properties"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1064,17 +1237,20 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalOperationRunFilterInterface
 
   Q_PROPERTY(QDBusObjectPath FilterNode READ filterNode)
   inline QDBusObjectPath filterNode() const {
-    return qvariant_cast<QDBusObjectPath>(property("FilterNode"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("FilterNode"));
   }
 
   Q_PROPERTY(QDBusObjectPath FilterObject READ filterObject)
   inline QDBusObjectPath filterObject() const {
-    return qvariant_cast<QDBusObjectPath>(property("FilterObject"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("FilterObject"));
   }
 
   Q_PROPERTY(bool IsAutomaticFilterRun READ isAutomaticFilterRun)
   inline bool isAutomaticFilterRun() const {
-    return qvariant_cast<bool>(property("IsAutomaticFilterRun"));
+    return qvariant_cast<bool>(
+        QDBusAbstractInterface::property("IsAutomaticFilterRun"));
   }
 
   Q_PROPERTY(
@@ -1084,7 +1260,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalOperationRunFilterInterface
       parameters() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
         (QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>))>(
-        property("Parameters"));
+        QDBusAbstractInterface::property("Parameters"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1123,17 +1299,20 @@ class VOXIECLIENT_EXPORT
 
   Q_PROPERTY(QDBusObjectPath ContainerData READ containerData)
   inline QDBusObjectPath containerData() const {
-    return qvariant_cast<QDBusObjectPath>(property("ContainerData"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("ContainerData"));
   }
 
   Q_PROPERTY(QDBusObjectPath InputNode READ inputNode)
   inline QDBusObjectPath inputNode() const {
-    return qvariant_cast<QDBusObjectPath>(property("InputNode"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("InputNode"));
   }
 
   Q_PROPERTY(QDBusObjectPath LabelData READ labelData)
   inline QDBusObjectPath labelData() const {
-    return qvariant_cast<QDBusObjectPath>(property("LabelData"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("LabelData"));
   }
 
   Q_PROPERTY(
@@ -1143,12 +1322,13 @@ class VOXIECLIENT_EXPORT
       parameters() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
         (QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>))>(
-        property("Parameters"));
+        QDBusAbstractInterface::property("Parameters"));
   }
 
   Q_PROPERTY(QDBusObjectPath SegmentationStepNode READ segmentationStepNode)
   inline QDBusObjectPath segmentationStepNode() const {
-    return qvariant_cast<QDBusObjectPath>(property("SegmentationStepNode"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("SegmentationStepNode"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1186,7 +1366,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalTaskInterface
   Q_PROPERTY(bool FinishAutomatically READ finishAutomatically WRITE
                  setFinishAutomatically)
   inline bool finishAutomatically() const {
-    return qvariant_cast<bool>(property("FinishAutomatically"));
+    return qvariant_cast<bool>(
+        QDBusAbstractInterface::property("FinishAutomatically"));
   }
   inline void setFinishAutomatically(bool value) {
     setProperty("FinishAutomatically", QVariant::fromValue(value));
@@ -1194,7 +1375,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalTaskInterface
 
   Q_PROPERTY(QDBusObjectPath Task READ task)
   inline QDBusObjectPath task() const {
-    return qvariant_cast<QDBusObjectPath>(property("Task"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Task"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1234,6 +1416,82 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieExternalTaskInterface
     argumentList << QVariant::fromValue(subtasks)
                  << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("SetSubTasks"),
+                                     argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.FileData
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieFileDataInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.FileData";
+  }
+
+ public:
+  DeUni_stuttgartVoxieFileDataInterface(const QString& service,
+                                        const QString& path,
+                                        const QDBusConnection& connection,
+                                        QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieFileDataInterface();
+
+ public Q_SLOTS:  // METHODS
+ Q_SIGNALS:       // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.FileDataByteStream
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieFileDataByteStreamInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.FileDataByteStream";
+  }
+
+ public:
+  DeUni_stuttgartVoxieFileDataByteStreamInterface(
+      const QString& service, const QString& path,
+      const QDBusConnection& connection, QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieFileDataByteStreamInterface();
+
+  Q_PROPERTY(QString MediaType READ mediaType)
+  inline QString mediaType() const {
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("MediaType"));
+  }
+
+ public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<VX_IDENTITY_TYPE(
+      (std::tuple<QMap<QString, QDBusVariant>, qint64,
+                  std::tuple<QString, quint32, QString>, std::tuple<quint64>,
+                  std::tuple<qint64>, QMap<QString, QDBusVariant>>))>
+  GetContentReadonly(const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                     options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetContentReadonly"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<VX_IDENTITY_TYPE(
+      (std::tuple<QMap<QString, QDBusVariant>, qint64,
+                  std::tuple<QString, quint32, QString>, std::tuple<quint64>,
+                  std::tuple<qint64>, QMap<QString, QDBusVariant>>))>
+  GetContentWritable(const QDBusObjectPath& update,
+                     const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                         options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(update) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetContentWritable"),
                                      argumentList);
   }
 
@@ -1292,15 +1550,17 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieFilterObjectInterface
 
   Q_PROPERTY(bool PreviewActive READ previewActive)
   inline bool previewActive() const {
-    return qvariant_cast<bool>(property("PreviewActive"));
+    return qvariant_cast<bool>(
+        QDBusAbstractInterface::property("PreviewActive"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double, double>))
                  PreviewPoint READ previewPoint)
   inline VX_IDENTITY_TYPE((std::tuple<double, double, double, double>))
       previewPoint() const {
-    return qvariant_cast<VX_IDENTITY_TYPE((
-        std::tuple<double, double, double, double>))>(property("PreviewPoint"));
+    return qvariant_cast<VX_IDENTITY_TYPE(
+        (std::tuple<double, double, double, double>))>(
+        QDBusAbstractInterface::property("PreviewPoint"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1378,12 +1638,13 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieGeometricPrimitiveTypeInterface
 
   Q_PROPERTY(QString DisplayName READ displayName)
   inline QString displayName() const {
-    return qvariant_cast<QString>(property("DisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DisplayName"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((QMap<QString, QDBusSignature>))
@@ -1391,7 +1652,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieGeometricPrimitiveTypeInterface
   inline VX_IDENTITY_TYPE((QMap<QString, QDBusSignature>))
       valueDBusSignatures() const {
     return qvariant_cast<VX_IDENTITY_TYPE((QMap<QString, QDBusSignature>))>(
-        property("ValueDBusSignatures"));
+        QDBusAbstractInterface::property("ValueDBusSignatures"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1418,12 +1679,34 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieGuiInterface
 
   Q_PROPERTY(QDBusObjectPath ActiveVisualizer READ activeVisualizer)
   inline QDBusObjectPath activeVisualizer() const {
-    return qvariant_cast<QDBusObjectPath>(property("ActiveVisualizer"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("ActiveVisualizer"));
+  }
+
+  Q_PROPERTY(QString MainWindowMode READ mainWindowMode WRITE setMainWindowMode)
+  inline QString mainWindowMode() const {
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("MainWindowMode"));
+  }
+  inline void setMainWindowMode(const QString& value) {
+    setProperty("MainWindowMode", QVariant::fromValue(value));
+  }
+
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double>))
+                 MainWindowSize READ mainWindowSize WRITE setMainWindowSize)
+  inline VX_IDENTITY_TYPE((std::tuple<double, double>)) mainWindowSize() const {
+    return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
+        QDBusAbstractInterface::property("MainWindowSize"));
+  }
+  inline void setMainWindowSize(VX_IDENTITY_TYPE((std::tuple<double, double>))
+                                    value) {
+    setProperty("MainWindowSize", QVariant::fromValue(value));
   }
 
   Q_PROPERTY(QString MdiViewMode READ mdiViewMode WRITE setMdiViewMode)
   inline QString mdiViewMode() const {
-    return qvariant_cast<QString>(property("MdiViewMode"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("MdiViewMode"));
   }
   inline void setMdiViewMode(const QString& value) {
     setProperty("MdiViewMode", QVariant::fromValue(value));
@@ -1432,7 +1715,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieGuiInterface
   Q_PROPERTY(QList<QDBusObjectPath> SelectedNodes READ selectedNodes WRITE
                  setSelectedNodes)
   inline QList<QDBusObjectPath> selectedNodes() const {
-    return qvariant_cast<QList<QDBusObjectPath>>(property("SelectedNodes"));
+    return qvariant_cast<QList<QDBusObjectPath>>(
+        QDBusAbstractInterface::property("SelectedNodes"));
   }
   inline void setSelectedNodes(const QList<QDBusObjectPath>& value) {
     setProperty("SelectedNodes", QVariant::fromValue(value));
@@ -1440,7 +1724,26 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieGuiInterface
 
   Q_PROPERTY(QList<QDBusObjectPath> SelectedObjects READ selectedObjects)
   inline QList<QDBusObjectPath> selectedObjects() const {
-    return qvariant_cast<QList<QDBusObjectPath>>(property("SelectedObjects"));
+    return qvariant_cast<QList<QDBusObjectPath>>(
+        QDBusAbstractInterface::property("SelectedObjects"));
+  }
+
+  Q_PROPERTY(QString SidePanelMode READ sidePanelMode WRITE setSidePanelMode)
+  inline QString sidePanelMode() const {
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("SidePanelMode"));
+  }
+  inline void setSidePanelMode(const QString& value) {
+    setProperty("SidePanelMode", QVariant::fromValue(value));
+  }
+
+  Q_PROPERTY(double SidePanelSize READ sidePanelSize WRITE setSidePanelSize)
+  inline double sidePanelSize() const {
+    return qvariant_cast<double>(
+        QDBusAbstractInterface::property("SidePanelSize"));
+  }
+  inline void setSidePanelSize(double value) {
+    setProperty("SidePanelSize", QVariant::fromValue(value));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1484,7 +1787,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieImageDataPixelInterface
 
   Q_PROPERTY(qulonglong ComponentCount READ componentCount)
   inline qulonglong componentCount() const {
-    return qvariant_cast<qulonglong>(property("ComponentCount"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("ComponentCount"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<QString, quint32, QString>))
@@ -1492,13 +1796,14 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieImageDataPixelInterface
   inline VX_IDENTITY_TYPE((std::tuple<QString, quint32, QString>))
       dataType() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<QString, quint32, QString>))>(property("DataType"));
+        (std::tuple<QString, quint32, QString>))>(
+        QDBusAbstractInterface::property("DataType"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<quint64, quint64>)) Size READ size)
   inline VX_IDENTITY_TYPE((std::tuple<quint64, quint64>)) size() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<quint64, quint64>))>(
-        property("Size"));
+        QDBusAbstractInterface::property("Size"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1556,7 +1861,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieImporterInterface
   Q_PROPERTY(VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) Filter READ filter)
   inline VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) filter() const {
     return qvariant_cast<VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))>(
-        property("Filter"));
+        QDBusAbstractInterface::property("Filter"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -1625,17 +1930,20 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
 
   Q_PROPERTY(QDBusObjectPath Components READ components)
   inline QDBusObjectPath components() const {
-    return qvariant_cast<QDBusObjectPath>(property("Components"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Components"));
   }
 
   Q_PROPERTY(QDBusObjectPath Gui READ gui)
   inline QDBusObjectPath gui() const {
-    return qvariant_cast<QDBusObjectPath>(property("Gui"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Gui"));
   }
 
   Q_PROPERTY(QDBusObjectPath Utilities READ utilities)
   inline QDBusObjectPath utilities() const {
-    return qvariant_cast<QDBusObjectPath>(property("Utilities"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Utilities"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))
@@ -1643,10 +1951,22 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
   inline VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))
       versionInformation() const {
     return qvariant_cast<VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>))>(
-        property("VersionInformation"));
+        QDBusAbstractInterface::property("VersionInformation"));
   }
 
  public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath> CreateBuffer(
+      const QDBusObjectPath& client, qlonglong offsetBytes,
+      const QDBusVariant& type,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(client)
+                 << QVariant::fromValue(offsetBytes)
+                 << QVariant::fromValue(type) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("CreateBuffer"),
+                                     argumentList);
+  }
+
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
   CreateContainerData(const QDBusObjectPath& client, const QString& name,
                       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
@@ -1655,6 +1975,18 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
     argumentList << QVariant::fromValue(client) << QVariant::fromValue(name)
                  << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("CreateContainerData"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
+  CreateDataProperty(const QDBusObjectPath& client, const QString& name,
+                     const QDBusVariant& json,
+                     const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                         options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(client) << QVariant::fromValue(name)
+                 << QVariant::fromValue(json) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("CreateDataProperty"),
                                      argumentList);
   }
 
@@ -1688,6 +2020,20 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
   }
 
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
+  CreateFileDataByteStream(
+      const QDBusObjectPath& client, const QString& mediaType,
+      qulonglong lengthBytes,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(client)
+                 << QVariant::fromValue(mediaType)
+                 << QVariant::fromValue(lengthBytes)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("CreateFileDataByteStream"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
   CreateGeometricPrimitiveData(
       const QDBusObjectPath& client,
       const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
@@ -1714,15 +2060,14 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
   }
 
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
-  CreateSeriesDimension(const QDBusObjectPath& client, const QString& name,
-                        const QString& displayName, const QDBusObjectPath& type,
+  CreateSeriesDimension(const QDBusObjectPath& client,
+                        const QDBusObjectPath& property,
                         const QDBusVariant& entries,
                         const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
                             options) {
     QList<QVariant> argumentList;
-    argumentList << QVariant::fromValue(client) << QVariant::fromValue(name)
-                 << QVariant::fromValue(displayName)
-                 << QVariant::fromValue(type) << QVariant::fromValue(entries)
+    argumentList << QVariant::fromValue(client) << QVariant::fromValue(property)
+                 << QVariant::fromValue(entries)
                  << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("CreateSeriesDimension"),
                                      argumentList);
@@ -1789,6 +2134,39 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieInstanceInterface
                  << QVariant::fromValue(options);
     return asyncCallWithArgumentList(
         QStringLiteral("CreateTomographyRawData2DRegular"), argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
+  CreateVolumeDataBlockJpeg(
+      const QDBusObjectPath& client,
+      const VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>)) &
+          arrayShape,
+      const VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>)) &
+          blockShape,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) &
+          volumeOrigin,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) &
+          gridSpacing,
+      double valueOffset, double valueScalingFactor, uint samplePrecision,
+      const QList<QByteArray>& huffmanTableDC,
+      const QList<QByteArray>& huffmanTableAC,
+      const QList<QList<quint16>>& quantizationTable,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(client)
+                 << QVariant::fromValue(arrayShape)
+                 << QVariant::fromValue(blockShape)
+                 << QVariant::fromValue(volumeOrigin)
+                 << QVariant::fromValue(gridSpacing)
+                 << QVariant::fromValue(valueOffset)
+                 << QVariant::fromValue(valueScalingFactor)
+                 << QVariant::fromValue(samplePrecision)
+                 << QVariant::fromValue(huffmanTableDC)
+                 << QVariant::fromValue(huffmanTableAC)
+                 << QVariant::fromValue(quantizationTable)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(
+        QStringLiteral("CreateVolumeDataBlockJpeg"), argumentList);
   }
 
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusObjectPath>
@@ -1962,18 +2340,21 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieNodeInterface
 
   Q_PROPERTY(QString AutomaticDisplayName READ automaticDisplayName)
   inline QString automaticDisplayName() const {
-    return qvariant_cast<QString>(property("AutomaticDisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("AutomaticDisplayName"));
   }
 
   Q_PROPERTY(QString DisplayName READ displayName)
   inline QString displayName() const {
-    return qvariant_cast<QString>(property("DisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DisplayName"));
   }
 
   Q_PROPERTY(QStringList ExportedProperties READ exportedProperties WRITE
                  setExportedProperties)
   inline QStringList exportedProperties() const {
-    return qvariant_cast<QStringList>(property("ExportedProperties"));
+    return qvariant_cast<QStringList>(
+        QDBusAbstractInterface::property("ExportedProperties"));
   }
   inline void setExportedProperties(const QStringList& value) {
     setProperty("ExportedProperties", QVariant::fromValue(value));
@@ -1983,7 +2364,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieNodeInterface
                  GraphPosition READ graphPosition WRITE setGraphPosition)
   inline VX_IDENTITY_TYPE((std::tuple<double, double>)) graphPosition() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
-        property("GraphPosition"));
+        QDBusAbstractInterface::property("GraphPosition"));
   }
   inline void setGraphPosition(VX_IDENTITY_TYPE((std::tuple<double, double>))
                                    value) {
@@ -1996,7 +2377,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieNodeInterface
   inline VX_IDENTITY_TYPE((std::tuple<bool, QString>))
       manualDisplayName() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<bool, QString>))>(
-        property("ManualDisplayName"));
+        QDBusAbstractInterface::property("ManualDisplayName"));
   }
   inline void setManualDisplayName(VX_IDENTITY_TYPE((std::tuple<bool, QString>))
                                        value) {
@@ -2006,7 +2387,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieNodeInterface
   Q_PROPERTY(QDBusObjectPath ParentNodeGroup READ parentNodeGroup WRITE
                  setParentNodeGroup)
   inline QDBusObjectPath parentNodeGroup() const {
-    return qvariant_cast<QDBusObjectPath>(property("ParentNodeGroup"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("ParentNodeGroup"));
   }
   inline void setParentNodeGroup(const QDBusObjectPath& value) {
     setProperty("ParentNodeGroup", QVariant::fromValue(value));
@@ -2014,7 +2396,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieNodeInterface
 
   Q_PROPERTY(QDBusObjectPath Prototype READ prototype)
   inline QDBusObjectPath prototype() const {
-    return qvariant_cast<QDBusObjectPath>(property("Prototype"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Prototype"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2103,28 +2486,31 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieNodePrototypeInterface
 
   Q_PROPERTY(QString Description READ description)
   inline QString description() const {
-    return qvariant_cast<QString>(property("Description"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("Description"));
   }
 
   Q_PROPERTY(QString DisplayName READ displayName)
   inline QString displayName() const {
-    return qvariant_cast<QString>(property("DisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DisplayName"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
   Q_PROPERTY(QString NodeKind READ nodeKind)
   inline QString nodeKind() const {
-    return qvariant_cast<QString>(property("NodeKind"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("NodeKind"));
   }
 
   Q_PROPERTY(
       QStringList SupportedDataDBusInterfaces READ supportedDataDBusInterfaces)
   inline QStringList supportedDataDBusInterfaces() const {
-    return qvariant_cast<QStringList>(property("SupportedDataDBusInterfaces"));
+    return qvariant_cast<QStringList>(
+        QDBusAbstractInterface::property("SupportedDataDBusInterfaces"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2181,18 +2567,21 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieObjectInterface
 
   Q_PROPERTY(QString AutomaticDisplayName READ automaticDisplayName)
   inline QString automaticDisplayName() const {
-    return qvariant_cast<QString>(property("AutomaticDisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("AutomaticDisplayName"));
   }
 
   Q_PROPERTY(QString DisplayName READ displayName)
   inline QString displayName() const {
-    return qvariant_cast<QString>(property("DisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DisplayName"));
   }
 
   Q_PROPERTY(QStringList ExportedProperties READ exportedProperties WRITE
                  setExportedProperties)
   inline QStringList exportedProperties() const {
-    return qvariant_cast<QStringList>(property("ExportedProperties"));
+    return qvariant_cast<QStringList>(
+        QDBusAbstractInterface::property("ExportedProperties"));
   }
   inline void setExportedProperties(const QStringList& value) {
     setProperty("ExportedProperties", QVariant::fromValue(value));
@@ -2202,7 +2591,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieObjectInterface
                  GraphPosition READ graphPosition WRITE setGraphPosition)
   inline VX_IDENTITY_TYPE((std::tuple<double, double>)) graphPosition() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
-        property("GraphPosition"));
+        QDBusAbstractInterface::property("GraphPosition"));
   }
   inline void setGraphPosition(VX_IDENTITY_TYPE((std::tuple<double, double>))
                                    value) {
@@ -2215,7 +2604,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieObjectInterface
   inline VX_IDENTITY_TYPE((std::tuple<bool, QString>))
       manualDisplayName() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<bool, QString>))>(
-        property("ManualDisplayName"));
+        QDBusAbstractInterface::property("ManualDisplayName"));
   }
   inline void setManualDisplayName(VX_IDENTITY_TYPE((std::tuple<bool, QString>))
                                        value) {
@@ -2225,7 +2614,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieObjectInterface
   Q_PROPERTY(QDBusObjectPath ParentNodeGroup READ parentNodeGroup WRITE
                  setParentNodeGroup)
   inline QDBusObjectPath parentNodeGroup() const {
-    return qvariant_cast<QDBusObjectPath>(property("ParentNodeGroup"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("ParentNodeGroup"));
   }
   inline void setParentNodeGroup(const QDBusObjectPath& value) {
     setProperty("ParentNodeGroup", QVariant::fromValue(value));
@@ -2233,7 +2623,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieObjectInterface
 
   Q_PROPERTY(QDBusObjectPath Prototype READ prototype)
   inline QDBusObjectPath prototype() const {
-    return qvariant_cast<QDBusObjectPath>(property("Prototype"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Prototype"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2321,22 +2712,25 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieObjectPrototypeInterface
 
   Q_PROPERTY(QString Description READ description)
   inline QString description() const {
-    return qvariant_cast<QString>(property("Description"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("Description"));
   }
 
   Q_PROPERTY(QString DisplayName READ displayName)
   inline QString displayName() const {
-    return qvariant_cast<QString>(property("DisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DisplayName"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
   Q_PROPERTY(QString ObjectKind READ objectKind)
   inline QString objectKind() const {
-    return qvariant_cast<QString>(property("ObjectKind"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("ObjectKind"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2393,12 +2787,12 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieOperationInterface
 
   Q_PROPERTY(bool IsCancelled READ isCancelled)
   inline bool isCancelled() const {
-    return qvariant_cast<bool>(property("IsCancelled"));
+    return qvariant_cast<bool>(QDBusAbstractInterface::property("IsCancelled"));
   }
 
   Q_PROPERTY(bool IsFinished READ isFinished)
   inline bool isFinished() const {
-    return qvariant_cast<bool>(property("IsFinished"));
+    return qvariant_cast<bool>(QDBusAbstractInterface::property("IsFinished"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2455,7 +2849,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieOperationResultInterface
 
   Q_PROPERTY(QDBusObjectPath Operation READ operation)
   inline QDBusObjectPath operation() const {
-    return qvariant_cast<QDBusObjectPath>(property("Operation"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Operation"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2482,12 +2877,14 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieOperationResultImportInterface
 
   Q_PROPERTY(QDBusObjectPath Data READ data)
   inline QDBusObjectPath data() const {
-    return qvariant_cast<QDBusObjectPath>(property("Data"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Data"));
   }
 
   Q_PROPERTY(QDBusObjectPath DataVersion READ dataVersion)
   inline QDBusObjectPath dataVersion() const {
-    return qvariant_cast<QDBusObjectPath>(property("DataVersion"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("DataVersion"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2514,7 +2911,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieOperationResultImportNodeInterface
 
   Q_PROPERTY(QDBusObjectPath DataNode READ dataNode)
   inline QDBusObjectPath dataNode() const {
-    return qvariant_cast<QDBusObjectPath>(property("DataNode"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("DataNode"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2542,7 +2940,8 @@ class VOXIECLIENT_EXPORT
 
   Q_PROPERTY(QDBusObjectPath DataObject READ dataObject)
   inline QDBusObjectPath dataObject() const {
-    return qvariant_cast<QDBusObjectPath>(property("DataObject"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("DataObject"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2570,12 +2969,13 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxiePluginInterface
 
   Q_PROPERTY(bool IsCorePlugin READ isCorePlugin)
   inline bool isCorePlugin() const {
-    return qvariant_cast<bool>(property("IsCorePlugin"));
+    return qvariant_cast<bool>(
+        QDBusAbstractInterface::property("IsCorePlugin"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2603,22 +3003,25 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxiePropertyInterface
 
   Q_PROPERTY(QString DisplayName READ displayName)
   inline QString displayName() const {
-    return qvariant_cast<QString>(property("DisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DisplayName"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
   Q_PROPERTY(QDBusVariant PropertyDefinition READ propertyDefinition)
   inline QDBusVariant propertyDefinition() const {
-    return qvariant_cast<QDBusVariant>(property("PropertyDefinition"));
+    return qvariant_cast<QDBusVariant>(
+        QDBusAbstractInterface::property("PropertyDefinition"));
   }
 
   Q_PROPERTY(QDBusObjectPath Type READ type)
   inline QDBusObjectPath type() const {
-    return qvariant_cast<QDBusObjectPath>(property("Type"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Type"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2646,22 +3049,25 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxiePropertyTypeInterface
 
   Q_PROPERTY(QDBusSignature DBusSignature READ dBusSignature)
   inline QDBusSignature dBusSignature() const {
-    return qvariant_cast<QDBusSignature>(property("DBusSignature"));
+    return qvariant_cast<QDBusSignature>(
+        QDBusAbstractInterface::property("DBusSignature"));
   }
 
   Q_PROPERTY(QDBusVariant DefaultValue READ defaultValue)
   inline QDBusVariant defaultValue() const {
-    return qvariant_cast<QDBusVariant>(property("DefaultValue"));
+    return qvariant_cast<QDBusVariant>(
+        QDBusAbstractInterface::property("DefaultValue"));
   }
 
   Q_PROPERTY(QString DisplayName READ displayName)
   inline QString displayName() const {
-    return qvariant_cast<QString>(property("DisplayName"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DisplayName"));
   }
 
   Q_PROPERTY(QString Name READ name)
   inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("Name"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2689,25 +3095,17 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieSeriesDataInterface
 
   Q_PROPERTY(qulonglong DimensionCount READ dimensionCount)
   inline qulonglong dimensionCount() const {
-    return qvariant_cast<qulonglong>(property("DimensionCount"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("DimensionCount"));
   }
 
   Q_PROPERTY(QList<QDBusObjectPath> Dimensions READ dimensions)
   inline QList<QDBusObjectPath> dimensions() const {
-    return qvariant_cast<QList<QDBusObjectPath>>(property("Dimensions"));
+    return qvariant_cast<QList<QDBusObjectPath>>(
+        QDBusAbstractInterface::property("Dimensions"));
   }
 
  public Q_SLOTS:  // METHODS
-  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> AddEntry(
-      const QDBusObjectPath& update, const QList<quint64>& key,
-      const QDBusObjectPath& value,
-      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
-    QList<QVariant> argumentList;
-    argumentList << QVariant::fromValue(update) << QVariant::fromValue(key)
-                 << QVariant::fromValue(value) << QVariant::fromValue(options);
-    return asyncCallWithArgumentList(QStringLiteral("AddEntry"), argumentList);
-  }
-
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QList<QList<quint64>>>
   ListKeys(const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
     QList<QVariant> argumentList;
@@ -2722,6 +3120,16 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieSeriesDataInterface
     argumentList << QVariant::fromValue(key) << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("LookupEntry"),
                                      argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> SetEntry(
+      const QDBusObjectPath& update, const QList<quint64>& key,
+      const QDBusObjectPath& value,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(update) << QVariant::fromValue(key)
+                 << QVariant::fromValue(value) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("SetEntry"), argumentList);
   }
 
  Q_SIGNALS:  // SIGNALS
@@ -2745,24 +3153,16 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieSeriesDimensionInterface
 
   ~DeUni_stuttgartVoxieSeriesDimensionInterface();
 
-  Q_PROPERTY(QString DisplayName READ displayName)
-  inline QString displayName() const {
-    return qvariant_cast<QString>(property("DisplayName"));
-  }
-
   Q_PROPERTY(qulonglong Length READ length)
   inline qulonglong length() const {
-    return qvariant_cast<qulonglong>(property("Length"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("Length"));
   }
 
-  Q_PROPERTY(QString Name READ name)
-  inline QString name() const {
-    return qvariant_cast<QString>(property("Name"));
-  }
-
-  Q_PROPERTY(QDBusObjectPath Type READ type)
-  inline QDBusObjectPath type() const {
-    return qvariant_cast<QDBusObjectPath>(property("Type"));
+  Q_PROPERTY(QDBusObjectPath Property READ property)
+  inline QDBusObjectPath property() const {
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("Property"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2831,7 +3231,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieSurfaceDataInterface
                           std::tuple<QString, quint32, QString>, QString,
                           QMap<QString, QDBusVariant>,
                           QMap<QString, QDBusVariant>>>))>(
-        property("Attributes"));
+        QDBusAbstractInterface::property("Attributes"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2858,17 +3258,20 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieSurfaceDataTriangleIndexedInterface
 
   Q_PROPERTY(qulonglong TriangleCount READ triangleCount)
   inline qulonglong triangleCount() const {
-    return qvariant_cast<qulonglong>(property("TriangleCount"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("TriangleCount"));
   }
 
   Q_PROPERTY(bool TrianglesWritable READ trianglesWritable)
   inline bool trianglesWritable() const {
-    return qvariant_cast<bool>(property("TrianglesWritable"));
+    return qvariant_cast<bool>(
+        QDBusAbstractInterface::property("TrianglesWritable"));
   }
 
   Q_PROPERTY(qulonglong VertexCount READ vertexCount)
   inline qulonglong vertexCount() const {
-    return qvariant_cast<qulonglong>(property("VertexCount"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("VertexCount"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -2988,12 +3391,14 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieTableDataInterface
     return qvariant_cast<VX_IDENTITY_TYPE(
         (QList<std::tuple<QString, QDBusObjectPath, QString,
                           QMap<QString, QDBusVariant>,
-                          QMap<QString, QDBusVariant>>>))>(property("Columns"));
+                          QMap<QString, QDBusVariant>>>))>(
+        QDBusAbstractInterface::property("Columns"));
   }
 
   Q_PROPERTY(qulonglong RowCount READ rowCount)
   inline qulonglong rowCount() const {
-    return qvariant_cast<qulonglong>(property("RowCount"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("RowCount"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3049,7 +3454,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieTaskInterface
 
   Q_PROPERTY(QString State READ state)
   inline QString state() const {
-    return qvariant_cast<QString>(property("State"));
+    return qvariant_cast<QString>(QDBusAbstractInterface::property("State"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3253,33 +3658,35 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieTomographyRawData2DRegularInterface
   inline VX_IDENTITY_TYPE((std::tuple<QString, quint32, QString>))
       dataType() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<QString, quint32, QString>))>(property("DataType"));
+        (std::tuple<QString, quint32, QString>))>(
+        QDBusAbstractInterface::property("DataType"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double>))
                  GridSpacing READ gridSpacing)
   inline VX_IDENTITY_TYPE((std::tuple<double, double>)) gridSpacing() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
-        property("GridSpacing"));
+        QDBusAbstractInterface::property("GridSpacing"));
   }
 
   Q_PROPERTY(qulonglong ImageCount READ imageCount)
   inline qulonglong imageCount() const {
-    return qvariant_cast<qulonglong>(property("ImageCount"));
+    return qvariant_cast<qulonglong>(
+        QDBusAbstractInterface::property("ImageCount"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double>))
                  ImageOrigin READ imageOrigin)
   inline VX_IDENTITY_TYPE((std::tuple<double, double>)) imageOrigin() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
-        property("ImageOrigin"));
+        QDBusAbstractInterface::property("ImageOrigin"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<quint64, quint64>))
                  ImageShape READ imageShape)
   inline VX_IDENTITY_TYPE((std::tuple<quint64, quint64>)) imageShape() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<quint64, quint64>))>(
-        property("ImageShape"));
+        QDBusAbstractInterface::property("ImageShape"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3388,6 +3795,18 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieUtilitiesInterface
   ~DeUni_stuttgartVoxieUtilitiesInterface();
 
  public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<
+      VX_IDENTITY_TYPE((QList<std::tuple<quint64, double>>))>
+  DebugFindMatchingSpectrums(
+      const QDBusObjectPath& dimension, double start, double end,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(dimension) << QVariant::fromValue(start)
+                 << QVariant::fromValue(end) << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(
+        QStringLiteral("DebugFindMatchingSpectrums"), argumentList);
+  }
+
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> ExtractSlice(
       const QDBusObjectPath& volume,
       const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) & origin,
@@ -3432,7 +3851,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVisualizerNodeInterface
 
   Q_PROPERTY(bool IsAttached READ isAttached WRITE setIsAttached)
   inline bool isAttached() const {
-    return qvariant_cast<bool>(property("IsAttached"));
+    return qvariant_cast<bool>(QDBusAbstractInterface::property("IsAttached"));
   }
   inline void setIsAttached(bool value) {
     setProperty("IsAttached", QVariant::fromValue(value));
@@ -3444,7 +3863,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVisualizerNodeInterface
   inline VX_IDENTITY_TYPE((std::tuple<double, double>))
       visualizerPosition() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
-        property("VisualizerPosition"));
+        QDBusAbstractInterface::property("VisualizerPosition"));
   }
   inline void setVisualizerPosition(
       VX_IDENTITY_TYPE((std::tuple<double, double>)) value) {
@@ -3455,11 +3874,20 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVisualizerNodeInterface
                  VisualizerSize READ visualizerSize WRITE setVisualizerSize)
   inline VX_IDENTITY_TYPE((std::tuple<double, double>)) visualizerSize() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
-        property("VisualizerSize"));
+        QDBusAbstractInterface::property("VisualizerSize"));
   }
   inline void setVisualizerSize(VX_IDENTITY_TYPE((std::tuple<double, double>))
                                     value) {
     setProperty("VisualizerSize", QVariant::fromValue(value));
+  }
+
+  Q_PROPERTY(QString WindowMode READ windowMode WRITE setWindowMode)
+  inline QString windowMode() const {
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("WindowMode"));
+  }
+  inline void setWindowMode(const QString& value) {
+    setProperty("WindowMode", QVariant::fromValue(value));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3500,7 +3928,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVisualizerObjectInterface
 
   Q_PROPERTY(bool IsAttached READ isAttached WRITE setIsAttached)
   inline bool isAttached() const {
-    return qvariant_cast<bool>(property("IsAttached"));
+    return qvariant_cast<bool>(QDBusAbstractInterface::property("IsAttached"));
   }
   inline void setIsAttached(bool value) {
     setProperty("IsAttached", QVariant::fromValue(value));
@@ -3512,7 +3940,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVisualizerObjectInterface
   inline VX_IDENTITY_TYPE((std::tuple<double, double>))
       visualizerPosition() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
-        property("VisualizerPosition"));
+        QDBusAbstractInterface::property("VisualizerPosition"));
   }
   inline void setVisualizerPosition(
       VX_IDENTITY_TYPE((std::tuple<double, double>)) value) {
@@ -3523,7 +3951,7 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVisualizerObjectInterface
                  VisualizerSize READ visualizerSize WRITE setVisualizerSize)
   inline VX_IDENTITY_TYPE((std::tuple<double, double>)) visualizerSize() const {
     return qvariant_cast<VX_IDENTITY_TYPE((std::tuple<double, double>))>(
-        property("VisualizerSize"));
+        QDBusAbstractInterface::property("VisualizerSize"));
   }
   inline void setVisualizerSize(VX_IDENTITY_TYPE((std::tuple<double, double>))
                                     value) {
@@ -3572,7 +4000,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataInterface
   inline VX_IDENTITY_TYPE((std::tuple<QString, quint32, QString>))
       dataType() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<QString, quint32, QString>))>(property("DataType"));
+        (std::tuple<QString, quint32, QString>))>(
+        QDBusAbstractInterface::property("DataType"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
@@ -3580,7 +4009,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataInterface
   inline VX_IDENTITY_TYPE((std::tuple<double, double, double>))
       volumeOrigin() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<double, double, double>))>(property("VolumeOrigin"));
+        (std::tuple<double, double, double>))>(
+        QDBusAbstractInterface::property("VolumeOrigin"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
@@ -3588,12 +4018,14 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataInterface
   inline VX_IDENTITY_TYPE((std::tuple<double, double, double>))
       volumeSize() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<double, double, double>))>(property("VolumeSize"));
+        (std::tuple<double, double, double>))>(
+        QDBusAbstractInterface::property("VolumeSize"));
   }
 
   Q_PROPERTY(QDBusObjectPath VolumeStructure READ volumeStructure)
   inline QDBusObjectPath volumeStructure() const {
-    return qvariant_cast<QDBusObjectPath>(property("VolumeStructure"));
+    return qvariant_cast<QDBusObjectPath>(
+        QDBusAbstractInterface::property("VolumeStructure"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3604,6 +4036,265 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataInterface
     argumentList << QVariant::fromValue(fileName)
                  << QVariant::fromValue(options);
     return asyncCallWithArgumentList(QStringLiteral("Save"), argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.VolumeDataBlock
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataBlockInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.VolumeDataBlock";
+  }
+
+ public:
+  DeUni_stuttgartVoxieVolumeDataBlockInterface(
+      const QString& service, const QString& path,
+      const QDBusConnection& connection, QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieVolumeDataBlockInterface();
+
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>))
+                 ArrayShape READ arrayShape)
+  inline VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>))
+      arrayShape() const {
+    return qvariant_cast<VX_IDENTITY_TYPE(
+        (std::tuple<quint64, quint64, quint64>))>(
+        QDBusAbstractInterface::property("ArrayShape"));
+  }
+
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>))
+                 BlockCount READ blockCount)
+  inline VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>))
+      blockCount() const {
+    return qvariant_cast<VX_IDENTITY_TYPE(
+        (std::tuple<quint64, quint64, quint64>))>(
+        QDBusAbstractInterface::property("BlockCount"));
+  }
+
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>))
+                 BlockShape READ blockShape)
+  inline VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>))
+      blockShape() const {
+    return qvariant_cast<VX_IDENTITY_TYPE(
+        (std::tuple<quint64, quint64, quint64>))>(
+        QDBusAbstractInterface::property("BlockShape"));
+  }
+
+  Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+                 GridSpacing READ gridSpacing)
+  inline VX_IDENTITY_TYPE((std::tuple<double, double, double>))
+      gridSpacing() const {
+    return qvariant_cast<VX_IDENTITY_TYPE(
+        (std::tuple<double, double, double>))>(
+        QDBusAbstractInterface::property("GridSpacing"));
+  }
+
+ public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> DecodeBlocks(
+      const QDBusObjectPath& output, const QDBusObjectPath& updateOutput,
+      qulonglong count, const QDBusObjectPath& blocksBuffer,
+      qulonglong blocksOffset,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(output)
+                 << QVariant::fromValue(updateOutput)
+                 << QVariant::fromValue(count)
+                 << QVariant::fromValue(blocksBuffer)
+                 << QVariant::fromValue(blocksOffset)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("DecodeBlocks"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> EncodeBlocks(
+      const QDBusObjectPath& update, const QDBusObjectPath& input,
+      qulonglong count, const QDBusObjectPath& blocksBuffer,
+      qulonglong blocksOffset,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(update) << QVariant::fromValue(input)
+                 << QVariant::fromValue(count)
+                 << QVariant::fromValue(blocksBuffer)
+                 << QVariant::fromValue(blocksOffset)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("EncodeBlocks"),
+                                     argumentList);
+  }
+
+ Q_SIGNALS:  // SIGNALS
+};
+
+/*
+ * Proxy class for interface de.uni_stuttgart.Voxie.VolumeDataBlockJpeg
+ */
+class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataBlockJpegInterface
+    : public QDBusAbstractInterface {
+  Q_OBJECT
+ public:
+  static inline const char* staticInterfaceName() {
+    return "de.uni_stuttgart.Voxie.VolumeDataBlockJpeg";
+  }
+
+ public:
+  DeUni_stuttgartVoxieVolumeDataBlockJpegInterface(
+      const QString& service, const QString& path,
+      const QDBusConnection& connection, QObject* parent = nullptr);
+
+  ~DeUni_stuttgartVoxieVolumeDataBlockJpegInterface();
+
+  Q_PROPERTY(QList<QByteArray> HuffmanTableAC READ huffmanTableAC)
+  inline QList<QByteArray> huffmanTableAC() const {
+    return qvariant_cast<QList<QByteArray>>(
+        QDBusAbstractInterface::property("HuffmanTableAC"));
+  }
+
+  Q_PROPERTY(QList<QByteArray> HuffmanTableDC READ huffmanTableDC)
+  inline QList<QByteArray> huffmanTableDC() const {
+    return qvariant_cast<QList<QByteArray>>(
+        QDBusAbstractInterface::property("HuffmanTableDC"));
+  }
+
+  Q_PROPERTY(QList<QList<quint16>> QuantizationTable READ quantizationTable)
+  inline QList<QList<quint16>> quantizationTable() const {
+    return qvariant_cast<QList<QList<quint16>>>(
+        QDBusAbstractInterface::property("QuantizationTable"));
+  }
+
+  Q_PROPERTY(bool QuantizationTableIs16bit READ quantizationTableIs16bit)
+  inline bool quantizationTableIs16bit() const {
+    return qvariant_cast<bool>(
+        QDBusAbstractInterface::property("QuantizationTableIs16bit"));
+  }
+
+  Q_PROPERTY(uint SamplePrecision READ samplePrecision)
+  inline uint samplePrecision() const {
+    return qvariant_cast<uint>(
+        QDBusAbstractInterface::property("SamplePrecision"));
+  }
+
+  Q_PROPERTY(double ValueOffset READ valueOffset)
+  inline double valueOffset() const {
+    return qvariant_cast<double>(
+        QDBusAbstractInterface::property("ValueOffset"));
+  }
+
+  Q_PROPERTY(double ValueScalingFactor READ valueScalingFactor)
+  inline double valueScalingFactor() const {
+    return qvariant_cast<double>(
+        QDBusAbstractInterface::property("ValueScalingFactor"));
+  }
+
+ public Q_SLOTS:  // METHODS
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> CountHuffmanSymbols(
+      qulonglong count, const QDBusObjectPath& blockIDsBuffer,
+      qulonglong blockIDsOffset, const QDBusObjectPath& dcSymbolCount,
+      qulonglong dcSymbolCountOffset, const QDBusObjectPath& acSymbolCount,
+      qulonglong acSymbolCountOffset, const QDBusObjectPath& paddingBitCount,
+      qulonglong paddingBitCountOffset,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(count)
+                 << QVariant::fromValue(blockIDsBuffer)
+                 << QVariant::fromValue(blockIDsOffset)
+                 << QVariant::fromValue(dcSymbolCount)
+                 << QVariant::fromValue(dcSymbolCountOffset)
+                 << QVariant::fromValue(acSymbolCount)
+                 << QVariant::fromValue(acSymbolCountOffset)
+                 << QVariant::fromValue(paddingBitCount)
+                 << QVariant::fromValue(paddingBitCountOffset)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("CountHuffmanSymbols"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> GetCompressedBlockSizes(
+      qulonglong count, const QDBusObjectPath& blockIDsBuffer,
+      qulonglong blocksOffset, const QDBusObjectPath& sizesBytesBufferOut,
+      qulonglong sizesBytesOffset,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(count)
+                 << QVariant::fromValue(blockIDsBuffer)
+                 << QVariant::fromValue(blocksOffset)
+                 << QVariant::fromValue(sizesBytesBufferOut)
+                 << QVariant::fromValue(sizesBytesOffset)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetCompressedBlockSizes"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<qulonglong, qulonglong>
+  GetCompressedData(qulonglong count, const QDBusObjectPath& blockIDsBuffer,
+                    qulonglong blockIDsOffset,
+                    const QDBusObjectPath& dataBuffer, qulonglong dataOffset,
+                    qulonglong dataSize,
+                    const QDBusObjectPath& sizesBytesBuffer,
+                    qulonglong sizesBytesOffset,
+                    const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
+                        options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(count)
+                 << QVariant::fromValue(blockIDsBuffer)
+                 << QVariant::fromValue(blockIDsOffset)
+                 << QVariant::fromValue(dataBuffer)
+                 << QVariant::fromValue(dataOffset)
+                 << QVariant::fromValue(dataSize)
+                 << QVariant::fromValue(sizesBytesBuffer)
+                 << QVariant::fromValue(sizesBytesOffset)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("GetCompressedData"),
+                                     argumentList);
+  }
+  inline QDBusReply<qulonglong> GetCompressedData(
+      qulonglong count, const QDBusObjectPath& blockIDsBuffer,
+      qulonglong blockIDsOffset, const QDBusObjectPath& dataBuffer,
+      qulonglong dataOffset, qulonglong dataSize,
+      const QDBusObjectPath& sizesBytesBuffer, qulonglong sizesBytesOffset,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options,
+      qulonglong& actualBytes) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(count)
+                 << QVariant::fromValue(blockIDsBuffer)
+                 << QVariant::fromValue(blockIDsOffset)
+                 << QVariant::fromValue(dataBuffer)
+                 << QVariant::fromValue(dataOffset)
+                 << QVariant::fromValue(dataSize)
+                 << QVariant::fromValue(sizesBytesBuffer)
+                 << QVariant::fromValue(sizesBytesOffset)
+                 << QVariant::fromValue(options);
+    QDBusMessage reply = callWithArgumentList(
+        QDBus::Block, QStringLiteral("GetCompressedData"), argumentList);
+    if (reply.type() == QDBusMessage::ReplyMessage &&
+        reply.arguments().count() == 2) {
+      actualBytes = qdbus_cast<qulonglong>(reply.arguments().at(1));
+    }
+    return reply;
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> SetCompressedData(
+      qulonglong count, const QDBusObjectPath& blockIDsBuffer,
+      qulonglong blockIDsOffset, const QDBusObjectPath& dataBuffer,
+      qulonglong dataOffset, qulonglong dataSize,
+      const QDBusObjectPath& sizesBytesBuffer, qulonglong sizesBytesOffset,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(count)
+                 << QVariant::fromValue(blockIDsBuffer)
+                 << QVariant::fromValue(blockIDsOffset)
+                 << QVariant::fromValue(dataBuffer)
+                 << QVariant::fromValue(dataOffset)
+                 << QVariant::fromValue(dataSize)
+                 << QVariant::fromValue(sizesBytesBuffer)
+                 << QVariant::fromValue(sizesBytesOffset)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("SetCompressedData"),
+                                     argumentList);
   }
 
  Q_SIGNALS:  // SIGNALS
@@ -3632,7 +4323,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataVoxelInterface
   inline VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>))
       arrayShape() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<quint64, quint64, quint64>))>(property("ArrayShape"));
+        (std::tuple<quint64, quint64, quint64>))>(
+        QDBusAbstractInterface::property("ArrayShape"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
@@ -3640,7 +4332,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeDataVoxelInterface
   inline VX_IDENTITY_TYPE((std::tuple<double, double, double>))
       gridSpacing() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<double, double, double>))>(property("GridSpacing"));
+        (std::tuple<double, double, double>))>(
+        QDBusAbstractInterface::property("GridSpacing"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3699,7 +4392,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeSeriesDataInterface
   inline VX_IDENTITY_TYPE((std::tuple<double, double, double>))
       volumeOrigin() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<double, double, double>))>(property("VolumeOrigin"));
+        (std::tuple<double, double, double>))>(
+        QDBusAbstractInterface::property("VolumeOrigin"));
   }
 
   Q_PROPERTY(VX_IDENTITY_TYPE((std::tuple<double, double, double>))
@@ -3707,7 +4401,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeSeriesDataInterface
   inline VX_IDENTITY_TYPE((std::tuple<double, double, double>))
       volumeSize() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<double, double, double>))>(property("VolumeSize"));
+        (std::tuple<double, double, double>))>(
+        QDBusAbstractInterface::property("VolumeSize"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3734,7 +4429,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeStructureInterface
 
   Q_PROPERTY(QString VolumeStructureType READ volumeStructureType)
   inline QString volumeStructureType() const {
-    return qvariant_cast<QString>(property("VolumeStructureType"));
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("VolumeStructureType"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3764,7 +4460,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeStructureVoxelInterface
   inline VX_IDENTITY_TYPE((std::tuple<quint64, quint64, quint64>))
       arrayShape() const {
     return qvariant_cast<VX_IDENTITY_TYPE(
-        (std::tuple<quint64, quint64, quint64>))>(property("ArrayShape"));
+        (std::tuple<quint64, quint64, quint64>))>(
+        QDBusAbstractInterface::property("ArrayShape"));
   }
 
  public Q_SLOTS:  // METHODS
@@ -3774,6 +4471,8 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieVolumeStructureVoxelInterface
 namespace de {
 namespace uni_stuttgart {
 namespace Voxie {
+typedef ::DeUni_stuttgartVoxieBufferInterface Buffer;
+typedef ::DeUni_stuttgartVoxieBufferTypeInterface BufferType;
 typedef ::DeUni_stuttgartVoxieClientInterface Client;
 typedef ::DeUni_stuttgartVoxieClientManagerInterface ClientManager;
 typedef ::DeUni_stuttgartVoxieComponentInterface Component;
@@ -3782,6 +4481,7 @@ typedef ::DeUni_stuttgartVoxieContainerDataInterface ContainerData;
 typedef ::DeUni_stuttgartVoxieDataInterface Data;
 typedef ::DeUni_stuttgartVoxieDataNodeInterface DataNode;
 typedef ::DeUni_stuttgartVoxieDataObjectInterface DataObject;
+typedef ::DeUni_stuttgartVoxieDataPropertyInterface DataProperty;
 typedef ::DeUni_stuttgartVoxieDataVersionInterface DataVersion;
 typedef ::DeUni_stuttgartVoxieDebugOptionInterface DebugOption;
 typedef ::DeUni_stuttgartVoxieDynamicObjectInterface DynamicObject;
@@ -3803,6 +4503,8 @@ typedef ::DeUni_stuttgartVoxieExternalOperationRunFilterInterface
 typedef ::DeUni_stuttgartVoxieExternalOperationRunSegmentationStepInterface
     ExternalOperationRunSegmentationStep;
 typedef ::DeUni_stuttgartVoxieExternalTaskInterface ExternalTask;
+typedef ::DeUni_stuttgartVoxieFileDataInterface FileData;
+typedef ::DeUni_stuttgartVoxieFileDataByteStreamInterface FileDataByteStream;
 typedef ::DeUni_stuttgartVoxieFilterNodeInterface FilterNode;
 typedef ::DeUni_stuttgartVoxieFilterObjectInterface FilterObject;
 typedef ::DeUni_stuttgartVoxieGeometricPrimitiveDataInterface
@@ -3853,6 +4555,8 @@ typedef ::DeUni_stuttgartVoxieUtilitiesInterface Utilities;
 typedef ::DeUni_stuttgartVoxieVisualizerNodeInterface VisualizerNode;
 typedef ::DeUni_stuttgartVoxieVisualizerObjectInterface VisualizerObject;
 typedef ::DeUni_stuttgartVoxieVolumeDataInterface VolumeData;
+typedef ::DeUni_stuttgartVoxieVolumeDataBlockInterface VolumeDataBlock;
+typedef ::DeUni_stuttgartVoxieVolumeDataBlockJpegInterface VolumeDataBlockJpeg;
 typedef ::DeUni_stuttgartVoxieVolumeDataVoxelInterface VolumeDataVoxel;
 typedef ::DeUni_stuttgartVoxieVolumeSeriesDataInterface VolumeSeriesData;
 typedef ::DeUni_stuttgartVoxieVolumeStructureInterface VolumeStructure;

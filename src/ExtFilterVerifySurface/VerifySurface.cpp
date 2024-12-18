@@ -27,8 +27,8 @@
 #include <utility>
 
 VerifySurface::VerifySurface(vx::Array2<const uint32_t> triangles,
-                             vx::Array2<const float> vertices)
-    : triangles(triangles), vertices(vertices) {}
+                             vx::Array2<const float> vertices, QString* report)
+    : triangles(triangles), vertices(vertices), report(report) {}
 
 void VerifySurface::run(
     vx::ClaimedOperation<de::uni_stuttgart::Voxie::ExternalOperationRunFilter>&
@@ -46,16 +46,15 @@ void VerifySurface::run(
           !std::isfinite(vertices(triangles(index, nextVertex), 0)) ||
           !std::isfinite(vertices(triangles(index, nextVertex), 1)) ||
           !std::isfinite(vertices(triangles(index, nextVertex), 2))) {
-        throw vx::Exception(
-            "de.uni_stuttgart.Voxie.Error",
-            QString("Edge between (%1,%2,%3) and (%4,%5,%6) has "
-                    "at least one non-finite value")
-                .arg(vertices(triangles(index, vertex), 0))
-                .arg(vertices(triangles(index, vertex), 1))
-                .arg(vertices(triangles(index, vertex), 2))
-                .arg(vertices(triangles(index, nextVertex), 0))
-                .arg(vertices(triangles(index, nextVertex), 1))
-                .arg(vertices(triangles(index, nextVertex), 2)));
+        fail(
+            "Edge between ({}, {}, {}) and ({}, {}, {}) has at least one "
+            "non-finite value",
+            vertices(triangles(index, vertex), 0),
+            vertices(triangles(index, vertex), 1),
+            vertices(triangles(index, vertex), 2),
+            vertices(triangles(index, nextVertex), 0),
+            vertices(triangles(index, nextVertex), 1),
+            vertices(triangles(index, nextVertex), 2));
       }
 
       if (triangles(index, vertex) <= triangles(index, nextVertex)) {
@@ -82,15 +81,17 @@ void VerifySurface::run(
   for (std::pair<const std::pair<uint32_t, uint32_t>, int32_t> edgeCount :
        edgeCounts) {
     if (edgeCount.second != 0) {
-      throw vx::Exception("de.uni_stuttgart.Voxie.Error",
-                          QString("Edge between (%1,%2,%3) and (%4,%5,%6) has "
-                                  "an unequal amount of directional edges")
-                              .arg(vertices(edgeCount.first.first, 0))
-                              .arg(vertices(edgeCount.first.first, 1))
-                              .arg(vertices(edgeCount.first.first, 2))
-                              .arg(vertices(edgeCount.first.second, 0))
-                              .arg(vertices(edgeCount.first.second, 1))
-                              .arg(vertices(edgeCount.first.second, 2)));
+      fail(
+          "Edge between ({}, {}, {}) and ({}, {}, {}) has an unequal amount of "
+          "directional edges (diff {})",
+          vertices(edgeCount.first.first, 0),
+          vertices(edgeCount.first.first, 1),
+          vertices(edgeCount.first.first, 2),
+          vertices(edgeCount.first.second, 0),
+          vertices(edgeCount.first.second, 1),
+          vertices(edgeCount.first.second, 2), edgeCount.second);
+      failedEdges.push_back(std::make_tuple(
+          edgeCount.first.first, edgeCount.first.second, edgeCount.second));
     }
 
     // Progressbar (only update every percent)

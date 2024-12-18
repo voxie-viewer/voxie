@@ -39,7 +39,8 @@ namespace vx {
  * voxels is cleared.
  */
 class AssignmentStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(AssignmentStep)
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.SegmentationStep.AssignmentStep")
 
  private:
   void initializeCustomUIPropSections() override;

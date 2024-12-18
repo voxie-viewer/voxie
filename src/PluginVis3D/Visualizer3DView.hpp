@@ -146,9 +146,9 @@ class Visualizer3DView : public vx::visualization::OpenGLDrawWidget {
   QString loadShaders();
 
  public:
-  explicit Visualizer3DView(
-      View3DProperties* properties, vx::visualization::View3D* view3,
-      AxisFilter* axisFilter);
+  explicit Visualizer3DView(View3DProperties* properties,
+                            vx::visualization::View3D* view3,
+                            AxisFilter* axisFilter);
 
   ~Visualizer3DView();
 

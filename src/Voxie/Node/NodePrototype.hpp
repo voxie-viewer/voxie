@@ -41,13 +41,13 @@
 #include <QtDBus/QDBusObjectPath>
 #include <QtDBus/QDBusVariant>
 
-// NODE_PROTOTYPE_DECL* is in Node.hpp
+// VX_NODE_IMPLEMENTATION is in Node.hpp
 
-#define NODE_PROTOTYPE_IMPL_SEP(prototypeName, classname)                 \
+#define VX_NODE_INSTANTIATION(classname)                                  \
   QSharedPointer<vx::NodePrototype> classname::getPrototypeSingleton() {  \
     static QSharedPointer<vx::NodePrototype> prototype(                   \
         vx::NodePrototype::fromJson(                                      \
-            prototypeName##Properties::_getPrototypeJson(),               \
+            classname::PropertiesType::_getPrototypeJson(),               \
             [](const QMap<QString, QVariant>& properties,                 \
                const QList<Node*>& inputs,                                \
                const QMap<QString, QDBusVariant>& options,                \
@@ -60,19 +60,11 @@
             }));                                                          \
     return prototype;                                                     \
   }                                                                       \
+                                                                          \
   QSharedPointer<vx::NodePrototype>                                       \
-      prototypeName##Properties::getNodePrototype() {                     \
+  classname::PropertiesType::getNodePrototype() {                         \
     return classname::getPrototypeSingleton();                            \
   }
-
-#define NODE_PROTOTYPE_IMPL(classname) \
-  NODE_PROTOTYPE_IMPL_SEP(classname, classname)
-
-#define NODE_PROTOTYPE_IMPL_2(classnamePrefix, suffix) \
-  NODE_PROTOTYPE_IMPL_SEP(classnamePrefix, classnamePrefix##suffix)
-
-#define NODE_PROTOTYPE_IMPL_DATA(classnamePrefix) \
-  NODE_PROTOTYPE_IMPL_SEP(data_prop::classnamePrefix, classnamePrefix##Node)
 
 namespace vx {
 class NodePrototypeImplementation;

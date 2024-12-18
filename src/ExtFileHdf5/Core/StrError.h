@@ -37,15 +37,15 @@ extern "C" {
 // Under linux/g++ the XSI strerror_r cannot be used from C++
 
 // Call the XSI strerror_r
-int MY_XSI_strerror_r (int errnum, char *buf, size_t buflen);
+int MY_XSI_strerror_r(int errnum, char* buf, size_t buflen);
 #endif
 
 #if OS_WIN
-int MY_strerror_s (char *buf, size_t size, int errnum);
+int MY_strerror_s(char* buf, size_t size, int errnum);
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // !CORE_STRERROR_H_INCLUDED
+#endif  // !CORE_STRERROR_H_INCLUDED

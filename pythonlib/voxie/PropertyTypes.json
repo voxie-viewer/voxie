@@ -8,6 +8,14 @@
     "DBusSignature": "((ddd)(ddd))",
     "DisplayName": "Bounding box (3D)"
   },
+  "de.uni_stuttgart.Voxie.PropertyType.ChemicalComposition": {
+    "DBusSignature": "v",
+    "DisplayName": "Chemical composition",
+    "GetDescription": "chemicalCompositionGetDescription",
+    "RawType": "QJsonValue",
+    "SimpleUI": true,
+    "ToString": "chemicalCompositionToString"
+  },
   "de.uni_stuttgart.Voxie.PropertyType.Color": {
     "DBusSignature": "(dddd)",
     "DisplayName": "Color"
@@ -81,6 +89,10 @@
     "DBusSignature": "o",
     "DisplayName": "Output node reference"
   },
+  "de.uni_stuttgart.Voxie.PropertyType.PiecewisePolynomialFunction": {
+    "DBusSignature": "(a(d(dd))aad)",
+    "DisplayName": "Piecewise polynomial function"
+  },
   "de.uni_stuttgart.Voxie.PropertyType.Point2D": {
     "DBusSignature": "(dd)",
     "DisplayName": "Point (2D)"
@@ -88,6 +100,12 @@
   "de.uni_stuttgart.Voxie.PropertyType.Position3D": {
     "DBusSignature": "(ddd)",
     "DisplayName": "Position"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.Quantity": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "s",
+    "DisplayName": "Quantity",
+    "SimpleUI": true
   },
   "de.uni_stuttgart.Voxie.PropertyType.SizeInteger3D": {
     "DBusSignature": "(ttt)",
@@ -97,6 +115,11 @@
     "CompareFunction": "defaultValueCompare",
     "DBusSignature": "s",
     "DisplayName": "String"
+  },
+  "de.uni_stuttgart.Voxie.PropertyType.SurfaceAttributeName": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "s",
+    "DisplayName": "Surface attribute name"
   },
   "de.uni_stuttgart.Voxie.PropertyType.ThresholdLabelMapping": {
     "DBusSignature": "a(d(dddd)x)",

@@ -69,7 +69,6 @@ class PlaneShader : protected QOpenGLFunctions {
    * @brief updateBuffers Re-constructs the vertex buffer.
    * @param planeData
    */
-  void updateBuffers(QSharedPointer<PlaneData> planeData);
   void updateBuffers(QSharedPointer<PlaneData> planeData, const QRectF& bbox);
 
   /**

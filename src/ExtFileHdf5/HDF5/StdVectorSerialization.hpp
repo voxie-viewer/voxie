@@ -32,22 +32,26 @@
 #include <vector>
 
 namespace HDF5 {
-  template <typename T, typename Alloc> struct Serializer<std::vector<T, Alloc> > {
-    static inline void h5Save (const SerializationContextHandle& handle, const std::vector<T, Alloc>& vec) {
-      HDF5::DataSpace space = HDF5::DataSpace::createSimple (vec.size ());
-      HDF5::DataSet dataset = handle.createDataSet (getH5Type<T> (), space);
-      dataset.write (vec.data (), getH5Type<T> ());
-    }
-    static inline void h5Load (DeserializationContext& context, ObjectReference name, HDF5::DataSet& dataSet) {
-      HDF5::DataSpace space = dataSet.getSpace ();
-      ASSERT (space.getSimpleExtentNdims () == 1);
-      hsize_t size;
-      space.getSimpleExtentDims (&size);
-      std::shared_ptr<std::vector<T, Alloc> > v (new std::vector<T, Alloc> (Core::checked_cast<size_t> (size)));
-      context.registerValue (name, v);
-      dataSet.read (v->data (), getH5Type<T> ());
-    }
-  };
-}
+template <typename T, typename Alloc>
+struct Serializer<std::vector<T, Alloc> > {
+  static inline void h5Save(const SerializationContextHandle& handle,
+                            const std::vector<T, Alloc>& vec) {
+    HDF5::DataSpace space = HDF5::DataSpace::createSimple(vec.size());
+    HDF5::DataSet dataset = handle.createDataSet(getH5Type<T>(), space);
+    dataset.write(vec.data(), getH5Type<T>());
+  }
+  static inline void h5Load(DeserializationContext& context,
+                            ObjectReference name, HDF5::DataSet& dataSet) {
+    HDF5::DataSpace space = dataSet.getSpace();
+    ASSERT(space.getSimpleExtentNdims() == 1);
+    hsize_t size;
+    space.getSimpleExtentDims(&size);
+    std::shared_ptr<std::vector<T, Alloc> > v(
+        new std::vector<T, Alloc>(Core::checked_cast<size_t>(size)));
+    context.registerValue(name, v);
+    dataSet.read(v->data(), getH5Type<T>());
+  }
+};
+}  // namespace HDF5
 
-#endif // !HDF5_STDVECTORSERIALIZATION_HPP_INCLUDED
+#endif  // !HDF5_STDVECTORSERIALIZATION_HPP_INCLUDED

@@ -29,6 +29,8 @@
 #include <VoxieBackend/IO/Operation.hpp>
 #include <VoxieBackend/IO/OperationRegistry.hpp>
 
+#include <Voxie/Gui/WindowMode.hpp>
+
 #include <PluginSegmentation/Prototypes.hpp>
 #include <QApplication>
 #include <QInputDialog>
@@ -43,11 +45,13 @@
 #include <PluginSegmentation/SegmentationUtils.hpp>
 #include <VoxieBackend/IO/SharpThread.hpp>
 
+VX_NODE_INSTANTIATION(vx::filters::Segmentation)
+
 using namespace vx::filters;
 using namespace vx;
 using namespace vx::io;
 
-enum class VisualizerWindowMode;
+enum class WindowMode;
 
 Segmentation::Segmentation()
     : FilterNode(getPrototypeSingleton()),
@@ -100,8 +104,13 @@ Segmentation::Segmentation()
   connect(this, &QObject::destroyed, segmentationWidget, &QAction::deleteLater);
 
   // addPropertySection(segmentationWidget);
+  // TODO: Should changing the input / initial segmentation also rerun all
+  // steps?
   connect(this->properties, &SegmentationProperties::inputChanged, this,
           &Segmentation::initData);
+  connect(this->properties, &SegmentationProperties::initialSegmentationChanged,
+          this, &Segmentation::initData);
+
   connect(this->segmentationWidget, &SegmentationWidget::resetActiveSelection,
           this, &Segmentation::deactivateBrushes);
   connect(this->segmentationWidget, &SegmentationWidget::resetActiveSelection,
@@ -219,6 +228,8 @@ void Segmentation::initData() {
     inputNode =
         qSharedPointerDynamicCast<VolumeNode>(inputNodePtr->thisShared());
 
+  // TODO: Something here is broken when the inputNode gets deleted
+
   if (!inputNode) {
     Q_EMIT(this->segmentationWidget->isInputExisting(false));
     return;
@@ -230,20 +241,44 @@ void Segmentation::initData() {
   // init compound
   auto inputVoxelData =
       qSharedPointerDynamicCast<VolumeDataVoxel>(inputNode->volumeData());
+  if (!inputVoxelData) {
+    qWarning() << "Segmentation filter got non-voxel data";
+    // TODO: What to do here?
+    Q_EMIT(this->segmentationWidget->isInputExisting(false));
+    return;
+  }
 
   vx::VectorSizeT3 inputSize = inputVoxelData->getDimensions();
 
-  // init voume with 0's
-  auto voxelFunc =
-      [](size_t& x, size_t& y, size_t& z,
-         QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
-        labelData->setVoxel(x, y, z, (SegmentationType)0);
-      };
+  // TODO: Should "InitialSegmentation" be a property of the Segmentation or
+  // should there be a first step which imports the segmentation result?
+  auto initialSegmentationNode =
+      dynamic_cast<ContainerNode*>(this->properties->initialSegmentation());
+  auto initialSegmentation = initialSegmentationNode
+                                 ? initialSegmentationNode->getCompoundPointer()
+                                 : QSharedPointer<ContainerData>();
+  // TODO: Non-voxel data?
+  auto initialSegmentationLabel =
+      initialSegmentation ? qSharedPointerDynamicCast<VolumeDataVoxel>(
+                                initialSegmentation->getElement("labelVolume"))
+                          : QSharedPointer<VolumeDataVoxel>();
+  auto initialSegmentationTable =
+      initialSegmentation ? qSharedPointerDynamicCast<TableData>(
+                                initialSegmentation->getElement("labelTable"))
+                          : QSharedPointer<TableData>();
+  if (initialSegmentation &&
+      (!initialSegmentationLabel || !initialSegmentationTable)) {
+    qWarning() << "Got broken initial segmentation";
+    initialSegmentation.reset();
+    initialSegmentationLabel.reset();
+    initialSegmentationTable.reset();
+  }
 
   auto labelContainer =
       dynamic_cast<ContainerNode*>(this->properties->output());
 
   if (!labelContainer) {
+    // TODO: Should creation of the container be delayed until it is used the first time?
     qWarning() << "No Label Container connected, create a new one";
     // create ContainerNode
     labelContainer = dynamic_cast<ContainerNode*>(
@@ -267,8 +302,11 @@ void Segmentation::initData() {
   }
   QSharedPointer<ContainerData> containerData =
       labelContainer->getCompoundPointer();
+  // TODO: What is op being used for? Remove it?
   auto op = Operation::create();
   // if dimensions changed reinit the whole volume
+  // TODO: This probably should look at the actual size of the container instead
+  // of using a cached version in lastDimensions.
   if (lastDimensions.x != inputSize.x || lastDimensions.y != inputSize.y ||
       lastDimensions.z != inputSize.z || !containerData) {
     // reinit label volume
@@ -278,11 +316,13 @@ void Segmentation::initData() {
     QSharedPointer<vx::VolumeDataVoxel> outputData =
         VolumeDataVoxel::createVolume(
             {inputSize.x, inputSize.y, inputSize.z},
-            vx::DataTypeTraitsByType<SegmentationType>::dataType,
+            vx::DataTypeTraitsByType<SegmentationType>::getDataType(),
             inputVoxelData->volumeOrigin(), inputVoxelData->gridSpacing());
 
     // TODO: Why is another operation being created here?
     // auto op = Operation::create();
+
+    // TODO: Clean up updates
 
     // Add ContainerData
     if (!containerData) {
@@ -301,18 +341,58 @@ void Segmentation::initData() {
 
     labelContainer->setCompoundPointer(containerData);
   }
-  // initialize volume with 0s
-  iterateAllLabelVolumeVoxels(voxelFunc, containerData, op);
-  auto labelTable = qSharedPointerDynamicCast<TableData>(
-      containerData->getElement("labelTable"));
 
   auto outerUpdate = containerData->createUpdate();
 
-  auto update =
-      labelTable->createUpdate({{containerData->getPath(), outerUpdate}});
+  // TODO: This should not happen on the main thread
+  // TODO: Use task / cancellationToken?
+  if (initialSegmentationLabel) {
+    // initialize volume with inital data
+    // TODO: Should this use some generic volume conversion routine?
+    // TODO: Recreate label statistics here instead of just loading them from
+    // the file?
+    initialSegmentationLabel->performInGenericContext([&](auto& initial) {
+      iterateAllLabelVolumeVoxels(
+          containerData, outerUpdate, nullptr, nullptr, [&](const auto& cb) {
+            cb([&](size_t& x, size_t& y, size_t& z,
+                   const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                       labelData) {
+              auto value = initial.getVoxel(x, y, z);
+              labelData->setVoxel(x, y, z, value);
+              // if (value) qDebug() << x << y << z << value;
+            });
+          });
+    });
+  } else {
+    // initialize volume with 0s
+    iterateAllLabelVolumeVoxels(
+        containerData, outerUpdate, nullptr, nullptr, [&](const auto& cb) {
+          cb([&](size_t& x, size_t& y, size_t& z,
+                 const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                     labelData) { labelData->setVoxel(x, y, z, 0); });
+        });
+  }
 
-  labelTable->clear(update);
-  update->finish({});
+  auto labelTable = qSharedPointerDynamicCast<TableData>(
+      containerData->getElement("labelTable"));
+
+  if (initialSegmentationTable) {
+    // TODO: Verify that the table layout matches
+    auto update =
+        labelTable->createUpdate({{containerData->getPath(), outerUpdate}});
+    labelTable->clear(update);
+    for (const auto& row : initialSegmentationTable->getRowsByIndex()) {
+      auto newRow = labelTable->addRow(update, row.data());
+      qDebug() << "Inserted data from row" << row.rowID() << "to row" << newRow;
+    }
+    update->finish({});
+  } else {
+    auto update =
+        labelTable->createUpdate({{containerData->getPath(), outerUpdate}});
+    labelTable->clear(update);
+    update->finish({});
+  }
+
   outerUpdate->finish({});
 }
 
@@ -390,8 +470,10 @@ SliceVisualizerI* Segmentation::spawnSingleSliceVisualizer(
   sliceVisualizer->setManualDisplayName(
       std::make_tuple(true, manualDisplayName));
 
-  voxieRoot().setVisualizerPosition(sliceVisualizer, guiPosition);
-  voxieRoot().setVisualizerSize(sliceVisualizer, size);
+  voxieRoot().setVisualizerPosition(sliceVisualizer,
+                                    vectorCast<double>(toVector(guiPosition)));
+  voxieRoot().setVisualizerSize(sliceVisualizer,
+                                vectorCast<double>(toVector(size)));
 
   SliceVisualizerI* interf = dynamic_cast<SliceVisualizerI*>(sliceVisualizer);
 
@@ -404,22 +486,24 @@ void Segmentation::configureSliceVisualizer(vx::VisualizerNode* sliceVisualizer,
                                             vx::SliceVisualizerI* interf,
                                             QVector2D guiPosition,
                                             QVector2D size) {
-  voxieRoot().setVisualizerPosition(sliceVisualizer, guiPosition);
-  voxieRoot().setVisualizerSize(sliceVisualizer, size);
+  voxieRoot().setVisualizerPosition(sliceVisualizer,
+                                    vectorCast<double>(toVector(guiPosition)));
+  voxieRoot().setVisualizerSize(sliceVisualizer,
+                                vectorCast<double>(toVector(size)));
 
   connect(voxieRoot().activeVisualizerProvider(),
           &vx::ActiveVisualizerProvider::customUiClosed, this,
           [=](Node* widget) {
             if (widget == this)
-              voxieRoot().setVisualizerWindowMode(
-                  sliceVisualizer, VisualizerWindowMode::Minimize);
+              voxieRoot().setVisualizerWindowMode(sliceVisualizer,
+                                                  WindowMode::Minimized);
           });
   connect(voxieRoot().activeVisualizerProvider(),
           &vx::ActiveVisualizerProvider::customUiOpened, this,
           [=](Node* widget) {
             if (widget == this) {
               voxieRoot().setVisualizerWindowMode(sliceVisualizer,
-                                                  VisualizerWindowMode::Normal);
+                                                  WindowMode::Normal);
             }
           });
 
@@ -453,6 +537,12 @@ QSharedPointer<RunFilterOperation> Segmentation::calculate(
   QSharedPointer<RunFilterOperation> operation(
       new RunFilterOperation(), [](QObject* obj) { obj->deleteLater(); });
 
+  qDebug() << "Segmentation::calculate";
+  operation->onFinished(
+      this, [](const QSharedPointer<Operation::ResultError>& result) {
+        qDebug() << "Segmentation::calculate finished" << result;
+      });
+
   OperationRegistry::instance()->addOperation(operation);
 
   auto stepList = this->properties->stepList();
@@ -461,6 +551,8 @@ QSharedPointer<RunFilterOperation> Segmentation::calculate(
   initData();
 
   // Execute Steps of SegmentationStepList
+  // TODO: This has to be connected to the operation, otherwise the operation
+  // will not finish at all.
   this->stepManager->runStepList(stepList);
 
   return operation;
@@ -511,6 +603,7 @@ void Segmentation::updatePosition(QVector3D position) {
       position, vx::InterpolationMethod::NearestNeighbor);
 
   QString labelName = "";
+  bool selected = getBit(labelID, segmentationShift);
   clearBit(labelID, segmentationShift);
 
   // Get label name if it exists in the label table
@@ -529,7 +622,7 @@ void Segmentation::updatePosition(QVector3D position) {
     }
   }
 
-  this->segmentationWidget->setHoverInfo(value, labelName);
+  this->segmentationWidget->setHoverInfo(value, labelName, selected);
 }
 
 bool Segmentation::isAllowedChild(vx::NodeKind object) {
@@ -539,5 +632,3 @@ bool Segmentation::isAllowedChild(vx::NodeKind object) {
 bool Segmentation::isCreatableChild(NodeKind object) {
   return object == NodeKind::Visualizer;
 }
-
-NODE_PROTOTYPE_IMPL(Segmentation)

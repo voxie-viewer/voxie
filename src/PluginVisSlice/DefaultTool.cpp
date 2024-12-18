@@ -38,49 +38,47 @@ DefaultTool::DefaultTool(QWidget* parent, SliceVisualizer* sv)
   QGridLayout* layout = new QGridLayout(this);
   button = new QPushButton(getIcon(), getName());
   button->setCheckable(true);
-  connect(button, &QPushButton::clicked,
-          [=]() { sv->switchToolTo(this); });
+  connect(button, &QPushButton::clicked, [=]() { sv->switchToolTo(this); });
   // zoomButton->setUpdatesEnabled(false);
   layout->addWidget(button, 0, 0);
   button->show();
   this->setLayout(layout);
 }
 
-void DefaultTool::activateTool() {
-  button->setChecked(true);
+void DefaultTool::activateTool() { button->setChecked(true); }
+
+void DefaultTool::deactivateTool() { button->setChecked(false); }
+
+void DefaultTool::toolWheelEvent(QWheelEvent* ev,
+                                 const vx::Vector<double, 2>& pixelPos) {
+  Q_UNUSED(ev);
+  Q_UNUSED(pixelPos);
 }
 
-void DefaultTool::deactivateTool() {
-  button->setChecked(false);
-}
-
-void DefaultTool::toolWheelEvent(QWheelEvent* ev) { Q_UNUSED(ev); }
-
-void DefaultTool::toolMousePressEvent(QMouseEvent* ev) {
-  if (!this->sv->dataSet()) return;
-
+void DefaultTool::toolMousePressEvent(QMouseEvent* ev,
+                                      const vx::Vector<double, 2>& pixelPos) {
   if (ev->button() != Qt::LeftButton) return;
 
   if ((ev->buttons() & (Qt::MiddleButton | Qt::RightButton)) != Qt::NoButton)
     return;
 
-  auto modifiers =
-      ev->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier);
+  auto modifiers = ev->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier);
 
   if (modifiers == Qt::ShiftModifier &&
       this->sv->properties->showSliceCenter()) {
     // set origin to cursor
-    QPointF cursorOnPlane =
-        this->sv->sliceImage().pixelToPlanePoint(ev->pos(), true);
-    // this->sv->properties->setCenterPoint(cursorOnPlane);
-    this->sv->movePlaneOrigin(cursorOnPlane);
+    auto planePos = this->sv->pixelPosToPlanePosCurrentImage(pixelPos);
+    // this->sv->properties->setCenterPoint(planePos);
+    this->sv->movePlaneOrigin(planePos);
   } else if (modifiers == Qt::ControlModifier) {
-    this->savePoint(ev->pos());
+    this->savePoint(pixelPos);
   }
 }
 
-void DefaultTool::toolMouseMoveEvent(QMouseEvent* ev) {
+void DefaultTool::toolMouseMoveEvent(QMouseEvent* ev,
+                                     const vx::Vector<double, 2>& pixelPos) {
   Q_UNUSED(ev);
+  Q_UNUSED(pixelPos);
 
   // TODO: Support adding lines by dragging the mouse?
   /*
@@ -91,19 +89,18 @@ void DefaultTool::toolMouseMoveEvent(QMouseEvent* ev) {
   */
 }
 
-void DefaultTool::toolMouseReleaseEvent(QMouseEvent* ev) { Q_UNUSED(ev); }
+void DefaultTool::toolMouseReleaseEvent(QMouseEvent* ev,
+                                        const vx::Vector<double, 2>& pixelPos) {
+  Q_UNUSED(ev);
+  Q_UNUSED(pixelPos);
+}
 
 void DefaultTool::toolKeyPressEvent(QKeyEvent* ev) { Q_UNUSED(ev); }
 
 void DefaultTool::toolKeyReleaseEvent(QKeyEvent* ev) { Q_UNUSED(ev); }
 
-void DefaultTool::savePoint(QPointF point) {
-  vx::SliceImage sliceImg =
-      (false ? this->sv->filteredSliceImage() : this->sv->sliceImage());
-  QPoint yetAnotherKindOfPoint((int)point.x(), (int)point.y());
-  QPointF planepoint = sliceImg.pixelToPlanePoint(yetAnotherKindOfPoint, true);
-  QVector3D threeDPoint =
-      sv->getCuttingPlane().get3DPoint(planepoint.x(), planepoint.y());
+void DefaultTool::savePoint(const vx::Vector<double, 2>& pixelPos) {
+  auto pos3D = this->sv->pixelPosTo3DPosCurrentImage(pixelPos);
   auto gpo = dynamic_cast<GeometricPrimitiveNode*>(
       this->sv->properties->geometricPrimitive());
   if (!gpo) {
@@ -124,7 +121,7 @@ void DefaultTool::savePoint(QPointF point) {
     gpo->setGeometricPrimitiveData(gpd);
   }
   auto primitive = createQSharedPointer<GeometricPrimitivePoint>(
-      gpo->nextPointName(), threeDPoint);
+      gpo->nextPointName(), pos3D);
   {
     auto update = gpd->createUpdate();
     gpd->addPrimitive(update, primitive);

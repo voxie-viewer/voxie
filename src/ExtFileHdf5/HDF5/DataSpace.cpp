@@ -25,35 +25,42 @@
 #include <HDF5/Group.hpp>
 
 namespace HDF5 {
-  void DataSpace::checkType () const {
-    if (!isValid ())
-      return;
-    if (getType () != H5I_DATASPACE)
-      ABORT_MSG ("Not a dataspace");
-  }
-
-  DataSpace DataSpace::create (H5S_class_t type) {
-    return DataSpace (Exception::check ("H5Screate", H5Screate (type)));
-  }
-
-  DataSpace DataSpace::createSimpleRank (int rank, const hsize_t* current_dims, const hsize_t* maxdims) {
-    return DataSpace (Exception::check ("H5Screate_simple", H5Screate_simple (rank, current_dims, maxdims)));
-  }
-
-  bool DataSpace::isSimple () const {
-    return Exception::check ("H5Sis_simple", H5Sis_simple (handle ())) != 0;
-  }
-  H5S_class_t DataSpace::getSimpleExtentType () const {
-    return Exception::check ("H5Sget_simple_extent_type", H5Sget_simple_extent_type (handle ()));
-  }
-  void DataSpace::getSimpleExtentDims (hsize_t* dims, hsize_t* maxDims) const {
-    Exception::check ("H5Sget_simple_extent_dims", H5Sget_simple_extent_dims (handle (), dims, maxDims));
-  }
-  int DataSpace::getSimpleExtentNdims () const {
-    return Exception::check ("H5Sget_simple_extent_ndims", H5Sget_simple_extent_ndims (handle ()));
-  }
-
-  void DataSpace::selectHyperslab (H5S_seloper_t op, const hsize_t* count, const hsize_t* start, const hsize_t* stride, const hsize_t* block) const {
-    HDF5::Exception::check ("H5Sselect_hyperslab", H5Sselect_hyperslab (handle (), op, start, stride, count, block));
-  }
+void DataSpace::checkType() const {
+  if (!isValid()) return;
+  if (getType() != H5I_DATASPACE) ABORT_MSG("Not a dataspace");
 }
+
+DataSpace DataSpace::create(H5S_class_t type) {
+  return DataSpace(Exception::check("H5Screate", H5Screate(type)));
+}
+
+DataSpace DataSpace::createSimpleRank(int rank, const hsize_t* current_dims,
+                                      const hsize_t* maxdims) {
+  return DataSpace(Exception::check(
+      "H5Screate_simple", H5Screate_simple(rank, current_dims, maxdims)));
+}
+
+bool DataSpace::isSimple() const {
+  return Exception::check("H5Sis_simple", H5Sis_simple(handle())) != 0;
+}
+H5S_class_t DataSpace::getSimpleExtentType() const {
+  return Exception::check("H5Sget_simple_extent_type",
+                          H5Sget_simple_extent_type(handle()));
+}
+void DataSpace::getSimpleExtentDims(hsize_t* dims, hsize_t* maxDims) const {
+  Exception::check("H5Sget_simple_extent_dims",
+                   H5Sget_simple_extent_dims(handle(), dims, maxDims));
+}
+int DataSpace::getSimpleExtentNdims() const {
+  return Exception::check("H5Sget_simple_extent_ndims",
+                          H5Sget_simple_extent_ndims(handle()));
+}
+
+void DataSpace::selectHyperslab(H5S_seloper_t op, const hsize_t* count,
+                                const hsize_t* start, const hsize_t* stride,
+                                const hsize_t* block) const {
+  HDF5::Exception::check(
+      "H5Sselect_hyperslab",
+      H5Sselect_hyperslab(handle(), op, start, stride, count, block));
+}
+}  // namespace HDF5

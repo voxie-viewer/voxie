@@ -25,44 +25,46 @@ import dbus
 # Conversion as described in doc/topic/interfaces/json-on-dbus.md
 
 
-def json_to_dbus(value):
+def json_to_dbus(value, *, accept_variants_in_json=False):
     import voxie
 
     if value is None:
         return voxie.Variant('g', dbus.Signature(''))
-    if isinstance(value, dict):
-        return voxie.Variant('a{sv}', json_to_dbus_dict(value))
-    if isinstance(value, list):
+    elif isinstance(value, dict):
+        return voxie.Variant('a{sv}', json_to_dbus_dict(value, accept_variants_in_json=accept_variants_in_json))
+    elif isinstance(value, list) or isinstance(value, tuple):
         res = []
         for val in value:
-            res.append(json_to_dbus(val))
+            res.append(json_to_dbus(val, accept_variants_in_json=accept_variants_in_json))
         return voxie.Variant('av', res)
-    if isinstance(value, bool):
+    elif isinstance(value, bool):
         return voxie.Variant('b', value)
-    if isinstance(value, str):
+    elif isinstance(value, str):
         return voxie.Variant('s', value)
-    if isinstance(value, int):
+    elif isinstance(value, int):
         if value < 2**63:
             return voxie.Variant('x', value)
         else:
             return voxie.Variant('t', value)
-    if isinstance(value, float):
+    elif isinstance(value, float):
         if (value % 1) == 0 and value >= 0 and value <= 2**64 - 1:
             return voxie.Variant('t', int(value))
         elif (value % 1) == 0 and value >= -2**63 and value <= 2**63 - 1:
             return voxie.Variant('x', int(value))
         else:
             return voxie.Variant('d', value)
+    elif accept_variants_in_json and isinstance(value, voxie.Variant):
+        return json_to_dbus(value.value, accept_variants_in_json=accept_variants_in_json)
     else:
         raise Exception('json_to_dbus: Unknown JSON type: ' + str(type(value)))
 
 
-def json_to_dbus_dict(value):
+def json_to_dbus_dict(value, *, accept_variants_in_json=False):
     if not isinstance(value, dict):
         raise Exception('Expected a dict, got a ' + str(type(value)))
     res = {}
     for key in value:
-        res[key] = json_to_dbus(value[key])
+        res[key] = json_to_dbus(value[key], accept_variants_in_json=accept_variants_in_json)
     return res
 
 
@@ -89,7 +91,7 @@ def dbus_to_json(value):
         return dbus_to_json_dict(entries)
     if sig == 'g':
         cont = str(value.getValue('g'))
-        if cont == '':
+        if cont == '' or cont == 'n':
             return None
         raise Exception('Unknown dbus signature value: ' + repr(cont))
 

@@ -24,6 +24,7 @@
 
 #include <Voxie/MathQt.hpp>
 
+#include <VoxieClient/Array.hpp>
 #include <VoxieClient/ArrayInfo.hpp>
 
 #include <VoxieClient/ObjectExport/ExportedObject.hpp>
@@ -79,7 +80,7 @@ class HistogramProvider;
  */
 class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(VolumeDataVoxel)
+  VX_REFCOUNTEDOBJECT
 
  public:
   struct SupportedTypes;
@@ -109,7 +110,7 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
   }
 
   // throws Exception
-  VolumeDataVoxel(const vx::Vector<size_t, 3> arrayShape, DataType dataType,
+  VolumeDataVoxel(const vx::Vector<size_t, 3>& arrayShape, DataType dataType,
                   const vx::Vector<double, 3>& volumeOrigin,
                   const vx::Vector<double, 3>& gridSpacing);
 
@@ -120,7 +121,7 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
 
   // Implementation is in VolumeDataVoxelInst.cpp
   static QSharedPointer<VolumeDataVoxel> createVolume(
-      const vx::Vector<size_t, 3> arrayShape, DataType dataType,
+      const vx::Vector<size_t, 3>& arrayShape, DataType dataType,
       const vx::Vector<double, 3>& gridOrigin,
       const vx::Vector<double, 3>& gridSpacing);
 
@@ -133,8 +134,8 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
   Ret performInGenericContext(const F& lambda);
 
   template <typename List, typename F,
-            typename Ret = decltype(
-                (*(F*)nullptr)((*(VolumeDataVoxelInst<float>*)nullptr)))>
+            typename Ret = decltype((*(F*)nullptr)(
+                (*(VolumeDataVoxelInst<float>*)nullptr)))>
   Ret performInGenericContextRestricted(const F& lambda);
 
   // void callFunction(std::function < void(VolumeDataVoxelInst<>& self) >&
@@ -149,7 +150,7 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
   /**
    * @return x, y, z dimensions of the dataset
    */
-  const vx::Vector<size_t, 3> arrayShape() { return arrayShape_; }
+  const vx::Vector<size_t, 3>& arrayShape() { return arrayShape_; }
   // TODO: Remove
   vx::VectorSizeT3 getDimensions() { return arrayShape(); }
 
@@ -263,5 +264,8 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxel : public VolumeData {
   void extractGrid(const QVector3D& origin, const QQuaternion& rotation,
                    const QSize& outputSize, double pixelSizeX,
                    double pixelSizeY, QImage& outputImage, QRgb color) override;
+
+  virtual vx::Array3<void> getBlockVoid(const vx::Vector<size_t, 3> offset,
+                                        const vx::Vector<size_t, 3> size) = 0;
 };
 }  // namespace vx

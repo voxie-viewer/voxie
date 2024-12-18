@@ -188,13 +188,6 @@ class PlaneData : public QObject {
    */
   QSharedPointer<Colorizer> colorizer() { return _colorizer; }
 
-  /**
-   * @brief getBoundingRectangle Returns the Bounding Box of the Plane. This
-   * depends on the currently connected Slice.
-   * @return
-   */
-  QRectF getBoundingRectangle() { return QRectF(-0.1, -0.1, 0.2, 0.2); }
-
   QVector4D getColor() { return planeColorList.at(color); }
 
  Q_SIGNALS:

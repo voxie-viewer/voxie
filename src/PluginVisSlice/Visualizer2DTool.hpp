@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <VoxieClient/Vector.hpp>
+
 #include <QtCore/QObject>
 
 #include <QtGui/QIcon>
@@ -62,17 +64,20 @@ class Visualizer2DTool : public QWidget {
    * Used to forward events to the tool. Check with the callee as it might
    * catching events already. (e.g. numbers for switching tools)
    */
-  virtual void toolMousePressEvent(QMouseEvent*) = 0;
+  virtual void toolMousePressEvent(QMouseEvent*,
+                                   const vx::Vector<double, 2>& pixelPos) = 0;
   /**
    * Used to forward events to the tool. Check with the callee as it might
    * catching events already. (e.g. numbers for switching tools)
    */
-  virtual void toolMouseReleaseEvent(QMouseEvent*) = 0;
+  virtual void toolMouseReleaseEvent(QMouseEvent*,
+                                     const vx::Vector<double, 2>& pixelPos) = 0;
   /**
    * Used to forward events to the tool. Check with the callee as it might
    * catching events already. (e.g. numbers for switching tools)
    */
-  virtual void toolMouseMoveEvent(QMouseEvent*) = 0;
+  virtual void toolMouseMoveEvent(QMouseEvent*,
+                                  const vx::Vector<double, 2>& pixelPos) = 0;
   /**
    * Used to forward events to the tool. Check with the callee as it might
    * catching events already. (e.g. numbers for switching tools)
@@ -87,7 +92,8 @@ class Visualizer2DTool : public QWidget {
    * Used to forward events to the tool. Check with the callee as it might
    * catching events already. (e.g. numbers for switching tools)
    */
-  virtual void toolWheelEvent(QWheelEvent*) = 0;
+  virtual void toolWheelEvent(QWheelEvent*,
+                              const vx::Vector<double, 2>& pixelPos) = 0;
   /**
    * Used to forward events to the tool. Check with the callee as it might
    * catching events already. (e.g. numbers for switching tools)

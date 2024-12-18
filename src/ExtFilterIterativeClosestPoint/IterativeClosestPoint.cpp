@@ -27,7 +27,10 @@
 
 #include <cmath>
 
-IterativeClosestPoint::IterativeClosestPoint() {}
+// TODO: Should this be a parameter of the filter?
+static const uint32_t seed = 709117;
+
+IterativeClosestPoint::IterativeClosestPoint() : rng_(seed) {}
 
 void IterativeClosestPoint::compute(
     vx::Array2<const float>& vxRefSurface,
@@ -674,7 +677,7 @@ void IterativeClosestPoint::sortIntoBuckets(
     buckets[i + j * nBucket + k * nBucket * nBucket].push_back(ind);
   }
   for (uint bucket = 0; bucket < buckets.size(); bucket++) {
-    std::random_shuffle(buckets[bucket].begin(), buckets[bucket].end());
+    std::shuffle(buckets[bucket].begin(), buckets[bucket].end(), rng_);
   }
 }
 

@@ -97,7 +97,7 @@ def encode_dbus_as_json(sig, value, style=DBusAsJSONStyle()):
             varsig = value.signature
             return [str(varsig), encode_dbus_as_json(varsig, value.value, style)]
         elif style.variant_style == VariantStyle.JsonVariant:
-            import json_dbus
+            from . import json_dbus
             return json_dbus.dbus_to_json(value)
         else:
             raise Exception('Unknown VariantStyle: ' + style.variant_style)
@@ -164,7 +164,7 @@ def decode_dbus_as_json(sig, value, style=DBusAsJSONStyle()):
             varsig = value[0]
             return decode_dbus_as_json(varsig, value[1], style)
         elif style.variant_style == VariantStyle.JsonVariant:
-            import json_dbus
+            from . import json_dbus
             return json_dbus.json_to_dbus(value)
         else:
             raise Exception('Unknown VariantStyle: ' + style.variant_style)

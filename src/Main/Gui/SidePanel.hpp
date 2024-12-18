@@ -58,8 +58,8 @@ class SidePanel : public QWidget {
    * @param customUi If true, a return button instead of the chevrons is
    * rendered which can switch back to the normal UI
    */
-  QWidget* addSection(QWidget* widget, bool closeable = false,
-                      vx::Node* obj = nullptr, bool customUi = false);
+  QWidget* addSection(QWidget* widget, vx::Node* obj = nullptr,
+                      bool customUi = false, bool isInitiallyExpanded = true);
 
   void addProgressBar(vx::io::Operation* operation);
 
@@ -83,6 +83,9 @@ class SidePanel : public QWidget {
   void showContextMenu(QPoint pos);
 
   bool isPoppedOut() { return sideBarPopout != nullptr; }
+  bool isExpanded() { return toolBarActionExpandSidePanel->isChecked(); }
+
+  void setMode(bool poppedOut, bool expanded);
 
   /**
    * @brief dataflowWidget a reference to the dataflow widget

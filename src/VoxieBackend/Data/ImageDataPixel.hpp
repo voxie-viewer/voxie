@@ -41,7 +41,7 @@ class VOXIEBACKEND_EXPORT ImageDataPixelInst;
 
 class VOXIEBACKEND_EXPORT ImageDataPixel : public vx::Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ImageDataPixel)
+  VX_REFCOUNTEDOBJECT
 
   DataType dataType_;
 

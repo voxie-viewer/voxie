@@ -32,73 +32,85 @@
 
 #include <Core/Util.hpp>
 
-#include <cstdlib>
-#include <cmath>
 #include <climits>
+#include <cmath>
 #include <complex>
+#include <cstdlib>
 
 namespace Math {
-  template <typename T> struct Abs2Impl {
-    static DECLTYPE (std::norm (*(T*)NULL)) apply (T value) {
-      return std::norm (value);
-    }
+template <typename T>
+struct Abs2Impl {
+  static decltype(std::norm(std::declval<T>())) apply(T value) {
+    return std::norm(value);
+  }
+};
+
+template <typename T>
+decltype(Abs2Impl<T>::apply(std::declval<T>())) abs2(T value) {
+  return Abs2Impl<T>::apply(value);
+}
+
+template <typename T>
+struct AbsImpl {
+  static decltype(std::sqrt(Math::abs2(std::declval<T>()))) apply(T value) {
+    return std::sqrt(Math::abs2(value));
+  }
+};
+
+template <typename T>
+decltype(AbsImpl<T>::apply(std::declval<T>())) abs(T value) {
+  return AbsImpl<T>::apply(value);
+}
+
+#define DEF2(T)                                                       \
+  template <>                                                         \
+  struct Abs2Impl<T> {                                                \
+    static decltype((std::declval<T>()) * (std::declval<T>())) apply( \
+        T value) {                                                    \
+      return value * value;                                           \
+    }                                                                 \
   };
-
-  template <typename T> DECLTYPE (Abs2Impl<T>::apply (*(T*)NULL)) abs2 (T value) {
-    return Abs2Impl<T>::apply (value);
+#define DEF(T)                                                    \
+  DEF2(T)                                                         \
+  template <>                                                     \
+  struct AbsImpl<T> {                                             \
+    static decltype(std::abs(std::declval<T>())) apply(T value) { \
+      return std::abs(value);                                     \
+    }                                                             \
   }
-
-  template <typename T> struct AbsImpl {
-    static DECLTYPE (std::sqrt (Math::abs2 (*(T*)NULL))) apply (T value) {
-      return std::sqrt (Math::abs2 (value));
-    }
-  };
-
-  template <typename T> DECLTYPE (AbsImpl<T>::apply (*(T*)NULL)) abs (T value) {
-    return AbsImpl<T>::apply (value);
+#define DEFU(T)                               \
+  DEF2(T)                                     \
+  template <>                                 \
+  struct AbsImpl<T> {                         \
+    static T apply(T value) { return value; } \
   }
-
-#define DEF2(T)                                                         \
-  template <> struct Abs2Impl<T> {                                      \
-    static DECLTYPE ((*(T*)NULL) * (*(T*)NULL)) apply (T value) {     \
-      return value * value;                                             \
-    }                                                                   \
-  };
-#define DEF(T)                                                  \
-  DEF2(T)                                                       \
-  template <> struct AbsImpl<T> {                               \
-    static DECLTYPE (std::abs (*(T*)NULL)) apply (T value) {  \
-      return std::abs (value);                                  \
-    }                                                           \
-  }
-#define DEFU(T)                                 \
-  DEF2(T)                                       \
-  template <> struct AbsImpl<T> {               \
-    static T apply (T value) {                  \
-      return value;                             \
-    }                                           \
-  }
-  DEFU (unsigned char); DEF (signed char);
+DEFU(unsigned char);
+DEF(signed char);
 #if CHAR_MIN == 0
-  DEFU (char);
+DEFU(char);
 #else
-  DEF (char);
+DEF(char);
 #endif
-  DEF (short); DEF (int); DEF (long);
+DEF(short);
+DEF(int);
+DEF(long);
 #ifndef __OPENCL_VERSION__
-  DEF (long long);
+DEF(long long);
 #endif
-  DEFU (unsigned short); DEFU (unsigned int); DEFU (unsigned long);
+DEFU(unsigned short);
+DEFU(unsigned int);
+DEFU(unsigned long);
 #ifndef __OPENCL_VERSION__
-  DEFU (unsigned long long);
+DEFU(unsigned long long);
 #endif
-  DEF (float); DEF (double);
+DEF(float);
+DEF(double);
 #ifndef __OPENCL_VERSION__
-  DEF (long double);
+DEF(long double);
 #endif
 #undef DEFU
 #undef DEF
 #undef DEF2
-}
+}  // namespace Math
 
-#endif // !MATH_ABS_HPP_INCLUDED
+#endif  // !MATH_ABS_HPP_INCLUDED

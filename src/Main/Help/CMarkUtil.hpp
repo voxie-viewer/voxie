@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-#include <cmark.h>
+#pragma once
 
 #include <QtCore/QSharedPointer>
 #include <QtCore/QString>

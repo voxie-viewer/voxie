@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Prototypes.forward.hpp"
+
 #include <QtCore/QJsonObject>
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -14,6 +16,8 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+
+class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
 namespace vx {
 #ifndef VOXIE_PROP_DEFINED_MeasurementPrimitive1
@@ -148,6 +152,38 @@ class VOXIECORESHARED_EXPORT EventListDataProperties
 
 }  // namespace data_prop
 inline namespace data_prop {
+class VOXIECORESHARED_EXPORT FilePropertiesEntry
+    : public vx::PropertiesEntryBase {
+  FilePropertiesEntry() = delete;
+
+ public:
+  ~FilePropertiesEntry();
+};
+class VOXIECORESHARED_EXPORT FilePropertiesBase {
+ public:
+  virtual ~FilePropertiesBase();
+};
+class VOXIECORESHARED_EXPORT FilePropertiesCopy : public FilePropertiesBase {
+  QSharedPointer<const QMap<QString, QVariant>> _properties;
+
+ public:
+  FilePropertiesCopy(
+      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+};
+class VOXIECORESHARED_EXPORT FileProperties : public QObject,
+                                              public FilePropertiesBase {
+  Q_OBJECT
+  vx::Node* _node;
+
+ public:
+  static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
+  FileProperties(vx::Node* parent);
+  ~FileProperties();
+};
+
+}  // namespace data_prop
+inline namespace data_prop {
 class VOXIECORESHARED_EXPORT GeometricPrimitivePropertiesEntry
     : public vx::PropertiesEntryBase {
   GeometricPrimitivePropertiesEntry() = delete;
@@ -201,6 +237,7 @@ class VOXIECORESHARED_EXPORT GeometricPrimitiveProperties
   static QSharedPointer<NodeProperty> measurementPrimitive1Property();
   static NodePropertyTyped<vx::types::GeometricPrimitive>
   measurementPrimitive1PropertyTyped();
+  NodeNodeProperty measurementPrimitive1Instance();
   void setMeasurementPrimitive1(quint64 value);
  Q_SIGNALS:
   void measurementPrimitive1Changed(quint64 value);
@@ -214,6 +251,7 @@ class VOXIECORESHARED_EXPORT GeometricPrimitiveProperties
   static QSharedPointer<NodeProperty> measurementPrimitive2Property();
   static NodePropertyTyped<vx::types::GeometricPrimitive>
   measurementPrimitive2PropertyTyped();
+  NodeNodeProperty measurementPrimitive2Instance();
   void setMeasurementPrimitive2(quint64 value);
  Q_SIGNALS:
   void measurementPrimitive2Changed(quint64 value);
@@ -227,6 +265,7 @@ class VOXIECORESHARED_EXPORT GeometricPrimitiveProperties
   static QSharedPointer<NodeProperty> selectedPrimitiveProperty();
   static NodePropertyTyped<vx::types::GeometricPrimitive>
   selectedPrimitivePropertyTyped();
+  NodeNodeProperty selectedPrimitiveInstance();
   void setSelectedPrimitive(quint64 value);
  Q_SIGNALS:
   void selectedPrimitiveChanged(quint64 value);
@@ -282,6 +321,7 @@ class VOXIECORESHARED_EXPORT SurfaceProperties : public QObject,
   std::tuple<double, double, double, double> rotationRaw() override final;
   static QSharedPointer<NodeProperty> rotationProperty();
   static NodePropertyTyped<vx::types::Orientation3D> rotationPropertyTyped();
+  NodeNodeProperty rotationInstance();
   void setRotation(QQuaternion value);
  Q_SIGNALS:
   void rotationChanged(QQuaternion value);
@@ -294,6 +334,7 @@ class VOXIECORESHARED_EXPORT SurfaceProperties : public QObject,
   std::tuple<double, double, double> translationRaw() override final;
   static QSharedPointer<NodeProperty> translationProperty();
   static NodePropertyTyped<vx::types::Position3D> translationPropertyTyped();
+  NodeNodeProperty translationInstance();
   void setTranslation(QVector3D value);
  Q_SIGNALS:
   void translationChanged(QVector3D value);
@@ -415,6 +456,7 @@ class VOXIECORESHARED_EXPORT VolumeProperties : public QObject,
   std::tuple<double, double, double, double> rotationRaw() override final;
   static QSharedPointer<NodeProperty> rotationProperty();
   static NodePropertyTyped<vx::types::Orientation3D> rotationPropertyTyped();
+  NodeNodeProperty rotationInstance();
   void setRotation(QQuaternion value);
  Q_SIGNALS:
   void rotationChanged(QQuaternion value);
@@ -427,6 +469,7 @@ class VOXIECORESHARED_EXPORT VolumeProperties : public QObject,
   std::tuple<double, double, double> translationRaw() override final;
   static QSharedPointer<NodeProperty> translationProperty();
   static NodePropertyTyped<vx::types::Position3D> translationPropertyTyped();
+  NodeNodeProperty translationInstance();
   void setTranslation(QVector3D value);
  Q_SIGNALS:
   void translationChanged(QVector3D value);
@@ -483,6 +526,7 @@ class VOXIECORESHARED_EXPORT VolumeSeriesProperties
   std::tuple<double, double, double, double> rotationRaw() override final;
   static QSharedPointer<NodeProperty> rotationProperty();
   static NodePropertyTyped<vx::types::Orientation3D> rotationPropertyTyped();
+  NodeNodeProperty rotationInstance();
   void setRotation(QQuaternion value);
  Q_SIGNALS:
   void rotationChanged(QQuaternion value);
@@ -495,6 +539,7 @@ class VOXIECORESHARED_EXPORT VolumeSeriesProperties
   std::tuple<double, double, double> translationRaw() override final;
   static QSharedPointer<NodeProperty> translationProperty();
   static NodePropertyTyped<vx::types::Position3D> translationPropertyTyped();
+  NodeNodeProperty translationInstance();
   void setTranslation(QVector3D value);
  Q_SIGNALS:
   void translationChanged(QVector3D value);
@@ -583,6 +628,7 @@ class VOXIECORESHARED_EXPORT PlaneProperties : public QObject,
   std::tuple<double, double, double, double> orientationRaw() override final;
   static QSharedPointer<NodeProperty> orientationProperty();
   static NodePropertyTyped<vx::types::Orientation3D> orientationPropertyTyped();
+  NodeNodeProperty orientationInstance();
   void setOrientation(QQuaternion value);
  Q_SIGNALS:
   void orientationChanged(QQuaternion value);
@@ -595,6 +641,7 @@ class VOXIECORESHARED_EXPORT PlaneProperties : public QObject,
   std::tuple<double, double, double> originRaw() override final;
   static QSharedPointer<NodeProperty> originProperty();
   static NodePropertyTyped<vx::types::Position3D> originPropertyTyped();
+  NodeNodeProperty originInstance();
   void setOrigin(QVector3D value);
  Q_SIGNALS:
   void originChanged(QVector3D value);

@@ -56,7 +56,7 @@ class VOXIECORESHARED_EXPORT PluginInstance : public QObject {
 
 class VOXIECORESHARED_EXPORT Plugin : public vx::ComponentContainer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(Plugin)
+  VX_REFCOUNTEDOBJECT
 
  protected:
   void initialize() override;
@@ -145,7 +145,7 @@ class VOXIECORESHARED_EXPORT Plugin : public vx::ComponentContainer {
 
   QSharedPointer<vx::Component> getComponent(
       const QSharedPointer<ComponentType>& componentType, const QString& name,
-      bool allowCompatibilityNames) override;
+      bool allowCompatibilityNames, bool allowMissing = false) override;
 
   bool isCorePlugin() const { return isCorePlugin_; }
 

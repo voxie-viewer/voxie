@@ -30,32 +30,30 @@
 #include <cstdlib>
 
 namespace Core {
-  // Holds a pointer and calls free() on destruction
-  template <typename T> class MallocRefHolder {
-  public:
-    T* p;
-    MallocRefHolder (T* p) : p (p) {}
-    ~MallocRefHolder () {
-      free (p);
-    }
-  };
+// Holds a pointer and calls free() on destruction
+template <typename T>
+class MallocRefHolder {
+ public:
+  T* p;
+  MallocRefHolder(T* p) : p(p) {}
+  ~MallocRefHolder() { free(p); }
+};
 
 #if OS_WIN
-  namespace Intern {
-    // Moved to Memory.cpp to avoid having to include windows.h here
-    void windowsLocalFree (void* v);
-  }
+namespace Intern {
+// Moved to Memory.cpp to avoid having to include windows.h here
+void windowsLocalFree(void* v);
+}  // namespace Intern
 
-  // Holds a pointer and calls LocalFree() on destruction
-  template <typename T> class WindowsLocalRefHolder {
-  public:
-    T* p;
-    WindowsLocalRefHolder (T* p) : p (p) {}
-    ~WindowsLocalRefHolder () {
-      Intern::windowsLocalFree (p);
-    }
-  };
-#endif // OS_WIN
-}
+// Holds a pointer and calls LocalFree() on destruction
+template <typename T>
+class WindowsLocalRefHolder {
+ public:
+  T* p;
+  WindowsLocalRefHolder(T* p) : p(p) {}
+  ~WindowsLocalRefHolder() { Intern::windowsLocalFree(p); }
+};
+#endif  // OS_WIN
+}  // namespace Core
 
-#endif // !CORE_MEMORY_HPP_INCLUDED
+#endif  // !CORE_MEMORY_HPP_INCLUDED

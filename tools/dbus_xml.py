@@ -27,7 +27,7 @@ import property_types
 def getQtType(sig):
     if len(sig) == 1:
         return None
-    elif sig == 'ao' or sig == 'as':
+    elif sig == 'ao' or sig == 'as' or sig == 'ay':
         return None
     # elif sig in property_types.dbusToQtType:
     #     return property_types.dbusToQtType[sig]

@@ -162,3 +162,5 @@ QSharedPointer<OperationResult> SegmentationStep::runThreaded(
 }
 
 SegmentationStep::~SegmentationStep() {}
+
+QMap<QString, QString> SegmentationStep::getExtensionInfo() { return {}; }

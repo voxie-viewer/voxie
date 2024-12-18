@@ -41,7 +41,7 @@ namespace vx {
  * Additionally removes any existing selection not fitting the label ID.
  */
 class SubtractStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(SubtractStep)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.SegmentationStep.SubtractStep")
 
  private:
   void initializeCustomUIPropSections() override;

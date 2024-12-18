@@ -44,7 +44,8 @@ class VolumeNode;
  * labelVolume voxel to the given label ID.
  */
 class MultiThresholdStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(MultiThresholdStep)
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep")
 
  private:
   QPointer<ThresholdWidget> multiThreshold;

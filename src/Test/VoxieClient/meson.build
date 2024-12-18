@@ -9,6 +9,8 @@ qt5_dep_moc = dependency('qt5', modules : qt_modules)
 
 moc_files = qt5.preprocess(
   moc_sources : [
+    'CastFloatToIntSafeTest.cpp',
+    'FractionTest.cpp', 
     'HmgVectorTest.cpp', 
     'MapTest.cpp',
     'MatrixTest.cpp',
@@ -21,11 +23,23 @@ moc_files = qt5.preprocess(
   dependencies : qt5_dep_moc,
 )
 
+if meson.get_compiler('c').get_argument_syntax() != 'msvc'
+  sanitize_args = [
+    '-fsanitize=float-cast-overflow',
+  ]
+else
+  # MSVC
+  sanitize_args = []
+endif
+
+
 main = executable(
   'VoxieClientTest',
   [
     moc_files,
 
+    'CastFloatToIntSafeTest.cpp',
+    'FractionTest.cpp',
     'HmgVectorTest.cpp',
     'Main.cpp',
     'MapTest.cpp',
@@ -45,5 +59,9 @@ main = executable(
   link_with : [
   ],
   link_args : [
+    sanitize_args,
   ],
+  cpp_args : [
+    sanitize_args,
+  ]
 )

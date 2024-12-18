@@ -30,6 +30,7 @@
 #include "Svd.hpp"
 
 #include <array>
+#include <random>
 
 #include <QObject>
 
@@ -94,6 +95,7 @@ class IterativeClosestPoint {
   std::vector<QVector3D> refFeaturePoints_;
   std::vector<QVector3D> inFeaturePoints_;
   uint32_t numSamples_;
+  std::mt19937 rng_;
 };
 
 #endif  // IterativeClosestPoint_H

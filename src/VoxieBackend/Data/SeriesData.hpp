@@ -43,7 +43,7 @@ namespace vx {
 
 class VOXIEBACKEND_EXPORT SeriesData : public Data, public DataContainer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(SeriesData)
+  VX_REFCOUNTEDOBJECT
 
  public:
   using EntryKeyList = QList<SeriesDimension::EntryKey>;
@@ -63,13 +63,11 @@ class VOXIEBACKEND_EXPORT SeriesData : public Data, public DataContainer {
   }
   int dimensionCount() { return dimensions().length(); }
 
-  const QMap<EntryKeyList, QSharedPointer<Data>> entries() {
-    return entries_;
-  }
+  const QMap<EntryKeyList, QSharedPointer<Data>> entries() { return entries_; }
 
   void verifyKey(const EntryKeyList& key);
 
-  void addEntry(const EntryKeyList& key, const QSharedPointer<Data>& data,
+  void setEntry(const EntryKeyList& key, const QSharedPointer<Data>& data,
                 ReplaceMode replaceMode = ReplaceMode::Insert);
 
   // Returns null if there is no such entry

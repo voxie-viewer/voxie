@@ -234,7 +234,14 @@ void loadAndTransformTo (const VolumeGen<T, true>& self, const Math::ArrayView<T
         for (std::size_t x = 0; x < slicesCur; x++)
           for (std::size_t y = 0; y < sizeY; y++)
             for (std::size_t z = 0; z < sizeZ; z++)
+#if defined(__clang__) || GCC_VERSION_IS_ATLEAST(4, 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#endif
               transformedView (firstSlice + x, y, z) = bufferView (x, y, z) * scalingFactor;
+#if defined(__clang__) || GCC_VERSION_IS_ATLEAST(4, 6)
+#pragma GCC diagnostic pop
+#endif
       } else {
         for (std::size_t x = 0; x < slicesCur; x++)
           for (std::size_t y = 0; y < sizeY; y++)

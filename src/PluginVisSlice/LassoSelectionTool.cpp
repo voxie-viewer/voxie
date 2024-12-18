@@ -98,22 +98,36 @@ void LassoSelectionTool::reset() {
   this->triggerLayerRedraw();
 }
 
-void LassoSelectionTool::toolMousePressEvent(QMouseEvent* ev) {
+void LassoSelectionTool::toolMousePressEvent(
+    QMouseEvent* ev, const vx::Vector<double, 2>& pixelPos) {
   if (ev->button() == Qt::LeftButton) {
     this->mousePressed = true;
-    this->startPos = ev->pos();
+    this->startPosPixel = pixelPos;
   } else if (ev->button() == Qt::RightButton) {
-    toolMouseMoveEvent(ev);
+    toolMouseMoveEvent(ev, pixelPos);
   }
 }
 
-void LassoSelectionTool::toolMouseReleaseEvent(QMouseEvent* ev) {
+// TODO: Avoid using QPointF?
+static QPointF toQPointFNoSwap(const vx::Vector<double, 2>& pos) {
+  return QPointF(pos[0], pos[1]);
+}
+
+// TODO: Avoid using QPointF?
+static QPointF toQPointFSwap(const QSize& size,
+                             const vx::Vector<double, 2>& pos) {
+  // TODO: Is "size.height() - 1" correct?
+  return QPointF(pos[0], size.height() - 1 - pos[1]);
+}
+
+void LassoSelectionTool::toolMouseReleaseEvent(
+    QMouseEvent* ev, const vx::Vector<double, 2>& pixelPos) {
   if (ev->button() == Qt::LeftButton) {
     this->mousePressed = false;
-    if (this->doesPointClosePolygon(ev->pos())) {
+    if (this->doesPointClosePolygon(pixelPos)) {
       // Get the nodes that span the Polygon
-      QPointF closestPoint = this->getClosestNode(ev->pos());
-      QList<QPointF> polygonNodes =
+      vx::Vector<double, 2> closestPoint = this->getClosestNode(pixelPos);
+      QList<vx::Vector<double, 2>> polygonNodes =
           this->nodes.mid(this->nodes.lastIndexOf(closestPoint));
 
       if (!getStepManager()) return;
@@ -124,14 +138,10 @@ void LassoSelectionTool::toolMouseReleaseEvent(QMouseEvent* ev) {
         this->savePoint(closestPoint);
         this->triggerLayerRedraw();
 
-        QList<QVector3D> nodes3D;
+        QList<vx::Vector<double, 3>> nodes3D;
         for (auto node : polygonNodes) {
-          QPoint yetAnotherKindOfPoint((int)node.x(), (int)node.y());
-          QPointF planepoint = this->sv->sliceImage().pixelToPlanePoint(
-              yetAnotherKindOfPoint, true);
-          QVector3D threeDPoint =
-              sv->getCuttingPlane().get3DPoint(planepoint.x(), planepoint.y());
-          nodes3D.append(threeDPoint);
+          auto pos3D = this->sv->pixelPosTo3DPosCurrentImage(node);
+          nodes3D.append(pos3D);
         }
 
         this->stepManager->setLassoSelection(
@@ -148,7 +158,8 @@ void LassoSelectionTool::toolMouseReleaseEvent(QMouseEvent* ev) {
     } else {
       // Check if line to new point intersects with old lines
       if (this->nodes.size() > 0) {
-        QLineF newLine = QLineF(this->nodes.last(), ev->pos());
+        QLineF newLine = QLineF(toQPointFNoSwap(this->nodes.last()),
+                                toQPointFNoSwap(pixelPos));
 
         if (this->doesNewLineIntersect(newLine)) {
           vx::showErrorMessage("Error during LassoSelection",
@@ -160,7 +171,7 @@ void LassoSelectionTool::toolMouseReleaseEvent(QMouseEvent* ev) {
           this->lines.append(newLine);
         }
       }
-      this->savePoint(ev->pos());
+      this->savePoint(pixelPos);
       this->triggerLayerRedraw();
     }
   }
@@ -172,23 +183,38 @@ void LassoSelectionTool::triggerLayerRedraw() {
   }
 }
 
-void LassoSelectionTool::toolMouseMoveEvent(QMouseEvent* ev) {
+// TODO: Move to Vector.hpp?
+template <typename T, size_t dim>
+static T manhattanLength(const vx::Vector<T, dim>& vec) {
+  using std::abs;
+
+  T res = 0;
+  for (size_t i = 0; i < dim; i++) res += abs(vec[i]);
+  return res;
+}
+
+void LassoSelectionTool::toolMouseMoveEvent(
+    QMouseEvent* ev, const vx::Vector<double, 2>& pixelPos) {
+  Q_UNUSED(ev);
+  // TODO: What should this do?
+
   if (this->mousePressed &&
-      (ev->pos() - this->startPos).manhattanLength() > 2) {
+      manhattanLength(pixelPos - this->startPosPixel) > 2) {
   } else {
   }
 }
 
-void LassoSelectionTool::savePoint(QPointF point) {
+void LassoSelectionTool::savePoint(const vx::Vector<double, 2>& point) {
   // save in nodes
   this->nodes.append(point);
   // save in Layer
   this->lassoLayer->addNode(point);
 }
 
-bool LassoSelectionTool::doesPointClosePolygon(QPointF point) {
+bool LassoSelectionTool::doesPointClosePolygon(
+    const vx::Vector<double, 2>& point) {
   for (auto node : this->nodes) {
-    if (sqrt(pow(node.x() - point.x(), 2) + pow(node.y() - point.y(), 2)) <
+    if (sqrt(pow(node[0] - point[0], 2) + pow(node[1] - point[1], 2)) <
         this->minDistance) {
       return true;
     }
@@ -197,13 +223,14 @@ bool LassoSelectionTool::doesPointClosePolygon(QPointF point) {
   return false;
 }
 
-QPointF LassoSelectionTool::getClosestNode(QPointF point) {
+vx::Vector<double, 2> LassoSelectionTool::getClosestNode(
+    const vx::Vector<double, 2>& point) {
   float minDistance = std::numeric_limits<float>::max();
-  QPointF closestPoint;
+  vx::Vector<double, 2> closestPoint;
 
   for (auto node : this->nodes) {
     float distance =
-        sqrt(pow(node.x() - point.x(), 2) + pow(node.y() - point.y(), 2));
+        sqrt(pow(node[0] - point[0], 2) + pow(node[1] - point[1], 2));
 
     if (distance < minDistance) {
       minDistance = distance;
@@ -269,9 +296,11 @@ LassoSelectionLayer::LassoSelectionLayer(SliceVisualizer* sv) : sv(sv) {
           &Layer::triggerRedraw);
 }
 
-void LassoSelectionLayer::addNode(QPointF node) { this->nodes.append(node); }
+void LassoSelectionLayer::addNode(const vx::Vector<double, 2>& node) {
+  this->nodes.append(node);
+}
 
-void LassoSelectionLayer::setNodes(QList<QPointF> nodes) {
+void LassoSelectionLayer::setNodes(const QList<vx::Vector<double, 2>>& nodes) {
   this->nodes = nodes;
 }
 
@@ -298,11 +327,13 @@ void LassoSelectionLayer::drawPoint(QImage& outputImage, float visibility,
 
 void LassoSelectionLayer::redraw(QImage& outputImage, float visibility) {
   for (int i = 0; i < this->nodes.size(); i++) {
-    this->drawPoint(outputImage, visibility, this->nodes[i]);
+    this->drawPoint(outputImage, visibility,
+                    toQPointFSwap(outputImage.size(), this->nodes[i]));
     // DrawLine
     if (i > 0) {
-      this->drawLine(outputImage, visibility, this->nodes[i],
-                     this->nodes[i - 1]);
+      this->drawLine(outputImage, visibility,
+                     toQPointFSwap(outputImage.size(), this->nodes[i]),
+                     toQPointFSwap(outputImage.size(), this->nodes[i - 1]));
     }
   }
 }
@@ -326,8 +357,11 @@ void LassoSelectionLayer::newVisibility(float newVis) {
 }
 
 void LassoSelectionLayer::render(
-    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters) {
+    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters,
+    bool isMainImage) {
   Q_UNUSED(parameters);
+  Q_UNUSED(isMainImage);
+
   // TODO: This is not multithreading safe, clean up
   auto visibility = this->visibility;
 

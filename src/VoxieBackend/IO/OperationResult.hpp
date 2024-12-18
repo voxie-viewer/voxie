@@ -36,7 +36,7 @@
 namespace vx {
 class VOXIEBACKEND_EXPORT OperationResult : public vx::RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(OperationResult)
+  VX_REFCOUNTEDOBJECT
 
   friend class vx::io::Operation;
 

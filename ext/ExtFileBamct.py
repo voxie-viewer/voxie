@@ -29,6 +29,8 @@ import struct
 import collections
 import dataclasses
 import typing
+import base64
+import math
 
 # See https://bamresearch.github.io/aRTist-handbook/bamct_file_format.html
 
@@ -114,12 +116,21 @@ if bamHeaderStruct.size != 512:
     raise Exception('bamHeaderStruct.size != 512')
 
 
+# TODO: Is this correct?
 imageKind = {
+    "Corrections": {
+        "BadPixel": True,
+        "FluxNormalization": True,
+        "NormalizeLevel": False,
+        "Shading": True,
+    },
+    "Dimension": "Intensity",
+    "Description": "Intensity data"
 }
 
 
 class TomographyRawData2DAccessorOperationsImpl(voxie.DBusExportObject):
-    def __init__(self, conn, *, imageKind, metadata, geometries, imageCount, imageShape, file, offset, header):
+    def __init__(self, conn, *, imageKind, metadata, geometries, imageCount, imageShape, file, offset, header, whiteValue):
         voxie.DBusExportObject.__init__(
             self, ['de.uni_stuttgart.Voxie.TomographyRawData2DAccessorOperations'], context=context)
         self.path = context.nextId(
@@ -196,15 +207,21 @@ class TomographyRawData2DAccessorOperationsImpl(voxie.DBusExportObject):
                 pos = self.offset + self.imageShape[1] * self.imageShape[0] * self.header.BytesPerPixel * id
                 file.seek(pos)
                 data = self.file.read(self.imageShape[1] * self.imageShape[0] * self.header.BytesPerPixel)
-                # TODO: Is this correct?
-                # TODO: Mirror images? (in particular y direction)
+                # Reshape data to correct shape, put X dimension first
                 img = np.frombuffer(data, dtype=dtype).reshape((self.imageShape[1], self.imageShape[0])).transpose()
+                # Mirror Y direction
+                img = img[:, ::-1]
+                if imageKind['Dimension'] == 'Attenuation':
+                    if whiteValue == 0:
+                        raise Exception('Cannot get attenuation data if no WhiteValue is specified')
+                    img = np.maximum(0.5, img)
+                    img /= whiteValue
+                    img = -np.log(img)
                 region[:] = img[inputRegionStart[0]:inputRegionStart[0] + regionSize[0],
                                 inputRegionStart[1]:inputRegionStart[1] + regionSize[1]]
 
-            version = update.Finish()
-
-        return version.VersionString
+            with update.Finish() as version:
+                return version.VersionString
 
     def incRefCount(self):
         self.refCount += 1
@@ -231,6 +248,11 @@ provider = None
 
 with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationImport']).ClaimOperationAndCatch() as op:
     filename = op.Filename
+
+    properties = op.Properties
+    whiteValue = 0
+    if 'de.uni_stuttgart.Voxie.FileFormat.BAMCT.Raw.WhiteValue' in properties:
+        whiteValue = properties['de.uni_stuttgart.Voxie.FileFormat.BAMCT.Raw.WhiteValue'].getValue('d')
 
     # with open(filename, 'rb') as file:
     # TODO: Close file for volume files?
@@ -280,7 +302,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
             gridSpacing = [header.VoxelSize * 1e-3, header.VoxelSize * 1e-3, header.VoxelSize * 1e-3]
 
             # TODO: ?
-            volumeOrigin = [gridSpacing[0] * arrayShape[0], gridSpacing[1] * arrayShape[1], gridSpacing[2] * arrayShape[2]]
+            volumeOrigin = [-gridSpacing[0] * arrayShape[0] / 2.0, -gridSpacing[1] * arrayShape[1] / 2.0, -gridSpacing[2] * arrayShape[2] / 2.0]
 
             if header.BytesPerPixel * 8 != dataType[1]:
                 raise Exception('header.BytesPerPixel * 8 != dataType[1]')
@@ -292,8 +314,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
             if expectedFileSize != fileSize:
                 raise Exception('Expected file size {!r}, got file size {!r}'.format(expectedFileSize, fileSize))
 
-            # TODO: .vgi file contains "Mirror = 0 1 0 ". Also mirror some axis?
-            # TODO: Is the order of axes correct?
+            # TODO: Is the order of axes correct? Try to check with a volume where X / Y / Z have different sizes.
             with instance.CreateVolumeDataVoxel(arrayShape, dataType2, volumeOrigin, gridSpacing) as resultData:
                 with resultData.CreateUpdate() as update, resultData.GetBufferWritable(update) as buffer:
                     outData = buffer
@@ -304,7 +325,12 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
                         pos = offset + arrayShape[0] * arrayShape[1] * header.BytesPerPixel * z
                         file.seek(pos)
                         data = file.read(arrayShape[0] * arrayShape[1] * header.BytesPerPixel)
-                        img = np.frombuffer(data, dtype=dtype).reshape((arrayShape[0], arrayShape[1]))
+
+                        # Reshape data to correct shape, put X dimension first
+                        img = np.frombuffer(data, dtype=dtype).reshape((arrayShape[1], arrayShape[0])).transpose()
+                        # Mirror Y direction
+                        img = img[:, ::-1]
+
                         outData[:, :, z] = img
 
                         op.ThrowIfCancelled()
@@ -329,11 +355,89 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
             if expectedFileSize != fileSize:
                 raise Exception('Expected file size {!r}, got file size {!r}'.format(expectedFileSize, fileSize))
 
-            # TODO: Produce metadata and geometries?
-            metadata = {}
-            geometries = []
+            bamUnit = 1e-3
+            # TODO: Is using CollimatorWidth / CollimatorHeight correct?
+            pixelSizeX = header.CollimatorWidth * bamUnit
+            pixelSizeY = header.CollimatorHeight * bamUnit
+            initialAngle = header.StartAngle / 180 * math.pi
+            # TODO: Direction?
+            angularStep = header.AngularStepSizeBetweenImages / 180 * math.pi
 
-            provider = TomographyRawData2DAccessorOperationsImpl(context.bus, imageKind=imageKind, metadata=metadata, geometries=geometries, imageCount=imageCount, imageShape=imageShape, file=file, offset=offset, header=header)
+            header_data_json = {}
+            for ty, key in bamFields:
+                if key is None:
+                    continue
+                value = getattr(header, key)
+                if isinstance(value, bytes):
+                    # value = str(base64.b64encode(value), 'utf-8')
+                    value = value.rstrip(b'\0')
+                    value = str(value, 'utf-8')
+                header_data_json[key] = value
+            metadata = {
+                'BAMCTHeader': header_data_json,
+                # TODO: Remove this? (Currently used by HDF5 exporter)
+                "Info": {
+                    "DetectorPixelSize": [pixelSizeX, pixelSizeY],
+                },
+            }
+            images = []
+            for i in range(imageCount):
+                images.append({
+                    "ImageReference": {
+                        "ImageID": i,
+                        "Stream": ""
+                    },
+                    "ProjectionGeometry": {
+                        "TableRotAngle": initialAngle + angularStep * i,
+                    }
+                })
+            geometries = [
+                {
+                    "Name": "ConeBeamCT",
+                    "Data": {
+                        "AngularStep": angularStep,
+                        # TODO: Add this?
+                        "DistanceSourceAxis": header.SOD * bamUnit,
+                        # TODO: Add this?
+                        "DistanceSourceDetector": header.SDD * bamUnit,
+                        "Images": images,
+                        "InitialAngle": initialAngle,
+                        "NumberOfAngles": header.AngularSteps,
+                        "ProjectionGeometry": {
+                            "ProjectionOrigin": [
+                                -pixelSizeX * imageShape[0] / 2,
+                                -pixelSizeY * imageShape[1] / 2,
+                            ],
+                            "ProjectionSize": [
+                                pixelSizeX * imageShape[0],
+                                pixelSizeY * imageShape[1],
+                            ],
+                            "DetectorPosition": [
+                                # TODO: DetectorCentre / DetectorPosition?
+                                0,
+                                0,
+                                -header.DetectorDistance * bamUnit,
+                            ],
+                            "SourcePosition": [
+                                # TODO: SourceCentre / SourceElevation?
+                                0,
+                                0,
+                                -header.SourceDistance * bamUnit,
+                            ],
+                            "TablePosition": [
+                                0,
+                                0,
+                                # TODO: ?
+                                -header.SourceDistance * bamUnit - header.SOD * bamUnit
+                            ]
+                        },
+                        # TODO: ?
+                        # "RotationDirection": -1,
+                    },
+                },
+            ]
+
+            provider = TomographyRawData2DAccessorOperationsImpl(context.bus, imageKind=imageKind, metadata=metadata, geometries=geometries, imageCount=imageCount, imageShape=imageShape, file=file, offset=offset, header=header, whiteValue=whiteValue)
             clientManager.objects[provider.path] = provider
             providerTuple = (context.bus.get_unique_name() if not instance._context.isPeerToPeerConnection else '', dbus.ObjectPath(provider.path))
             with instance.CreateTomographyRawData2DAccessor(providerTuple, {}, DBusObject_handleMessages=True) as data:

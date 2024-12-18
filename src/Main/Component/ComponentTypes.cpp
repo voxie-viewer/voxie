@@ -26,6 +26,8 @@
 #include <VoxieBackend/Component/ExtensionExporter.hpp>
 #include <VoxieBackend/Component/ExtensionImporter.hpp>
 
+#include <VoxieBackend/Data/BlockJpegImplementation.hpp>
+#include <VoxieBackend/Data/BufferType.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveType.hpp>
 
 #include <VoxieBackend/Property/PropertyType.hpp>
@@ -60,6 +62,10 @@ vx::getComponentTypes() {
                   ComponentType::createNoExt<PropertyType>()),
               createQSharedPointer<ComponentType>(
                   ComponentType::createNoExt<GeometricPrimitiveType>()),
+              createQSharedPointer<ComponentType>(
+                  ComponentType::createNoExt<BufferType>()),
+              createQSharedPointer<ComponentType>(
+                  ComponentType::createNoExt<BlockJpegImplementation>()),
           });
   // TODO: ScriptExtension?
   return types;

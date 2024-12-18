@@ -22,6 +22,8 @@
 
 #include "ParameterCopy.hpp"
 
+#include <Voxie/Node/FilterNode.hpp>
+#include <Voxie/Node/SegmentationStep.hpp>
 #include <Voxie/Node/Types.hpp>
 
 using namespace vx;
@@ -36,7 +38,7 @@ QSharedPointer<WeakParameterCopy> ParameterCopy::createWeakCopy() {
 
   return createQSharedPointer<WeakParameterCopy>(
       this->mainNodePath(), this->properties(), this->prototypes(),
-      weakDataMap);
+      this->extensionInfo(), weakDataMap);
 }
 
 ParameterCopy::DataInfo ParameterCopy::getData(
@@ -62,6 +64,7 @@ QSharedPointer<ParameterCopy> ParameterCopy::getParameters(QList<Node*> nodes,
       properties;
   QMap<QDBusObjectPath, QSharedPointer<NodePrototype>> prototypes;
   QMap<QDBusObjectPath, DataInfo> dataMap;
+  QMap<QDBusObjectPath, QMap<QString, QString>> extensionInfo;
 
   // Find all referenced nodes
   QSet<Node*> done;
@@ -101,10 +104,18 @@ QSharedPointer<ParameterCopy> ParameterCopy::getParameters(QList<Node*> nodes,
                      DataInfo(data, data ? data->currentVersion()
                                          : QSharedPointer<DataVersion>()));
     }
+
+    if (auto filterNode = dynamic_cast<FilterNode*>(obj)) {
+      extensionInfo.insert(obj->getPath(), filterNode->getExtensionInfo());
+    } else if (auto segmentationStepNode =
+                   dynamic_cast<SegmentationStep*>(obj)) {
+      extensionInfo.insert(obj->getPath(),
+                           segmentationStepNode->getExtensionInfo());
+    }
   }
 
-  return createQSharedPointer<ParameterCopy>(mainNode->getPath(), properties,
-                                             prototypes, dataMap);
+  return createQSharedPointer<ParameterCopy>(
+      mainNode->getPath(), properties, prototypes, extensionInfo, dataMap);
 }
 
 ParameterCopy::DataInfo::DataInfo(const QSharedPointer<Data>& data,

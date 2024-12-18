@@ -282,14 +282,14 @@ void OpenGLDrawUtils::PrimitiveBuffer::push(std::vector<GLfloat>& array,
 }
 
 void OpenGLDrawUtils::PrimitiveBuffer::push(std::vector<GLfloat>& array,
-                                            const QVector4D& data) {
-  array.push_back(data.x());
-  array.push_back(data.y());
-  array.push_back(data.z());
-  array.push_back(data.w());
+                                            const vx::Color& data) {
+  array.push_back(data.red());
+  array.push_back(data.green());
+  array.push_back(data.blue());
+  array.push_back(data.alpha());
 }
 
-void OpenGLDrawUtils::PrimitiveBuffer::addQuad(const QVector4D& color,
+void OpenGLDrawUtils::PrimitiveBuffer::addQuad(const vx::Color& color,
                                                const QVector3D& a,
                                                const QVector3D& b,
                                                const QVector3D& c,
@@ -313,7 +313,7 @@ void OpenGLDrawUtils::PrimitiveBuffer::addQuad(const QVector4D& color,
   push(vertices, d);
 }
 
-void OpenGLDrawUtils::PrimitiveBuffer::addTriangle(const QVector4D& color,
+void OpenGLDrawUtils::PrimitiveBuffer::addTriangle(const vx::Color& color,
                                                    const QVector3D& a,
                                                    const QVector3D& b,
                                                    const QVector3D& c) {
@@ -332,7 +332,7 @@ void OpenGLDrawUtils::PrimitiveBuffer::addTriangle(const QVector4D& color,
   push(vertices, c);
 }
 
-void OpenGLDrawUtils::PrimitiveBuffer::addLine(const QVector4D& color,
+void OpenGLDrawUtils::PrimitiveBuffer::addLine(const vx::Color& color,
                                                const QVector3D& a,
                                                const QVector3D& b) {
   if (vertices.size() == 0) {

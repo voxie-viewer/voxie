@@ -31,44 +31,43 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/IdComponent.hpp>
 
 namespace HDF5 {
-  class DataType : public IdComponent {
-    void checkType () const;
+class DataType : public IdComponent {
+  void checkType() const;
 
-  public:
-    DataType () {
-    }
+ public:
+  DataType() {}
 
-    explicit DataType (const IdComponent& value) : IdComponent (value) {
-      checkType ();
-    }
+  explicit DataType(const IdComponent& value) : IdComponent(value) {
+    checkType();
+  }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit DataType (hid_t value) : IdComponent (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit DataType(hid_t value) : IdComponent(value) { checkType(); }
 
-    static DataType create (H5T_class_t class_, size_t size);
+  static DataType create(H5T_class_t class_, size_t size);
 
-    DataType copy ();
+  DataType copy();
 
-    H5T_class_t getClass () const;
+  H5T_class_t getClass() const;
 
-    size_t getSize () const;
+  size_t getSize() const;
 
-    bool equals (const DataType& other) const;
+  bool equals(const DataType& other) const;
 
-    std::vector<uint8_t> encode () const;
+  std::vector<uint8_t> encode() const;
 
-    H5T_sign_t getSign () const;
-  };
-}
+  H5T_sign_t getSign() const;
 
-#endif // !HDF5_DATATYPE_HPP_INCLUDED
+  DataType getSuper() const;
+};
+}  // namespace HDF5
+
+#endif  // !HDF5_DATATYPE_HPP_INCLUDED

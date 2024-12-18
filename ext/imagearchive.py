@@ -51,16 +51,20 @@ class ImageArchive:
             self.count += 1
         entries = [None for i in range(self.count)]
         self.complete = False
+        self.file_entry = None
         for i in range(1, len(infodata)):
+            data = {}
+            for name in infoNames:
+                data[name] = infodata[i][infoNames[name]]
             if infodata[i][idCol] == '':
+                if self.file_entry is not None:
+                    raise Exception('Got multiple overall file entries')
                 self.complete = True
+                self.file_entry = data
                 continue
             id = int(infodata[i][idCol])
             if entries[id] is not None:
                 raise Exception('entries[id] is not None')
-            data = {}
-            for name in infoNames:
-                data[name] = infodata[i][infoNames[name]]
             entries[id] = data
         self.info = entries
         # print(entries)

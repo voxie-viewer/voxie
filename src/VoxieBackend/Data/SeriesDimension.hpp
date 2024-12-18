@@ -27,19 +27,17 @@
 #include <VoxieBackend/VoxieBackend.hpp>
 
 namespace vx {
-class PropertyType;
+class DataProperty;
 
 class VOXIEBACKEND_EXPORT SeriesDimension : public RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(SeriesDimension)
+  VX_REFCOUNTEDOBJECT
 
   // A SeriesDimension could be e.g.:
   // - Time
   // - Spectral distibution
 
-  QString name_;
-  QString displayName_;
-  QSharedPointer<PropertyType> type_;
+  QSharedPointer<DataProperty> property_;
 
   // The raw values, see type() for interpretation
   // The entries are ordered in the way in which they will be shown in the GUI.
@@ -54,16 +52,17 @@ class VOXIEBACKEND_EXPORT SeriesDimension : public RefCountedObject {
   static const constexpr EntryKey invalidEntryKey =
       std::numeric_limits<quint64>::max();
 
-  QString name() { return name_; }
-  QString displayName() { return displayName_; }
-  QSharedPointer<PropertyType> type() { return type_; }
+  const QSharedPointer<DataProperty>& property() { return property_; }
   QList<QVariant> entries() { return entries_; }
   EntryKey length() { return entries().length(); }
 
+  // QString name() { return name_; }
+  // QString displayName() { return displayName_; }
+  // QSharedPointer<PropertyType> type() { return type_; }
+
  public:
   // TODO: should this be private so that only the create() method can call it?
-  SeriesDimension(const QString& name, const QString& displayName,
-                  const QSharedPointer<PropertyType>& type,
+  SeriesDimension(const QSharedPointer<DataProperty>& type,
                   const QList<QVariant>& entries);
 
   QVariant getEntryValue(EntryKey key);

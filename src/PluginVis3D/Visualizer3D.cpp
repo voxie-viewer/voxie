@@ -52,6 +52,8 @@
 #include <PluginVis3D/Osvr/OsvrDisplay.hpp>
 #endif
 
+VX_NODE_INSTANTIATION(Visualizer3D)
+
 using namespace vx;
 using namespace vx::vis3d;
 using namespace vx::visualization;
@@ -240,8 +242,8 @@ Visualizer3D::Visualizer3D()
   auto sn = new vx::spnav::SpaceNavVisualizer(this);
   auto view3d = view->getView3D();
   view3d->registerSpaceNavVisualizer(sn);
-  connect(view, &Visualizer3DView::objectPositionChangeRequested,
-          this, [this](QVector3D offset) {
+  connect(view, &Visualizer3DView::objectPositionChangeRequested, this,
+          [this](QVector3D offset) {
             axisFilter.filter(offset);
 
             auto selectedNodes =
@@ -260,8 +262,8 @@ Visualizer3D::Visualizer3D()
             // qDebug() << "Visualizer3D::positionChanged" << obj3D << offset;
             obj3D->objectPositionChangeRequested(offset);
           });
-  connect(view, &Visualizer3DView::objectRotationChangeRequested,
-          this, [this](QQuaternion rotation) {
+  connect(view, &Visualizer3DView::objectRotationChangeRequested, this,
+          [this](QQuaternion rotation) {
             axisFilter.filter(rotation);
 
             auto selectedNodes =
@@ -320,5 +322,3 @@ Visualizer3D::getRenderFunction() {
     this->view->renderScreenshot(outputImage, outputRegionStart, size);
   };
 }
-
-NODE_PROTOTYPE_IMPL_SEP(View3D, Visualizer3D)

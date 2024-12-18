@@ -153,3 +153,8 @@ bool Component::isStable() {
 // TODO: Implement compatibilityNames for components other than NodePrototype
 // and PropertyType?
 QList<QString> Component::compatibilityNames() { return QList<QString>(); }
+
+void Component::validateComponent(
+    const QSharedPointer<ComponentContainer>& allComponents) {
+  Q_UNUSED(allComponents);
+}

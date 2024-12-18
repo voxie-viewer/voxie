@@ -56,9 +56,10 @@ class ColorizerEntry;
 
 class RawVisualizer : public vx::visualization::SimpleVisualizer {
   Q_OBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Visualizer.TomographyRawData")
 
- public:
-  vx::visualizer_prop::TomographyRawDataProperties* properties;
+  friend class InfoWidget;
+  friend class ImageSelectionWidget;
 
  private:
   bool setupFinishedCalled = false;
@@ -109,8 +110,6 @@ class RawVisualizer : public vx::visualization::SimpleVisualizer {
  public:
   RawVisualizer();
   //~RawVisualizer();
-
-  FACTORY_VISUALIZERMODULE_HPP(Raw)
 
   vx::SharedFunPtr<RenderFunction> getRenderFunction() override;
 

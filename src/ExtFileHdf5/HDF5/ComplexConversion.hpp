@@ -27,7 +27,7 @@
 // Also works for conversions like int->std::complex<double> or cldouble->float
 
 namespace HDF5 {
-  void registerComplexConversion ();
+void registerComplexConversion();
 }
 
-#endif // !HDF5_COMPLEXCONVERSION_HPP_INCLUDED
+#endif  // !HDF5_COMPLEXCONVERSION_HPP_INCLUDED

@@ -44,7 +44,7 @@ DBUS_VERSION="dbus-1.8.2"
 #DBUS_PYTHON_VERSION="dbus-python-1.2.4"
 DBUS_PYTHON_VERSION="dbus-python-1.2.16"
 
-PYTHON_PACKAGES_ARGS="--python-tag=cp39 --abi-tag=cp39 --platform-tag=macosx_10_9_x86_64 --platform-tag=macosx_10_10_x86_64"
+PYTHON_PACKAGES_ARGS="--python-tag=cp39 --abi-tag=cp39 --platform-tag=macosx_10_9_x86_64 --platform-tag=macosx_10_10_x86_64 --platform-tag=macosx_10_13_x86_64"
 
 QT_SRC="qt-everywhere-src-${QT_VERSION}.tar.xz"
 
@@ -110,9 +110,11 @@ rm -rf build/release/install build/release/*-mac*.tar.gz voxie-*mac*.tar.gz buil
 
 mkdir -p "build/release/install"
 
+BUILD_ARGS="--no-use-system-cmark-gfm"
+
 if [ "$1" != "--skip-build" ]; then
-    tools/build.sh $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" "$@"
-    DESTDIR=$(pwd)/build/release/install tools/build.sh $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" "$@" install
+    tools/build $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" --disable-libjpeg $BUILD_ARGS "$@"
+    DESTDIR=$(pwd)/build/release/install tools/build $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" --disable-libjpeg $BUILD_ARGS "$@" install
 fi
 
 tools/macos/build-dbus.sh "$DBUS_VERSION"
@@ -157,6 +159,7 @@ if [ "$1" != "--skip-build" ]; then
     mv "build/release/install/$TDIR/Contents/Resources/lib" "build/release/install/$TDIR/Contents/Frameworks"
     mkdir "build/release/install/$TDIR/Contents/Resources/lib"
     mv "build/release/install/$TDIR/Contents/Frameworks/katex"* "build/release/install/$TDIR/Contents/Resources/lib" # TODO
+    mv "build/release/install/$TDIR/Contents/Frameworks/simple.css" "build/release/install/$TDIR/Contents/Resources/lib" # TODO
     # mv "build/release/install/$TDIR/Contents/Resources/plugins" "build/release/install/$TDIR/Contents/Plugins"
     mkdir "build/release/install/$TDIR/Contents/MacOS"
     mv "build/release/install/$TDIR/Contents/Resources/bin/voxie" "build/release/install/$TDIR/Contents/MacOS/voxie.bin"

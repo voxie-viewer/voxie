@@ -171,7 +171,6 @@ class Rotation<T, 3> {
     // (m12 m22 m32)
     // (m13 m23 m33)
     T m33 = 1 - 2 * q.b() * q.b() - 2 * q.c() * q.c();
-    // Core::OStream::getStdout () << m33 << std::endl;
     // TODO: Should this depend on T?
     T eps = static_cast<T>(1e-6l);  // = 89.918435 deg
     if (m33 > 1 - eps) {            // m33 = cos b ~ 1

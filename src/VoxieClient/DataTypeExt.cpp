@@ -46,6 +46,7 @@ QString vx::endiannessToString(Endianness endianness) {
 #define DECL(t, s)    \
   case Endianness::t: \
     return s;
+    DECL(None, "none")
     DECL(Little, "little")
     DECL(Big, "big")
     // Note: No Native here, either Little or Big should match
@@ -69,6 +70,7 @@ vx::BaseType vx::parseBaseType(const QString& str) {
 vx::Endianness vx::parseEndianness(const QString& str) {
 #define DECL(t, s) \
   if (str == s) return Endianness::t;
+  DECL(None, "none")
   DECL(Little, "little")
   DECL(Big, "big")
   DECL(Native, "native")

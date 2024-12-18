@@ -120,4 +120,21 @@ inline vx::Vector<qreal, 2> pointToVector(const QPointF& v) {
   return {v.x(), v.y()};
 }
 
+inline QPoint toQPoint(const vx::Vector<int, 2>& v) {
+  return QPoint(v.access<0>(), v.access<1>());
+}
+inline QPointF toQPointF(const vx::Vector<qreal, 2>& v) {
+  return QPointF(v.access<0>(), v.access<1>());
+}
+
+// QSize
+
+inline vx::Vector<int, 2> sizeToVector(const QSize& s) {
+  return {s.width(), s.height()};
+}
+
+inline QSize toQSize(const vx::Vector<int, 2>& v) {
+  return QSize(v.access<0>(), v.access<1>());
+}
+
 }  // namespace vx

@@ -31,6 +31,8 @@
 #include <QtDBus/QDBusObjectPath>
 #include <QtDBus/QDBusVariant>
 
+class PropertyInstance;
+
 namespace vx {
 class Node;
 class NodeProperty;
@@ -40,11 +42,13 @@ class PropertyUI : public QObject {
 
   QSharedPointer<NodeProperty> property_;
   QPointer<Node> node_;
+  QSharedPointer<PropertyInstance> propertyInstance_;
 
   bool initCalled = false;
 
  protected:
   PropertyUI(const QSharedPointer<NodeProperty>& property, Node* node);
+  PropertyUI(const QSharedPointer<PropertyInstance>& propertyInstance);
   ~PropertyUI();
 
   // Will be called from init()
@@ -53,6 +57,9 @@ class PropertyUI : public QObject {
  public:
   const QSharedPointer<NodeProperty>& property() const { return property_; }
   const QPointer<Node>& node() const { return node_; }
+  const QSharedPointer<PropertyInstance>& propertyInstance() const {
+    return propertyInstance_;
+  }
 
   virtual bool isMultiline() { return false; }
   virtual QWidget* widget() = 0;

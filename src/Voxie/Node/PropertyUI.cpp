@@ -23,6 +23,7 @@
 #include "PropertyUI.hpp"
 
 #include <Voxie/Node/Node.hpp>
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodeProperty.hpp>
 
 #include <QtWidgets/QWidget>
@@ -32,6 +33,15 @@ using namespace vx;
 PropertyUI::PropertyUI(const QSharedPointer<NodeProperty>& property, Node* node)
     : property_(property), node_(node) {}
 
+PropertyUI::PropertyUI(const QSharedPointer<PropertyInstance>& propertyInstance)
+    : propertyInstance_(propertyInstance) {
+  auto nodeProp = qSharedPointerDynamicCast<NodeNodeProperty>(propertyInstance);
+  if (nodeProp) {
+    property_ = nodeProp->property;
+    node_ = nodeProp->node;
+  }
+}
+
 PropertyUI::~PropertyUI() {}
 
 void PropertyUI::init() {
@@ -39,34 +49,39 @@ void PropertyUI::init() {
     qWarning() << "PropertyUI::init() has already been called";
     return;
   }
-  QSet<NodeProperty*> deps;
-  this->property()->enabledCondition()->collectDependencies(deps);
-  Node* obj = this->node();
-  if (!obj) {
-    qWarning() << "PropertyUI::init() running for destroyed node";
-    return;
+
+  // Automatically enable/disable property, only done when a property+node was
+  // passed to createUI.
+  if (this->property()) {
+    QSet<NodeProperty*> deps;
+    this->property()->enabledCondition()->collectDependencies(deps);
+    Node* obj = this->node();
+    if (!obj) {
+      qWarning() << "PropertyUI::init() running for destroyed node";
+      return;
+    }
+    for (const auto& dep : deps) {
+      connect(node(), &Node::propertyChanged, this,
+              [this, dep](const QSharedPointer<NodeProperty>& property,
+                          const QVariant& value) {
+                Q_UNUSED(value);
+                if (property != dep) return;
+                Node* obj2 = this->node();
+                if (!obj2) {
+                  qDebug() << "setEnabled() updater running for destroyed node";
+                  return;
+                }
+                bool enabled =
+                    this->property()->enabledCondition()->evaluate(obj2);
+                // qDebug() << this->property()->name() << "isEnabled update"
+                //          << enabled;
+                this->setEnabled(enabled);
+              });
+    }
+    bool enabled = this->property()->enabledCondition()->evaluate(obj);
+    // qDebug() << this->property()->name() << "isEnabled init" << enabled;
+    this->setEnabled(enabled);
   }
-  for (const auto& dep : deps) {
-    connect(node(), &Node::propertyChanged, this,
-            [this, dep](const QSharedPointer<NodeProperty>& property,
-                        const QVariant& value) {
-              Q_UNUSED(value);
-              if (property != dep) return;
-              Node* obj2 = this->node();
-              if (!obj2) {
-                qDebug() << "setEnabled() updater running for destroyed node";
-                return;
-              }
-              bool enabled =
-                  this->property()->enabledCondition()->evaluate(obj2);
-              // qDebug() << this->property()->name() << "isEnabled update"
-              //          << enabled;
-              this->setEnabled(enabled);
-            });
-  }
-  bool enabled = this->property()->enabledCondition()->evaluate(obj);
-  // qDebug() << this->property()->name() << "isEnabled init" << enabled;
-  this->setEnabled(enabled);
 
   init2();
 

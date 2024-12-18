@@ -40,7 +40,7 @@ class SliceVisualizer;
  */
 class Grid : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(Grid)
+  VX_REFCOUNTEDOBJECT
 
  public:
   explicit Grid(SliceVisualizer*);
@@ -61,7 +61,8 @@ class Grid : public Layer {
   float getSize();
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 };
 
 #endif  // GRID_H

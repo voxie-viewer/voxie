@@ -7,6 +7,7 @@ namespace vx {
 namespace types {
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> BooleanType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> Box3DAxisAlignedType();
+VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> ChemicalCompositionType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> ColorType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> DataTypeType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> EnumerationType();
@@ -23,10 +24,14 @@ VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> NodeReferenceType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> NodeReferenceListType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> Orientation3DType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> OutputNodeReferenceType();
+VOXIECORESHARED_EXPORT QSharedPointer<PropertyType>
+PiecewisePolynomialFunctionType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> Point2DType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> Position3DType();
+VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> QuantityType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> SizeInteger3DType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> StringType();
+VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> SurfaceAttributeNameType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> ThresholdLabelMappingType();
 VOXIECORESHARED_EXPORT QSharedPointer<PropertyType>
 TomographyRawDataImageKindType();
@@ -45,6 +50,11 @@ struct Box3DAxisAligned {
                      std::tuple<double, double, double>>
       RawType;
   typedef vx::BoundingBox3D QtType;
+  static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
+};
+struct ChemicalComposition {
+  typedef QJsonValue RawType;
+  typedef QJsonValue QtType;
   static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
 };
 struct Color {
@@ -94,12 +104,12 @@ struct LabelList {
 };
 struct ListPosition3D {
   typedef QList<std::tuple<double, double, double>> RawType;
-  typedef QList<QVector3D> QtType;
+  typedef QList<vx::Vector<double, 3>> QtType;
   static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
 };
 struct ListPosition3DDoubleTuple {
   typedef QList<std::tuple<std::tuple<double, double, double>, double>> RawType;
-  typedef QList<std::tuple<QVector3D, double>> QtType;
+  typedef QList<std::tuple<vx::Vector<double, 3>, double>> QtType;
   static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
 };
 struct NodeReference {
@@ -122,6 +132,13 @@ struct OutputNodeReference {
   typedef vx::Node* QtType;
   static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
 };
+struct PiecewisePolynomialFunction {
+  typedef std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                     QList<QList<double>>>
+      RawType;
+  typedef vx::PiecewisePolynomialFunction QtType;
+  static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
+};
 struct Point2D {
   typedef std::tuple<double, double> RawType;
   typedef QPointF QtType;
@@ -132,12 +149,22 @@ struct Position3D {
   typedef QVector3D QtType;
   static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
 };
+struct Quantity {
+  typedef QString RawType;
+  typedef QString QtType;
+  static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
+};
 struct SizeInteger3D {
   typedef std::tuple<quint64, quint64, quint64> RawType;
   typedef Vector<quint64, 3> QtType;
   static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
 };
 struct String {
+  typedef QString RawType;
+  typedef QString QtType;
+  static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();
+};
+struct SurfaceAttributeName {
   typedef QString RawType;
   typedef QString QtType;
   static VOXIECORESHARED_EXPORT QSharedPointer<PropertyType> type();

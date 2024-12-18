@@ -33,6 +33,8 @@
 
 #include <Voxie/Node/ParameterCopy.hpp>
 
+#include <Voxie/Gui/WindowMode.hpp>
+
 #include <QtGui/QIcon>
 
 #include <QtWidgets/QFileDialog>
@@ -84,25 +86,75 @@ class VisualizerNodeAdaptorImpl : public VisualizerNodeAdaptor,
   }
 
   vx::TupleVector<double, 2> visualizerPosition() const override {
-    return toTupleVector(voxieRoot().getVisualizerPosition(object));
+    try {
+      return toTupleVector(voxieRoot().getVisualizerPosition(object));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      return e.handle(object);
+    }
   }
 
   void setVisualizerPosition(vx::TupleVector<double, 2> pos) override {
-    voxieRoot().setVisualizerPosition(object, toQtVector(pos));
+    try {
+      voxieRoot().setVisualizerPosition(object, toVector(pos));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      e.handle(object);
+    }
   }
 
   vx::TupleVector<double, 2> visualizerSize() const override {
-    return toTupleVector(voxieRoot().getVisualizerSize(object));
+    try {
+      return toTupleVector(voxieRoot().getVisualizerSize(object));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      return e.handle(object);
+    }
   }
 
   void setVisualizerSize(vx::TupleVector<double, 2> size) override {
-    voxieRoot().setVisualizerSize(object, toQtVector(size));
+    try {
+      voxieRoot().setVisualizerSize(object, toVector(size));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      e.handle(object);
+    }
   }
 
-  bool isAttached() const override { return voxieRoot().isAttached(object); }
+  bool isAttached() const override {
+    try {
+      return voxieRoot().isAttached(object);
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      return e.handle(object);
+    }
+  }
 
   void setIsAttached(bool value) override {
-    voxieRoot().setIsAttached(object, value);
+    try {
+      voxieRoot().setIsAttached(object, value);
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      e.handle(object);
+    }
+  }
+
+  QString windowMode() const override {
+    try {
+      return windowModeToString(voxieRoot().getVisualizerWindowMode(object));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      return e.handle(object);
+    }
+  }
+  void setWindowMode(const QString& value) override {
+    try {
+      return voxieRoot().setVisualizerWindowMode(object,
+                                                 parseWindowMode(value));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      e.handle(object);
+    }
   }
 };
 }  // namespace

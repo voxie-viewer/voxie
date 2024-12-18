@@ -55,6 +55,8 @@
 
 #include <Voxie/Component/HelpCommon.hpp>
 
+#include <Voxie/Gui/WindowMode.hpp>
+
 #include <Voxie/Node/NodePrototype.hpp>
 
 #include <VoxieClient/Exception.hpp>
@@ -174,6 +176,147 @@ class GuiAdaptorImpl : public GuiAdaptor {
       mode = "de.uni_stuttgart.Voxie.MdiViewMode.SubWindow";
     }
     return mode;
+  }
+
+  QString mainWindowMode() const override {
+    try {
+      return windowModeToString(getWindowMode(object->window));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      return e.handle(object);
+    }
+  }
+  void setMainWindowMode(const QString& mode) override {
+    try {
+      setWindowMode(object->window, parseWindowMode(mode));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      e.handle(object);
+    }
+  }
+
+  vx::TupleVector<double, 2> mainWindowSize() const override {
+    try {
+      return toTupleVector(sizeToVector(object->window->size()));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      return e.handle(object);
+    }
+  }
+  void setMainWindowSize(vx::TupleVector<double, 2> value) override {
+    try {
+      return object->window->resize(
+          toQSize(vectorCastNarrow<int>(toVector(value))));
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      e.handle(object);
+    }
+  }
+
+  QString sidePanelMode() const override {
+    try {
+      if (object->window->sidePanel->isPoppedOut()) {
+        if (object->window->sidePanel->isExpanded())
+          return "de.uni_stuttgart.Voxie.SidePanelMode.DetachedHorizontal";
+        else
+          return "de.uni_stuttgart.Voxie.SidePanelMode.Detached";
+      }
+      if (object->window->sidePanel->isExpanded())
+        return "de.uni_stuttgart.Voxie.SidePanelMode.MainWindowExpanded";
+      if (getSidePanelSize() == 0)
+        return "de.uni_stuttgart.Voxie.SidePanelMode.Hidden";
+      return "de.uni_stuttgart.Voxie.SidePanelMode.Normal";
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      return e.handle(object);
+    }
+  }
+  void setSidePanelMode(const QString& mode) override {
+    try {
+      if (mode == "de.uni_stuttgart.Voxie.SidePanelMode.DetachedHorizontal") {
+        object->window->sidePanel->setMode(true, true);
+      } else if (mode == "de.uni_stuttgart.Voxie.SidePanelMode.Detached") {
+        object->window->sidePanel->setMode(true, false);
+      } else if (mode ==
+                 "de.uni_stuttgart.Voxie.SidePanelMode.MainWindowExpanded") {
+        object->window->sidePanel->setMode(false, true);
+      } else if (mode == "de.uni_stuttgart.Voxie.SidePanelMode.Hidden") {
+        object->window->sidePanel->setMode(false, false);
+        setSidePanelSize(0);
+      } else if (mode == "de.uni_stuttgart.Voxie.SidePanelMode.Normal") {
+        object->window->sidePanel->setMode(false, false);
+        if (getSidePanelSize() == 0) setSidePanelSize(1);
+      } else {
+        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidArgument",
+                            "Invalid SidePanelMode value");
+      }
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      e.handle(object);
+    }
+  }
+
+ private:
+  int getSidePanelSize() const {
+    auto sizes = object->window->mainWindowSplitter()->sizes();
+    if (sizes.length() != 2) {
+      qWarning() << "Got invalid number of entries for mainWindowSplitter";
+      return -1;
+    }
+    qDebug() << object->window->sidePanel->size();
+    qDebug() << object->window->sidePanel->isVisible();
+    if (object->window->isSidePanelOnLeft())
+      return sizes.first();
+    else
+      return sizes.last();
+  }
+
+ public:
+  double sidePanelSize() const override {
+    try {
+      // TODO: What should be returned in this case?
+      if (object->window->sidePanel->isPoppedOut() ||
+          object->window->sidePanel->isExpanded())
+        return -1;
+
+      return getSidePanelSize();
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      return e.handle(object);
+    }
+  }
+  void setSidePanelSize(double value) override {
+    try {
+      // Ignore size in this case
+      if (object->window->sidePanel->isPoppedOut() ||
+          object->window->sidePanel->isExpanded())
+        return;
+
+      auto sizes = object->window->mainWindowSplitter()->sizes();
+      if (sizes.length() != 2) {
+        qWarning() << "Got invalid number of entries for mainWindowSplitter";
+        return;
+      }
+      int panelIndex, mdiIndex;
+      if (object->window->isSidePanelOnLeft()) {
+        panelIndex = 0;
+        mdiIndex = 1;
+      } else {
+        panelIndex = 1;
+        mdiIndex = 0;
+      }
+
+      int newValue = value;
+      int diff = newValue - sizes[panelIndex];
+      sizes[panelIndex] += diff;
+      sizes[mdiIndex] -= diff;
+      if (sizes[mdiIndex] <= 0) sizes[mdiIndex] = 1;
+
+      object->window->mainWindowSplitter()->setSizes(sizes);
+    } catch (vx::Exception& e) {
+      qWarning() << "Got error during DBus property:" << e.what();
+      e.handle(object);
+    }
   }
 };
 
@@ -572,56 +715,52 @@ void CoreWindow::initMenu() {
       QIcon(":/icons/application-terminal.png"), "Python Console (&terminal)…");
   scriptsMenuStaticSize++;
   pythonConsoleTerminalAction->setShortcut(QKeySequence("Ctrl+Shift+T"));
-  connect(
-      pythonConsoleTerminalAction, &QAction::triggered, this, [this]() -> void {
-        auto service = Root::instance()->mainDBusService();
-        if (!service) {
-          QMessageBox(
-              QMessageBox::Critical,
-              Root::instance()->mainWindow()->windowTitle(),
-              QString(
-                  "Cannot launch python console because DBus is not available"),
-              QMessageBox::Ok, Root::instance()->mainWindow())
-              .exec();
-          return;
-        }
+  connect(pythonConsoleTerminalAction, &QAction::triggered, this, []() -> void {
+    auto service = Root::instance()->mainDBusService();
+    if (!service) {
+      QMessageBox(
+          QMessageBox::Critical, Root::instance()->mainWindow()->windowTitle(),
+          QString("Cannot launch python console because DBus is not available"),
+          QMessageBox::Ok, Root::instance()->mainWindow())
+          .exec();
+      return;
+    }
 
-        QStringList args;
+    QStringList args;
 #if !defined(Q_OS_MACOS)
-        // TODO: clean up
-        args << "--";
+    // TODO: clean up
+    args << "--";
 #endif
-        args << Root::instance()->directoryManager()->pythonExecutable();
-        args << "-i";
-        args << "-u";
-        args << "-c";
-        QString escapedPythonLibDirs = escapePythonStringArray(
-            vx::Root::instance()->directoryManager()->allPythonLibDirs());
-        args << "import sys; sys.path = " + escapedPythonLibDirs +
-                    " + sys.path; " +
-                    "import numpy as np; import voxie; args = "
-                    "voxie.parser.parse_args(); context = "
-                    "voxie.VoxieContext(args); instance = "
-                    "context.createInstance();";
+    args << Root::instance()->directoryManager()->pythonExecutable();
+    args << "-i";
+    args << "-u";
+    args << "-c";
+    QString escapedPythonLibDirs = escapePythonStringArray(
+        vx::Root::instance()->directoryManager()->allPythonLibDirs());
+    args << "import sys; sys.path = " + escapedPythonLibDirs + " + sys.path; " +
+                "import numpy as np; import voxie; args = "
+                "voxie.parser.parse_args(); context = "
+                "voxie.VoxieContext(args); instance = "
+                "context.createInstance();";
 
-        auto output = createQSharedPointer<QString>();
+    auto output = createQSharedPointer<QString>();
 #if defined(Q_OS_MACOS)
-        service->addArgumentsTo(args);
+    service->addArgumentsTo(args);
 
-        QString command = escapeArguments(args);
-        QString script = "tell application \"Terminal\" to do script " +
-                         appleScriptEscape(command);
-        qDebug() << script.toUtf8().data();
-        QStringList osascriptArgs;
-        osascriptArgs << "-e";
-        osascriptArgs << script;
+    QString command = escapeArguments(args);
+    QString script = "tell application \"Terminal\" to do script " +
+                     appleScriptEscape(command);
+    qDebug() << script.toUtf8().data();
+    QStringList osascriptArgs;
+    osascriptArgs << "-e";
+    osascriptArgs << script;
 
-        auto process = new QProcess();
-        Root::instance()->scriptLauncher()->setupEnvironment(
-            process, false);  // Set PYTHONPATH etc.
-        process->setProgram("osascript");
-        process->setArguments(osascriptArgs);
-        process->start();
+    auto process = new QProcess();
+    Root::instance()->scriptLauncher()->setupEnvironment(
+        process, false);  // Set PYTHONPATH etc.
+    process->setProgram("osascript");
+    process->setArguments(osascriptArgs);
+    process->start();
 #else
         auto process = Root::instance()->scriptLauncher()->startScript(
             "gnome-terminal", nullptr, args, new QProcess(), output, false);
@@ -630,53 +769,50 @@ void CoreWindow::initMenu() {
     // TODO: Move parts to ScriptLauncher?
     // TODO: This should be done before the process is started
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-        QObject::connect(
-            process, &QProcess::errorOccurred, Root::instance(),
-            [](QProcess::ProcessError error) {
-              QMessageBox(QMessageBox::Critical,
-                          "Error while starting python console",
-                          QString() + "Error while starting python console: " +
-                              QVariant::fromValue(error).toString(),
+    QObject::connect(process, &QProcess::errorOccurred, Root::instance(),
+                     [](QProcess::ProcessError error) {
+                       QMessageBox(
+                           QMessageBox::Critical,
+                           "Error while starting python console",
+                           QString() + "Error while starting python console: " +
+                               QVariant::fromValue(error).toString(),
+                           QMessageBox::Ok, Root::instance()->mainWindow())
+                           .exec();
+                     });
+#endif
+    QObject::connect(
+        process,
+        static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(
+            &QProcess::finished),
+        Root::instance(),
+        [output](int exitCode, QProcess::ExitStatus exitStatus) {
+          if (exitStatus != QProcess::NormalExit || exitCode != 0) {
+            QString scriptOutputString = *output;
+            if (scriptOutputString != "")
+              scriptOutputString = "\n\nScript output:\n" + scriptOutputString;
+            QMessageBox(
+                QMessageBox::Critical, "Error while starting python console",
+                QString() + "Error while starting python console: " +
+                    QVariant::fromValue(exitStatus).toString() + ", code = " +
+                    QString::number(exitCode) + scriptOutputString,
+                QMessageBox::Ok, Root::instance()->mainWindow())
+                .exec();
+          } else {
+            /*
+            QString scriptOutputString = *output;
+            if (scriptOutputString != "") {
+              QMessageBox(QMessageBox::Warning,
+                          "Warnings while starting python console",
+                          QString() +
+                              "Warnings while starting python console:\n" +
+                              scriptOutputString,
                           QMessageBox::Ok, Root::instance()->mainWindow())
                   .exec();
-            });
-#endif
-        QObject::connect(
-            process,
-            static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(
-                &QProcess::finished),
-            Root::instance(),
-            [output](int exitCode, QProcess::ExitStatus exitStatus) {
-              if (exitStatus != QProcess::NormalExit || exitCode != 0) {
-                QString scriptOutputString = *output;
-                if (scriptOutputString != "")
-                  scriptOutputString =
-                      "\n\nScript output:\n" + scriptOutputString;
-                QMessageBox(QMessageBox::Critical,
-                            "Error while starting python console",
-                            QString() +
-                                "Error while starting python console: " +
-                                QVariant::fromValue(exitStatus).toString() +
-                                ", code = " + QString::number(exitCode) +
-                                scriptOutputString,
-                            QMessageBox::Ok, Root::instance()->mainWindow())
-                    .exec();
-              } else {
-                /*
-                QString scriptOutputString = *output;
-                if (scriptOutputString != "") {
-                  QMessageBox(QMessageBox::Warning,
-                              "Warnings while starting python console",
-                              QString() +
-                                  "Warnings while starting python console:\n" +
-                                  scriptOutputString,
-                              QMessageBox::Ok, Root::instance()->mainWindow())
-                      .exec();
-                }
-                */
-              }
-            });
-      });
+            }
+            */
+          }
+        });
+  });
 #endif
   this->scriptsMenu->addSeparator();
   scriptsMenuStaticSize++;
@@ -692,6 +828,9 @@ void CoreWindow::initMenu() {
   connect(tileAction, &QAction::triggered, [=]() -> void {
     this->mdiArea->tileSubWindows();
     isTilePattern = true;
+    // TODO: isTilePattern is not being set to false if the user manually moves
+    // windows, which means that the instance.Gui.MdiViewMode value in project
+    // files will be wrong
   });
   QAction* fillAction = this->windowMenu->addAction(
       QIcon(":/icons/application-blue.png"), "&Fill");
@@ -753,7 +892,7 @@ void CoreWindow::initStatusBar() {
 }
 
 void CoreWindow::initWidgets(vx::Root* root) {
-  auto container = new QSplitter(Qt::Horizontal);
+  mainWindowSplitter_ = new QSplitter(Qt::Horizontal);
   {
     {
       this->mdiArea = new QMdiArea(this);
@@ -768,17 +907,17 @@ void CoreWindow::initWidgets(vx::Root* root) {
       });
 
       if (sidePanelOnLeft) {
-        container->addWidget(sidePanel);
-        container->addWidget(this->mdiArea);
-        container->setCollapsible(1, false);
+        mainWindowSplitter_->addWidget(sidePanel);
+        mainWindowSplitter_->addWidget(this->mdiArea);
+        mainWindowSplitter_->setCollapsible(1, false);
       } else {
-        container->addWidget(this->mdiArea);
-        container->setCollapsible(0, false);
-        container->addWidget(sidePanel);
+        mainWindowSplitter_->addWidget(this->mdiArea);
+        mainWindowSplitter_->setCollapsible(0, false);
+        mainWindowSplitter_->addWidget(sidePanel);
       }
     }
   }
-  this->setCentralWidget(container);
+  this->setCentralWidget(mainWindowSplitter_);
 }
 
 void CoreWindow::updateExtensions() {
@@ -807,6 +946,14 @@ void CoreWindow::updateExtensions() {
     delete this->toolMenu;
     this->toolMenu = nullptr;
   }
+}
+
+VisualizerContainer* CoreWindow::getContainerForVisualizer(
+    VisualizerNode* visualizer) {
+  // TODO: Care about performance here?
+  for (const auto& container : this->visualizers)
+    if (container->visualizer == visualizer) return container;
+  return nullptr;
 }
 
 void CoreWindow::populateScriptsMenu() {

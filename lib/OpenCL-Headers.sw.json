@@ -1,0 +1,11 @@
+{
+    "Name": "OpenCL-Headers",
+    "Description": "OpenCL API Headers",
+    "GitRepository": "https://github.com/KhronosGroup/OpenCL-Headers",
+    "GitCommit": "4ea6df132107e3b4b9407f903204b5522fdffcd6",
+    "FileFilter": [
+        "LICENSE",
+        "CL"
+    ],
+    "LicenseFilename": "LICENSE"
+}

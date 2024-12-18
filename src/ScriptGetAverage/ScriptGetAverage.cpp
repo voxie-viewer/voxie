@@ -46,6 +46,7 @@ struct Error {};
 WId voxieWindowID = 0;
 static void setTransientParent(QWidget* widget) {
   // Does not seem to work on MacOS (QWindow::fromWinId(voxieWindowID) crashes)
+  Q_UNUSED(widget);
 #ifndef Q_OS_MACOS
   auto voxieWindow =
       voxieWindowID ? QWindow::fromWinId(voxieWindowID) : nullptr;

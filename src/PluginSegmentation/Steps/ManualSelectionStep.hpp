@@ -42,7 +42,8 @@ class VolumeNode;
  * selection bit is set.
  */
 class ManualSelectionStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(ManualSelectionStep)
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.SegmentationStep.ManualSelectionStep")
 
  private:
   void initializeCustomUIPropSections() override;

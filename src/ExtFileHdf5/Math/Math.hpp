@@ -28,10 +28,10 @@
 // Math utility methods
 
 namespace Math {
-  template <typename T>
-  NVCC_HOST_DEVICE inline T squared (T value) {
-    return value * value;
-  }
+template <typename T>
+NVCC_HOST_DEVICE inline T squared(T value) {
+  return value * value;
 }
+}  // namespace Math
 
-#endif // !MATH_MATH_HPP_INCLUDED
+#endif  // !MATH_MATH_HPP_INCLUDED

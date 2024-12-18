@@ -22,6 +22,8 @@
 
 #include "GeometricPrimitive.hpp"
 
+#include <Voxie/MathQt.hpp>
+
 #include <VoxieClient/DBusTypeList.hpp>
 #include <VoxieClient/DBusUtil.hpp>
 #include <VoxieClient/Exception.hpp>
@@ -51,6 +53,10 @@ GeometricPrimitive::allTypes() {
 
 GeometricPrimitivePoint::GeometricPrimitivePoint(const QString& name,
                                                  const QVector3D& position)
+    : GeometricPrimitive(name),
+      position_(vectorCast<double>(toVector(position))) {}
+GeometricPrimitivePoint::GeometricPrimitivePoint(
+    const QString& name, const vx::Vector<double, 3>& position)
     : GeometricPrimitive(name), position_(position) {}
 GeometricPrimitivePoint::~GeometricPrimitivePoint() {}
 
@@ -63,12 +69,11 @@ QSharedPointer<GeometricPrimitive> GeometricPrimitivePoint::create(
     const QString& name, const QMap<QString, QDBusVariant>& primitiveValues) {
   if (!primitiveValues.contains("Position"))
     throw Exception("de.uni_stuttgart.Voxie.InvalidGeometricPrimitiveValues",
-                    "Not 'Position' value found for GeometricPrimitivePoint");
+                    "No 'Position' value found for GeometricPrimitivePoint");
   auto position = dbusGetVariantValue<vx::TupleVector<double, 3>>(
       QDBusVariant(primitiveValues["Position"]));
-  QVector3D positionV(std::get<0>(position), std::get<1>(position),
-                      std::get<2>(position));
-  return createQSharedPointer<GeometricPrimitivePoint>(name, positionV);
+  return createQSharedPointer<GeometricPrimitivePoint>(name,
+                                                       toVector(position));
 }
 
 QSharedPointer<GeometricPrimitiveType>
@@ -78,8 +83,8 @@ GeometricPrimitivePoint::primitiveType() {
 
 QMap<QString, QDBusVariant> GeometricPrimitivePoint::primitiveValues() {
   QMap<QString, QDBusVariant> result;
-  result["Position"] = dbusMakeVariant(vx::TupleVector<double, 3>(
-      position().x(), position().y(), position().z()));
+  result["Position"] =
+      dbusMakeVariant<vx::TupleVector<double, 3>>(toTupleVector(positionVec()));
   return result;
 }
 
@@ -92,4 +97,8 @@ QSharedPointer<GeometricPrimitiveType> GeometricPrimitivePoint::type() {
           },
           &create);
   return type;
+}
+
+QVector3D GeometricPrimitivePoint::position() const {
+  return toQVector(vectorCastNarrow<float>(positionVec()));
 }

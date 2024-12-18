@@ -23,10 +23,13 @@
 #include "Util.hpp"
 
 namespace HDF5 {
-  void writeAttribute (const HDF5::Object& obj, const std::string& name, const std::string& value) {
-    HDF5::DataType strType = HDF5::C_S1 ().copy ();
-    Exception::check ("H5Tset_size", H5Tset_size (strType.handle (), value.length ()));
-    HDF5::Attribute attr = obj.createAttribute (name, strType, HDF5::DataSpace::create (H5S_SCALAR));
-    attr.write (value.data (), strType);
-  }
+void writeAttribute(const HDF5::Object& obj, const std::string& name,
+                    const std::string& value) {
+  HDF5::DataType strType = HDF5::C_S1().copy();
+  Exception::check("H5Tset_size",
+                   H5Tset_size(strType.handle(), value.length()));
+  HDF5::Attribute attr =
+      obj.createAttribute(name, strType, HDF5::DataSpace::create(H5S_SCALAR));
+  attr.write(value.data(), strType);
 }
+}  // namespace HDF5

@@ -176,12 +176,10 @@ class Root : public QObject, public IVoxie {
   /**
    * @brief Registers a side panel section.
    * @param section The section to be registered.
-   * @param closeable If true, the section can be closed by the user.
    *
    * Registers and shows a section. Voxie takes ownership of the section.
    */
-  virtual void registerSection(QWidget* section,
-                               bool closeable = false) override;
+  virtual void registerSection(QWidget* section) override;
 
   void registerNode(const QSharedPointer<vx::Node>& obj) override;
 
@@ -238,21 +236,24 @@ class Root : public QObject, public IVoxie {
     return nodes_;
   }
 
-  QVector2D getGraphPosition(vx::Node* obj) override;
+  vx::Vector<double, 2> getGraphPosition(vx::Node* obj) override;
 
-  void setGraphPosition(vx::Node* obj, const QVector2D& pos) override;
+  void setGraphPosition(vx::Node* obj,
+                        const vx::Vector<double, 2>& pos) override;
 
-  QVector2D getVisualizerPosition(vx::VisualizerNode* obj) override;
+  vx::Vector<double, 2> getVisualizerPosition(vx::VisualizerNode* obj) override;
 
   void setVisualizerPosition(VisualizerNode* obj,
-                             const QVector2D& pos) override;
+                             const vx::Vector<double, 2>& pos) override;
 
-  QVector2D getVisualizerSize(VisualizerNode* obj) override;
+  vx::Vector<double, 2> getVisualizerSize(VisualizerNode* obj) override;
 
-  void setVisualizerSize(VisualizerNode* obj, const QVector2D& size) override;
+  void setVisualizerSize(VisualizerNode* obj,
+                         const vx::Vector<double, 2>& size) override;
 
+  WindowMode getVisualizerWindowMode(vx::VisualizerNode* obj) override;
   void setVisualizerWindowMode(vx::VisualizerNode* obj,
-                               VisualizerWindowMode mode) override;
+                               WindowMode mode) override;
 
   bool isAttached(VisualizerNode* obj) override;
 
@@ -264,6 +265,14 @@ class Root : public QObject, public IVoxie {
   const QSharedPointer<HelpBrowserBackend>& helpBrowserBackend() const {
     return helpBrowserBackend_;
   }
+
+  void openHelpForUri(const QString& uri) override;
+
+  void openMarkdownString(const QString& uri, const QString& title,
+                          const QString& markdown,
+                          const QUrl& baseUrl) override;
+  void openHtmlString(const QString& uri, const QString& title,
+                      const QString& html, const QUrl& baseUrl) override;
 
  public:
   /**

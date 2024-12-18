@@ -22,6 +22,8 @@
 
 #include "Exception.hpp"
 
+#include <VoxieClient/DebugOptions.hpp>
+
 #include <QtCore/QDebug>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QThreadStorage>
@@ -141,5 +143,7 @@ void waitForDBusPendingCall(const QDBusPendingCall& call) {
   }
 }
 
-bool Exception::verboseDBusExceptions() { return false; }
+bool Exception::verboseDBusExceptions() {
+  return vx::debug_option::Log_DBus_Error()->get();
+}
 }  // namespace vx

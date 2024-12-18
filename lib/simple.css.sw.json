@@ -1,0 +1,14 @@
+{
+    "Name": "simple.css",
+    "Description": "Simple.css",
+    "GitRepository": "https://github.com/kevquirk/simple.css",
+    "GitCommit": "442f7ca78db6dfcf6175602b23a809abb4ff7db7",
+    "FileFilter": [
+        "LICENSE",
+        "simple.css",
+        "simple.min.css",
+        "simple-v1.css",
+        "simple-v1.min.css"
+    ],
+    "LicenseFilename": "LICENSE"
+}

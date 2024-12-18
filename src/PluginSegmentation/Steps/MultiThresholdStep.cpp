@@ -28,6 +28,8 @@
 
 #include <Voxie/Data/VolumeNode.hpp>
 
+VX_NODE_INSTANTIATION(vx::MultiThresholdStep)
+
 using namespace vx;
 using namespace vx::io;
 
@@ -248,5 +250,3 @@ void MultiThresholdStep::initializeCustomUIPropSections() {
     this->properties->setThresholdList(multiThreshList);
   });
 }
-
-NODE_PROTOTYPE_IMPL(MultiThresholdStep)

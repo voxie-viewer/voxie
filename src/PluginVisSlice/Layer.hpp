@@ -36,7 +36,7 @@ class ParameterCopy;
 
 class Layer : public vx::RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(Layer)
+  VX_REFCOUNTEDOBJECT
 
  public:
   Layer();
@@ -51,7 +51,8 @@ class Layer : public vx::RefCountedObject {
   // This function is passed a QImage instead of a QPainter to avoid changes to
   // QPainter settings in one layer affecting painting in another layer.
   virtual void render(QImage& outputImage,
-                      const QSharedPointer<vx::ParameterCopy>& parameters) = 0;
+                      const QSharedPointer<vx::ParameterCopy>& parameters,
+                      bool isMainImage) = 0;
 
   /**
    * Trigger a redraw operation, which will be delayed until the code returns
@@ -67,8 +68,12 @@ class Layer : public vx::RefCountedObject {
    */
   void onResize(const QSize& size);
 
+  // Returns true if there is no redraw pending or running
+  bool isUpToDate();
+
  private:
   void maybeStartRedraw();
+  void maybeUpdateIsUpToDate();
   void doRedraw(const QSharedPointer<vx::ParameterCopy>& parameters,
                 const QSize& size);
 
@@ -79,6 +84,7 @@ class Layer : public vx::RefCountedObject {
   void resultImageChanged(const QImage& image);
   void getRenderingParameters(QSharedPointer<vx::ParameterCopy>& parameters,
                               QSize& size);
+  void isUpToDateChanged();
 
  private:
   // redrawRequested is set to true when triggerRedraw() has been called and a
@@ -89,6 +95,8 @@ class Layer : public vx::RefCountedObject {
   bool redrawPending = false;
   // redrawRunning is set to true while a redraw operation is actually running
   bool redrawRunning = false;
+
+  bool isUpToDate_ = false;
 
   // Not used because with multithreaded rendering reusing the existing image
   // doesn't work anyway

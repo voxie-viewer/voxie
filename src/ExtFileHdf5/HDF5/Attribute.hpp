@@ -27,36 +27,33 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/IdComponent.hpp>
 
 namespace HDF5 {
-  class Attribute : public IdComponent {
-    void checkType () const;
+class Attribute : public IdComponent {
+  void checkType() const;
 
-  public:
-    Attribute () {
-    }
+ public:
+  Attribute() {}
 
-    explicit Attribute (const IdComponent& value) : IdComponent (value) {
-      checkType ();
-    }
+  explicit Attribute(const IdComponent& value) : IdComponent(value) {
+    checkType();
+  }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit Attribute (hid_t value) : IdComponent (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit Attribute(hid_t value) : IdComponent(value) { checkType(); }
 
-    DataSpace getSpace () const;
-    DataType getDataType () const;
-    
-    void read (void* buf, const HDF5::DataType& memType) const;
-    void write (const void* buf, const HDF5::DataType& memType) const;
-  };
-}
+  DataSpace getSpace() const;
+  DataType getDataType() const;
 
-#endif // !HDF5_ATTRIBUTE_HPP_INCLUDED
+  void read(void* buf, const HDF5::DataType& memType) const;
+  void write(const void* buf, const HDF5::DataType& memType) const;
+};
+}  // namespace HDF5
+
+#endif  // !HDF5_ATTRIBUTE_HPP_INCLUDED

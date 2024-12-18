@@ -17,6 +17,17 @@
                     "DisplayName": "Plane",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
                 },
+                "de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize": {
+                    "DisplayName": "Default size",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "Unit": [
+                        [
+                            "m",
+                            1
+                        ]
+                    ],
+                    "DefaultValue": 0.2
+                },
                 "de.uni_stuttgart.Voxie.Object3D.Plane.ClippingDirection": {
                     "DisplayName": "Clipping direction",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",

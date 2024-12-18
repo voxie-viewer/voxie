@@ -46,7 +46,7 @@ namespace filters {
  * @brief This class colorizes a labeled Surface.
  */
 class ColorizeLabeledSurface : public FilterNode {
-  NODE_PROTOTYPE_DECL(ColorizeLabeledSurface)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface")
 
  public:
   ColorizeLabeledSurface();

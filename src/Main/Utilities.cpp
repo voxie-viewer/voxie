@@ -34,6 +34,8 @@
 #include <VoxieBackend/Data/InterpolationMethod.hpp>
 #include <VoxieBackend/Data/VolumeData.hpp>
 
+#include <Voxie/Data/Spectrum.hpp>
+
 using namespace vx;
 
 class UtilitiesAdaptorImpl : public UtilitiesAdaptor {
@@ -53,6 +55,10 @@ class UtilitiesAdaptorImpl : public UtilitiesAdaptor {
                     const vx::TupleVector<double, 2>& pixelSize,
                     const QDBusObjectPath& outputImage,
                     const QMap<QString, QDBusVariant>& options) override;
+
+  QList<std::tuple<quint64, double>> DebugFindMatchingSpectrums(
+      const QDBusObjectPath& dimension, double start, double end,
+      const QMap<QString, QDBusVariant>& options) override;
 };
 
 Utilities::Utilities(Root* root)
@@ -106,6 +112,25 @@ void UtilitiesAdaptorImpl::ExtractSlice(
     if (updateBuffer) imageCast->image().switchMode(FloatImage::STDMEMORY_MODE);
   } catch (vx::Exception& e) {
     e.handle(object);
+  }
+}
+
+QList<std::tuple<quint64, double>>
+UtilitiesAdaptorImpl::DebugFindMatchingSpectrums(
+    const QDBusObjectPath& dimension, double start, double end,
+    const QMap<QString, QDBusVariant>& options) {
+  try {
+    vx::ExportedObject::checkOptions(options);
+
+    auto dimensionObj = vx::SeriesDimension::lookup(dimension);
+
+    auto result = findMatchingSpectrums(dimensionObj, start, end);
+
+    QList<std::tuple<quint64, double>> res;
+    for (const auto& r : result) res.append(std::make_tuple(r.key, r.weight));
+    return res;
+  } catch (vx::Exception& e) {
+    return e.handle(object);
   }
 }
 

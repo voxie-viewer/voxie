@@ -27,8 +27,8 @@
 #include <QtWidgets/QComboBox>
 
 #include <PluginVisSlice/BrushSelectionTool.hpp>
-#include <PluginVisSlice/ImageGeneratorWorker.hpp>
 #include <PluginVisSlice/LassoSelectionTool.hpp>
+#include <PluginVisSlice/MultivariateDataWidget/helpingStructures.hpp>
 #include <PluginVisSlice/Prototypes.forward.hpp>
 #include <PluginVisSlice/Prototypes.hpp>  // TODO: Should not be needed here, move stuff out of header
 #include <PluginVisSlice/ToolSelection.hpp>
@@ -37,10 +37,14 @@
 #include <PluginVisSlice/Grid.hpp>
 #include <PluginVisSlice/ImageLayer.hpp>
 #include <PluginVisSlice/LabelLayer.hpp>
+#include <PluginVisSlice/LegendLayer.hpp>
 #include <PluginVisSlice/SelectionLayer.hpp>
 
 #include <QRadioButton>
 #include <Voxie/Data/InitializeColorizeWorker.hpp>
+
+#include <Voxie/Data/VolumeSeriesNode.hpp>  //ToDo: Add to vx namespace
+// #include <VoxieBackend/Data/VolumeSeriesData.hpp>
 #include <Voxie/PropertyObjects/PlaneNode.hpp>
 #include <VoxieBackend/Data/SliceImage.hpp>
 
@@ -79,20 +83,25 @@ class View3D;
 }  // namespace vx
 
 class InfoWidget;
+class MultivariateDataWidget;
 class ImageLayer;
 
 class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
-  friend class ImagePaintWidget;
   Q_OBJECT
+  VX_NODE_IMPLEMENTATION_PUB("de.uni_stuttgart.Voxie.Visualizer.Slice")
+
+  friend class ImagePaintWidget;
 
  public:
-  vx::SliceProperties* properties;
-
   const QString imageLayerName = "ImageLayer";
   const QString lassoLayerName = "LassoLayer";
   const QString brushLayerName = "BrushLayer";
   const QString brushSelectionName = "BrushSelectionTool";
   const QString lassoSelectionName = "LassoSelectionTool";
+
+  MultivariateDataWidget* getMultivariateDataWidget() {
+    return this->multivariateDataWidget;
+  };
 
  private:  // magic numbers
   int RESIZE_TIMER_TIMEOUT = 100;
@@ -111,11 +120,8 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   QRadioButton* volumeRadioButton;
   vx::HistogramWidget* _histogramWidget;
 
+  MultivariateDataWidget* multivariateDataWidget;
   InfoWidget* infoWidget;
-  // data
-  vx::VolumeNode* mainVolumeNode = nullptr;
-  vx::SliceImage _sliceImage;
-  vx::SliceImage _filteredSliceImage;
 
   // Only used if no plane is connected
   vx::TupleVector<double, 4> standaloneOrientation =
@@ -161,40 +167,9 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   QTimer _resizeTimer;
 
   /**
-   * Makes sure that only one worker thread is running at a time.
-   */
-  bool _imageWorkerRunning = false;
-
-  /**
-   * The current worker that was queued up should another worker be running
-   * already. This makes sure that we have always the latest request in the
-   * queued up.
-   */
-  ImageGeneratorWorker* _imageQueueWorker = nullptr;
-
-  bool _filterWorkerRunning = false;
-  bool _filterImageWorked = false;
-
-  vx::SliceImage _filterQueueImage;
-
-  /**
    * selection tool
    */
   ToolSelection* selectionTool;
-
-  void doGenerateSliceImage(vx::PlaneInfo cuttingPlane,
-                            const QSharedPointer<vx::VolumeData>& volumeData,
-                            const QRectF& sliceArea, const QSize& imageSize,
-                            vx::InterpolationMethod interpolation =
-                                vx::InterpolationMethod::NearestNeighbor);
-  void runSliceImageGeneratorWorker();
-  void runFilterWorker();
-
-  /**
-   * @brief initialize Initializes the SliceVisualizer when a VolumeNode is
-   * connected.
-   */
-  void initializeSV();
 
   QAction* createPlaneNodeAction;
 
@@ -206,7 +181,6 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
 
  public:
   explicit SliceVisualizer();
-  FACTORY_VISUALIZERMODULE_HPP(Slice)
 
   QWidget* mainView() override { return view; }
 
@@ -280,28 +254,18 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   void redraw();
 
  public:
-  /**
-   * @return the current mainVolumeNode
-   */
-  vx::VolumeNode* dataSet() { return this->mainVolumeNode; }
+  QSharedPointer<vx::VolumeData> volumeData();
 
-  QSharedPointer<vx::VolumeData> volumeData() {
-    auto volume = dataSet();
-    if (!volume)
-      return QSharedPointer<vx::VolumeData>();
-    else
-      return volume->volumeData();
-  }
+  /** This getter return the current data type of the loaded data set.
+   *  If no data is loaded it returns a empty QString.
+   */
+  QString getLoadedDataType();
 
   /**
-   * @return the current unfiltered slice image
+   * This Getter returns a list of meta infomation about all multivariate data
+   * channels.
    */
-  vx::SliceImage& sliceImage() { return this->_sliceImage; }
-
-  /**
-   * @return the current filtered slice image
-   */
-  vx::SliceImage& filteredSliceImage() { return this->_filteredSliceImage; }
+  QList<rawMetaData> getMultivariateDimensionData();
 
   /**
    * Notifies the tool that it has been activated. Notifies the previous tool
@@ -343,6 +307,15 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
 
   const QList<QSharedPointer<Layer>>& layers() { return layers_; }
 
+  // Get the properties and size for the currently shown image.
+  // The returned value can only be used on the main thread and will be
+  // invalidated by returning the the main loop or by changing anything about
+  // the slice visualizer.
+  // TODO: This does not really work currently, because "currently shown image"
+  // is unclear because there are multiple layers which are all shown as soon as
+  // the they are rendered
+  std::tuple<vx::SlicePropertiesBase*, QSize> currentImageProperties();
+
   static double getCurrentPixelSize(vx::SlicePropertiesBase* properties,
                                     const QSize& canvasSize);
 
@@ -353,6 +326,32 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   static QRectF getCurrentPlaneArea(vx::SlicePropertiesBase* properties,
                                     const QSize& canvasSize);
   QRectF currentPlaneArea();
+
+  // Convert a pixel position (where (0,0) is lower left and (width,height) is
+  // upper right) to a position on the plane.
+  static vx::Vector<double, 2> pixelPosToPlanePos(
+      vx::SlicePropertiesBase* properties, const QSize& canvasSize,
+      const vx::Vector<double, 2>& pixelPos);
+  // Same as pixelPosToPlanePos for the currently shown image
+  vx::Vector<double, 2> pixelPosToPlanePosCurrentImage(
+      const vx::Vector<double, 2>& pixelPos);
+
+  // Convert a plane position to a 3D position.
+  static vx::Vector<double, 3> planePosTo3DPos(
+      vx::SlicePropertiesBase* properties, const QSize& canvasSize,
+      const vx::Vector<double, 2>& planePos);
+  // Same as planePosTo3DPos for the currently shown image
+  vx::Vector<double, 3> planePosTo3DPosCurrentImage(
+      const vx::Vector<double, 2>& planePos);
+
+  // Convert a pixel position (where (0,0) is lower left and (width,height) is
+  // upper right) to a 3D position.
+  static vx::Vector<double, 3> pixelPosTo3DPos(
+      vx::SlicePropertiesBase* properties, const QSize& canvasSize,
+      const vx::Vector<double, 2>& pixelPos);
+  // Same as pixelPosTo3DPos for the currently shown image
+  vx::Vector<double, 3> pixelPosTo3DPosCurrentImage(
+      const vx::Vector<double, 2>& pixelPos);
 
   void updateBoundingBox();
 
@@ -422,7 +421,8 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
 
   // Should be able to run in a background thread
   void renderEverything(QImage& outputImage,
-                        const QSharedPointer<vx::ParameterCopy>& parameters);
+                        const QSharedPointer<vx::ParameterCopy>& parameters,
+                        bool isMainImage);
 
   vx::SharedFunPtr<RenderFunction> getRenderFunction() override;
 
@@ -433,31 +433,15 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
    * @brief shifts slice plane's origin to another point on the plane.
    * @param planePoint point on this slice's plane.
    */
-  void movePlaneOrigin(const QPointF& planePoint);
+  void movePlaneOrigin(const vx::Vector<double, 2>& planePos);
 
  public Q_SLOTS:
+
   /**
-   * @brief onSliceImageGenerated is called when a slice image has been
-   * generated from a slice (step 1)
-   * @param image
+   * This Slot bridges from multivariate widget to slice visualitzer to image
+   * layer. This Slots emits multivariateDataPropertiesChangedOut.
    */
-  void onSliceImageGenerated(vx::SliceImage image);
-  /**
-   * @brief onSliceImageFiltered is called when an image has been filtered (step
-   * 2)
-   * @param image
-   */
-  void onSliceImageFiltered(vx::SliceImage image);
-  /**
-   * @brief applyFilters is called when the threaded filter call should be
-   * invoked. It clones the currently generated sliceimage.
-   */
-  void applyFilters();
-  /**
-   * @brief updateSliceImageFromSlice is called when the sliceimage should be
-   * generated (for step 1)
-   */
-  void updateSliceImageFromSlice();
+  void multivariateDataPropertiesChangedIn();
   /**
    * @brief onFilterMaskRequest is called when the filterchain2d widget
    * (section) requests for the filter mask to be initialized. This is necessary
@@ -490,8 +474,15 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   void resized();
   void signalRequestHistogram(vx::SliceImage& image);
 
-  void imageMouseMove(QMouseEvent* e, const QPointF& pointPlane,
-                      const QVector3D& threeDPoint,
+  /**
+   * This signal is a part of the bridge from multivariate widget to
+   * SliceVisualizer to ImageLayer. Signals ImageLayer to redraw cause of
+   * multivariate propeties changed.
+   */
+  void multivariateDataPropertiesChangedOut();
+
+  void imageMouseMove(QMouseEvent* e, const vx::Vector<double, 2>& planePos,
+                      const vx::Vector<double, 3>& pos3D,
                       const vx::Vector<double, 3>* posVoxelPtr,
                       double valNearest, double valLinear);
 
@@ -511,4 +502,6 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
 
   // Signals forwarded from LabelContainer
   void labelContainerChangedFinished();
+
+  void volumeDisplayNameChanged();
 };

@@ -63,3 +63,12 @@ PropertyType::~PropertyType() {}
 QList<QString> PropertyType::supportedComponentDBusInterfaces() {
   return {"de.uni_stuttgart.Voxie.PropertyType"};
 }
+
+PropertyUI* PropertyType::createUISimple(
+    const QSharedPointer<PropertyInstance>& propertyInstance) {
+  Q_UNUSED(propertyInstance);
+
+  throw vx::Exception(
+      "de.uni_stuttgart.Voxie.NotImplemented",
+      "Property type " + this->name() + " does not implement createUISimple()");
+}

@@ -27,52 +27,53 @@
 
 // clang feature check macros (for non-clang compilers)
 #ifndef __has_builtin
-#  define __has_builtin(x) 0
+#define __has_builtin(x) 0
 #endif
 #ifndef __has_feature
-#  define __has_feature(x) 0
+#define __has_feature(x) 0
 #endif
 #ifndef __has_extension
-#  define __has_extension __has_feature
+#define __has_extension __has_feature
 #endif
 #ifndef __has_attribute
-#  define __has_attribute(x) 0
+#define __has_attribute(x) 0
 #endif
 #ifndef __has_warning
-#  define __has_warning(x) 0
+#define __has_warning(x) 0
 #endif
 
 // Evaluates to true iff __GNUC__ is defined and (__GNUC__, __GNUC_MINOR__) is at least (major, minor)
 #ifdef __GNUC__
-#define GCC_VERSION_IS_ATLEAST(major, minor) (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#define GCC_VERSION_IS_ATLEAST(major, minor) \
+  (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
 #else
 #define GCC_VERSION_IS_ATLEAST(major, minor) (0)
 #endif
 
 // For methods which should never be called
 #if __has_attribute(error) || GCC_VERSION_IS_ATLEAST(4, 3)
-#define ERROR_ATTRIBUTE(text) __attribute__ ((__error__ (text)))
+#define ERROR_ATTRIBUTE(text) __attribute__((__error__(text)))
 #else
 #define ERROR_ATTRIBUTE(text)
 #endif
 
 // "unused" attribute to disable warnings
-#if __has_attribute(unused) || defined (__GNUC__)
-#define UNUSED __attribute__ ((unused))
+#if __has_attribute(unused) || defined(__GNUC__)
+#define UNUSED __attribute__((unused))
 #else
 #define UNUSED
 #endif
 
 // For methods which never return
-#if __has_attribute(noreturn) || defined (__GNUC__)
-#define NORETURN_ATTRIBUTE __attribute__ ((noreturn))
+#if __has_attribute(noreturn) || defined(__GNUC__)
+#define NORETURN_ATTRIBUTE __attribute__((noreturn))
 #else
 #define NORETURN_ATTRIBUTE
 #endif
 
 #define NORETURN NORETURN_ATTRIBUTE void
 
-#if defined(__POSIX__) || defined (__unix) || defined (__unix__)
+#if defined(__POSIX__) || defined(__unix) || defined(__unix__)
 #define OS_UNIX 1
 #define OS_WIN 0
 #elif defined(__APPLE__)
@@ -85,4 +86,4 @@
 #error "None of __POSIX__, __unix, __unix__, __APPLE__ and _WIN32 is defined."
 #endif
 
-#endif // !CORE_UTIL_H_INCLUDED
+#endif  // !CORE_UTIL_H_INCLUDED

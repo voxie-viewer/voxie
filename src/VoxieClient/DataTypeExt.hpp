@@ -197,8 +197,8 @@ RetType switchOverDataTypeExt(vx::DataTypeExt dt, const F& fun) {
   switchOverDataTypeExtFailed(dt);
 }
 template <typename List, typename RetType, typename F, size_t pos = 0,
-          std::enable_if_t<pos<List::count, bool> = true> RetType
-              switchOverDataTypeExt(vx::DataTypeExt dt, const F& fun) {
+          std::enable_if_t<(pos < List::count), bool> = true>
+RetType switchOverDataTypeExt(vx::DataTypeExt dt, const F& fun) {
   if (dt == List::template MetaType<pos>::dataType())
     return fun(
         DataTypeExtTraitsByMetaType<typename List::template MetaType<pos>>());

@@ -41,6 +41,8 @@ using namespace vx::filters;
 using namespace vx;
 using namespace TableUtils;
 
+VX_NODE_INSTANTIATION(vx::filters::AutoScaleTableUnits)
+
 AutoScaleTableUnits::AutoScaleTableUnits()
     : FilterNode(getPrototypeSingleton()),
       properties(new AutoScaleTableUnitsProperties(this)),
@@ -262,5 +264,3 @@ bool AutoScaleTableUnits::isApplicableColumn(const TableColumn& column) {
   return isPolyNumericType(*column.type()) &&
          MetricUnit(column.metadata().value("unit").variant().toString());
 }
-
-NODE_PROTOTYPE_IMPL(AutoScaleTableUnits)

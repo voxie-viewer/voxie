@@ -14,18 +14,25 @@
                     "AllowedNodePrototypes": [
                         "de.uni_stuttgart.Voxie.Data.Volume"
                     ],
-                    "Name": "Volume",
                     "DisplayName": "Input Volume",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
                     "CallSetOrder": 10
                 },
                 "de.uni_stuttgart.Voxie.Filter.Segmentation.Output": {
                     "AllowedNodePrototypes": [
-                        "de.uni_stuttgart.Voxie.Data.ContainerNode"
+                        "de.uni_stuttgart.Voxie.Data.Container"
                     ],
                     "DisplayName": "Output Volume",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference",
                     "CallSetOrder": -10
+                },
+                "de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Container"
+                    ],
+                    "DisplayName": "Initial segmentation",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "CallSetOrder": -5
                 },
                 "de.uni_stuttgart.Voxie.Filter.Segmentation.StepList": {
                     "DisplayName": "Step list",

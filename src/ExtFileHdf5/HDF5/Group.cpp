@@ -25,66 +25,81 @@
 #include <HDF5/File.hpp>
 
 namespace HDF5 {
-  void Group::checkType () const {
-    if (!isValid ())
-      return;
-    if (getType () != H5I_GROUP)
-      ABORT_MSG ("Not a group");
-  }
-
-  Group Group::create (const File& file, GroupCreatePropList gcpl, GroupAccessPropList gapl) {
-    return Group (Exception::check ("H5Gcreate_anon", H5Gcreate_anon (file.handle (), gcpl.handleOrDefault (), gapl.handleOrDefault ())));
-  }
-
-  Object Group::open (const std::string& name, LinkAccessPropList lapl) const {
-    if (lapl.isValid() && lapl.isA(H5P_DATASET_ACCESS)) {
-      // Newer version of hdf5 (e.g. 1.10.6+repack-4+deb11u1) will not pass the lapl to H5Dopen() (or internally H5D_open()), while older versions (e.g. 1.10.0-patch1) did.
-      // If the target is a dataset, use H5Dopen() instead of H5Oopen().
-      H5O_info_t oinfo;
-      Exception::check("H5Oget_info_by_name",
-                       H5Oget_info_by_name(handle(), name.c_str(), &oinfo,
-                                           lapl.handleOrDefault()));
-      if (oinfo.type == H5O_TYPE_DATASET)
-        return Object(Exception::check(
-            "H5Dopen",
-            H5Dopen(handle(), name.c_str(), lapl.handleOrDefault())));
-    }
-
-    return Object (Exception::check ("H5Oopen", H5Oopen (handle (), name.c_str (), lapl.handleOrDefault ())));
-  }
-  bool Group::exists (const std::string& name, LinkAccessPropList lapl) const {
-    return Exception::check ("H5Lexists", H5Lexists (handle (), name.c_str (), lapl.handleOrDefault ())) != 0;
-  }
-
-  void Group::copyObject (const Group& srcLoc, const std::string& srcName, const Group& dstLoc, const std::string& dstName, ObjectCreatePropList ocpypl, LinkCreatePropList lcpl) {
-    Exception::check ("H5Ocopy", H5Ocopy (srcLoc.handle (), srcName.c_str (), dstLoc.handle (), dstName.c_str (), ocpypl.handleOrDefault (), lcpl.handleOrDefault ()));
-  }
-
-  ObjectReference Group::getReferenceIfExists (const std::string& name, LinkAccessPropList lapl) const {
-    if (exists (name, lapl))
-      return open (name, lapl).reference ();
-    else
-      return ObjectReference ();
-  }
-
-  void Group::link (const std::string& name, const Object& obj, LinkCreatePropList lcpl, LinkAccessPropList lapl) const {
-    Exception::check ("H5Olink", H5Olink (obj.handle (), handle (), name.c_str (), lcpl.handleOrDefault (), lapl.handleOrDefault ()));
-  }
-  void Group::linkIfNotNull (const std::string& name, const Object& obj, LinkCreatePropList lcpl, LinkAccessPropList lapl) const {
-    if (obj.isValid ())
-      link (name, obj, lcpl, lapl);
-  }
-
-  namespace {
-    herr_t listCallback (UNUSED hid_t group, const char* name, UNUSED const H5L_info_t* info, void* op_data) {
-      std::vector<std::string>& names = *(std::vector<std::string>*) op_data;
-      names.push_back (name);
-      return 0;
-    }
-  }
-  std::vector<std::string> Group::list (H5_index_t indexType, H5_iter_order_t order) const {
-    std::vector<std::string> result;
-    HDF5::Exception::check ("H5Literate", H5Literate (handle (), indexType, order, NULL, listCallback, &result));
-    return result;
-  }
+void Group::checkType() const {
+  if (!isValid()) return;
+  if (getType() != H5I_GROUP) ABORT_MSG("Not a group");
 }
+
+Group Group::create(const File& file, GroupCreatePropList gcpl,
+                    GroupAccessPropList gapl) {
+  return Group(Exception::check(
+      "H5Gcreate_anon", H5Gcreate_anon(file.handle(), gcpl.handleOrDefault(),
+                                       gapl.handleOrDefault())));
+}
+
+Object Group::open(const std::string& name, LinkAccessPropList lapl) const {
+  if (lapl.isValid() && lapl.isA(H5P_DATASET_ACCESS)) {
+    // Newer version of hdf5 (e.g. 1.10.6+repack-4+deb11u1) will not pass the lapl to H5Dopen() (or internally H5D_open()), while older versions (e.g. 1.10.0-patch1) did.
+    // If the target is a dataset, use H5Dopen() instead of H5Oopen().
+    H5O_info_t oinfo;
+    Exception::check("H5Oget_info_by_name",
+                     H5Oget_info_by_name(handle(), name.c_str(), &oinfo,
+                                         lapl.handleOrDefault()));
+    if (oinfo.type == H5O_TYPE_DATASET)
+      return Object(Exception::check(
+          "H5Dopen", H5Dopen(handle(), name.c_str(), lapl.handleOrDefault())));
+  }
+
+  return Object(Exception::check(
+      "H5Oopen", H5Oopen(handle(), name.c_str(), lapl.handleOrDefault())));
+}
+bool Group::exists(const std::string& name, LinkAccessPropList lapl) const {
+  return Exception::check("H5Lexists", H5Lexists(handle(), name.c_str(),
+                                                 lapl.handleOrDefault())) != 0;
+}
+
+void Group::copyObject(const Group& srcLoc, const std::string& srcName,
+                       const Group& dstLoc, const std::string& dstName,
+                       ObjectCreatePropList ocpypl, LinkCreatePropList lcpl) {
+  Exception::check("H5Ocopy",
+                   H5Ocopy(srcLoc.handle(), srcName.c_str(), dstLoc.handle(),
+                           dstName.c_str(), ocpypl.handleOrDefault(),
+                           lcpl.handleOrDefault()));
+}
+
+ObjectReference Group::getReferenceIfExists(const std::string& name,
+                                            LinkAccessPropList lapl) const {
+  if (exists(name, lapl))
+    return open(name, lapl).reference();
+  else
+    return ObjectReference();
+}
+
+void Group::link(const std::string& name, const Object& obj,
+                 LinkCreatePropList lcpl, LinkAccessPropList lapl) const {
+  Exception::check("H5Olink",
+                   H5Olink(obj.handle(), handle(), name.c_str(),
+                           lcpl.handleOrDefault(), lapl.handleOrDefault()));
+}
+void Group::linkIfNotNull(const std::string& name, const Object& obj,
+                          LinkCreatePropList lcpl,
+                          LinkAccessPropList lapl) const {
+  if (obj.isValid()) link(name, obj, lcpl, lapl);
+}
+
+namespace {
+herr_t listCallback(UNUSED hid_t group, const char* name,
+                    UNUSED const H5L_info_t* info, void* op_data) {
+  std::vector<std::string>& names = *(std::vector<std::string>*)op_data;
+  names.push_back(name);
+  return 0;
+}
+}  // namespace
+std::vector<std::string> Group::list(H5_index_t indexType,
+                                     H5_iter_order_t order) const {
+  std::vector<std::string> result;
+  HDF5::Exception::check("H5Literate", H5Literate(handle(), indexType, order,
+                                                  NULL, listCallback, &result));
+  return result;
+}
+}  // namespace HDF5

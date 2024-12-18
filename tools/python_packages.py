@@ -57,8 +57,6 @@ def list_packages(base, *, python_tag, abi_tag, platform_tags):
             'SOURCE_NAME': name.replace('_', '-'),
             'VERSION': version,
             'SOURCE_VERSION': sourceVersion,
-            'PYTHON_TAG': python_tag,
-            'ABI_TAG': abi_tag,
             'SOURCE_EXT': sourceExt,
         }
         sfn = '{SOURCE_NAME}-{VERSION}.{SOURCE_EXT}'
@@ -68,22 +66,32 @@ def list_packages(base, *, python_tag, abi_tag, platform_tags):
         if isPurePython:
             fn = None
             platform_tag = 'none'
+            repl['PYTHON_TAG'] = python_tag
+            repl['ABI_TAG'] = abi_tag
             repl['PLATFORM_TAG'] = platform_tag
         else:
             found = False
-            for platform_tag in platform_tags:
-                repl['PLATFORM_TAG'] = platform_tag
-                # https://www.python.org/dev/peps/pep-0427/
-                fn = '{NAME}-{VERSION}-{PYTHON_TAG}-{ABI_TAG}-{PLATFORM_TAG}.whl'
-                if 'Filename' in package and platform_tag in package['Filename']:
-                    fn = package['Filename'][platform_tag]
-                if fn is not None:
-                    fn = fn.format(**repl)
-                # print(fn)
-                if fn is not None and not os.path.exists(base + 'tools/build-dep/' + fn + '.sha512sum'):
-                    continue
-                found = True
-                break
+            for actual_python_tag in [python_tag, 'py3']:
+                for actual_abi_tag in [abi_tag, 'none']:
+                    for platform_tag in platform_tags + ['any']:
+                        repl['PYTHON_TAG'] = actual_python_tag
+                        repl['ABI_TAG'] = actual_abi_tag
+                        repl['PLATFORM_TAG'] = platform_tag
+                        # https://www.python.org/dev/peps/pep-0427/
+                        fn = '{NAME}-{VERSION}-{PYTHON_TAG}-{ABI_TAG}-{PLATFORM_TAG}.whl'
+                        if 'Filename' in package and platform_tag in package['Filename']:
+                            fn = package['Filename'][platform_tag]
+                        if fn is not None:
+                            fn = fn.format(**repl)
+                        # print(fn)
+                        if fn is not None and not os.path.exists(base + 'tools/build-dep/' + fn + '.sha512sum'):
+                            continue
+                        found = True
+                        break
+                    if found:
+                        break
+                if found:
+                    break
             if not found:
                 print('Missing file ' + fn, file=sys.stderr)
                 sys.exit(1)

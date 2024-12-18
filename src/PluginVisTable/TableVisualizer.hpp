@@ -49,6 +49,7 @@ class TableViewWidget;
  */
 class TableVisualizer : public vx::visualization::SimpleVisualizer {
   Q_OBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Visualizer.Table")
 
  private:
   vx::TableNode* tableNode = nullptr;
@@ -77,8 +78,6 @@ class TableVisualizer : public vx::visualization::SimpleVisualizer {
   void setNodePropertyCustom(QString key, QVariant value) override;
 
   QWidget* mainView() override;
-
-  NODE_PROTOTYPE_DECL_SEP(visualizer_prop::Table, TableVisualizer)
 
  protected:
   QWidget* getCustomPropertySectionContent(const QString& name) override;

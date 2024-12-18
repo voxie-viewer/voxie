@@ -46,6 +46,9 @@ class HelpWindow : public QDialog {
 
   void openHelpForUri(const QString& uri);
 
+  void openHtmlString(const QString& uri, const QString& title,
+                      const QString& html, const QUrl& baseUrl);
+
  Q_SIGNALS:
   void customLinkActivated(QString query);
 

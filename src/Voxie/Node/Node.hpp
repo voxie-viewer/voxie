@@ -58,28 +58,60 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QWidget>
 
-// TODO: This probably should be used everywhere
+// A pointer which always has to be initialized
+template <typename T>
+class InitializedPointer {
+  T* data;
 
-// NODE_PROTOTYPE_IMPL* is in NodePrototype.hpp
+ public:
+  InitializedPointer(T* ptr) : data(ptr) {
+    if (!ptr)
+      throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
+                          "InitializedPointer set to nullptr");
+  }
 
-// Note: Currently classname is not used
-#define NODE_PROTOTYPE_DECL_SEP(prototypeName, classname)           \
- public:                                                            \
-  static QSharedPointer<vx::NodePrototype> getPrototypeSingleton(); \
-  using PropertiesType = prototypeName##Properties;                 \
-  using PropertiesEntryType = prototypeName##PropertiesEntry;       \
-                                                                    \
- private:                                                           \
-  prototypeName##Properties* properties;
+  T& operator*() const noexcept { return *data; }
+  T* operator->() const noexcept { return data; }
 
-#define NODE_PROTOTYPE_DECL(classname) \
-  NODE_PROTOTYPE_DECL_SEP(classname, classname)
+  operator T*() const { return data; }
+};
 
-#define NODE_PROTOTYPE_DECL_2(classnamePrefix, suffix) \
-  NODE_PROTOTYPE_DECL_SEP(classnamePrefix, classnamePrefix##suffix)
+#if 1
+#define VX_NODE_INITIALIZED_POINTER(T) InitializedPointer<T>
+#else
+#define VX_NODE_INITIALIZED_POINTER(T) T*
+#endif
 
-#define NODE_PROTOTYPE_DECL_DATA(classnamePrefix) \
-  NODE_PROTOTYPE_DECL_SEP(data_prop::classnamePrefix, classnamePrefix##Node)
+// VX_NODE_INSTANTIATION is in NodePrototype.hpp
+
+#define VX_NODE_IMPLEMENTATION(name)                                    \
+ private:                                                               \
+  VX_DECLARE_STRING_CONSTANT_CLASS(NameType, name);                     \
+  using PropertiesTypeAlias = ::vx::PropertiesTypeAlias<NameType>;      \
+                                                                        \
+ public:                                                                \
+  static QSharedPointer<vx::NodePrototype> getPrototypeSingleton();     \
+  using PropertiesType = PropertiesTypeAlias::PropertiesType;           \
+  using PropertiesEntryType = PropertiesTypeAlias::PropertiesEntryType; \
+                                                                        \
+ private:                                                               \
+  VX_NODE_INITIALIZED_POINTER(PropertiesType) properties;
+
+// TODO: Avoid using this?
+
+#define VX_NODE_IMPLEMENTATION_PUB(name)                                \
+ private:                                                               \
+  VX_DECLARE_STRING_CONSTANT_CLASS(NameType, name);                     \
+  using PropertiesTypeAlias = ::vx::PropertiesTypeAlias<NameType>;      \
+                                                                        \
+ public:                                                                \
+  static QSharedPointer<vx::NodePrototype> getPrototypeSingleton();     \
+  using PropertiesType = PropertiesTypeAlias::PropertiesType;           \
+  using PropertiesEntryType = PropertiesTypeAlias::PropertiesEntryType; \
+                                                                        \
+  VX_NODE_INITIALIZED_POINTER(PropertiesType) properties;               \
+                                                                        \
+ private:
 
 namespace vx {
 class NodePrototype;
@@ -91,7 +123,7 @@ namespace vx {
 
 class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(Node)
+  VX_REFCOUNTEDOBJECT
 
  public:
   static bool showWarningOnOldObjectNames();
@@ -131,7 +163,7 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
      */
     Destroyed,
   };
-  QString stateToString(State state);
+  static QString stateToString(State state);
 
  private:
   PropertySection* exportedPropertiesSection = nullptr;
@@ -148,6 +180,7 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
   QList<QPointer<PropertySection>> sections;
 
   QList<QWidget*> propertySections_;
+  int defaultSectionPosition_ = -1;
 
   QMap<QString, QVariant>
       propertyValues_;  // For properties without custom getter/setter
@@ -234,7 +267,8 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
   QIcon icon();
 
   QList<QWidget*> propertySections() const { return propertySections_; }
-  void addPropertySection(QWidget* section);
+  void addPropertySection(QWidget* section, int position = -1,
+                          bool isInitiallyExpanded = true);
 
   // TODO: should this be moved to NodePrototype?
   const QList<QAction*>& contextMenuActions() const {

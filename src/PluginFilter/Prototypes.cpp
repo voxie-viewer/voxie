@@ -3,6 +3,7 @@
 
 #include "Prototypes.hpp"
 
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodePrototype.hpp>
 #include <Voxie/Node/PropertyValueConvertDBus.hpp>
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
@@ -262,6 +263,9 @@ ColorizeLabeledSurfaceProperties::inputColorizerPropertyTyped() {
   return NodePropertyTyped<vx::types::ValueColorMapping>(
       inputColorizerProperty());
 }
+NodeNodeProperty ColorizeLabeledSurfaceProperties::inputColorizerInstance() {
+  return NodeNodeProperty(_node, inputColorizerProperty());
+}
 void ColorizeLabeledSurfaceProperties::setInputColorizer(
     QList<vx::ColorizerEntry> value) {
   _node->setNodePropertyTyped<QList<
@@ -291,6 +295,9 @@ NodePropertyTyped<vx::types::NodeReference>
 ColorizeLabeledSurfaceProperties::inputSurfacePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(inputSurfaceProperty());
 }
+NodeNodeProperty ColorizeLabeledSurfaceProperties::inputSurfaceInstance() {
+  return NodeNodeProperty(_node, inputSurfaceProperty());
+}
 void ColorizeLabeledSurfaceProperties::setInputSurface(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
       "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.InputSurface",
@@ -314,6 +321,9 @@ NodePropertyTyped<vx::types::NodeReference>
 ColorizeLabeledSurfaceProperties::inputTablePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(inputTableProperty());
 }
+NodeNodeProperty ColorizeLabeledSurfaceProperties::inputTableInstance() {
+  return NodeNodeProperty(_node, inputTableProperty());
+}
 void ColorizeLabeledSurfaceProperties::setInputTable(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
       "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.InputTable",
@@ -336,6 +346,9 @@ ColorizeLabeledSurfaceProperties::outputProperty() {
 NodePropertyTyped<vx::types::OutputNodeReference>
 ColorizeLabeledSurfaceProperties::outputPropertyTyped() {
   return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
+}
+NodeNodeProperty ColorizeLabeledSurfaceProperties::outputInstance() {
+  return NodeNodeProperty(_node, outputProperty());
 }
 void ColorizeLabeledSurfaceProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -661,6 +674,10 @@ ColorizeSurfaceFromAttributeProperties::inputColorizerPropertyTyped() {
   return NodePropertyTyped<vx::types::ValueColorMapping>(
       inputColorizerProperty());
 }
+NodeNodeProperty
+ColorizeSurfaceFromAttributeProperties::inputColorizerInstance() {
+  return NodeNodeProperty(_node, inputColorizerProperty());
+}
 void ColorizeSurfaceFromAttributeProperties::setInputColorizer(
     QList<vx::ColorizerEntry> value) {
   _node->setNodePropertyTyped<QList<
@@ -695,6 +712,10 @@ NodePropertyTyped<vx::types::NodeReference>
 ColorizeSurfaceFromAttributeProperties::inputSurfacePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(inputSurfaceProperty());
 }
+NodeNodeProperty
+ColorizeSurfaceFromAttributeProperties::inputSurfaceInstance() {
+  return NodeNodeProperty(_node, inputSurfaceProperty());
+}
 void ColorizeSurfaceFromAttributeProperties::setInputSurface(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
       "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute.InputSurface",
@@ -719,6 +740,9 @@ ColorizeSurfaceFromAttributeProperties::outputProperty() {
 NodePropertyTyped<vx::types::OutputNodeReference>
 ColorizeSurfaceFromAttributeProperties::outputPropertyTyped() {
   return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
+}
+NodeNodeProperty ColorizeSurfaceFromAttributeProperties::outputInstance() {
+  return NodeNodeProperty(_node, outputProperty());
 }
 void ColorizeSurfaceFromAttributeProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -1030,6 +1054,9 @@ NodePropertyTyped<vx::types::String>
 CreateSurfaceProperties::algorithmPropertyTyped() {
   return NodePropertyTyped<vx::types::String>(algorithmProperty());
 }
+NodeNodeProperty CreateSurfaceProperties::algorithmInstance() {
+  return NodeNodeProperty(_node, algorithmProperty());
+}
 void CreateSurfaceProperties::setAlgorithm(QString value) {
   _node->setNodePropertyTyped<QString>(
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.Algorithm",
@@ -1051,6 +1078,9 @@ QSharedPointer<NodeProperty> CreateSurfaceProperties::inputVolumeProperty() {
 NodePropertyTyped<vx::types::NodeReference>
 CreateSurfaceProperties::inputVolumePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(inputVolumeProperty());
+}
+NodeNodeProperty CreateSurfaceProperties::inputVolumeInstance() {
+  return NodeNodeProperty(_node, inputVolumeProperty());
 }
 void CreateSurfaceProperties::setInputVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -1074,6 +1104,9 @@ NodePropertyTyped<vx::types::NodeReference>
 CreateSurfaceProperties::labelVolumePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(labelVolumeProperty());
 }
+NodeNodeProperty CreateSurfaceProperties::labelVolumeInstance() {
+  return NodeNodeProperty(_node, labelVolumeProperty());
+}
 void CreateSurfaceProperties::setLabelVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.LabelVolume",
@@ -1096,6 +1129,9 @@ NodePropertyTyped<vx::types::Float>
 CreateSurfaceProperties::thresholdPropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(thresholdProperty());
 }
+NodeNodeProperty CreateSurfaceProperties::thresholdInstance() {
+  return NodeNodeProperty(_node, thresholdProperty());
+}
 void CreateSurfaceProperties::setThreshold(double value) {
   _node->setNodePropertyTyped<double>(
       "de.uni_stuttgart.Voxie.Filter.CreateSurface.Threshold",
@@ -1117,6 +1153,9 @@ QSharedPointer<NodeProperty> CreateSurfaceProperties::outputProperty() {
 NodePropertyTyped<vx::types::OutputNodeReference>
 CreateSurfaceProperties::outputPropertyTyped() {
   return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
+}
+NodeNodeProperty CreateSurfaceProperties::outputInstance() {
+  return NodeNodeProperty(_node, outputProperty());
 }
 void CreateSurfaceProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -1358,6 +1397,9 @@ NodePropertyTyped<vx::types::NodeReferenceList>
 TableFilterProperties::inputPropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReferenceList>(inputProperty());
 }
+NodeNodeProperty TableFilterProperties::inputInstance() {
+  return NodeNodeProperty(_node, inputProperty());
+}
 void TableFilterProperties::setInput(QList<vx::Node*> value) {
   _node->setNodePropertyTyped<QList<QDBusObjectPath>>(
       "de.uni_stuttgart.Voxie.Input",
@@ -1380,6 +1422,9 @@ QSharedPointer<NodeProperty> TableFilterProperties::outputProperty() {
 NodePropertyTyped<vx::types::OutputNodeReference>
 TableFilterProperties::outputPropertyTyped() {
   return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
+}
+NodeNodeProperty TableFilterProperties::outputInstance() {
+  return NodeNodeProperty(_node, outputProperty());
 }
 void TableFilterProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(

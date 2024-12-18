@@ -25,86 +25,117 @@
 
 // Provides HDF5::getH5Type<T>() which returns a HDF5 representation for T
 
+#ifndef UTIL_ENABLE_HALF_SUPPORT
+#define UTIL_ENABLE_HALF_SUPPORT 0
+#endif
+
 #include <Core/StaticCache.hpp>
 #include <Core/Util.hpp>
 
 #include <HDF5/BaseTypes.hpp>
-#include <HDF5/DataType.hpp>
-#include <HDF5/CompoundType.hpp>
-#include <HDF5/DataTypes.hpp>
 #include <HDF5/ComplexConversion.hpp>
+#include <HDF5/CompoundType.hpp>
+#include <HDF5/DataType.hpp>
+#include <HDF5/DataTypes.hpp>
 
 #include <complex>
 
+#if UTIL_ENABLE_HALF_SUPPORT
+#include <half.hpp>
+#endif
+
 namespace HDF5 {
-  template <typename T> struct TypeImpl {
-    static HDF5::DataType createClassH5Type () {
-      return T::createClassH5Type ();
-    }
-  };
+template <typename T>
+struct TypeImpl {
+  static HDF5::DataType createClassH5Type() { return T::createClassH5Type(); }
+};
 
-  template <typename T>
-  inline HDF5::DataType getH5Type() {
-    return Core::staticCache([] { return TypeImpl<T>::createClassH5Type(); });
-  }
-  template <typename T, typename U> inline HDF5::DataType getTargetH5Type (UNUSED T U::* ptr) {
-    return getH5Type<T> ();
-  }
-
-#define HDF5_ADD_MEMBER_NAME(member, name)                              \
-  ct.insert (name, offsetof (HDF5_CurrentType, member), ::HDF5::getTargetH5Type (&HDF5_CurrentType::member));
-#define HDF5_ADD_MEMBER(member) HDF5_ADD_MEMBER_NAME (member, #member)
-#define HDF5_TYPE(name)                                         \
-  private:                                                      \
-  typedef name HDF5_CurrentType;                                \
-public:                                                         \
- static HDF5::DataType createClassH5Type () {                     \
- ::HDF5::CompoundType ct = ::HDF5::CompoundType::create (sizeof (HDF5_CurrentType));
-#define HDF5_TYPE_END                           \
-  return std::move(ct);                         \
+template <typename T>
+inline HDF5::DataType getH5Type() {
+  return Core::staticCache([] { return TypeImpl<T>::createClassH5Type(); });
 }
+template <typename T, typename U>
+inline HDF5::DataType getTargetH5Type(UNUSED T U::*ptr) {
+  return getH5Type<T>();
+}
+
+#define HDF5_ADD_MEMBER_NAME(member, name)            \
+  ct.insert(name, offsetof(HDF5_CurrentType, member), \
+            ::HDF5::getTargetH5Type(&HDF5_CurrentType::member));
+#define HDF5_ADD_MEMBER(member) HDF5_ADD_MEMBER_NAME(member, #member)
+#define HDF5_TYPE(name)                       \
+ private:                                     \
+  typedef name HDF5_CurrentType;              \
+                                              \
+ public:                                      \
+  static HDF5::DataType createClassH5Type() { \
+    ::HDF5::CompoundType ct =                 \
+        ::HDF5::CompoundType::create(sizeof(HDF5_CurrentType));
+#define HDF5_TYPE_END \
+  return ct;          \
+  }
 
 #define HDF5_SPECIALIZE_PREDTYPE(ty, pt)        \
-  template <> class TypeImpl<ty> {              \
-  public:                                       \
-  static HDF5::DataType createClassH5Type () {  \
-    ::HDF5::registerComplexConversion ();       \
-    return HDF5::pt ();                         \
-  }                                             \
+  template <>                                   \
+  class TypeImpl<ty> {                          \
+   public:                                      \
+    static HDF5::DataType createClassH5Type() { \
+      ::HDF5::registerComplexConversion();      \
+      return HDF5::pt();                        \
+    }                                           \
   };
-  HDF5_SPECIALIZE_PREDTYPE (float, NATIVE_FLOAT)
-  HDF5_SPECIALIZE_PREDTYPE (double, NATIVE_DOUBLE)
-  HDF5_SPECIALIZE_PREDTYPE (long double, NATIVE_LDOUBLE)
-  HDF5_SPECIALIZE_PREDTYPE (uint8_t, NATIVE_UINT8)
-  HDF5_SPECIALIZE_PREDTYPE (uint16_t, NATIVE_UINT16)
-  HDF5_SPECIALIZE_PREDTYPE (uint32_t, NATIVE_UINT32)
-  HDF5_SPECIALIZE_PREDTYPE (uint64_t, NATIVE_UINT64)
-  HDF5_SPECIALIZE_PREDTYPE (int8_t, NATIVE_INT8)
-  HDF5_SPECIALIZE_PREDTYPE (int16_t, NATIVE_INT16)
-  HDF5_SPECIALIZE_PREDTYPE (int32_t, NATIVE_INT32)
-  HDF5_SPECIALIZE_PREDTYPE (int64_t, NATIVE_INT64)
-  HDF5_SPECIALIZE_PREDTYPE (ObjectReference, STD_REF_OBJ)
-  template <> class TypeImpl<const char*> {
-  public:
-    static HDF5::DataType createClassH5Type () {
-      HDF5::StringType ty = (HDF5::StringType) HDF5::C_S1 ().copy ();
-      //ty.setSize (H5T_VARIABLE);
-      Exception::check ("H5Tset_size", H5Tset_size (ty.handle (), H5T_VARIABLE));
-      return std::move(ty);
-    }
+HDF5_SPECIALIZE_PREDTYPE(float, NATIVE_FLOAT)
+HDF5_SPECIALIZE_PREDTYPE(double, NATIVE_DOUBLE)
+HDF5_SPECIALIZE_PREDTYPE(long double, NATIVE_LDOUBLE)
+HDF5_SPECIALIZE_PREDTYPE(uint8_t, NATIVE_UINT8)
+HDF5_SPECIALIZE_PREDTYPE(uint16_t, NATIVE_UINT16)
+HDF5_SPECIALIZE_PREDTYPE(uint32_t, NATIVE_UINT32)
+HDF5_SPECIALIZE_PREDTYPE(uint64_t, NATIVE_UINT64)
+HDF5_SPECIALIZE_PREDTYPE(int8_t, NATIVE_INT8)
+HDF5_SPECIALIZE_PREDTYPE(int16_t, NATIVE_INT16)
+HDF5_SPECIALIZE_PREDTYPE(int32_t, NATIVE_INT32)
+HDF5_SPECIALIZE_PREDTYPE(int64_t, NATIVE_INT64)
+HDF5_SPECIALIZE_PREDTYPE(ObjectReference, STD_REF_OBJ)
+template <>
+class TypeImpl<const char*> {
+ public:
+  static HDF5::DataType createClassH5Type() {
+    HDF5::StringType ty = (HDF5::StringType)HDF5::C_S1().copy();
+    //ty.setSize (H5T_VARIABLE);
+    Exception::check("H5Tset_size", H5Tset_size(ty.handle(), H5T_VARIABLE));
+    return ty;
+  }
+};
+template <typename T>
+class TypeImpl<std::complex<T> > {
+  struct MyComplex {
+    // TODO: Rename to 'r', 'i' to match h5py? (How would matlab handle that / how to ensure compatibility?)
+    T real, imag;
   };
-  template <typename T> class TypeImpl<std::complex<T> > {
-    struct MyComplex {
-      // TODO: Rename to 'r', 'i' to match h5py? (How would matlab handle that / how to ensure compatibility?)
-      T real, imag;
-    };
 
-    HDF5_TYPE (MyComplex)
-    ::HDF5::registerComplexConversion ();
-    HDF5_ADD_MEMBER (real)
-    HDF5_ADD_MEMBER (imag)
-    HDF5_TYPE_END
-  };
-}
+  HDF5_TYPE(MyComplex)
+  ::HDF5::registerComplexConversion();
+  HDF5_ADD_MEMBER(real)
+  HDF5_ADD_MEMBER(imag)
+  HDF5_TYPE_END
+};
 
-#endif // !HDF5_TYPE_HPP_INCLUDED
+#if UTIL_ENABLE_HALF_SUPPORT
+template <>
+class TypeImpl<half_float::half> {
+ public:
+  static HDF5::DataType createClassH5Type() {
+    HDF5::FloatType ty = (HDF5::FloatType)HDF5::NATIVE_FLOAT().copy();
+    Exception::check("H5Tset_fields",
+                     H5Tset_fields(ty.handle(), 15, 10, 5, 0, 10));
+    Exception::check("H5Tset_precision", H5Tset_precision(ty.handle(), 16));
+    Exception::check("H5Tset_ebias", H5Tset_ebias(ty.handle(), 15));
+    Exception::check("H5Tset_size", H5Tset_size(ty.handle(), 2));
+    return std::move(ty);
+  }
+};
+#endif
+
+}  // namespace HDF5
+
+#endif  // !HDF5_TYPE_HPP_INCLUDED

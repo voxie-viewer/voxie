@@ -32,7 +32,7 @@ class SliceVisualizer;
 
 class VolumeGrid : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(VolumeGrid)
+  VX_REFCOUNTEDOBJECT
 
  public:
   explicit VolumeGrid(SliceVisualizer*);
@@ -43,5 +43,6 @@ class VolumeGrid : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 };

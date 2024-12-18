@@ -27,62 +27,62 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/IdComponent.hpp>
 
 namespace HDF5 {
-  class DataSpace : public IdComponent {
-    void checkType () const;
+class DataSpace : public IdComponent {
+  void checkType() const;
 
-  public:
-    DataSpace () {
-    }
+ public:
+  DataSpace() {}
 
-    explicit DataSpace (const IdComponent& value) : IdComponent (value) {
-      checkType ();
-    }
+  explicit DataSpace(const IdComponent& value) : IdComponent(value) {
+    checkType();
+  }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit DataSpace (hid_t value) : IdComponent (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit DataSpace(hid_t value) : IdComponent(value) { checkType(); }
 
-    static DataSpace create (H5S_class_t type);
-    static DataSpace createSimpleRank (int rank, const hsize_t* current_dims, const hsize_t* maxdims = NULL);
-    static DataSpace createSimple (hsize_t dim1) {
-      hsize_t dims[] = {dim1};
-      return createSimpleRank (1, dims);
-    }
-    static DataSpace createSimple (hsize_t dim1, hsize_t dim2 ) {
-      hsize_t dims[] = {dim1, dim2};
-      return createSimpleRank (2, dims);
-    }
-    static DataSpace createSimple (hsize_t dim1, hsize_t dim2, hsize_t dim3) {
-      hsize_t dims[] = {dim1, dim2, dim3};
-      return createSimpleRank (3, dims);
-    }
-    static DataSpace createSimple (hsize_t dim1, hsize_t dim2, hsize_t dim3, hsize_t dim4) {
-      hsize_t dims[] = {dim1, dim2, dim3, dim4};
-      return createSimpleRank (4, dims);
-    }
+  static DataSpace create(H5S_class_t type);
+  static DataSpace createSimpleRank(int rank, const hsize_t* current_dims,
+                                    const hsize_t* maxdims = NULL);
+  static DataSpace createSimple(hsize_t dim1) {
+    hsize_t dims[] = {dim1};
+    return createSimpleRank(1, dims);
+  }
+  static DataSpace createSimple(hsize_t dim1, hsize_t dim2) {
+    hsize_t dims[] = {dim1, dim2};
+    return createSimpleRank(2, dims);
+  }
+  static DataSpace createSimple(hsize_t dim1, hsize_t dim2, hsize_t dim3) {
+    hsize_t dims[] = {dim1, dim2, dim3};
+    return createSimpleRank(3, dims);
+  }
+  static DataSpace createSimple(hsize_t dim1, hsize_t dim2, hsize_t dim3,
+                                hsize_t dim4) {
+    hsize_t dims[] = {dim1, dim2, dim3, dim4};
+    return createSimpleRank(4, dims);
+  }
 
-    hid_t handleOrAll () const {
-      if (!isValid ())
-        return H5S_ALL;
-      return handle ();
-    }
+  hid_t handleOrAll() const {
+    if (!isValid()) return H5S_ALL;
+    return handle();
+  }
 
-    bool isSimple () const;
-    H5S_class_t getSimpleExtentType () const;
-    void getSimpleExtentDims (hsize_t* dims, hsize_t* maxDims = NULL) const;
-    int getSimpleExtentNdims () const;
+  bool isSimple() const;
+  H5S_class_t getSimpleExtentType() const;
+  void getSimpleExtentDims(hsize_t* dims, hsize_t* maxDims = NULL) const;
+  int getSimpleExtentNdims() const;
 
-    void selectHyperslab (H5S_seloper_t op, const hsize_t* count, const hsize_t* start, const hsize_t* stride = NULL, const hsize_t* block = NULL) const;
-  };
-}
+  void selectHyperslab(H5S_seloper_t op, const hsize_t* count,
+                       const hsize_t* start, const hsize_t* stride = NULL,
+                       const hsize_t* block = NULL) const;
+};
+}  // namespace HDF5
 
-#endif // !HDF5_DATASPACE_HPP_INCLUDED
+#endif  // !HDF5_DATASPACE_HPP_INCLUDED

@@ -41,6 +41,8 @@
 
 #include <Main/IO/Load.hpp>
 
+#include <Main/Vis/MarkdownVisualizer.hpp>
+
 #include <VoxieBackend/Component/ComponentContainerList.hpp>
 #include <VoxieBackend/Component/ComponentType.hpp>
 #include <VoxieBackend/Component/ExtensionExporter.hpp>
@@ -53,6 +55,7 @@
 
 #include <Voxie/Data/ContainerNode.hpp>
 #include <Voxie/Data/EventListNode.hpp>
+#include <Voxie/Data/FileNode.hpp>
 #include <Voxie/Data/GeometricPrimitiveObject.hpp>
 #include <Voxie/Data/SurfaceNode.hpp>
 #include <Voxie/Data/TomographyRawDataNode.hpp>
@@ -68,8 +71,11 @@
 #include <VoxieBackend/IO/OperationRegistry.hpp>
 #include <VoxieBackend/IO/OperationResult.hpp>
 
+#include <VoxieBackend/Data/BufferType.hpp>
 #include <VoxieBackend/Data/GeometricPrimitive.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveType.hpp>
+#include <VoxieBackend/Data/VolumeDataBlock.hpp>
+#include <VoxieBackend/Data/VolumeDataBlockJpeg.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxelInst.hpp>
 
 #include <VoxieBackend/OpenCL/CLInstance.hpp>
@@ -87,6 +93,7 @@
 
 #include <VoxieClient/DBusTypeList.hpp>
 #include <VoxieClient/Exception.hpp>
+#include <VoxieClient/Format.hpp>
 
 #include <Voxie/Data/TableNode.hpp>
 
@@ -118,6 +125,7 @@
 
 #include <Main/Gui/HelpWindow.hpp>
 
+#include <Main/Help/CMark.hpp>
 #include <Main/Help/ExportHelpPages.hpp>
 #include <Main/Help/HelpBrowserBackendQTextBrowser.hpp>
 
@@ -147,12 +155,26 @@ void Root::createNodeConnection(Node* parent, Node* child, int slot) const {
 class CorePluginInstance : public PluginInstance {
  protected:
   QList<QSharedPointer<vx::Component>> createComponents() override {
+    QList<QSharedPointer<vx::Component>> components;
+
+    // Types
+    components << vx::allTypesAsComponents();
+
+    // BufferTypes
+    components.append(vx::ByteBuffer::bufferType());
+    components.append(vx::VolumeDataBlock::BlockID::bufferType());
+    components.append(vx::VolumeDataBlock::BlockOffsetEntry::bufferType());
+    components.append(vx::VolumeDataBlockJpeg::BlockSize::bufferType());
+    components.append(
+        vx::VolumeDataBlockJpeg::HuffmanSymbolCounter::bufferType());
+
     // TODO: Also return node prototypes etc. here
-    return vx::allTypesAsComponents();
+
+    return components;
   }
 };
 class CorePlugin : public Plugin {
-  REFCOUNTEDOBJ_DECL(CorePlugin)
+  VX_REFCOUNTEDOBJECT
 
  public:
   CorePlugin()
@@ -167,6 +189,7 @@ class CorePlugin : public Plugin {
   QList<QSharedPointer<vx::Component>> listComponents(
       const QSharedPointer<ComponentType>& componentType) override {
     // TODO: Treat these more generically?
+    // TODO: Probably use CorePluginInstance::createComponents() instead
 
     if (componentType->name() ==
         "de.uni_stuttgart.Voxie.ComponentType.GeometricPrimitiveType") {
@@ -181,21 +204,24 @@ class CorePlugin : public Plugin {
 
   QSharedPointer<vx::Component> getComponent(
       const QSharedPointer<ComponentType>& componentType, const QString& name,
-      bool allowCompatibilityNames) override {
+      bool allowCompatibilityNames, bool allowMissing) override {
     // TODO: Treat these more generically?
 
     if (componentType->name() ==
         "de.uni_stuttgart.Voxie.ComponentType.GeometricPrimitiveType") {
       // TODO: Support allowCompatibilityNames?
       auto types = GeometricPrimitive::allTypes();
-      if (!types->contains(name))
+      if (!types->contains(name)) {
+        if (allowMissing) return QSharedPointer<vx::Component>();
         throw Exception("de.uni_stuttgart.Voxie.ComponentNotFound",
                         "Could not find component '" + name + "' with type '" +
                             componentType->name() + "'");
+      }
       return (*types)[name];
     }
 
-    return Plugin::getComponent(componentType, name, allowCompatibilityNames);
+    return Plugin::getComponent(componentType, name, allowCompatibilityNames,
+                                allowMissing);
   }
 };
 
@@ -237,6 +263,7 @@ Root::Root(bool headless)
   factories_.append(TableNode::getPrototypeSingleton());
   factories_.append(TomographyRawDataNode::getPrototypeSingleton());
   factories_.append(GeometricPrimitiveNode::getPrototypeSingleton());
+  factories_.append(FileNode::getPrototypeSingleton());
   factories_.append(EventListNode::getPrototypeSingleton());
 
   factories_.append(PlaneNode::getPrototypeSingleton());
@@ -244,7 +271,16 @@ Root::Root(bool headless)
 
   factories_.append(NodeGroup::getPrototypeSingleton());
 
+  factories_.append(MarkdownVisualizer::getPrototypeSingleton());
+
   NodeTag::tagsFromJson(":/tags/tags.json");
+
+  {
+    QList<QSharedPointer<NodePrototype>> pr;
+    for (const auto& ptr : factories_) pr << ptr;
+    corePlugin->allObjectPrototypes = pr;
+    corePlugin->reAddPrototypes();
+  }
 
   // This means that PropertyTypes in built-in node prototypes cannot be
   // in plugins.
@@ -253,13 +289,6 @@ Root::Root(bool headless)
       QList<QSharedPointer<ComponentContainer>>{corePlugin});
   for (const auto& prototype : factories_) prototype->resolve1(coreContainer);
   for (const auto& prototype : factories_) prototype->resolve2(coreContainer);
-
-  {
-    QList<QSharedPointer<NodePrototype>> pr;
-    for (const auto& ptr : factories_) pr << ptr;
-    corePlugin->allObjectPrototypes = pr;
-    corePlugin->reAddPrototypes();
-  }
 
   vx::debug_option::Log_QtEvents()->registerAndCallChangeHandler(
       this, [this](bool value) {
@@ -361,7 +390,7 @@ QVector<QString> Root::getBufferedMessages() {
 
 class FakeFilter : public FilterNode {
   // Q_OBJECT
-  REFCOUNTEDOBJ_DECL(FakeFilter)
+  VX_REFCOUNTEDOBJECT
 
  public:
   FakeFilter(const QSharedPointer<NodePrototype>& prototype)
@@ -729,6 +758,11 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
   ::root->components_ =
       ComponentContainerList::create(getComponentTypes(), containers);
 
+  // Run validateComponent() for all components
+  for (const auto& type : *::root->components_->componentTypes())
+    for (const auto& component : ::root->components_->listComponents(type))
+      component->validateComponent(::root->components_);
+
   // Check whether all default exporters exist
   for (const auto& prototype : ::root->factories_) {
     if (prototype->nodeKind() != NodeKind::Data) continue;
@@ -1056,9 +1090,9 @@ void Root::registerVisualizer(VisualizerNode* visualizer) {
   if (!this->isHeadless()) this->mainWindow()->addVisualizer(visualizer);
 }
 
-void Root::registerSection(QWidget* section, bool closeable) {
-  if (!this->isHeadless())
-    this->mainWindow()->sidePanel->addSection(section, closeable);
+// TODO: Remove this? Seems to be unused.
+void Root::registerSection(QWidget* section) {
+  if (!this->isHeadless()) this->mainWindow()->sidePanel->addSection(section);
 }
 
 void Root::registerNode(const QSharedPointer<vx::Node>& obj) {
@@ -1097,9 +1131,7 @@ const QList<QSharedPointer<NodePrototype>>& Root::factories() {
   return factories_;
 }
 
-void Root::log(const QString& str) {
-  Q_EMIT this->logEmitted(str);
-}
+void Root::log(const QString& str) { Q_EMIT this->logEmitted(str); }
 
 void Root::quit(bool askForConfirmation) {
   if (askForConfirmation && !this->isHeadless())
@@ -1138,96 +1170,123 @@ void runTests() {
   qDebug() << "---- tests done ----";
 }
 
-QVector2D Root::getGraphPosition(vx::Node* obj) {
-  if (isHeadless()) {
-    qWarning() << "Calling Root::getGraphPosition() in headless mode";
-    return QVector2D(0, 0);
-  }
+vx::Vector<double, 2> Root::getGraphPosition(vx::Node* obj) {
+  if (isHeadless())
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Calling Root::getGraphPosition() in headless mode");
   if (mainWindow()->sidePanel->dataflowWidget->map.contains(obj)) {
     GraphNode* graphNode =
         mainWindow()->sidePanel->dataflowWidget->map.value(obj);
-    if (graphNode) {
-      QPointF pos = graphNode->pos();
-      return QVector2D(pos.x(), pos.y());
-    }
+    if (graphNode) return pointToVector(graphNode->pos());
   }
-  return QVector2D(0, 0);
+  throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                      "Root::getGraphPosition(): Unable to find node");
 }
 
-void Root::setGraphPosition(vx::Node* obj, const QVector2D& pos) {
-  if (isHeadless()) {
-    qWarning() << "Calling Root::setGraphPosition() in headless mode";
-    return;
-  }
+void Root::setGraphPosition(vx::Node* obj, const vx::Vector<double, 2>& pos) {
+  if (isHeadless())
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Calling Root::setGraphPosition() in headless mode");
   if (mainWindow()->sidePanel->dataflowWidget->map.contains(obj)) {
     GraphNode* graphNode =
         mainWindow()->sidePanel->dataflowWidget->map.value(obj);
-    if (graphNode) graphNode->setPos(QPoint(pos.x(), pos.y()));
+    if (graphNode) graphNode->setPos(toQPoint(vectorCastNarrow<int>(pos)));
   }
 }
 
-QVector2D Root::getVisualizerPosition(vx::VisualizerNode* obj) {
-  VisualizerContainer* visContainer =
-      dynamic_cast<VisualizerContainer*>(obj->parent());
-  QPoint pos = QPoint(0, 0);  // dummy, use exception instead?
-  if (visContainer) {
-    pos = visContainer->getVisualizerPosition();
-  }
-  return QVector2D(pos.x(), pos.y());
+vx::Vector<double, 2> Root::getVisualizerPosition(vx::VisualizerNode* obj) {
+  if (isHeadless())
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.Error",
+        "Calling Root::getVisualizerPosition() in headless mode");
+  auto visContainer = coreWindow->getContainerForVisualizer(obj);
+  if (!visContainer)
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Unable to find visualizer container");
+  return visContainer->getVisualizerPosition();
 }
 
 void Root::setVisualizerPosition(vx::VisualizerNode* obj,
-                                 const QVector2D& pos) {
-  VisualizerContainer* visContainer =
-      dynamic_cast<VisualizerContainer*>(obj->parent());
-  if (visContainer) {
-    visContainer->setVisualizerPosition(QPoint(pos.x(), pos.y()));
-  }
+                                 const vx::Vector<double, 2>& pos) {
+  if (isHeadless())
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.Error",
+        "Calling Root::setVisualizerPosition() in headless mode");
+  auto visContainer = coreWindow->getContainerForVisualizer(obj);
+  if (!visContainer)
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Unable to find visualizer container");
+  visContainer->setVisualizerPosition(pos);
 }
 
-void Root::setVisualizerWindowMode(vx::VisualizerNode* obj,
-                                   VisualizerWindowMode mode) {
-  VisualizerContainer* visContainer =
-      dynamic_cast<VisualizerContainer*>(obj->parent());
-  if (visContainer) {
-    visContainer->setWindowMode(mode);
-  }
+WindowMode Root::getVisualizerWindowMode(vx::VisualizerNode* obj) {
+  if (isHeadless())
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.Error",
+        "Calling Root::getVisualizerWindowMode() in headless mode");
+  auto visContainer = coreWindow->getContainerForVisualizer(obj);
+  if (!visContainer)
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Unable to find visualizer container");
+  return visContainer->getWindowMode();
 }
 
-QVector2D Root::getVisualizerSize(vx::VisualizerNode* obj) {
-  VisualizerContainer* visContainer =
-      dynamic_cast<VisualizerContainer*>(obj->parent());
-  QSize size = QSize(0, 0);  // dummy, use exception instead?
-  if (visContainer) {
-    size = visContainer->getVisualizerSize();
-  }
-  return QVector2D(size.width(), size.height());
+void Root::setVisualizerWindowMode(vx::VisualizerNode* obj, WindowMode mode) {
+  if (isHeadless())
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.Error",
+        "Calling Root::setVisualizerWindowMode() in headless mode");
+  auto visContainer = coreWindow->getContainerForVisualizer(obj);
+  if (!visContainer)
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Unable to find visualizer container");
+  visContainer->setWindowMode(mode);
 }
 
-void Root::setVisualizerSize(vx::VisualizerNode* obj, const QVector2D& size) {
-  VisualizerContainer* visContainer =
-      dynamic_cast<VisualizerContainer*>(obj->parent());
-  if (visContainer) {
-    visContainer->setVisualizerSize(QSize(size.x(), size.y()));
-  }
+vx::Vector<double, 2> Root::getVisualizerSize(vx::VisualizerNode* obj) {
+  if (isHeadless())
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Calling Root::getVisualizerSize() in headless mode");
+  auto visContainer = coreWindow->getContainerForVisualizer(obj);
+  if (!visContainer)
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Unable to find visualizer container");
+  return visContainer->getVisualizerSize();
+}
+
+void Root::setVisualizerSize(vx::VisualizerNode* obj,
+                             const vx::Vector<double, 2>& size) {
+  if (isHeadless())
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Calling Root::setVisualizerSize() in headless mode");
+  auto visContainer = coreWindow->getContainerForVisualizer(obj);
+  if (!visContainer)
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Unable to find visualizer container");
+  visContainer->setVisualizerSize(size);
 }
 
 bool Root::isAttached(vx::VisualizerNode* obj) {
-  VisualizerContainer* visContainer =
-      dynamic_cast<VisualizerContainer*>(obj->parent());
-  if (visContainer) {
-    return visContainer->isAttached;
-  }
-  return true;
+  if (isHeadless())
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Calling Root::isAttached() in headless mode");
+  auto visContainer = coreWindow->getContainerForVisualizer(obj);
+  if (!visContainer)
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Unable to find visualizer container");
+  return visContainer->isAttached;
 }
 
 void Root::setIsAttached(vx::VisualizerNode* obj, bool value) {
-  VisualizerContainer* visContainer =
-      dynamic_cast<VisualizerContainer*>(obj->parent());
-  if (visContainer) {
-    if (value != visContainer->isAttached) {
-      visContainer->switchPopState();
-    }
+  if (isHeadless())
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Calling Root::setIsAttached() in headless mode");
+  auto visContainer = coreWindow->getContainerForVisualizer(obj);
+  if (!visContainer)
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Unable to find visualizer container");
+  if (value != visContainer->isAttached) {
+    visContainer->switchPopState();
   }
 }
 
@@ -1239,6 +1298,41 @@ void Root::registerHelpBrowserBackend(
     return;
   }
   helpBrowserBackend_ = backend;
+}
+
+void Root::openHelpForUri(const QString& uri) {
+  Root::instance()->helpWindow()->openHelpForUri(uri);
+}
+
+void Root::openMarkdownString(const QString& uri, const QString& title,
+                              const QString& markdown, const QUrl& baseUrl) {
+  // TODO: Clean up the help page opening code?
+  try {
+    QFile templateFile(":/Help/template.html");
+    QString pageTemplate = "{0}";
+    if (templateFile.open(QFile::ReadOnly | QFile::Text)) {
+      pageTemplate = QString::fromUtf8(templateFile.readAll());
+    } else {
+      qWarning() << "Missing HTML help template";
+    }
+
+    auto html = vx::cmark::parseDocumentWithExtensions(markdown)->renderHtml();
+
+    // TODO: Math formatting
+    QString header = "";
+
+    // TODO: Should probably use vformat()
+    QString fullHtml = vx::format(pageTemplate.toUtf8().data(), html, header);
+
+    openHtmlString(uri, title, html, baseUrl);
+  } catch (vx::Exception& e) {
+    vx::showErrorMessage("Got exception while rendering markdown data", e);
+  }
+}
+
+void Root::openHtmlString(const QString& uri, const QString& title,
+                          const QString& html, const QUrl& baseUrl) {
+  Root::instance()->helpWindow()->openHtmlString(uri, title, html, baseUrl);
 }
 
 void Root::connectLinkHandler(QLabel* label) {

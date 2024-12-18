@@ -23,12 +23,23 @@
 #include "BrushSelectionStep.hpp"
 #include <VoxieBackend/Data/VolumeDataVoxelInst.hpp>
 
+VX_NODE_INSTANTIATION(vx::BrushSelectionStep)
+
+// TODO: Currently multiple brush operations with Select and Erase will be
+// combined into a single BrushSelectionStep, but this will generate a different
+// result when re-running the step because it does not honor the order of the
+// Select and Erase operations.
+
+// TODO: Also, doing (brush) selection operations without doing an assignment
+// step afterwards, then re-running the filter, then doing other selection
+// operations and an assignment step seems to do the wrong thing.
+
 using namespace vx;
 using namespace vx::io;
 
 BrushSelectionStep::BrushSelectionStep(
-    QList<std::tuple<QVector3D, double>> selectCentersWithRadiuses,
-    QList<std::tuple<QVector3D, double>> eraseCentersWithRadiuses,
+    QList<std::tuple<vx::Vector<double, 3>, double>> selectCentersWithRadiuses,
+    QList<std::tuple<vx::Vector<double, 3>, double>> eraseCentersWithRadiuses,
     QVector3D volumeOrigin, QQuaternion volumeOrientation, QVector3D voxelSize,
     PlaneInfo plane)
     : SegmentationStep("BrushSelectionStep", getPrototypeSingleton()),
@@ -86,8 +97,10 @@ QSharedPointer<OperationResult> BrushSelectionStep::calculate(
 
       for (auto& entry : propertyCopy.brushSelectCentersWithRadius()) {
         auto calculator = BrushCalculator(
-            std::get<0>(entry), std::get<1>(entry), compoundVoxelData,
-            propertyCopy.planeOrigin(), propertyCopy.planeOrientation());
+            // TODO: Avoid QVector3D
+            toQVector(vectorCastNarrow<float>(std::get<0>(entry))),
+            std::get<1>(entry), compoundVoxelData, propertyCopy.planeOrigin(),
+            propertyCopy.planeOrientation());
         calculator.growRegion();
         voxelsToSelect.append(calculator.getFoundVoxels());
         numberOfCalculatedCenters += 1;
@@ -97,7 +110,8 @@ QSharedPointer<OperationResult> BrushSelectionStep::calculate(
       auto selectFunc =
           [&voxelCount](
               quint32& x, quint32& y, quint32& z,
-              QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
+              const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                  labelData) {
             SegmentationType voxelVal =
                 (SegmentationType)labelData->getVoxel(x, y, z);
             if (getBit(voxelVal, segmentationShift) == 0) {
@@ -112,8 +126,10 @@ QSharedPointer<OperationResult> BrushSelectionStep::calculate(
 
       for (auto& entry : propertyCopy.brushEraseCentersWithRadius()) {
         auto calculator = BrushCalculator(
-            std::get<0>(entry), std::get<1>(entry), compoundVoxelData,
-            propertyCopy.planeOrigin(), propertyCopy.planeOrientation());
+            // TODO: Avoid QVector3D
+            toQVector(vectorCastNarrow<float>(std::get<0>(entry))),
+            std::get<1>(entry), compoundVoxelData, propertyCopy.planeOrigin(),
+            propertyCopy.planeOrientation());
         calculator.growRegion();
         voxelsToClear.append(calculator.getFoundVoxels());
         numberOfCalculatedCenters += 1;
@@ -123,7 +139,8 @@ QSharedPointer<OperationResult> BrushSelectionStep::calculate(
       auto clearFunc =
           [&voxelCount](
               quint32& x, quint32& y, quint32& z,
-              QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
+              const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                  labelData) {
             SegmentationType voxelVal =
                 (SegmentationType)labelData->getVoxel(x, y, z);
             if (getBit(voxelVal, segmentationShift) != 0) {
@@ -146,7 +163,7 @@ QSharedPointer<OperationResult> BrushSelectionStep::calculate(
 }
 
 QSharedPointer<vx::io::Operation> BrushSelectionStep::selectPassedVoxels(
-    std::tuple<QVector3D, double> centerWithRadius,
+    std::tuple<vx::Vector<double, 3>, double> centerWithRadius,
     QSharedPointer<ParameterCopy> parameterCopy,
     QSharedPointer<ContainerData> containerData,
     QSharedPointer<vx::io::Operation> op) {
@@ -157,9 +174,9 @@ QSharedPointer<vx::io::Operation> BrushSelectionStep::selectPassedVoxels(
   qint64 voxelCount = 0;
 
   auto voxelFunc =
-      [&voxelCount](
-          quint32& x, quint32& y, quint32& z,
-          QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
+      [&voxelCount](quint32& x, quint32& y, quint32& z,
+                    const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                        labelData) {
         SegmentationType voxelVal =
             (SegmentationType)labelData->getVoxel(x, y, z);
         if (getBit(voxelVal, segmentationShift) == 0) {
@@ -170,9 +187,10 @@ QSharedPointer<vx::io::Operation> BrushSelectionStep::selectPassedVoxels(
       };
 
   auto calculator = BrushCalculator(
-      std::get<0>(centerWithRadius), std::get<1>(centerWithRadius),
-      compoundVoxelData, this->properties->planeOrigin(),
-      this->properties->planeOrientation());
+      // TODO: Avoid QVector3D
+      toQVector(vectorCastNarrow<float>(std::get<0>(centerWithRadius))),
+      std::get<1>(centerWithRadius), compoundVoxelData,
+      this->properties->planeOrigin(), this->properties->planeOrientation());
   calculator.growRegion();
   auto voxelsToSelect = calculator.getFoundVoxels();
 
@@ -185,7 +203,7 @@ QSharedPointer<vx::io::Operation> BrushSelectionStep::selectPassedVoxels(
 }
 
 QSharedPointer<vx::io::Operation> BrushSelectionStep::erasePassedVoxels(
-    std::tuple<QVector3D, double> centerWithRadius,
+    std::tuple<vx::Vector<double, 3>, double> centerWithRadius,
     QSharedPointer<ParameterCopy> parameterCopy,
     QSharedPointer<ContainerData> containerData,
     QSharedPointer<vx::io::Operation> op) {
@@ -196,9 +214,9 @@ QSharedPointer<vx::io::Operation> BrushSelectionStep::erasePassedVoxels(
   qint64 voxelCount = 0;
 
   auto voxelFunc =
-      [&voxelCount](
-          quint32& x, quint32& y, quint32& z,
-          QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
+      [&voxelCount](quint32& x, quint32& y, quint32& z,
+                    const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                        labelData) {
         SegmentationType voxelVal =
             (SegmentationType)labelData->getVoxel(x, y, z);
         if (getBit(voxelVal, segmentationShift) != 0) {
@@ -209,9 +227,10 @@ QSharedPointer<vx::io::Operation> BrushSelectionStep::erasePassedVoxels(
       };
 
   auto calculator = BrushCalculator(
-      std::get<0>(centerWithRadius), std::get<1>(centerWithRadius),
-      compoundVoxelData, this->properties->planeOrigin(),
-      this->properties->planeOrientation());
+      // TODO: Avoid QVector3D
+      toQVector(vectorCastNarrow<float>(std::get<0>(centerWithRadius))),
+      std::get<1>(centerWithRadius), compoundVoxelData,
+      this->properties->planeOrigin(), this->properties->planeOrientation());
   calculator.growRegion();
   auto voxelsToErase = calculator.getFoundVoxels();
 
@@ -228,14 +247,14 @@ void BrushSelectionStep::resetUIWidget() {}
 void BrushSelectionStep::onVoxelOpFinished(bool status) { Q_UNUSED(status); }
 
 void BrushSelectionStep::addEraseCenterWithRadius(
-    std::tuple<QVector3D, double> centerWithRadius) {
+    std::tuple<vx::Vector<double, 3>, double> centerWithRadius) {
   auto oldCenters = this->properties->brushEraseCentersWithRadius();
   oldCenters.append(centerWithRadius);
   this->properties->setBrushEraseCentersWithRadius(oldCenters);
 }
 
 void BrushSelectionStep::addSelectCenterWithRadius(
-    std::tuple<QVector3D, double> centerWithRadius) {
+    std::tuple<vx::Vector<double, 3>, double> centerWithRadius) {
   auto oldCenters = this->properties->brushSelectCentersWithRadius();
   oldCenters.append(centerWithRadius);
   this->properties->setBrushSelectCentersWithRadius(oldCenters);
@@ -256,8 +275,8 @@ bool BrushSelectionStep::isAllowedChild(NodeKind object) {
 }
 
 void BrushSelectionStep::setProperties(
-    QList<std::tuple<QVector3D, double>> selectCentersWithRadiuses,
-    QList<std::tuple<QVector3D, double>> eraseCentersWithRadiuses,
+    QList<std::tuple<vx::Vector<double, 3>, double>> selectCentersWithRadiuses,
+    QList<std::tuple<vx::Vector<double, 3>, double>> eraseCentersWithRadiuses,
     QVector3D volumeOrigin, QQuaternion volumeOrientation, QVector3D voxelSize,
     QVector3D planeOrigin, QQuaternion planeOrientation) {
   this->properties->setVolumeOrientation(volumeOrientation);
@@ -277,8 +296,6 @@ bool BrushSelectionStep::isCreatableChild(NodeKind) { return false; }
 QList<QString> BrushSelectionStep::supportedDBusInterfaces() { return {}; }
 
 void BrushSelectionStep::initializeCustomUIPropSections() {}
-
-NODE_PROTOTYPE_IMPL(BrushSelectionStep)
 
 BrushCalculator::BrushCalculator(QVector3D brushCenter, double brushRadius,
                                  QSharedPointer<VolumeDataVoxel> originalVolume,

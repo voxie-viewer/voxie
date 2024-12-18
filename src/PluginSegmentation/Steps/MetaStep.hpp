@@ -40,7 +40,7 @@ namespace vx {
  * Description change, Add new label
  */
 class MetaStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(MetaStep)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.SegmentationStep.MetaStep")
 
  private:
   void changeVisibility(QSharedPointer<ContainerData> containerData,

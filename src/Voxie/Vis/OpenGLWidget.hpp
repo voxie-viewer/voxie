@@ -24,6 +24,8 @@
 
 #include <Voxie/Voxie.hpp>
 
+#include <Voxie/Data/Color.hpp>
+
 #include <QtGui/QOpenGLBuffer>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLShaderProgram>
@@ -103,10 +105,10 @@ class VOXIECORESHARED_EXPORT OpenGLDrawUtils : public QObject,
     GLenum mode;
 
     static void push(std::vector<GLfloat>& array, const QVector3D& data);
-    static void push(std::vector<GLfloat>& array, const QVector4D& data);
+    static void push(std::vector<GLfloat>& array, const vx::Color& data);
 
     // Adds two triangles
-    void addQuad(const QVector4D& color, const QVector3D& a, const QVector3D& b,
+    void addQuad(const vx::Color& color, const QVector3D& a, const QVector3D& b,
                  const QVector3D& c, const QVector3D& d);
 
     /**
@@ -116,10 +118,10 @@ class VOXIECORESHARED_EXPORT OpenGLDrawUtils : public QObject,
      * @param b
      * @param c
      */
-    void addTriangle(const QVector4D& color, const QVector3D& a,
+    void addTriangle(const vx::Color& color, const QVector3D& a,
                      const QVector3D& b, const QVector3D& c);
 
-    void addLine(const QVector4D& color, const QVector3D& a,
+    void addLine(const vx::Color& color, const QVector3D& a,
                  const QVector3D& b);
 
     void clear();

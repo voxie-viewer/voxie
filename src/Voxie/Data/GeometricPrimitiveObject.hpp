@@ -34,8 +34,7 @@ class PointList;
 
 class VOXIECORESHARED_EXPORT GeometricPrimitiveNode : public DataNode {
   Q_OBJECT
-
-  NODE_PROTOTYPE_DECL_DATA(GeometricPrimitive)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Data.GeometricPrimitive")
 
   friend class PointList;  // TODO: Make 'properties' public?
 

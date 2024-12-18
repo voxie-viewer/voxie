@@ -15,13 +15,13 @@ Compiling from source on Linux
 
 First, install the packages required to run Voxie. On Ubuntu 20.04 this can be done using:
 
-    sudo apt-get install build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git
+    sudo apt-get install build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev libcmark-gfm-dev libcmark-gfm-extensions-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git
 
 Then you can either use `qtcreator` (with meson) for compiling the code or run
 
-    tools/build.sh
+    tools/build
 
-(If the meson version is too old, you also can run `tools/build.sh --unpack-meson` to download and use a newer meson version.)
+(If the meson version is too old, you also can run `tools/build --unpack-meson` to download and use a newer meson version.)
 
 After compiling, you can run voxie with:
 
@@ -33,14 +33,20 @@ Compiling from source on Windows
 For compiling on Windows you need to install Qt5 + QtCreator, HDF5 (binarys
 needed) and Boost (for Boost, only the headers or sources are needed).
 
-* <https://www.qt.io/download-open-source/#section-2>
+* <https://www.qt.io/offline-installers>
+
+In order to bypass registration during installation, the internet connection must first be interrupted.
+The search for connection can then be canceled in the installer.
+
 * <https://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/bin/windows/extra/hdf5-1.10.0-patch1-win64-vs2015-shared.zip>
 * <http://www.boost.org/users/download/>
 
 For running external python filters or scripts you also will need DBus for
 Windows:
 
-* <http://cgit.freedesktop.org/dbus/dbus/snapshot/dbus-1.8.2.zip>
+* <https://www.freedesktop.org/wiki/Software/dbus/>
+
+Visit the Website, scroll down to to download section. Read there which is the current stable branch and download it by clicking on the “releases directory on dbus.freedesktop.org” link.
 
 IDE Setup
 =========

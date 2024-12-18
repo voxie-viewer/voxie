@@ -40,10 +40,6 @@
 
 #include <QtWidgets/QWidget>
 
-// TODO: remove FACTORY_VISUALIZERMODULE_HPP / replace by NODE_PROTOTYPE_DECL
-#define FACTORY_VISUALIZERMODULE_HPP(classname) \
-  static QSharedPointer<vx::NodePrototype> getPrototypeSingleton();
-
 namespace vx {
 // Forward declarations
 class VolumeNode;
@@ -83,6 +79,7 @@ class VOXIECORESHARED_EXPORT VisualizerNode : public vx::Node {
    * depending on the visualizer state.
    * @return Vector with the side panel sections.
    */
+  // TODO: Remove this, this the same for VisualizerNode as for other Nodes.
   QVector<QWidget*>& dynamicSections();
 
   virtual QWidget* mainView() = 0;

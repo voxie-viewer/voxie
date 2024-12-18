@@ -25,24 +25,22 @@
 #include <HDF5/Group.hpp>
 
 namespace HDF5 {
-  void PropList::checkType () const {
-    if (!isValid ())
-      return;
-    if (getType () != H5I_GENPROP_LST)
-      ABORT_MSG ("Not a property list");
-  }
-
-  PropList PropList::create (hid_t cls_id) {
-    return PropList (Exception::check ("H5Pcreate", H5Pcreate (cls_id)));
-  }
-
-  hid_t PropList::getClass () const {
-    return Exception::check ("H5Pget_class", H5Pget_class (handle ()));
-  }
-  bool PropList::isA (hid_t pclass) const {
-    return Exception::check ("H5Pisa_class", H5Pisa_class (handle (), pclass)) != 0;
-  }
-  PropList PropList::copy () const {
-    return PropList (Exception::check ("H5Pcopy", H5Pcopy (handle ())));
-  }
+void PropList::checkType() const {
+  if (!isValid()) return;
+  if (getType() != H5I_GENPROP_LST) ABORT_MSG("Not a property list");
 }
+
+PropList PropList::create(hid_t cls_id) {
+  return PropList(Exception::check("H5Pcreate", H5Pcreate(cls_id)));
+}
+
+hid_t PropList::getClass() const {
+  return Exception::check("H5Pget_class", H5Pget_class(handle()));
+}
+bool PropList::isA(hid_t pclass) const {
+  return Exception::check("H5Pisa_class", H5Pisa_class(handle(), pclass)) != 0;
+}
+PropList PropList::copy() const {
+  return PropList(Exception::check("H5Pcopy", H5Pcopy(handle())));
+}
+}  // namespace HDF5

@@ -24,6 +24,8 @@
 
 #include <VoxieClient/QtUtil.hpp>
 
+#include <VoxieBackend/DebugOptions.hpp>
+
 #include <VoxieBackend/IO/Operation.hpp>
 
 using namespace vx;
@@ -75,6 +77,9 @@ void OperationRegistry::addOperation(
   if (!operation)
     throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
                         "operation is nullptr");
+
+  if (vx::debug_option::Log_OperationRegistry()->get())
+    qDebug() << "New operation" << operation->description();
 
   // Clean up destroyed operations
   // TODO: This probably should not be needed because all operations should emit

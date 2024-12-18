@@ -6,7 +6,28 @@
             "Description": "Load Volume Graphics VGI files",
             "Patterns": [
                 "*.vgi"
-            ]
+            ],
+            "Properties": {
+                "de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit": {
+                    "DisplayName": "Default length unit",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit.Unset": {
+                            "DisplayName": "<unset>",
+                            "UIPosition": 0
+                        },
+                        "de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit.m": {
+                            "DisplayName": "m",
+                            "UIPosition": 1
+                        },
+                        "de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit.mm": {
+                            "DisplayName": "mm",
+                            "UIPosition": 2
+                        }
+                    },
+                    "DefaultValue": "de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit.Unset"
+                }
+            }
         }
     ]
 }

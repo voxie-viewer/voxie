@@ -26,6 +26,8 @@
 
 #include <Voxie/Data/VolumeNode.hpp>
 
+VX_NODE_INSTANTIATION(vx::ManualSelectionStep)
+
 using namespace vx;
 using namespace vx::io;
 
@@ -51,29 +53,49 @@ QSharedPointer<OperationResult> ManualSelectionStep::calculate(
         ManualSelectionStepPropertiesCopy propertyCopy(
             parameterCopy->properties()[parameterCopy->mainNodePath()]);
 
-        qint64 voxelCount = 0;
+        // TODO: The voxelCount calculation is incorrect: Already selected
+        // voxels stay selected in this operation.
+        QMutex voxelCountOverallMutex;
+        qint64 voxelCountOverall = 0;
 
         QList<qint64> labelIdList = propertyCopy.labelIds();
-        auto voxelFunc =
-            [&labelIdList, &voxelCount](
-                size_t& x, size_t& y, size_t& z,
-                QSharedPointer<VolumeDataVoxelInst<SegmentationType>>
-                    labelData) {
-              SegmentationType voxelVal =
-                  (SegmentationType)labelData->getVoxel(x, y, z);
 
-              // if label id is choosen to be selected, set the selection bit
-              clearBit(voxelVal, segmentationShift);
-              if (labelIdList.contains(voxelVal)) {
-                setBit(voxelVal, segmentationShift);
-                voxelCount++;
-                labelData->setVoxel(x, y, z, voxelVal);
+        auto outerUpdate = containerData->createUpdate();
+
+        auto task = Task::create();
+        forwardProgressFromTaskToOperation(task.data(), op.data());
+
+        iterateAllLabelVolumeVoxels(
+            containerData, outerUpdate, task.data(), op.data(),
+            [&labelIdList, &voxelCountOverallMutex,
+             &voxelCountOverall](const auto& cb) {
+              qint64 voxelCount = 0;
+
+              cb([&](size_t& x, size_t& y, size_t& z,
+                     const QSharedPointer<
+                         VolumeDataVoxelInst<SegmentationType>>& labelData) {
+                SegmentationType voxelVal =
+                    (SegmentationType)labelData->getVoxel(x, y, z);
+
+                // if label id is choosen to be selected, set the selection bit
+                clearBit(voxelVal, segmentationShift);
+                if (labelIdList.contains(voxelVal)) {
+                  setBit(voxelVal, segmentationShift);
+                  voxelCount++;
+                  labelData->setVoxel(x, y, z, voxelVal);
+                }
+              });
+
+              {
+                QMutexLocker locker(&voxelCountOverallMutex);
+                voxelCountOverall += voxelCount;
               }
-            };
+            });
 
-        iterateAllLabelVolumeVoxels(voxelFunc, containerData, op, false);
+        // TODO: Reuse outerUpdate
+        Q_EMIT(this->updateSelectedVoxelCount(voxelCountOverall, false));
 
-        Q_EMIT(this->updateSelectedVoxelCount(voxelCount, false));
+        outerUpdate->finish({});
       });
 }
 
@@ -109,5 +131,3 @@ bool ManualSelectionStep::isCreatableChild(NodeKind) { return false; }
 QList<QString> ManualSelectionStep::supportedDBusInterfaces() { return {}; }
 
 void ManualSelectionStep::initializeCustomUIPropSections() {}
-
-NODE_PROTOTYPE_IMPL(ManualSelectionStep)

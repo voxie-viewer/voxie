@@ -32,6 +32,8 @@
 #include <QObject>
 #include <QPushButton>
 
+VX_NODE_INSTANTIATION(vx::PlaneNode)
+
 using namespace vx;
 
 PlaneNode::PlaneNode(vx::PlaneInfo* plane)
@@ -244,5 +246,3 @@ void PlaneNode::setNodePropertyCustom(QString key, QVariant value) {
     return Node::setNodePropertyCustom(key, value);
   }
 }
-
-NODE_PROTOTYPE_IMPL_2(Plane, Node)

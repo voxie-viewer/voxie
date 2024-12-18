@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Prototypes.forward.hpp"
+
 #include <QtCore/QJsonObject>
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -14,6 +16,8 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+
+class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
 namespace vx {
 #ifndef VOXIE_PROP_DEFINED_Output
@@ -90,6 +94,7 @@ class TheSphereGeneratorProperties : public QObject,
   qint64 seedRaw() override final;
   static QSharedPointer<NodeProperty> seedProperty();
   static NodePropertyTyped<vx::types::Int> seedPropertyTyped();
+  NodeNodeProperty seedInstance();
   void setSeed(qint64 value);
  Q_SIGNALS:
   void seedChanged(qint64 value);
@@ -101,6 +106,7 @@ class TheSphereGeneratorProperties : public QObject,
   qint64 sizeRaw() override final;
   static QSharedPointer<NodeProperty> sizeProperty();
   static NodePropertyTyped<vx::types::Int> sizePropertyTyped();
+  NodeNodeProperty sizeInstance();
   void setSize(qint64 value);
  Q_SIGNALS:
   void sizeChanged(qint64 value);
@@ -113,6 +119,7 @@ class TheSphereGeneratorProperties : public QObject,
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
   outputPropertyTyped();
+  NodeNodeProperty outputInstance();
   void setOutput(vx::Node* value);
  Q_SIGNALS:
   void outputChanged(vx::Node* value);

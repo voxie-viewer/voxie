@@ -74,6 +74,12 @@ class VOXIEBACKEND_EXPORT Component : public vx::ExportedObject {
   }
   // throws if the container is already destroyed or has not been initalized
   QSharedPointer<vx::ComponentContainer> container();
+
+  // Will be called for extension components at some point after the extension
+  // has been parsed. Can be used to display error messages if e.g. some other
+  // component cannot be looked up.
+  virtual void validateComponent(
+      const QSharedPointer<ComponentContainer>& allComponents);
 };
 
 namespace plugin {

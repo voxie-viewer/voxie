@@ -22,6 +22,8 @@
 
 #include "SeriesData.hpp"
 
+#include <VoxieBackend/Data/DataProperty.hpp>
+
 #include <VoxieClient/DBusAdaptors.hpp>
 
 namespace vx {
@@ -53,7 +55,7 @@ class SeriesDataAdaptorImpl : public SeriesDataAdaptor {
     }
   }
 
-  void AddEntry(const QDBusObjectPath& update, const QList<quint64>& key,
+  void SetEntry(const QDBusObjectPath& update, const QList<quint64>& key,
                 const QDBusObjectPath& value,
                 const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) &
                     options) override {
@@ -69,14 +71,9 @@ class SeriesDataAdaptorImpl : public SeriesDataAdaptor {
 
       object->verifyKey(key);
 
-      if (updateObj->data().data() != object)
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is for another object");
-      if (!updateObj->running())
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is already finished");
+      updateObj->validateCanUpdate(object);
 
-      object->addEntry(key, valueObj, replaceMode);
+      object->setEntry(key, valueObj, replaceMode);
     } catch (Exception& e) {
       e.handle(object);
     }
@@ -122,11 +119,11 @@ vx::SeriesData::SeriesData(
       throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
                           "Got nullptr dimension");
 
-    if (dimensionsByName_.contains(dimension->name()))
+    if (dimensionsByName_.contains(dimension->property()->name()))
       throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                           "Got duplicate dimension name");
 
-    dimensionsByName_[dimension->name()] = dimension;
+    dimensionsByName_[dimension->property()->name()] = dimension;
   }
 }
 
@@ -143,10 +140,10 @@ void vx::SeriesData::verifyKey(const EntryKeyList& key) {
                           "SeriesData key invalid value");
 }
 
-void vx::SeriesData::addEntry(const EntryKeyList& key,
+void vx::SeriesData::setEntry(const EntryKeyList& key,
                               const QSharedPointer<Data>& data,
                               ReplaceMode replaceMode) {
-  vx::checkOnMainThread("SeriesData::addEntry");
+  vx::checkOnMainThread("SeriesData::setEntry");
 
   verifyKey(key);
 
@@ -161,13 +158,25 @@ void vx::SeriesData::addEntry(const EntryKeyList& key,
             "Attempting to insert duplicate key into SeriesData");
       break;
     }
-    case ReplaceMode::Set: {
+    case ReplaceMode::InsertOrReplace: {
       break;
     }
     case ReplaceMode::ReplaceExisting: {
       if (!contains)
         throw vx::Exception("de.uni_stuttgart.Voxie.KeyNotFound",
                             "Failed to look up key to replace");
+      break;
+    }
+    case ReplaceMode::InsertOrSame: {
+      if (contains) {
+        auto oldValue = entries_[key];
+        if (oldValue != data)
+          throw vx::Exception("de.uni_stuttgart.Voxie.DuplicateKey",
+                              "Attempting to insert duplicate key with "
+                              "different data into SeriesData");
+        // No need to continue if data is the same
+        return;
+      }
       break;
     }
   }

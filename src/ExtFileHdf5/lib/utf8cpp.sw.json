@@ -1,0 +1,11 @@
+{
+    "Name": "utf8cpp",
+    "Description": "UTF8-CPP: UTF-8 with C++ in a Portable Way",
+    "GitRepository": "https://github.com/nemtrif/utfcpp",
+    "GitCommit": "6f0e7c7865208f2a6b882a7e138584beb1b6b2fd",
+    "LicenseFilename": "LICENSE",
+    "FileFilter": [
+        "source",
+        "LICENSE"
+    ]
+}

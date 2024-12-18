@@ -1,0 +1,7 @@
+{
+    "Name": "cmark-gfm",
+    "Description": "CMark GFM",
+    "GitRepository": "https://github.com/github/cmark-gfm",
+    "DependencyType": "MesonWrapDependency",
+    "LicenseFilename": "COPYING"
+}

@@ -28,6 +28,9 @@
 #include <atomic>
 #include <mutex>
 #include <thread>
+#include <typeinfo>
+
+#include <cstdlib>
 
 #ifndef CORE_FORCE_LEAKY_MUTEX
 #define CORE_FORCE_LEAKY_MUTEX 0
@@ -44,7 +47,7 @@ class LeakyMutex {
   std::atomic<std::mutex*> ptr;
 
  public:
-  constexpr LeakyMutex() : ptr(nullptr){}
+  constexpr LeakyMutex() : ptr(nullptr) {}
 
   std::mutex* getMutex() {
     auto value = ptr.load();
@@ -106,8 +109,8 @@ T staticCache(const F& f) {
 
   // Try to make sure that the callback is a stateless lambda
   // Note that this is not fool-proof: You can e.g. pass in different function pointers on different invocations here.
-  using LambdaRetType = decltype(
-      f());  // Might be different from T (but must be convertible to T)
+  using LambdaRetType =
+      decltype(f());  // Might be different from T (but must be convertible to T)
   using FunctionPtr = LambdaRetType (*)();
   using CastPtr =
       typename std::conditional<allowStatefulLambda, F, FunctionPtr>::type;
@@ -127,14 +130,14 @@ T staticCache(const F& f) {
 
     constexpr Data() : ptr(nullptr), initializingThread(nullptr) {}
   };
-  
+
   // Try to make sure the type actually does not use dynamic initialization
 
   static_assert(std::is_trivially_destructible<Data>::value,
                 "staticCache()::Data is not trivially destructible");
 
   // This hopefully should make sure that the constructor is constexpr etc., i.e. that only static initialization is used.
-  constexpr Data fakeData;
+  [[gnu::unused]] constexpr Data fakeData;
 
   // Note: Starting with C++20 this should use constinit (+ the check for the trivial destructor)
   // https://en.cppreference.com/w/cpp/language/constinit
@@ -176,8 +179,7 @@ T staticCache(const F& f) {
 
   {
     std::lock_guard<std::mutex> guardTM(data.initializingThreadMutex);
-    data.initializingThread =
-        new std::thread::id(std::this_thread::get_id());
+    data.initializingThread = new std::thread::id(std::this_thread::get_id());
   }
 
   data.ptr = new T(f());

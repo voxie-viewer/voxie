@@ -30,10 +30,9 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
-#include <memory>
 #include <memory>
 
 #include <hdf5.h>
@@ -41,62 +40,50 @@
 #include <HDF5/Exception.hpp>
 
 namespace HDF5 {
-  class IdComponent {
-    class Shared {
-      NO_COPY_CLASS (Shared);
+class IdComponent {
+  class Shared {
+    NO_COPY_CLASS(Shared);
 
-    public:
-      hid_t value;
+   public:
+    hid_t value;
 
-      explicit Shared (hid_t value) : value (value) {
-        ASSERT (value >= 0);
-      }
+    explicit Shared(hid_t value) : value(value) { ASSERT(value >= 0); }
 
-      ~Shared () {
-        Exception::check ("H5Idec_ref", H5Idec_ref (value));
-      }
-    };
-    std::shared_ptr<Shared> shared;
-
-  public:
-    IdComponent () {
-    }
-
-    // This constructor takes ownership of the object refered to by value
-    explicit IdComponent (hid_t value) : shared (std::make_shared<Shared> (value)) {
-    }
-
-    bool isValid () const {
-      return shared.get () != NULL;
-    }
-
-    void assertValid () const {
-      if (!isValid ())
-        ABORT_MSG ("IdComponent is not initialized (is null)");
-    }
-
-    hid_t handle () const {
-      assertValid ();
-      return shared->value;
-    }
-
-    bool operator== (const IdComponent& other) const {
-      if (!isValid ())
-        return !other.isValid ();
-      return handle () == other.handle ();
-    }
-    bool operator!= (const IdComponent& other) const {
-      return !(*this == other);
-    }
-
-    H5I_type_t getType () const;
+    ~Shared() { Exception::check("H5Idec_ref", H5Idec_ref(value)); }
   };
+  std::shared_ptr<Shared> shared;
 
-  // Return an IdComponent without taking ownership of value
-  inline IdComponent dontTakeOwnership (hid_t value) {
-    Exception::check ("H5Iinc_ref", H5Iinc_ref (value));
-    return IdComponent (value);
+ public:
+  IdComponent() {}
+
+  // This constructor takes ownership of the object refered to by value
+  explicit IdComponent(hid_t value) : shared(std::make_shared<Shared>(value)) {}
+
+  bool isValid() const { return shared.get() != NULL; }
+
+  void assertValid() const {
+    if (!isValid()) ABORT_MSG("IdComponent is not initialized (is null)");
   }
-}
 
-#endif // !HDF5_IDCOMPONENT_HPP_INCLUDED
+  hid_t handle() const {
+    assertValid();
+    return shared->value;
+  }
+
+  bool operator==(const IdComponent& other) const {
+    if (!isValid()) return !other.isValid();
+    return handle() == other.handle();
+  }
+  bool operator!=(const IdComponent& other) const { return !(*this == other); }
+
+  H5I_type_t getType() const;
+};
+
+// Return an IdComponent without taking ownership of value
+inline IdComponent dontTakeOwnership(hid_t value) {
+  Exception::check("H5Iinc_ref", H5Iinc_ref(value));
+  return IdComponent(value);
+}
+}  // namespace HDF5
+
+#endif  // !HDF5_IDCOMPONENT_HPP_INCLUDED

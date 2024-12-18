@@ -30,6 +30,8 @@
 
 #include <Voxie/Gui/PointList.hpp>
 
+VX_NODE_INSTANTIATION(vx::GeometricPrimitiveNode)
+
 using namespace vx;
 
 GeometricPrimitiveNode::GeometricPrimitiveNode()
@@ -120,5 +122,3 @@ GeometricPrimitiveNode::currentMeasurementPoints() {
   return currentMeasurementPoints(this->geometricPrimitiveData(),
                                   this->properties);
 }
-
-NODE_PROTOTYPE_IMPL_DATA(GeometricPrimitive)

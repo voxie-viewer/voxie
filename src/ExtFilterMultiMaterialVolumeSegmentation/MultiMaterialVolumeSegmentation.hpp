@@ -84,7 +84,9 @@ class MultiMaterialVolumeSegmentation {
 
   size_t iterationCounter = 0;  // only used for testing
   size_t start = 200;           // only used for testing
-  size_t stop = start + 100;    // only used for testing
+
+  [[gnu::unused]]             // TODO: Remove this?
+  size_t stop = start + 100;  // only used for testing
 };
 
 #endif  // MULTIMATERIALVOLUMESEGMENTATION_H

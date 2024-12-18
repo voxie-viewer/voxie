@@ -37,10 +37,11 @@
 #include <VoxieBackend/Data/VolumeData.hpp>
 
 #include <PluginVis3D/LightSourceProperties.hpp>
+#include <PluginVis3D/Prototypes.forward.hpp>
 #include <PluginVis3D/RenderImplementationSelection.hpp>
 #include <PluginVis3D/ThreadSafe_MxN_Matrix.hpp>
 
-#include <VoxieBackend/lib/CL/cl-patched.hpp>
+#include <VoxieBackend/OpenCL/OpenCLCPP.hpp>
 
 #include <QtGui/QImage>
 
@@ -192,6 +193,7 @@ class VolumeRenderingView : public QWidget {
  */
 class VolumeRenderingVisualizer : public vx::VisualizerNode {
   Q_OBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Visualizer.VolumeRendering")
 
  private:
   vx::VolumeNode* mainDataset;
@@ -232,8 +234,6 @@ class VolumeRenderingVisualizer : public vx::VisualizerNode {
 
  public:
   explicit VolumeRenderingVisualizer();
-
-  FACTORY_VISUALIZERMODULE_HPP(VolumeRendering)
 
   virtual vx::VolumeNode* dataSet() final { return this->mainDataset; }
 

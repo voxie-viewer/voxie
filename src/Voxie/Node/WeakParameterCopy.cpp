@@ -92,6 +92,25 @@ bool WeakParameterCopy::operator==(const WeakParameterCopy& other) const {
 
   // if the two maps don't contain the same amount of items they can't be
   // equal
+  if (this->extensionInfo().size() != other.extensionInfo().size()) {
+    return false;
+  }
+
+  // iterate over the keys of one map and check if all of them are in the
+  // other map too. If they are, check that the values of the keys are equal
+  for (auto key : this->extensionInfo().keys()) {
+    if (!other.extensionInfo().contains(key)) {
+      return false;
+    }
+
+    // Note: This uses the QMap<QString, QString> operator==
+    if (this->extensionInfo()[key] != other.extensionInfo()[key]) {
+      return false;
+    }
+  }
+
+  // if the two maps don't contain the same amount of items they can't be
+  // equal
   if (this->dataMap_.size() != other.dataMap_.size()) {
     return false;
   }

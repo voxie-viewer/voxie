@@ -120,15 +120,14 @@ void ObjectProperties::setRotation(const QQuaternion& rotation) {
   this->ignoreUpdates = false;
 }
 
-void ObjectProperties::setPosition(
-    PositionInterface* selectedPositionInterface) {
+void ObjectProperties::setPosition(MovableDataNode* selectedMovableDataNode) {
   if (this->ignoreUpdates) return;
 
   QLineEdit* xPosBox = this->findChild<QLineEdit*>("positionXLineEdit");
   QLineEdit* yPosBox = this->findChild<QLineEdit*>("positionYLineEdit");
   QLineEdit* zPosBox = this->findChild<QLineEdit*>("positionZLineEdit");
 
-  if (!selectedPositionInterface) {
+  if (!selectedMovableDataNode) {
     xPosBox->clear();
     yPosBox->clear();
     zPosBox->clear();
@@ -136,7 +135,7 @@ void ObjectProperties::setPosition(
   }
 
   this->ignoreUpdates = true;
-  auto pos = selectedPositionInterface->getAdjustedPosition();
+  auto pos = selectedMovableDataNode->getAdjustedPosition();
   xPosBox->setText(QString::number(pos.x()));
   yPosBox->setText(QString::number(pos.y()));
   zPosBox->setText(QString::number(pos.z()));
@@ -144,8 +143,7 @@ void ObjectProperties::setPosition(
   this->ignoreUpdates = false;
 }
 
-void ObjectProperties::setRotation(
-    PositionInterface* selectedPositionInterface) {
+void ObjectProperties::setRotation(MovableDataNode* selectedMovableDataNode) {
   if (this->ignoreUpdates) return;
 
   QLineEdit* wRotBox = this->findChild<QLineEdit*>("rotationWLineEdit");
@@ -153,7 +151,7 @@ void ObjectProperties::setRotation(
   QLineEdit* yRotBox = this->findChild<QLineEdit*>("rotationYLineEdit");
   QLineEdit* zRotBox = this->findChild<QLineEdit*>("rotationZLineEdit");
 
-  if (!selectedPositionInterface) {
+  if (!selectedMovableDataNode) {
     qWarning() << "Selected VolumeNode is not valid";
     wRotBox->clear();
     xRotBox->clear();
@@ -161,7 +159,7 @@ void ObjectProperties::setRotation(
     zRotBox->clear();
   } else {
     this->ignoreUpdates = true;
-    this->objectRotation = selectedPositionInterface->getAdjustedRotation();
+    this->objectRotation = selectedMovableDataNode->getAdjustedRotation();
     if (mode == "quaternion") {
       this->findChild<QLineEdit*>("rotationWLineEdit")
           ->setText(QString::number(objectRotation.scalar()));
@@ -284,7 +282,7 @@ void ObjectProperties::on_rotationXLineEdit_textChanged(const QString& text) {
     } else if (mode == "euler") {
       this->objectRotation =
           QQuaternion::fromEulerAngles(value, getYRotation(), getZRotation())
-            .normalized();
+              .normalized();
     } else {
       qWarning() << "No Rotationmode detected RotX";
     }

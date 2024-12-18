@@ -41,6 +41,8 @@
 
 #include <lapacke.h>
 
+VX_NODE_INSTANTIATION(vx::vis3d::FitPlane)
+
 using namespace vx;
 using namespace vx::vis3d;
 
@@ -183,5 +185,3 @@ QSharedPointer<vx::io::RunFilterOperation> FitPlane::calculate(
   fitSurface();
   return operation;
 }
-
-NODE_PROTOTYPE_IMPL(FitPlane)

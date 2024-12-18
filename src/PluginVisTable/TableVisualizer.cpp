@@ -54,6 +54,8 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QSizePolicy>
 
+VX_NODE_INSTANTIATION(vx::TableVisualizer)
+
 using namespace vx;
 using namespace vx::visualization;
 
@@ -290,5 +292,3 @@ void TableVisualizer::setTableSortOrder(QString sortOrderEnum) {
   // Store sorting order
   sortOrder = header.sortIndicatorOrder();
 }
-
-NODE_PROTOTYPE_IMPL_SEP(visualizer_prop::Table, TableVisualizer)

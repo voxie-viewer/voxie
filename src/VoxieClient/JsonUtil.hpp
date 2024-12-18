@@ -38,10 +38,14 @@ VOXIECLIENT_EXPORT QJsonDocument parseJsonFile(const QString& filename);
 
 VOXIECLIENT_EXPORT QString jsonTypeToString(QJsonValue::Type type);
 
+VOXIECLIENT_EXPORT bool isNull(const QJsonValue& value);
+
+VOXIECLIENT_EXPORT bool expectBool(const QJsonValue& value);
 VOXIECLIENT_EXPORT QString expectString(const QJsonValue& value);
 VOXIECLIENT_EXPORT QJsonObject expectObject(const QJsonValue& value);
 VOXIECLIENT_EXPORT QJsonArray expectArray(const QJsonValue& value);
 VOXIECLIENT_EXPORT double expectDouble(const QJsonValue& value);
+VOXIECLIENT_EXPORT qint64 expectSignedInt(const QJsonValue& value);
 VOXIECLIENT_EXPORT quint64 expectUnsignedInt(const QJsonValue& value);
 VOXIECLIENT_EXPORT vx::Vector<double, 3> expectVector3(const QJsonValue& value);
 VOXIECLIENT_EXPORT QList<QString> expectStringList(const QJsonValue& value);

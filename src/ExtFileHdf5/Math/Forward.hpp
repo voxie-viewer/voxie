@@ -30,34 +30,50 @@
 #include <stdint.h>
 
 namespace Math {
-  template <typename T> class Vector3;
-  template <typename T> class DiagMatrix3;
-  template <typename T> class SymMatrix3;
+template <typename T>
+class Vector3;
+template <typename T>
+class DiagMatrix3;
+template <typename T>
+class SymMatrix3;
 
-  template <bool enabled> struct ArrayAssertions;
-  struct ArrayConfig;
-  template <typename Config, typename T> class ArrayAllocator;
-  template <typename Config, typename T> class DefaultArrayAllocator;
-  template <std::size_t dim, bool nonzeroLB> class ArrayViewBoundsProvider;
-  template <std::size_t dim, bool nonzeroLB, typename Config> class ArrayViewBase;
-  //template <typename T, std::size_t dim = 1, bool nonzeroLB = false, typename Config = ArrayConfig, typename Assert = typename Config::DefaultAssert> class ArrayView;
-  template <typename T, std::size_t dim = 1, bool nonzeroLB = false, typename Config_ = ArrayConfig, typename Assert = typename Config_::DefaultAssert> class ArrayView; // Parameter name "Config_" must match name in Array.hpp because of MSVC2013 bug (see BugPlayground/MSVC2013TemplateArgument.cpp)
-  //template <typename T, std::size_t dim = 1, typename Config = ArrayConfig, typename Assert = typename Config::DefaultAssert> class Array;
-  template <typename T, std::size_t dim = 1, typename Config_ = ArrayConfig, typename Assert = typename Config_::DefaultAssert> class Array; // Parameter name "Config_" must match name in Array.hpp because of MSVC2013 bug (see BugPlayground/MSVC2013TemplateArgument.cpp)
-  //template <typename T, std::size_t dim, typename Config, typename Assert> class ArrayView;
-  //template <typename T, std::size_t dim, typename Config, typename Assert> class Array;
+template <bool enabled>
+struct ArrayAssertions;
+struct ArrayConfig;
+template <typename Config, typename T>
+class ArrayAllocator;
+template <typename Config, typename T>
+class DefaultArrayAllocator;
+template <std::size_t dim, bool nonzeroLB>
+class ArrayViewBoundsProvider;
+template <std::size_t dim, bool nonzeroLB, typename Config>
+class ArrayViewBase;
+//template <typename T, std::size_t dim = 1, bool nonzeroLB = false, typename Config = ArrayConfig, typename Assert = typename Config::DefaultAssert> class ArrayView;
+template <typename T, std::size_t dim = 1, bool nonzeroLB = false,
+          typename Config_ = ArrayConfig,
+          typename Assert = typename Config_::DefaultAssert>
+class
+    ArrayView;  // Parameter name "Config_" must match name in Array.hpp because of MSVC2013 bug (see BugPlayground/MSVC2013TemplateArgument.cpp)
+//template <typename T, std::size_t dim = 1, typename Config = ArrayConfig, typename Assert = typename Config::DefaultAssert> class Array;
+template <typename T, std::size_t dim = 1, typename Config_ = ArrayConfig,
+          typename Assert = typename Config_::DefaultAssert>
+class
+    Array;  // Parameter name "Config_" must match name in Array.hpp because of MSVC2013 bug (see BugPlayground/MSVC2013TemplateArgument.cpp)
+//template <typename T, std::size_t dim, typename Config, typename Assert> class ArrayView;
+//template <typename T, std::size_t dim, typename Config, typename Assert> class Array;
 
-  // Must be here because of default template parameter for ArrayView
-  struct ArrayConfig {
-    typedef ArrayAssertions<true> DefaultAssert;
+// Must be here because of default template parameter for ArrayView
+struct ArrayConfig {
+  typedef ArrayAssertions<true> DefaultAssert;
 
-    // Use uintptr_t instead of char* because of non-zero lower bounds
-    //typedef char* ArithmeticPointer;
-    typedef uintptr_t ArithmeticPointer;
-    static inline ArithmeticPointer getNull () { return 0; }
+  // Use uintptr_t instead of char* because of non-zero lower bounds
+  //typedef char* ArithmeticPointer;
+  typedef uintptr_t ArithmeticPointer;
+  static inline ArithmeticPointer getNull() { return 0; }
 
-    template <typename T> struct Type;
-  };
-}
+  template <typename T>
+  struct Type;
+};
+}  // namespace Math
 
-#endif // !MATH_FORWARD_HPP_INCLUDED
+#endif  // !MATH_FORWARD_HPP_INCLUDED

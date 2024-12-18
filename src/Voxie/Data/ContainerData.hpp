@@ -29,7 +29,7 @@
 namespace vx {
 
 class VOXIECORESHARED_EXPORT ContainerData : public Data, public DataContainer {
-  REFCOUNTEDOBJ_DECL(ContainerData)
+  VX_REFCOUNTEDOBJECT
 
  private:
   // TODO: locking?

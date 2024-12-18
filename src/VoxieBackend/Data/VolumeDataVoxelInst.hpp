@@ -22,15 +22,17 @@
 
 #pragma once
 
+#include <VoxieClient/Bool8.hpp>
+
+#include <VoxieBackend/Data/VolumeDataVoxel.hpp>
+#include <VoxieBackend/Data/VoxelAccessor.hpp>
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QRunnable>
 #include <QtCore/QThreadPool>
 #include <QtCore/QUuid>
-#include "VolumeDataVoxel.hpp"
 
 #include <half.hpp>
-
-#include <VoxieClient/Bool8.hpp>
 
 struct vx::VolumeDataVoxel::SupportedTypes
     : vx::DataTypeList<
@@ -47,12 +49,37 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
   using ValueType = T;
   using VoxelType = T;  // TODO: Remove
 
+  class Accessor : public vx::VoxelAccessor<Accessor, T> {
+    QSharedPointer<VolumeDataVoxelInst> object;
+
+   public:
+    Accessor(QSharedPointer<VolumeDataVoxelInst> object)
+        : object(std::move(object)) {}
+
+    // TODO: Copy values for performance?
+    const vx::Vector<size_t, 3>& arrayShape() const {
+      return object->arrayShape();
+    }
+    const vx::Vector<double, 3>& volumeOrigin() const {
+      return object->volumeOrigin();
+    }
+    const vx::Vector<double, 3>& gridSpacing() const {
+      return object->gridSpacing();
+    }
+
+    inline T getVoxelUnchecked(const vx::Vector<size_t, 3>& pos) const {
+      return object->getVoxelUnchecked(pos);
+    }
+  };
+
  private:
   QPair<GenericVoxel, GenericVoxel> minMax;
 
   // Returns the default value for getVoxelSafe() outside the image
   // TODO: Shouldn't getVoxelSafe() (or at least getVoxelMetric()) return a
   // floating point value?
+  // TODO: Clean up getVoxelSafe() etc., return an Optional<> value instead of
+  // nan for outside the image, unify code with VolumeDataBlock code.
   static GenericVoxel defaultValue() {
     return std::numeric_limits<GenericVoxel>::has_quiet_NaN
                ? std::numeric_limits<GenericVoxel>::quiet_NaN()
@@ -60,10 +87,15 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
   }
 
  public:
-  VolumeDataVoxelInst(const vx::Vector<size_t, 3> arrayShape,
+  VolumeDataVoxelInst(const vx::Vector<size_t, 3>& arrayShape,
                       vx::DataType dataType,
                       const vx::Vector<double, 3>& gridOrigin,
                       const vx::Vector<double, 3>& gridSpacing);
+
+  Accessor accessor() {
+    return Accessor(
+        qSharedPointerDynamicCast<VolumeDataVoxelInst>(thisShared()));
+  }
 
   /**
    * @brief Transform all voxels of the data set inplace.
@@ -153,6 +185,12 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
                            z * this->arrayShape().template access<0>() *
                                this->arrayShape().template access<1>()];
   }
+  inline GenericVoxel getVoxelUnchecked(const vx::Vector<size_t, 3>& pos) {
+    return this
+        ->getData()[pos[0] + pos[1] * this->arrayShape().template access<0>() +
+                    pos[2] * this->arrayShape().template access<0>() *
+                        this->arrayShape().template access<1>()];
+  }
 
   /**
    * @return voxel value at the given position. x,y,z outside the dimensions
@@ -195,6 +233,9 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
 #pragma GCC diagnostic pop
 #endif
 
+  // TODO: Remove getVoxelMetric() methods and replace them with VoxelAccessor,
+  // or at least use the same implementation?
+
   /**
    * @param method the interpolation method: NearestNeighbor or Linear
    * (=default)
@@ -206,6 +247,10 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
 
   GenericVoxel getVoxelMetric(
       QVector3D position,
+      vx::InterpolationMethod method = vx::InterpolationMethod::Linear);
+
+  GenericVoxel getVoxelMetric(
+      const vx::Vector<double, 3>& position,
       vx::InterpolationMethod method = vx::InterpolationMethod::Linear);
 
   /**
@@ -266,6 +311,11 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
   QSharedPointer<VolumeDataVoxel> reducedSize(uint xStepsize = 2,
                                               uint yStepsize = 2,
                                               uint zStepsize = 2);
+
+  vx::Array3<void> getBlockVoid(const vx::Vector<size_t, 3> offset,
+                                const vx::Vector<size_t, 3> size) override;
+  vx::Array3<T> getBlock(const vx::Vector<size_t, 3> offset,
+                         const vx::Vector<size_t, 3> size);
 };
 
 namespace vx {

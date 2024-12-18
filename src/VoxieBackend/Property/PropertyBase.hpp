@@ -46,8 +46,9 @@ struct VOXIEBACKEND_EXPORT EnumEntry {
   }
 };
 
-class VOXIEBACKEND_EXPORT PropertyBase : public vx::ExportedObject {
+class VOXIEBACKEND_EXPORT PropertyBase : public vx::RefCountedObject {
   Q_OBJECT
+  VX_REFCOUNTEDOBJECT
 
   QSharedPointer<vx::PropertyType> type_;
   QString _name;

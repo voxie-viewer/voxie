@@ -62,6 +62,13 @@ if [ "$VOXIEBUILD_PATH_HDF5" = "" ]; then
     exit 1
 fi
 
+if [ "$VOXIEBUILD_PATH_LIBJPEG" = "" ]; then
+    LIBJPEG_BIN="libjpeg-turbo-official_3.0.2_amd64.deb"
+    LIBJPEG_SRC="libjpeg-turbo-3.0.2.tar.gz"
+    tools/download_dep.py --license-output-dir=build/licenses --unpack "$LIBJPEG_BIN"
+    VOXIEBUILD_PATH_LIBJPEG="tools/unpack-build-dep/$LIBJPEG_BIN/opt/libjpeg-turbo"
+fi
+
 # VOXIE_TAG=$CI_BUILD_REF
 # if [ "$CI_BUILD_TAG" != "" ]; then
 #     VOXIE_TAG=$CI_BUILD_TAG
@@ -73,8 +80,10 @@ VOXIE_TAG="$VOXIE_REF"
 
 rm -rf build/release/install build/release/*-lin*.tar.gz voxie-*lin*.tar.gz
 
-tools/build.sh $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" "$@"
-DESTDIR=$(pwd)/build/release/install tools/build.sh $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" "$@" install
+BUILD_ARGS="--no-use-system-cmark-gfm"
+
+tools/build $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--additional-licenses-file=build/licenses/list.jsonl" $BUILD_ARGS "$@"
+DESTDIR=$(pwd)/build/release/install tools/build $MESONLOC --verbose "--hdf5-path=$VOXIEBUILD_PATH_HDF5" "--libjpeg-path=$VOXIEBUILD_PATH_LIBJPEG" "--additional-licenses-file=build/licenses/list.jsonl" $BUILD_ARGS "$@" install
 
 VOXIE_VERSION="$(cat src/version.txt)"
 VOXIE_VERSION="${VOXIE_VERSION%\"}"

@@ -32,7 +32,7 @@ class SliceVisualizer;
 
 class LabelLayer : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(LabelLayer)
+  VX_REFCOUNTEDOBJECT
 
  public:
   LabelLayer(SliceVisualizer* sv);
@@ -42,5 +42,6 @@ class LabelLayer : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 };

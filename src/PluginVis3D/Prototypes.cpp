@@ -3,6 +3,7 @@
 
 #include "Prototypes.hpp"
 
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodePrototype.hpp>
 #include <Voxie/Node/PropertyValueConvertDBus.hpp>
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
@@ -82,6 +83,9 @@ QSharedPointer<NodeProperty> Test3DObjectProperties::lengthProperty() {
 NodePropertyTyped<vx::types::Float>
 Test3DObjectProperties::lengthPropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(lengthProperty());
+}
+NodeNodeProperty Test3DObjectProperties::lengthInstance() {
+  return NodeNodeProperty(_node, lengthProperty());
 }
 void Test3DObjectProperties::setLength(double value) {
   _node->setNodePropertyTyped<double>(
@@ -228,6 +232,9 @@ NodePropertyTyped<vx::types::Boolean>
 GeometricPrimitiveProperties::visiblePropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(visibleProperty());
 }
+NodeNodeProperty GeometricPrimitiveProperties::visibleInstance() {
+  return NodeNodeProperty(_node, visibleProperty());
+}
 void GeometricPrimitiveProperties::setVisible(bool value) {
   _node->setNodePropertyTyped<bool>(
       "de.uni_stuttgart.Voxie.Object3D.Generic.Visible",
@@ -253,6 +260,9 @@ NodePropertyTyped<vx::types::NodeReference>
 GeometricPrimitiveProperties::geometricPrimitivePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(
       geometricPrimitiveProperty());
+}
+NodeNodeProperty GeometricPrimitiveProperties::geometricPrimitiveInstance() {
+  return NodeNodeProperty(_node, geometricPrimitiveProperty());
 }
 void GeometricPrimitiveProperties::setGeometricPrimitive(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -358,6 +368,12 @@ PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::Color,
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   vx::Color>::toRaw(value_))) {}
+PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::DefaultSize,
+                                           double value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize",
+          QVariant::fromValue<double>(
+              vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::Plane,
                                            vx::Node* value_)
     : vx::PropertiesEntryBase(
@@ -419,6 +435,15 @@ vx::Color PlanePropertiesCopy::color() {
 std::tuple<double, double, double, double> PlanePropertiesCopy::colorRaw() {
   return vx::Node::parseVariant<std::tuple<double, double, double, double>>(
       (*_properties)["de.uni_stuttgart.Voxie.Object3D.Plane.Color"]);
+}
+double PlanePropertiesCopy::defaultSize() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      vx::Node::parseVariant<double>(
+          (*_properties)["de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize"]));
+}
+double PlanePropertiesCopy::defaultSizeRaw() {
+  return vx::Node::parseVariant<double>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize"]);
 }
 QDBusObjectPath PlanePropertiesCopy::planeRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -535,6 +560,18 @@ static const char _prototype_Plane_[] = {
     117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
     114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  67,  111, 108,
     111, 114, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
+    116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
+    79,  98,  106, 101, 99,  116, 51,  68,  46,  80,  108, 97,  110, 101, 46,
+    68,  101, 102, 97,  117, 108, 116, 83,  105, 122, 101, 34,  58,  32,  123,
+    34,  68,  101, 102, 97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,
+    32,  48,  46,  50,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,
+    97,  109, 101, 34,  58,  32,  34,  68,  101, 102, 97,  117, 108, 116, 32,
+    115, 105, 122, 101, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,
+    34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
+    114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114,
+    116, 121, 84,  121, 112, 101, 46,  70,  108, 111, 97,  116, 34,  44,  32,
+    34,  85,  110, 105, 116, 34,  58,  32,  91,  91,  34,  109, 34,  44,  32,
+    49,  93,  93,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
     116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
     79,  98,  106, 101, 99,  116, 51,  68,  46,  80,  108, 97,  110, 101, 46,
     80,  108, 97,  110, 101, 34,  58,  32,  123, 34,  65,  108, 108, 111, 119,
@@ -667,6 +704,9 @@ NodePropertyTyped<vx::types::Enumeration>
 PlaneProperties::clippingDirectionPropertyTyped() {
   return NodePropertyTyped<vx::types::Enumeration>(clippingDirectionProperty());
 }
+NodeNodeProperty PlaneProperties::clippingDirectionInstance() {
+  return NodeNodeProperty(_node, clippingDirectionProperty());
+}
 void PlaneProperties::setClippingDirection(QString value) {
   _node->setNodePropertyTyped<QString>(
       "de.uni_stuttgart.Voxie.Object3D.Plane.ClippingDirection",
@@ -691,11 +731,39 @@ QSharedPointer<NodeProperty> PlaneProperties::colorProperty() {
 NodePropertyTyped<vx::types::Color> PlaneProperties::colorPropertyTyped() {
   return NodePropertyTyped<vx::types::Color>(colorProperty());
 }
+NodeNodeProperty PlaneProperties::colorInstance() {
+  return NodeNodeProperty(_node, colorProperty());
+}
 void PlaneProperties::setColor(vx::Color value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.Object3D.Plane.Color",
       vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
                                   vx::Color>::toRaw(value));
+}
+double PlaneProperties::defaultSize() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      _node->getNodePropertyTyped<double>(
+          "de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize"));
+}
+double PlaneProperties::defaultSizeRaw() {
+  return _node->getNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize");
+}
+QSharedPointer<NodeProperty> PlaneProperties::defaultSizeProperty() {
+  return PlaneProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize", false);
+}
+NodePropertyTyped<vx::types::Float>
+PlaneProperties::defaultSizePropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(defaultSizeProperty());
+}
+NodeNodeProperty PlaneProperties::defaultSizeInstance() {
+  return NodeNodeProperty(_node, defaultSizeProperty());
+}
+void PlaneProperties::setDefaultSize(double value) {
+  _node->setNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize",
+      vx::PropertyValueConvertRaw<double, double>::toRaw(value));
 }
 vx::Node* PlaneProperties::plane() {
   return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
@@ -713,6 +781,9 @@ QSharedPointer<NodeProperty> PlaneProperties::planeProperty() {
 NodePropertyTyped<vx::types::NodeReference>
 PlaneProperties::planePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(planeProperty());
+}
+NodeNodeProperty PlaneProperties::planeInstance() {
+  return NodeNodeProperty(_node, planeProperty());
 }
 void PlaneProperties::setPlane(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -736,6 +807,9 @@ NodePropertyTyped<vx::types::Boolean>
 PlaneProperties::showVolumeSlicePropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(showVolumeSliceProperty());
 }
+NodeNodeProperty PlaneProperties::showVolumeSliceInstance() {
+  return NodeNodeProperty(_node, showVolumeSliceProperty());
+}
 void PlaneProperties::setShowVolumeSlice(bool value) {
   _node->setNodePropertyTyped<bool>(
       "de.uni_stuttgart.Voxie.Object3D.Plane.ShowVolumeSlice",
@@ -758,6 +832,9 @@ NodePropertyTyped<vx::types::Enumeration>
 PlaneProperties::sliceTextureResolutionPropertyTyped() {
   return NodePropertyTyped<vx::types::Enumeration>(
       sliceTextureResolutionProperty());
+}
+NodeNodeProperty PlaneProperties::sliceTextureResolutionInstance() {
+  return NodeNodeProperty(_node, sliceTextureResolutionProperty());
 }
 void PlaneProperties::setSliceTextureResolution(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -788,6 +865,9 @@ PlaneProperties::sliceValueColorMappingPropertyTyped() {
   return NodePropertyTyped<vx::types::ValueColorMapping>(
       sliceValueColorMappingProperty());
 }
+NodeNodeProperty PlaneProperties::sliceValueColorMappingInstance() {
+  return NodeNodeProperty(_node, sliceValueColorMappingProperty());
+}
 void PlaneProperties::setSliceValueColorMapping(
     QList<vx::ColorizerEntry> value) {
   _node->setNodePropertyTyped<QList<
@@ -814,6 +894,9 @@ QSharedPointer<NodeProperty> PlaneProperties::sliceVolumeProperty() {
 NodePropertyTyped<vx::types::NodeReference>
 PlaneProperties::sliceVolumePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(sliceVolumeProperty());
+}
+NodeNodeProperty PlaneProperties::sliceVolumeInstance() {
+  return NodeNodeProperty(_node, sliceVolumeProperty());
 }
 void PlaneProperties::setSliceVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -864,6 +947,27 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
           return;
         }
         Q_EMIT this->colorChanged(valueCasted);
+      });
+  auto _prop_DefaultSize = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_DefaultSize](const QSharedPointer<NodeProperty>& property,
+                                const QVariant& value) {
+        if (property != _prop_DefaultSize) return;
+        double valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<double, double>::fromRaw(
+              Node::parseVariant<double>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->defaultSizeChanged(valueCasted);
       });
   auto _prop_Plane = this->_node->prototype()->getProperty(
       "de.uni_stuttgart.Voxie.Object3D.Plane.Plane", false);
@@ -1397,6 +1501,9 @@ NodePropertyTyped<vx::types::Boolean>
 SurfaceProperties::visiblePropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(visibleProperty());
 }
+NodeNodeProperty SurfaceProperties::visibleInstance() {
+  return NodeNodeProperty(_node, visibleProperty());
+}
 void SurfaceProperties::setVisible(bool value) {
   _node->setNodePropertyTyped<bool>(
       "de.uni_stuttgart.Voxie.Object3D.Generic.Visible",
@@ -1422,6 +1529,9 @@ NodePropertyTyped<vx::types::Color>
 SurfaceProperties::backColorPropertyTyped() {
   return NodePropertyTyped<vx::types::Color>(backColorProperty());
 }
+NodeNodeProperty SurfaceProperties::backColorInstance() {
+  return NodeNodeProperty(_node, backColorProperty());
+}
 void SurfaceProperties::setBackColor(vx::Color value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.Object3D.Surface.BackColor",
@@ -1445,6 +1555,9 @@ NodePropertyTyped<vx::types::Boolean>
 SurfaceProperties::drawAxisArrowsPropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(drawAxisArrowsProperty());
 }
+NodeNodeProperty SurfaceProperties::drawAxisArrowsInstance() {
+  return NodeNodeProperty(_node, drawAxisArrowsProperty());
+}
 void SurfaceProperties::setDrawAxisArrows(bool value) {
   _node->setNodePropertyTyped<bool>(
       "de.uni_stuttgart.Voxie.Object3D.Surface.DrawAxisArrows",
@@ -1466,6 +1579,9 @@ QSharedPointer<NodeProperty> SurfaceProperties::drawBoundingBoxProperty() {
 NodePropertyTyped<vx::types::Boolean>
 SurfaceProperties::drawBoundingBoxPropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(drawBoundingBoxProperty());
+}
+NodeNodeProperty SurfaceProperties::drawBoundingBoxInstance() {
+  return NodeNodeProperty(_node, drawBoundingBoxProperty());
 }
 void SurfaceProperties::setDrawBoundingBox(bool value) {
   _node->setNodePropertyTyped<bool>(
@@ -1489,6 +1605,9 @@ NodePropertyTyped<vx::types::Boolean>
 SurfaceProperties::drawOriginPropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(drawOriginProperty());
 }
+NodeNodeProperty SurfaceProperties::drawOriginInstance() {
+  return NodeNodeProperty(_node, drawOriginProperty());
+}
 void SurfaceProperties::setDrawOrigin(bool value) {
   _node->setNodePropertyTyped<bool>(
       "de.uni_stuttgart.Voxie.Object3D.Surface.DrawOrigin",
@@ -1510,6 +1629,9 @@ QSharedPointer<NodeProperty> SurfaceProperties::faceCullingProperty() {
 NodePropertyTyped<vx::types::Enumeration>
 SurfaceProperties::faceCullingPropertyTyped() {
   return NodePropertyTyped<vx::types::Enumeration>(faceCullingProperty());
+}
+NodeNodeProperty SurfaceProperties::faceCullingInstance() {
+  return NodeNodeProperty(_node, faceCullingProperty());
 }
 void SurfaceProperties::setFaceCulling(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -1535,6 +1657,9 @@ QSharedPointer<NodeProperty> SurfaceProperties::frontColorProperty() {
 NodePropertyTyped<vx::types::Color>
 SurfaceProperties::frontColorPropertyTyped() {
   return NodePropertyTyped<vx::types::Color>(frontColorProperty());
+}
+NodeNodeProperty SurfaceProperties::frontColorInstance() {
+  return NodeNodeProperty(_node, frontColorProperty());
 }
 void SurfaceProperties::setFrontColor(vx::Color value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -1562,6 +1687,9 @@ SurfaceProperties::highlightCurrentTrianglePropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(
       highlightCurrentTriangleProperty());
 }
+NodeNodeProperty SurfaceProperties::highlightCurrentTriangleInstance() {
+  return NodeNodeProperty(_node, highlightCurrentTriangleProperty());
+}
 void SurfaceProperties::setHighlightCurrentTriangle(bool value) {
   _node->setNodePropertyTyped<bool>(
       "de.uni_stuttgart.Voxie.Object3D.Surface.HighlightCurrentTriangle",
@@ -1584,6 +1712,9 @@ NodePropertyTyped<vx::types::Enumeration>
 SurfaceProperties::shadingTechniquePropertyTyped() {
   return NodePropertyTyped<vx::types::Enumeration>(shadingTechniqueProperty());
 }
+NodeNodeProperty SurfaceProperties::shadingTechniqueInstance() {
+  return NodeNodeProperty(_node, shadingTechniqueProperty());
+}
 void SurfaceProperties::setShadingTechnique(QString value) {
   _node->setNodePropertyTyped<QString>(
       "de.uni_stuttgart.Voxie.Object3D.Surface.ShadingTechnique",
@@ -1605,6 +1736,9 @@ QSharedPointer<NodeProperty> SurfaceProperties::surfaceProperty() {
 NodePropertyTyped<vx::types::NodeReference>
 SurfaceProperties::surfacePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(surfaceProperty());
+}
+NodeNodeProperty SurfaceProperties::surfaceInstance() {
+  return NodeNodeProperty(_node, surfaceProperty());
 }
 void SurfaceProperties::setSurface(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -2216,6 +2350,9 @@ NodePropertyTyped<vx::types::Float>
 View3DProperties::fieldOfViewPropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(fieldOfViewProperty());
 }
+NodeNodeProperty View3DProperties::fieldOfViewInstance() {
+  return NodeNodeProperty(_node, fieldOfViewProperty());
+}
 void View3DProperties::setFieldOfView(double value) {
   _node->setNodePropertyTyped<double>(
       "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.FieldOfView",
@@ -2238,6 +2375,9 @@ QSharedPointer<NodeProperty> View3DProperties::lookAtProperty() {
 NodePropertyTyped<vx::types::Position3D>
 View3DProperties::lookAtPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(lookAtProperty());
+}
+NodeNodeProperty View3DProperties::lookAtInstance() {
+  return NodeNodeProperty(_node, lookAtProperty());
 }
 void View3DProperties::setLookAt(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -2265,6 +2405,9 @@ NodePropertyTyped<vx::types::Orientation3D>
 View3DProperties::orientationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(orientationProperty());
 }
+NodeNodeProperty View3DProperties::orientationInstance() {
+  return NodeNodeProperty(_node, orientationProperty());
+}
 void View3DProperties::setOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.Orientation",
@@ -2289,6 +2432,9 @@ NodePropertyTyped<vx::types::Float>
 View3DProperties::viewSizeUnzoomedPropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(viewSizeUnzoomedProperty());
 }
+NodeNodeProperty View3DProperties::viewSizeUnzoomedInstance() {
+  return NodeNodeProperty(_node, viewSizeUnzoomedProperty());
+}
 void View3DProperties::setViewSizeUnzoomed(double value) {
   _node->setNodePropertyTyped<double>(
       "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ViewSizeUnzoomed",
@@ -2309,6 +2455,9 @@ QSharedPointer<NodeProperty> View3DProperties::zoomLogProperty() {
 }
 NodePropertyTyped<vx::types::Float> View3DProperties::zoomLogPropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(zoomLogProperty());
+}
+NodeNodeProperty View3DProperties::zoomLogInstance() {
+  return NodeNodeProperty(_node, zoomLogProperty());
 }
 void View3DProperties::setZoomLog(double value) {
   _node->setNodePropertyTyped<double>(
@@ -2332,6 +2481,9 @@ NodePropertyTyped<vx::types::NodeReferenceList>
 View3DProperties::objectsPropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReferenceList>(objectsProperty());
 }
+NodeNodeProperty View3DProperties::objectsInstance() {
+  return NodeNodeProperty(_node, objectsProperty());
+}
 void View3DProperties::setObjects(QList<vx::Node*> value) {
   _node->setNodePropertyTyped<QList<QDBusObjectPath>>(
       "de.uni_stuttgart.Voxie.Visualizer.View3D.Objects",
@@ -2354,6 +2506,9 @@ QSharedPointer<NodeProperty> View3DProperties::showViewCenterProperty() {
 NodePropertyTyped<vx::types::Boolean>
 View3DProperties::showViewCenterPropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(showViewCenterProperty());
+}
+NodeNodeProperty View3DProperties::showViewCenterInstance() {
+  return NodeNodeProperty(_node, showViewCenterProperty());
 }
 void View3DProperties::setShowViewCenter(bool value) {
   _node->setNodePropertyTyped<bool>(
@@ -2598,6 +2753,9 @@ QSharedPointer<NodeProperty> VolumeRenderingProperties::inputProperty() {
 NodePropertyTyped<vx::types::NodeReferenceList>
 VolumeRenderingProperties::inputPropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReferenceList>(inputProperty());
+}
+NodeNodeProperty VolumeRenderingProperties::inputInstance() {
+  return NodeNodeProperty(_node, inputProperty());
 }
 void VolumeRenderingProperties::setInput(QList<vx::Node*> value) {
   _node->setNodePropertyTyped<QList<QDBusObjectPath>>(

@@ -27,11 +27,15 @@
 #include <VoxieBackend/Data/GeometricPrimitive.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveData.hpp>
 
+#include <Voxie/MathQt.hpp>
+
 #include <Voxie/Node/PropertyHelper.hpp>
 
 #include <PluginVis3D/Prototypes.hpp>
 
 #include <QtGui/QOpenGLFunctions>
+
+VX_NODE_INSTANTIATION(vx::vis3d::GeometricPrimitive)
 
 using namespace vx;
 using namespace vx::visualization;
@@ -262,8 +266,8 @@ BoundingBox3D GeometricPrimitive::getBoundingBox() {
 
   auto line = gpo->currentMeasurementPoints();
   if (std::get<0>(line)) {
-    bb += BoundingBox3D::point(std::get<1>(line));
-    bb += BoundingBox3D::point(std::get<2>(line));
+    bb += BoundingBox3D::point(vectorCast<double>(toVector(std::get<1>(line))));
+    bb += BoundingBox3D::point(vectorCast<double>(toVector(std::get<2>(line))));
   }
 
   auto gpd = gpo->geometricPrimitiveData();
@@ -274,7 +278,8 @@ BoundingBox3D GeometricPrimitive::getBoundingBox() {
         qSharedPointerDynamicCast<GeometricPrimitivePoint>(primitive);
     if (!pointPrimitive)  // TODO
       continue;
-    bb += BoundingBox3D::point(pointPrimitive->position());
+    bb += BoundingBox3D::point(
+        vectorCast<double>(toVector(pointPrimitive->position())));
   }
   return bb;
 }
@@ -289,6 +294,3 @@ void GeometricPrimitive::setGpo(GeometricPrimitiveNode* gpo) {
 
 }  // namespace vis3d
 }  // namespace vx
-
-NODE_PROTOTYPE_IMPL_SEP(object3d_prop::GeometricPrimitive,
-                        vis3d::GeometricPrimitive)

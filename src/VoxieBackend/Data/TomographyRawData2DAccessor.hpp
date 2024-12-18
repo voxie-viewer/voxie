@@ -159,7 +159,7 @@ class VOXIEBACKEND_EXPORT GeometryImageListArray : public GeometryImageList {
 
 class VOXIEBACKEND_EXPORT TomographyRawData2DAccessor : public Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(TomographyRawData2DAccessor)
+  VX_REFCOUNTEDOBJECT
 
   Q_NORETURN void throwMissingPerImageMetadata(const QString& stream,
                                                uint64_t id,
@@ -230,7 +230,7 @@ class VOXIEBACKEND_EXPORT TomographyRawData2DAccessor : public Data {
 class VOXIEBACKEND_EXPORT TomographyRawData2DAccessorDBus
     : public TomographyRawData2DAccessor {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(TomographyRawData2DAccessorDBus)
+  VX_REFCOUNTEDOBJECT
 
   QSharedPointer<BusConnection> connection_;
   std::tuple<QString, QDBusObjectPath> provider_;

@@ -22,6 +22,8 @@
 
 #include "InfoWidget.hpp"
 
+#include <VoxieClient/Format.hpp>
+
 #include <Voxie/Data/TableData.hpp>
 #include <Voxie/Data/TableNode.hpp>
 
@@ -60,30 +62,27 @@ InfoWidget::InfoWidget(SliceVisualizer* sv, QWidget* parent)
 
   QObject::connect(
       sv, &SliceVisualizer::imageMouseMove, this,
-      [=](QMouseEvent* e, const QPointF& pointPlane,
-          const QVector3D& threeDPoint,
+      [=](QMouseEvent* e, const vx::Vector<double, 2>& planePos,
+          const vx::Vector<double, 3>& pos3D,
           const vx::Vector<double, 3>* posVoxelPtr, double valNearest,
           double valLinear) {
-        labelPosMouse->setText(QString("Mouse position: %1 %2")
-                                   .arg(e->pos().x())
-                                   .arg(e->pos().y()));
-        labelPosPlane->setText(QString("Plane position: %1 %2")
-                                   .arg(pointPlane.x())
-                                   .arg(pointPlane.y()));
-        labelPos3D->setText(QString("3D position: %1 %2 %3 m")
-                                .arg(threeDPoint.x())
-                                .arg(threeDPoint.y())
-                                .arg(threeDPoint.z()));
+        labelPosMouse->setText(
+            vx::format("Mouse position: {} {}", e->pos().x(), e->pos().y()));
+        labelPosPlane->setText(vx::format("Plane position: {:.6f} {:.6f}",
+                                          planePos.access<0>(),
+                                          planePos.access<1>()));
+        labelPos3D->setText(vx::format("3D position: {:.6f} {:.6f} {:.6f} m",
+                                       pos3D.access<0>(), pos3D.access<1>(),
+                                       pos3D.access<2>()));
         if (posVoxelPtr)
-          labelPosVoxel->setText(QString("Position: %1 %2 %3 vx")
-                                     .arg(posVoxelPtr->access<0>())
-                                     .arg(posVoxelPtr->access<1>())
-                                     .arg(posVoxelPtr->access<2>()));
+          labelPosVoxel->setText(vx::format(
+              "Position: {:.2f} {:.2f} {:.2f} vx", posVoxelPtr->access<0>(),
+              posVoxelPtr->access<1>(), posVoxelPtr->access<2>()));
         else
-          labelPosVoxel->setText(QString("Position: - - - vx"));
-        labelVal->setText(QString("Value (nearest): %1\nValue (trilinear): %2")
-                              .arg(valNearest)
-                              .arg(valLinear));
+          labelPosVoxel->setText(vx::format("Position: - - - vx"));
+        labelVal->setText(
+            vx::format("Value (nearest): {:.6f}\nValue (trilinear): {:.6f}",
+                       valNearest, valLinear));
 
         QString tableText = "Label info:";
         auto table = dynamic_cast<vx::TableNode*>(sv->properties->infoTable());

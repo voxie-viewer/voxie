@@ -36,29 +36,37 @@
 
 #include <VoxieClient/ObjectExport/ExportedObject.hpp>
 
+#include <Voxie/Data/BoundingBox3D.hpp>
 #include <Voxie/Data/Prototypes.hpp>
 #include <Voxie/Data/VolumeNode.hpp>
-#include <VoxieBackend/Data/SurfaceAttribute.hpp>
-#include <VoxieBackend/Data/SurfaceData.hpp>
 
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
 
 #include <Voxie/IO/SaveFileDialog.hpp>
 
+#include <VoxieBackend/Data/SurfaceAttribute.hpp>
+#include <VoxieBackend/Data/SurfaceData.hpp>
+
 #include <VoxieClient/DBusAdaptors.hpp>
 #include <VoxieClient/Exception.hpp>
+
+VX_NODE_INSTANTIATION(vx::SurfaceNode)
 
 using namespace vx;
 
 SurfaceNode::SurfaceNode()
-    : PositionInterface("SurfaceNode", getPrototypeSingleton()),
+    : MovableDataNode("SurfaceNode", getPrototypeSingleton()),
       properties(new SurfaceProperties(this)) {
-  connect(this, &PositionInterface::adjustedPositionChanged, this, [this]() {
+  connect(this, &MovableDataNode::adjustedPositionChanged, this, [this]() {
     this->emitCustomPropertyChanged(this->properties->translationProperty());
   });
-  connect(this, &PositionInterface::adjustedRotationChanged, this, [this]() {
+  connect(this, &MovableDataNode::adjustedRotationChanged, this, [this]() {
     this->emitCustomPropertyChanged(this->properties->rotationProperty());
   });
+
+  // TODO: This should only be triggered if the bounding box actually changes
+  QObject::connect(this, &DataNode::dataChangedFinished, this,
+                   &VolumeNode::boundingBoxObjectChanged);
 
   // Update properties whenever data changes.
   QObject::connect(this, &DataNode::dataChanged, this,
@@ -148,7 +156,7 @@ VolumeNode* SurfaceNode::getOriginatingVolumeNode(QList<Node*> parents) {
 }
 
 void SurfaceNode::adjustPosition(QVector3D position, bool isAbsolute) {
-  PositionInterface::adjustPosition(position, isAbsolute);
+  MovableDataNode::adjustPosition(position, isAbsolute);
   auto dataset = getOriginatingVolumeNode();
   if (dataset) {
     dataset->adjustPosition(this->getAdjustedPosition(), true);
@@ -156,11 +164,21 @@ void SurfaceNode::adjustPosition(QVector3D position, bool isAbsolute) {
 }
 
 void SurfaceNode::adjustRotation(QQuaternion rotation, bool isAbsolute) {
-  PositionInterface::adjustRotation(rotation, isAbsolute);
+  MovableDataNode::adjustRotation(rotation, isAbsolute);
   auto dataset = getOriginatingVolumeNode();
   if (dataset) {
     dataset->adjustRotation(this->getAdjustedRotation(), true);
   }
 }
 
-NODE_PROTOTYPE_IMPL_2(Surface, Node)
+BoundingBox3D SurfaceNode::boundingBoxObject() {
+  // TODO: Move origin()/size() from SurfaceDataTriangleIndexed to SurfaceData?
+  auto data =
+      qSharedPointerDynamicCast<SurfaceDataTriangleIndexed>(this->surface());
+  if (!data)
+    return BoundingBox3D::empty();
+  else
+    return BoundingBox3D(
+        vectorCast<double>(toVector(data->origin())),
+        vectorCast<double>(toVector(data->origin() + data->size())));
+}

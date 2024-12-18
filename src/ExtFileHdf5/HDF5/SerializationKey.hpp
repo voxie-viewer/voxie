@@ -27,9 +27,8 @@
 
 #include <HDF5/BaseTypes.hpp>
 
-#include <memory>
-#include <memory>
 #include <boost/type_traits/remove_cv.hpp>
+#include <memory>
 
 #include <typeinfo>
 
@@ -38,91 +37,96 @@
 // For HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR=1: If an object which gets serialized is destroyed during serialization and another object is created at the same memory address, this class will fail (i.e. it will consider the second object as the same as the first object). Therefore all objects which are serialized should live until the end of the serialization.
 
 namespace HDF5 {
-  // Used to identify a serialized object
-  // The type is needed to distinguish between a structure and its first field, and for some objects where the serialization is implemented using another serializer
-  class SerializationKey {
-    const std::type_info* type_;
+// Used to identify a serialized object
+// The type is needed to distinguish between a structure and its first field, and for some objects where the serialization is implemented using another serializer
+class SerializationKey {
+  const std::type_info* type_;
 #if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
-    std::weak_ptr<const void> weakPtr_;
+  std::weak_ptr<const void> weakPtr_;
 #else
-    const void* ptr_;
+  const void* ptr_;
 #endif
 
-    template <typename T>
-    struct GetWeakPointer {
-      static std::weak_ptr<const void> get (UNUSED const T& t) {
-        return std::weak_ptr<const void> (std::make_shared<int> (0)); // Create a unique weak_ptr
-      }
-    };
-    template <typename T>
-    struct GetWeakPointer<std::shared_ptr<T> > {
-      static std::weak_ptr<const void> get (const std::shared_ptr<T>& t) {
-        return std::weak_ptr<const void> (t);
-      }
-    };
-
-  public:
-    SerializationKey (const std::type_info* type,
-#if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
-                      const std::weak_ptr<const void>& weakPtr
-#else
-                      const void* ptr
-#endif
-                      )
-      : type_ (type),
-#if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
-        weakPtr_ (weakPtr)
-#else
-        ptr_ (ptr)
-#endif
-    {
+  template <typename T>
+  struct GetWeakPointer {
+    static std::weak_ptr<const void> get(UNUSED const T& t) {
+      return std::weak_ptr<const void>(
+          std::make_shared<int>(0));  // Create a unique weak_ptr
     }
-
-    template <typename T> static SerializationKey create (T& val) {
-      return SerializationKey (&typeid (T),
-#if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
-                               GetWeakPointer<typename boost::remove_cv<T>::type>::get (val)
-#else
-                               &val
-#endif
-                               );
-    }
-
-    bool operator< (const SerializationKey& other) const {
-      if (type_ < other.type_)
-        return true;
-      else if (other.type_ < type_)
-        return false;
-#if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
-      else
-        return weakPtr_.owner_before (other.weakPtr_);
-#else
-      else
-        return ptr_ < other.ptr_;
-#endif
+  };
+  template <typename T>
+  struct GetWeakPointer<std::shared_ptr<T> > {
+    static std::weak_ptr<const void> get(const std::shared_ptr<T>& t) {
+      return std::weak_ptr<const void>(t);
     }
   };
 
-  class DeserializationKey {
-    const std::type_info* type_;
-    ObjectReference ref_;
+ public:
+  SerializationKey(const std::type_info* type,
+#if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
+                   const std::weak_ptr<const void>& weakPtr
+#else
+                    const void* ptr
+#endif
+                   )
+      : type_(type),
+#if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
+        weakPtr_(weakPtr)
+#else
+        ptr_(ptr)
+#endif
+  {
+  }
 
-  public:
-    DeserializationKey (const std::type_info* type, ObjectReference ref) : type_ (type), ref_ (ref) {}
+  template <typename T>
+  static SerializationKey create(T& val) {
+    return SerializationKey(
+        &typeid(T),
+#if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
+        GetWeakPointer<typename boost::remove_cv<T>::type>::get(val)
+#else
+        &val
+#endif
+    );
+  }
 
-    template <typename T> static DeserializationKey create (ObjectReference ref) {
-      return DeserializationKey (&typeid (T), ref);
-    }
+  bool operator<(const SerializationKey& other) const {
+    if (type_ < other.type_)
+      return true;
+    else if (other.type_ < type_)
+      return false;
+#if !HDF5_ALLOW_CYCLES_WITHOUT_SHAREDPTR
+    else
+      return weakPtr_.owner_before(other.weakPtr_);
+#else
+    else
+      return ptr_ < other.ptr_;
+#endif
+  }
+};
 
-    bool operator< (const DeserializationKey& other) const {
-      if (type_ < other.type_)
-        return true;
-      else if (type_ > other.type_)
-        return false;
-      else
-        return ref_ < other.ref_;
-    }
-  };
-}
+class DeserializationKey {
+  const std::type_info* type_;
+  ObjectReference ref_;
 
-#endif // !HDF5_SERIALIZATIONKEY_HPP_INCLUDED
+ public:
+  DeserializationKey(const std::type_info* type, ObjectReference ref)
+      : type_(type), ref_(ref) {}
+
+  template <typename T>
+  static DeserializationKey create(ObjectReference ref) {
+    return DeserializationKey(&typeid(T), ref);
+  }
+
+  bool operator<(const DeserializationKey& other) const {
+    if (type_ < other.type_)
+      return true;
+    else if (type_ > other.type_)
+      return false;
+    else
+      return ref_ < other.ref_;
+  }
+};
+}  // namespace HDF5
+
+#endif  // !HDF5_SERIALIZATIONKEY_HPP_INCLUDED

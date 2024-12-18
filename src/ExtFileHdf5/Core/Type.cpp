@@ -32,18 +32,22 @@
 #endif
 
 namespace Core {
-  namespace Type {
-    std::string getName (const std::type_info& info) {
+namespace Type {
+std::string getName(const std::type_info& info) {
 #ifndef _MSC_VER
-      size_t len;
-      int status;
-      MallocRefHolder<char> demangled = abi::__cxa_demangle (info.name (), NULL, &len, &status);
-      ASSERT_MSG (status == 0 || status == -2, std::string () + "abi::__cxa_demangle failed for `" + info.name () + "'");
-      ASSERT_MSG (status == 0, std::string () + "abi::__cxa_demangle failed for `" + info.name () + "'");
-      return demangled.p;
+  size_t len;
+  int status;
+  MallocRefHolder<char> demangled =
+      abi::__cxa_demangle(info.name(), NULL, &len, &status);
+  ASSERT_MSG(
+      status == 0 || status == -2,
+      std::string() + "abi::__cxa_demangle failed for `" + info.name() + "'");
+  ASSERT_MSG(status == 0, std::string() + "abi::__cxa_demangle failed for `" +
+                              info.name() + "'");
+  return demangled.p;
 #else
-      return info.name ();
+  return info.name();
 #endif
-    }
-  }
 }
+}  // namespace Type
+}  // namespace Core

@@ -37,6 +37,20 @@ QList<QColor> defaultColorPalette = QList<QColor>{
     QColor(0xcc, 0x66, 0x00),
 };
 
+LabelChangeTracker::LabelChangeTracker() {}
+LabelChangeTracker::~LabelChangeTracker() {}
+
+const QMap<qint64, qint64>& LabelChangeTracker::getChanges() const {
+  return changeMap;
+}
+qint64 LabelChangeTracker::getSelectedChange() const { return selected; }
+
+void LabelChangeTracker::mergeChangesFrom(const LabelChangeTracker& other) {
+  for (const auto& key : other.changeMap.keys())
+    changeMap[key] += other.changeMap[key];
+  selected += other.selected;
+}
+
 IndexCalculator::IndexCalculator(QSharedPointer<VolumeDataVoxel> originalVolume,
                                  QVector3D planeOrigin,
                                  QQuaternion planeOrientation) {
@@ -121,6 +135,15 @@ bool IndexCalculator::doesVoxelIntersectWithPlane(voxel_index& voxelIndex) {
 
 QList<voxel_index> IndexCalculator::getFoundVoxels() {
   return this->foundVoxels;
+}
+
+void forwardProgressFromTaskToOperation(Task* task,
+                                        vx::io::Operation* operation) {
+  QObject::connect(task, &Task::taskChanged, operation,
+                   [operation](const QSharedPointer<const Task::Info>& info) {
+                     operation->updateProgress(info->progress());
+                   });
+  operation->updateProgress(task->progress());
 }
 
 }  // namespace vx

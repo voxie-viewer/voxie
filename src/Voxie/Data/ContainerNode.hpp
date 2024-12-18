@@ -35,7 +35,7 @@
 namespace vx {
 
 class VOXIECORESHARED_EXPORT ContainerNode : public DataNode {
-  NODE_PROTOTYPE_DECL_DATA(Container)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Data.Container")
 
  public:
   void setCompoundPointer(QSharedPointer<ContainerData>& containerData);

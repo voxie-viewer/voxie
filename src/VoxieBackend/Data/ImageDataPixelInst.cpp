@@ -40,10 +40,14 @@ vx::ImageDataPixelInst<T, componentCount_>::ImageDataPixelInst(
              dataSH) {
   // qDebug() << "ImageDataPixel::ImageDataPixel" << this << writableFromDBus;
 }
+// Put into namespace to avoid clang -Wdtor-name warning, see
+// https://github.com/llvm/llvm-project/issues/46323
+namespace vx {
 template <typename T, size_t componentCount_>
-vx::ImageDataPixelInst<T, componentCount_>::~ImageDataPixelInst() {
+ImageDataPixelInst<T, componentCount_>::~ImageDataPixelInst() {
   // qDebug() << "ImageDataPixel::~ImageDataPixel" << this;
 }
+}  // namespace vx
 
 template <typename T, size_t componentCount_>
 QList<QSharedPointer<vx::SharedMemory>>
@@ -209,12 +213,7 @@ class TomographyRawData2DRegularImpl
       throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                           "Image has already been destroyed");
 
-    if (updateObj->data().data() != this)
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Given DataUpdate is for another object");
-    if (!updateObj->running())
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                          "Given DataUpdate is already finished");
+    updateObj->validateCanUpdate(this);
 
     return img->getData(true);
   }

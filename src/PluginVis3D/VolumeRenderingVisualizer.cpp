@@ -51,6 +51,8 @@
 #include VOLUME_RENDERING_VISUALIZER_CPP_ADDITIONAL_INCLUDE
 #endif
 
+VX_NODE_INSTANTIATION(VolumeRenderingVisualizer)
+
 using namespace vx;
 using namespace vx::opencl;
 using namespace vx::visualization;
@@ -63,7 +65,8 @@ typedef struct {
 } cl_lightSource;
 
 VolumeRenderingVisualizer::VolumeRenderingVisualizer()
-    : VisualizerNode(getPrototypeSingleton()) {
+    : VisualizerNode(getPrototypeSingleton()),
+      properties(new PropertiesType(this)) {
   this->view = nullptr;
   this->mainDataset = nullptr;
 
@@ -293,7 +296,7 @@ VolumeRenderingView::~VolumeRenderingView() {
 void VolumeRenderingView::dataSetChanged() {
   auto data = this->data();
   // TODO: Will this be properly updated if the data set changes?
-  this->view3d->setBoundingBox(dataSet()->boundingBox());
+  this->view3d->setBoundingBox(dataSet()->boundingBoxGlobal());
 
   double maxValue;
   if (auto dataVoxel = qSharedPointerDynamicCast<vx::VolumeDataVoxel>(data)) {
@@ -891,5 +894,3 @@ int VolumeRenderingView::getMinimum() { return this->minSlider->value(); }
 int VolumeRenderingView::getMaximum() { return this->maxSlider->value(); }
 
 int VolumeRenderingView::getScale() { return this->scaleSlider->value(); }
-
-NODE_PROTOTYPE_IMPL_2(VolumeRendering, Visualizer)

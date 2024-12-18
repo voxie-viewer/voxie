@@ -33,8 +33,18 @@ import property_types
 import codegen_utils
 
 debug_options = {
+    'VoxieClient': {
+        'Log.DBus.Error': {'Type': 'bool'},
+    },
     'VoxieBackend': {
+        'Log.BufferType': {'Type': 'bool'},
         'Log.SurfaceBoundingBox': {'Type': 'bool'},
+        'Log.BlockJpeg': {'Type': 'bool'},
+        'Log.ExtractSliceTime': {'Type': 'bool'},
+        'ExtractSlice.UseMultiThreading': {'Type': 'bool', 'DefaultValue': True},
+        'ExtractSlice.UseStaticScheduling': {'Type': 'bool'},
+        'Log.BlockCache.Statistics': {'Type': 'bool'},
+        'Log.OperationRegistry': {'Type': 'bool'},
     },
     'Voxie': {
         'Log.View3DUpdates': {'Type': 'bool'},
@@ -51,8 +61,16 @@ debug_options = {
         'Log.Vis.Keyboard': {'Type': 'bool'},
         'Log.Vis.Mouse': {'Type': 'bool'},
         'Log.NodeNameLineEdit': {'Type': 'bool'},
+
+        # Note: This is used by both PluginVisSlice and PluginSegmentation
+        'Log.VisSlice.BrushSelection': {'Type': 'bool'},
+        'VisSlice.BrushSelection.MinDistance': {'Type': 'float', 'DefaultValue': 1},
+
+        # TODO: This should be in PluginSegmentation, but currently Main/AllDebugOptions.cpp has to see all debug options.
+        'Log.Segmentation.IterateVoxels': {'Type': 'bool'},
     },
     'Main': {
+        'CMark.VerifyNodeDeepClone': {'Type': 'bool'},
         'Log.QtEvents': {'Type': 'bool'},
         'Log.FocusChanges': {'Type': 'bool'},
         'Log.HelpPageCache': {'Type': 'bool'},
@@ -97,6 +115,8 @@ def escape_name(name):
 def getDebugOptionType(ty):
     if ty == 'bool':
         return 'vx::DebugOptionBool'
+    elif ty == 'float':
+        return 'vx::DebugOptionFloat'
     else:
         raise Exception('Unknown type for debug option: {!r}'.format(ty))
 
@@ -159,6 +179,7 @@ for module in sorted(debug_options):
             option = options[option_name]
             esc_name = escape_name(option_name)
             ty = option['Type']
+            do_type = getDebugOptionType(ty)
 
             cpp.write('{}* vx::debug_option::{}() {{'.format(do_type, esc_name))
             cpp.write('return &vx::debug_option_impl::{}_option;'.format(esc_name))

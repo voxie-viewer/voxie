@@ -25,44 +25,40 @@
 
 // Atomic data types
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/AtomicType.hpp>
 
 namespace HDF5 {
-#define ATYPE(ClassName, type)                                          \
-  class ClassName : public AtomicType {                                 \
-    void checkType () const {                                           \
-      if (!isValid ())                                                  \
-        return;                                                         \
-      if (getClass () != type)                                          \
-        ABORT_MSG ("Not a " #ClassName " (" #type ") atomic type");     \
-    }                                                                   \
-                                                                        \
-  public:                                                               \
-  ClassName () {                                                        \
-  }                                                                     \
-                                                                        \
-  explicit ClassName (const IdComponent& value) : AtomicType (value) {  \
-    checkType ();                                                       \
-  }                                                                     \
-                                                                        \
-  /* This constructor takes ownership of the object refered to by value */ \
-  explicit ClassName (hid_t value) : AtomicType (value) {               \
-    checkType ();                                                       \
-  }                                                                     \
+#define ATYPE(ClassName, type)                                               \
+  class ClassName : public AtomicType {                                      \
+    void checkType() const {                                                 \
+      if (!isValid()) return;                                                \
+      if (getClass() != type)                                                \
+        ABORT_MSG("Not a " #ClassName " (" #type ") atomic type");           \
+    }                                                                        \
+                                                                             \
+   public:                                                                   \
+    ClassName() {}                                                           \
+                                                                             \
+    explicit ClassName(const IdComponent& value) : AtomicType(value) {       \
+      checkType();                                                           \
+    }                                                                        \
+                                                                             \
+    /* This constructor takes ownership of the object refered to by value */ \
+    explicit ClassName(hid_t value) : AtomicType(value) { checkType(); }     \
   };
 
-  ATYPE (IntegerType, H5T_INTEGER)
-  ATYPE (FloatType, H5T_FLOAT)
-  ATYPE (StringType, H5T_STRING)
-  ATYPE (TimeType, H5T_TIME)
-  ATYPE (BitFieldType, H5T_BITFIELD)
+ATYPE(IntegerType, H5T_INTEGER)
+ATYPE(FloatType, H5T_FLOAT)
+ATYPE(StringType, H5T_STRING)
+ATYPE(TimeType, H5T_TIME)
+ATYPE(BitFieldType, H5T_BITFIELD)
 
 #undef ATYPE
-}
+}  // namespace HDF5
 
-#endif // !HDF5_ATOMICTYPES_HPP_INCLUDED
+#endif  // !HDF5_ATOMICTYPES_HPP_INCLUDED

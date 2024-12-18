@@ -69,13 +69,20 @@ class BrushSelectionTool : public Visualizer2DTool {
  public Q_SLOTS:
   void activateTool() override;
   void deactivateTool() override;
-  void toolMousePressEvent(QMouseEvent* e) override;
-  void toolMouseReleaseEvent(QMouseEvent* ev) override;
-  void toolMouseMoveEvent(QMouseEvent* e) override;
+  void toolMousePressEvent(QMouseEvent* e,
+                           const vx::Vector<double, 2>& pixelPos) override;
+  void toolMouseReleaseEvent(QMouseEvent* ev,
+                             const vx::Vector<double, 2>& pixelPos) override;
+  void toolMouseMoveEvent(QMouseEvent* e,
+                          const vx::Vector<double, 2>& pixelPos) override;
   void toolLeaveEvent(QEvent* e) override;
   void toolKeyPressEvent(QKeyEvent* e) override;
   void toolKeyReleaseEvent(QKeyEvent* e) override;
-  void toolWheelEvent(QWheelEvent* e) override { Q_UNUSED(e) }
+  void toolWheelEvent(QWheelEvent* e,
+                      const vx::Vector<double, 2>& pixelPos) override {
+    Q_UNUSED(e);
+    Q_UNUSED(pixelPos);
+  }
 
  private:
   SliceVisualizer* sv;
@@ -85,13 +92,14 @@ class BrushSelectionTool : public Visualizer2DTool {
 
   QPushButton* valueButton;
   bool mousePressed = false;
-  QPoint startPos;
-  void inline runBrushSelection(QPoint point);
+  // TODO: Rename to lastPostPixel?
+  vx::Vector<double, 2> startPosPixel;
+  void runBrushSelection(const vx::Vector<double, 2>& middlePoint);
 };
 
 class BrushSelectionLayer : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(BrushSelectionLayer)
+  VX_REFCOUNTEDOBJECT
 
  public:
   BrushSelectionLayer(SliceVisualizer* sv);
@@ -102,7 +110,8 @@ class BrushSelectionLayer : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 
   /**
    * @brief returns the radius of the brush

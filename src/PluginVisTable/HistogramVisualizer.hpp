@@ -47,10 +47,9 @@ class ImageSelectionWidget;
  */
 class HistogramVisualizer : public vx::visualization::SimpleVisualizer {
   Q_OBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Visualizer.Histogram")
 
  public:
-  vx::HistogramProperties* properties = nullptr;
-
   HistogramVisualizer();
   virtual ~HistogramVisualizer() override;
 
@@ -62,8 +61,6 @@ class HistogramVisualizer : public vx::visualization::SimpleVisualizer {
   QWidget* mainView() override { return histogramWidget; }
 
   QSharedPointer<QObject> getPropertyUIData(QString propertyName) override;
-
-  FACTORY_VISUALIZERMODULE_HPP(Histogram)
 
  private:
   vx::HistogramVisualizerWidget* histogramWidget = nullptr;

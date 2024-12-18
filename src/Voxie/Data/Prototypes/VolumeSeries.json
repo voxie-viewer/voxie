@@ -12,18 +12,12 @@
             "TODO_DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.VolumeSeries.VxVolSer.Export",
             "Properties": {
                 "de.uni_stuttgart.Voxie.MovableDataNode.Rotation": {
-                    "CompatibilityNames": [
-                        "de.uni_stuttgart.Voxie.MovableDataObject.Rotation"
-                    ],
                     "DisplayName": "Rotation",
                     "IsCustomStorage": true,
                     "IsCustomUI": true,
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.Orientation3D"
                 },
                 "de.uni_stuttgart.Voxie.MovableDataNode.Translation": {
-                    "CompatibilityNames": [
-                        "de.uni_stuttgart.Voxie.MovableDataObject.Translation"
-                    ],
                     "DisplayName": "Translation",
                     "IsCustomStorage": true,
                     "IsCustomUI": true,

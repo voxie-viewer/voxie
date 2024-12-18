@@ -29,6 +29,7 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
+#include <QtCore/QSettings>
 
 static QByteArray fixLineEnding(QByteArray data, bool crlf) {
   data = data.replace("\r\n", "\n");
@@ -217,13 +218,39 @@ int main(int argc, char** argv) {
       if (obj.contains("Description"))
         description = vx::expectString(obj["Description"]);
       auto licenseFilename = vx::expectString(obj["LicenseFilename"]);
+      QString type = "";
+      if (obj.contains("DependencyType"))
+        type = vx::expectString(obj["DependencyType"]);
       // qDebug() << licenseFilename;
 
       if (!file.endsWith(".sw.json")) {
         qCritical() << "!file.endsWith(\".sw.json\")";
         return 1;
       }
-      QDir fileDir(file.left(file.length() - strlen(".sw.json")));
+      QDir fileDir;
+      if (type == "MesonWrapDependency") {
+        QFile wrapFile(file.left(file.length() - strlen(".sw.json")) + ".wrap");
+        QSettings settings(wrapFile.fileName(), QSettings::IniFormat);
+        if (settings.status() != QSettings::NoError) {
+          qCritical() << "Error reading file" << wrapFile.fileName() << ":"
+                      << settings.status();
+          return 1;
+        }
+        settings.beginGroup("wrap-file");
+        if (!settings.contains("directory")) {
+          qCritical() << "No [wrap-file] directory entry in"
+                      << wrapFile.fileName();
+          return 1;
+        }
+        QString directoryName = settings.value("directory").toString();
+
+        QDir fileDir2(file);
+        fileDir2.cdUp();
+
+        fileDir = QDir(fileDir2.filePath(directoryName));
+      } else {
+        fileDir = QDir(file.left(file.length() - strlen(".sw.json")));
+      }
       // qDebug() << fileDir.filePath(licenseFilename);
 
       QString resultFilename = name + ".txt";

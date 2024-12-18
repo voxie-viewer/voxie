@@ -67,6 +67,7 @@ DirectoryManager::DirectoryManager(QObject* parent) : QObject(parent) {
   docPrototypePath_ = QDir(baseDir_).absoluteFilePath("doc/prototype");
   docTopicPath_ = QDir(baseDir_).absoluteFilePath("doc/topic");
   katexPath_ = QDir(baseDir_).absoluteFilePath("lib/katex-0.11.1");
+  simpleCssPath_ = QDir(baseDir_).absoluteFilePath("lib/simple.css");
 
   QString pluginPathStr = env.value("VOXIE_PLUGIN_PATH", "");
   QString scriptPathStr = env.value("VOXIE_SCRIPT_PATH", "");
@@ -185,6 +186,7 @@ void DirectoryManager::dump() const {
   DUMP(docPrototypePath);
   DUMP(docTopicPath);
   DUMP(katexPath);
+  DUMP(simpleCssPath);
 #undef DUMP
 }
 

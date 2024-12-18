@@ -85,6 +85,6 @@ class ToolCreateSphere : public vx::ToolGlobal {
 
 QList<QSharedPointer<vx::Component>> ExamplePlugin::createComponents() {
   return {
-    makeSharedQObject<ToolCreateSphere>(),
+      makeSharedQObject<ToolCreateSphere>(),
   };
 }

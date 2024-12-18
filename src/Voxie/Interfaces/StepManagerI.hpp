@@ -53,8 +53,8 @@ class VOXIECORESHARED_EXPORT StepManagerI {
    * Radius [m]
    */
   virtual void addVoxelsToBrushSelection(
-      std::tuple<QVector3D, double> centerWithRadius, PlaneInfo plane,
-      SliceVisualizerI* currentSV) = 0;
+      std::tuple<vx::Vector<double, 3>, double> centerWithRadius,
+      PlaneInfo plane, SliceVisualizerI* currentSV) = 0;
 
   /**
    * @brief Creates a new Lasso selection step.
@@ -62,7 +62,8 @@ class VOXIECORESHARED_EXPORT StepManagerI {
    * @param plane Plane in which the polygon is placed
    * @param currentSV SliceVisualizer to which the brush belongs
    */
-  virtual void setLassoSelection(QList<QVector3D> nodes, PlaneInfo plane,
+  virtual void setLassoSelection(QList<vx::Vector<double, 3>> nodes,
+                                 PlaneInfo plane,
                                  SliceVisualizerI* currentSV) = 0;
 
   /**

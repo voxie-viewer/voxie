@@ -32,7 +32,7 @@ class SurfaceNode;
 namespace vis3d {
 class Surface : public vx::Object3DNode {
   Q_OBJECT
-  NODE_PROTOTYPE_DECL_SEP(object3d_prop::Surface, Surface)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Object3D.Surface")
 
   void mouseMoveEventImpl(
       QMouseEvent* event,

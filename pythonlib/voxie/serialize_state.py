@@ -175,6 +175,10 @@ def serializePropertyValue(serializedNodes, sig, value):
         obj = voxie.json_dbus.dbus_to_json_dict(value)
         # TODO: Is repr() the right thing here?
         return 'voxie.json_dbus.json_to_dbus_dict(' + repr(obj) + ')'
+    elif sig == 'v':  # TODO: This assumes this is a JSON-like value
+        obj = voxie.json_dbus.dbus_to_json(value)
+        # TODO: Is repr() the right thing here?
+        return 'voxie.json_dbus.json_to_dbus(' + repr(obj) + ')'
     else:
         print('Warning: Could not serialize DBus signature %s' %
               str(sig), file=sys.stderr)
@@ -238,12 +242,15 @@ def serializeNode(instance, file, serializedNodes, obj, oname):
         visObj = voxie.cast(
             obj.obj, ['de.uni_stuttgart.Voxie.VisualizerNode'])
         if instance.Gui.MdiViewMode == 'de.uni_stuttgart.Voxie.MdiViewMode.SubWindow' or not visObj.IsAttached:
+            # TODO: Add a call to set all values at once? Or what should be the order here?
             print('    %s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').IsAttached = %s' % (
                 oname, visObj.IsAttached), file=file)
             print('    %s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').VisualizerPosition = %s' % (
                 oname, visObj.VisualizerPosition), file=file)
             print('    %s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').VisualizerSize = %s' % (
                 oname, visObj.VisualizerSize), file=file)
+            print('    %s.CastTo(\'de.uni_stuttgart.Voxie.VisualizerNode\').WindowMode = %s' % (
+                oname, repr(visObj.WindowMode)), file=file)
 
 
 def serializeGui(instance, file):

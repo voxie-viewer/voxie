@@ -64,19 +64,26 @@ class LassoSelectionTool : public Visualizer2DTool {
  public Q_SLOTS:
   void activateTool() override;
   void deactivateTool() override;
-  void toolMousePressEvent(QMouseEvent* e) override;
-  void toolMouseReleaseEvent(QMouseEvent* ev) override;
-  void toolMouseMoveEvent(QMouseEvent* e) override;
+  void toolMousePressEvent(QMouseEvent* e,
+                           const vx::Vector<double, 2>& pixelPos) override;
+  void toolMouseReleaseEvent(QMouseEvent* ev,
+                             const vx::Vector<double, 2>& pixelPos) override;
+  void toolMouseMoveEvent(QMouseEvent* e,
+                          const vx::Vector<double, 2>& pixelPos) override;
   void toolKeyPressEvent(QKeyEvent* e) override;
   void toolKeyReleaseEvent(QKeyEvent* e) override;
-  void toolWheelEvent(QWheelEvent* e) override { Q_UNUSED(e) }
+  void toolWheelEvent(QWheelEvent* e,
+                      const vx::Vector<double, 2>& pixelPos) override {
+    Q_UNUSED(e);
+    Q_UNUSED(pixelPos);
+  }
 
  private:
   /**
    * @brief savePoint converts this point to a 3D point and saves it
    * @param point
    */
-  void savePoint(QPointF point);
+  void savePoint(const vx::Vector<double, 2>& point);
   bool getStepManager();
 
   /**
@@ -100,32 +107,32 @@ class LassoSelectionTool : public Visualizer2DTool {
    * @brief checks if a new point closes the Polygon
    * @param point new point (not yet in nodes)
    */
-  bool doesPointClosePolygon(QPointF point);
+  bool doesPointClosePolygon(const vx::Vector<double, 2>& point);
 
   /**
    * @brief returns closest node to passed point
    * @param point new point (not yet in nodes)
    */
-  QPointF getClosestNode(QPointF point);
+  vx::Vector<double, 2> getClosestNode(const vx::Vector<double, 2>& point);
 
  private:
   // TODO: What happens if stepManager is destroyed?
   vx::StepManagerI* stepManager = nullptr;
   quint8 minDistance = 10;  // minimal distance in pixels between points (of
                             // Polygon) before they are considered equal
-  QList<QPointF> nodes;     // points that span the Polygon
-  QList<QLineF> lines;      // Lines between the nodes
+  QList<vx::Vector<double, 2>> nodes;  // points that span the Polygon
+  QList<QLineF> lines;                 // Lines between the nodes
   SliceVisualizer* sv;
   LassoSelectionLayer* lassoLayer;
 
   QPushButton* valueButton;
   bool mousePressed;
-  QPoint startPos;
+  vx::Vector<double, 2> startPosPixel;
 };
 
 class LassoSelectionLayer : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(LassoSelectionLayer)
+  VX_REFCOUNTEDOBJECT
 
  public:
   LassoSelectionLayer(SliceVisualizer* sv);
@@ -137,7 +144,8 @@ class LassoSelectionLayer : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 
  public Q_SLOTS:
   /**
@@ -150,13 +158,13 @@ class LassoSelectionLayer : public Layer {
    * @brief adds a Node that should be drawn
    * @param node Point that should be drawn.
    */
-  void addNode(QPointF node);
+  void addNode(const vx::Vector<double, 2>& node);
 
   /**
    * @brief set all nodes That should be drawn (removes old nodes)
    * @param nodes List of nodes
    */
-  void setNodes(QList<QPointF> nodes);
+  void setNodes(const QList<vx::Vector<double, 2>>& nodes);
 
  private:
   void drawPoint(QImage& outputImage, float visibility, QPointF point);
@@ -176,7 +184,7 @@ class LassoSelectionLayer : public Layer {
  private:
   SliceVisualizer* sv;
   float visibility;
-  QList<QPointF> nodes;  // all points that span the polygon
+  QList<vx::Vector<double, 2>> nodes;  // all points that span the polygon
 
   QPoint mousePos;
   bool mousePosValid = false;

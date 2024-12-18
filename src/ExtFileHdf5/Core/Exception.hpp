@@ -31,209 +31,207 @@
 // Subclasses have to overwrite the message() method.
 
 #include <exception>
-#include <vector>
-#include <string>
-#include <ostream>
 #include <mutex>
+#include <ostream>
+#include <string>
+#include <vector>
 
 #include <stdint.h>
 
 namespace Core {
-  // Used for exceptions in the exception handling code
-  class SimpleStdException : public std::exception {
-    std::string descr_;
+// Used for exceptions in the exception handling code
+class SimpleStdException : public std::exception {
+  std::string descr_;
 
-  public:
-    SimpleStdException (std::string descr);
-    ~SimpleStdException () throw ();
+ public:
+  SimpleStdException(std::string descr);
+  ~SimpleStdException() throw();
 
-    const char* what () const throw () override;
-  };
+  const char* what() const throw() override;
+};
 
-  class StackFrame;
+class StackFrame;
 
-  class InlineStackFrame {
-    friend class StackFrame;
+class InlineStackFrame {
+  friend class StackFrame;
 
-    std::string _method;
-    std::string _sourceFile;
-    uint64_t _lineNumber;
+  std::string _method;
+  std::string _sourceFile;
+  uint64_t _lineNumber;
 
-    InlineStackFrame (const std::string& method, const std::string& sourceFile, uint64_t lineNumber);
+  InlineStackFrame(const std::string& method, const std::string& sourceFile,
+                   uint64_t lineNumber);
 
-  public:
-    const std::string& method () const {
-      return _method;
-    }
+ public:
+  const std::string& method() const { return _method; }
 
-    const std::string& sourceFile () const {
-      return _sourceFile;
-    }
+  const std::string& sourceFile() const { return _sourceFile; }
 
-    uint64_t lineNumber () const {
-      return _lineNumber;
-    }
+  uint64_t lineNumber() const { return _lineNumber; }
 
-    std::string toString () const;
-  };
+  std::string toString() const;
+};
 
-  class StackFrame {
-    friend class InlineStackFrame;
+class StackFrame {
+  friend class InlineStackFrame;
 
-    void* _ptr;
+  void* _ptr;
 
-    mutable std::mutex _resolveMutex;
-    mutable bool _isResolved = false;
-    mutable bool _hasSharedObject = false;
-    mutable std::string _sharedObjectName;
-    mutable void* _sharedObjectBaseFirstSegment; // dli_fbase from dladdr(), virtual address of first segment
-    mutable bool _hasSharedObjectBase = false;
-    mutable void* _sharedObjectBase; // dlpi_addr from dl_iterate_phdr(), virtual address of shared object
-    mutable bool _hasBuildID = false;
-    mutable std::vector<uint8_t> _buildID;
-    mutable bool _hasSymbol = false;
-    mutable std::string _symbolName;
-    mutable void* _symbolAddr;
-    void doResolve (const std::lock_guard<std::mutex>& guard) const;
+  mutable std::mutex _resolveMutex;
+  mutable bool _isResolved = false;
+  mutable bool _hasSharedObject = false;
+  mutable std::string _sharedObjectName;
+  mutable void*
+      _sharedObjectBaseFirstSegment;  // dli_fbase from dladdr(), virtual address of first segment
+  mutable bool _hasSharedObjectBase = false;
+  mutable void*
+      _sharedObjectBase;  // dlpi_addr from dl_iterate_phdr(), virtual address of shared object
+  mutable bool _hasBuildID = false;
+  mutable std::vector<uint8_t> _buildID;
+  mutable bool _hasSymbol = false;
+  mutable std::string _symbolName;
+  mutable void* _symbolAddr;
+  void doResolve(const std::lock_guard<std::mutex>& guard) const;
 
-    mutable std::mutex _addr2lineMutex;
-    mutable bool _hasAddr2line = false;
-    mutable std::vector<InlineStackFrame> _inlineStackFrames;
-    void doAddr2line (const std::lock_guard<std::mutex>& guard) const;
+  mutable std::mutex _addr2lineMutex;
+  mutable bool _hasAddr2line = false;
+  mutable std::vector<InlineStackFrame> _inlineStackFrames;
+  void doAddr2line(const std::lock_guard<std::mutex>& guard) const;
+  // Is called without any locks held
+  static void doAddr2lineBatch(const std::string& sharedObjectName,
+                               const std::vector<const StackFrame*>& frames);
 
-  public:
-    StackFrame (void* ptr);
-    StackFrame (const StackFrame& o);
+ public:
+  StackFrame(void* ptr);
+  StackFrame(const StackFrame& o);
 
-    void* ptr () const {
-      return _ptr;
-    }
+  void* ptr() const { return _ptr; }
 
-    void resolve () const {
-      std::lock_guard<std::mutex> guard(_resolveMutex);
-      if (!_isResolved) doResolve(guard);
-    }
+  void resolve() const {
+    std::lock_guard<std::mutex> guard(_resolveMutex);
+    if (!_isResolved) doResolve(guard);
+  }
 
-    bool hasSharedObject () const {
-      resolve ();
-      return _hasSharedObject;
-    }
+  bool hasSharedObject() const {
+    resolve();
+    return _hasSharedObject;
+  }
 
-    const std::string& sharedObjectName () const {
-      resolve ();
-      if (!_hasSharedObject)
-        throw "!_hasSharedObject";
-      return _sharedObjectName;
-    }
+  const std::string& sharedObjectName() const {
+    resolve();
+    if (!_hasSharedObject) throw "!_hasSharedObject";
+    return _sharedObjectName;
+  }
 
-    void* sharedObjectBaseFirstSegment () const {
-      resolve ();
-      if (!_hasSharedObject)
-        throw "!_hasSharedObject";
-      return _sharedObjectBaseFirstSegment;
-    }
+  void* sharedObjectBaseFirstSegment() const {
+    resolve();
+    if (!_hasSharedObject) throw "!_hasSharedObject";
+    return _sharedObjectBaseFirstSegment;
+  }
 
-    bool hasSharedObjectBase () const {
-      resolve ();
-      return _hasSharedObjectBase;
-    }
+  bool hasSharedObjectBase() const {
+    resolve();
+    return _hasSharedObjectBase;
+  }
 
-    void* sharedObjectBase () const {
-      resolve ();
-      if (!_hasSharedObjectBase)
-        throw "!_hasSharedObjectBase";
-      return _sharedObjectBase;
-    }
-    
-    size_t sharedObjectOffset () const {
-      return (char*) ptr () - (char*) sharedObjectBase ();
-    }
-    
-    bool hasBuildID () const {
-      resolve ();
-      return _hasBuildID;
-    }
+  void* sharedObjectBase() const {
+    resolve();
+    if (!_hasSharedObjectBase) throw "!_hasSharedObjectBase";
+    return _sharedObjectBase;
+  }
 
-    const std::vector<uint8_t>& buildID () const {
-      resolve ();
-      if (!_hasBuildID)
-        throw "!_hasBuildID";
-      return _buildID;
-    }
+  size_t sharedObjectOffset() const {
+    // TODO: Should this use pointer arithmetic or should this use uintptr_t?
+    return static_cast<size_t>(reinterpret_cast<char*>(ptr()) -
+                               reinterpret_cast<char*>(sharedObjectBase()));
+  }
 
-    bool hasSymbol () const {
-      resolve ();
-      return _hasSymbol;
-    }
+  bool hasBuildID() const {
+    resolve();
+    return _hasBuildID;
+  }
 
-    const std::string& symbolName () const {
-      resolve ();
-      if (!_hasSymbol)
-        throw "!_hasSymbol";
-      return _symbolName;
-    }
+  const std::vector<uint8_t>& buildID() const {
+    resolve();
+    if (!_hasBuildID) throw "!_hasBuildID";
+    return _buildID;
+  }
 
-    void* symbolAddr () const {
-      resolve ();
-      if (!_hasSymbol)
-        throw "!_hasSymbol";
-      return _symbolAddr;
-    }
+  bool hasSymbol() const {
+    resolve();
+    return _hasSymbol;
+  }
 
-    size_t symbolOffset () const {
-      return (char*) ptr () - (char*) symbolAddr ();
-    }
+  const std::string& symbolName() const {
+    resolve();
+    if (!_hasSymbol) throw "!_hasSymbol";
+    return _symbolName;
+  }
 
-    const std::vector<InlineStackFrame>& inlineStackFrames () const {
-      std::lock_guard<std::mutex> guard(_addr2lineMutex);
-      if (!_hasAddr2line)
-        doAddr2line (guard);
-      return _inlineStackFrames;
-    }
+  void* symbolAddr() const {
+    resolve();
+    if (!_hasSymbol) throw "!_hasSymbol";
+    return _symbolAddr;
+  }
 
-    std::string toString (int* i = NULL, size_t* addrSize = NULL, size_t* symbSize = NULL, size_t* locSize = NULL) const;
-  };
+  size_t symbolOffset() const {
+    // TODO: Should this use pointer arithmetic or should this use uintptr_t?
+    return static_cast<size_t>(reinterpret_cast<char*>(ptr()) -
+                               reinterpret_cast<char*>(symbolAddr()));
+  }
 
-  class StackTrace {
-    std::vector<StackFrame> _frames;
-  public:
-    StackTrace () {}
+  const std::vector<InlineStackFrame>& inlineStackFrames() const {
+    std::lock_guard<std::mutex> guard(_addr2lineMutex);
+    if (!_hasAddr2line) doAddr2line(guard);
+    return _inlineStackFrames;
+  }
 
-    StackTrace (const std::vector<StackFrame>& frames) : _frames (frames) {}
+  std::string toString(int* i = NULL, size_t* addrSize = NULL,
+                       size_t* symbSize = NULL, size_t* locSize = NULL) const;
 
-    struct CreateFromCurrentThread_t { };
-    static const CreateFromCurrentThread_t createFromCurrentThread;
-    StackTrace (CreateFromCurrentThread_t ignore);
+  // Is called without any locks held
+  static void callAddr2lineBatch(const std::vector<const StackFrame*>& frames);
+};
 
-    const std::vector<StackFrame>& frames () const {
-      return _frames;
-    }
+class StackTrace {
+  std::vector<StackFrame> _frames;
 
-    std::string toString () const;
-  };
+ public:
+  StackTrace() {}
 
-  class Exception : public std::exception {
-    StackTrace _stackTrace;
+  StackTrace(const std::vector<StackFrame>& frames) : _frames(frames) {}
 
-    mutable std::string whatValue;
-    mutable bool whatValueComputed;
+  struct CreateFromCurrentThread_t {};
+  static const CreateFromCurrentThread_t createFromCurrentThread;
+  StackTrace(CreateFromCurrentThread_t ignore);
 
-  public:
-    Exception () : _stackTrace (StackTrace::createFromCurrentThread), whatValueComputed (false) {}
+  const std::vector<StackFrame>& frames() const { return _frames; }
 
-    const StackTrace& stackTrace () const {
-      return _stackTrace;
-    }
+  std::string toString() const;
+};
 
-    virtual ~Exception () throw ();
+class Exception : public std::exception {
+  StackTrace _stackTrace;
 
-    virtual std::string message () const = 0;
+  mutable std::string whatValue;
+  mutable bool whatValueComputed;
 
-    void writeTo (std::ostream& stream) const throw ();
-    std::string toString () const throw ();
-    const char* what () const throw () override;
-  };
+ public:
+  Exception()
+      : _stackTrace(StackTrace::createFromCurrentThread),
+        whatValueComputed(false) {}
 
-}
+  const StackTrace& stackTrace() const { return _stackTrace; }
 
-#endif // !CORE_EXCEPTION_HPP_INCLUDED
+  virtual ~Exception() throw();
+
+  virtual std::string message() const = 0;
+
+  void writeTo(std::ostream& stream) const throw();
+  std::string toString() const throw();
+  const char* what() const throw() override;
+};
+
+}  // namespace Core
+
+#endif  // !CORE_EXCEPTION_HPP_INCLUDED

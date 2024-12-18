@@ -28,7 +28,7 @@
 
 #include <QLineEdit>
 
-#include <Voxie/Data/PositionInterface.hpp>
+#include <Voxie/Data/MovableDataNode.hpp>
 
 namespace Ui {
 class ObjectProperties;
@@ -41,7 +41,7 @@ class ObjectProperties;
  */
 class VOXIECORESHARED_EXPORT ObjectProperties : public QWidget {
   Q_OBJECT
-  typedef vx::PositionInterface PositionInterface;
+  typedef vx::MovableDataNode MovableDataNode;
 
  public:
   /**
@@ -93,7 +93,7 @@ class VOXIECORESHARED_EXPORT ObjectProperties : public QWidget {
    * @param pos is an QVector3D which represents the new position of the current
    * object.
    */
-  void setPosition(PositionInterface* selectedPositionInterface);
+  void setPosition(MovableDataNode* selectedMovableDataNode);
 
   /**
    * @brief Standard setter for the object rotation which can be connectet as a
@@ -102,7 +102,7 @@ class VOXIECORESHARED_EXPORT ObjectProperties : public QWidget {
    * @param rot is an QQuaternion which represents the new rotation of the
    * current object.
    */
-  void setRotation(PositionInterface* selectedPositionInterface);
+  void setRotation(MovableDataNode* selectedMovableDataNode);
 
  private Q_SLOTS:
 

@@ -36,7 +36,7 @@ class Component;
 class ComponentType;
 
 class VOXIEBACKEND_EXPORT ComponentContainer : public vx::RefCountedObject {
-  REFCOUNTEDOBJ_DECL(ComponentContainer)
+  VX_REFCOUNTEDOBJECT
 
   // Returns componentType->name(), here to avoid having to include
   // ComponentType.hpp
@@ -56,9 +56,10 @@ class VOXIEBACKEND_EXPORT ComponentContainer : public vx::RefCountedObject {
   virtual QList<QSharedPointer<vx::Component>> listComponents(
       const QSharedPointer<ComponentType>& componentType) = 0;
 
+  // TODO: Move allowMissing=true into separate method?
   virtual QSharedPointer<vx::Component> getComponent(
       const QSharedPointer<ComponentType>& componentType, const QString& name,
-      bool allowCompatibilityNames) = 0;
+      bool allowCompatibilityNames, bool allowMissing = false) = 0;
 
   template <typename T>
   QList<QSharedPointer<T>> listComponentsTyped() {

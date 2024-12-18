@@ -70,6 +70,10 @@ class VOXIECORESHARED_EXPORT FilterNode : public vx::Node {
 
   PreviewBox* previewBox() { return this->previewBox_; }
 
+  // Get information about filename and last modification of of the extension,
+  // if any, otherwise an empty map.
+  virtual QMap<QString, QString> getExtensionInfo();
+
  private:
   /**
    * @brief Internal method that is executed when the filter is run. Should be

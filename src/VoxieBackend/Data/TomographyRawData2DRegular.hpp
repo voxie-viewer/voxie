@@ -34,7 +34,7 @@ class VOXIEBACKEND_EXPORT TomographyRawData2DRegularInst;
 
 class VOXIEBACKEND_EXPORT TomographyRawData2DRegular : public vx::Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(TomographyRawData2DRegular)
+  VX_REFCOUNTEDOBJECT
 
   DataType dataType_;
 

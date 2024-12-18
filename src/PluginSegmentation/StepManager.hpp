@@ -121,7 +121,7 @@ class StepManager : public QObject, public StepManagerI {
    * @param nodes Nodes that span the simple Polygon
    * @param plane Plane in which the polygon is placed
    */
-  void setLassoSelection(QList<QVector3D> nodes, PlaneInfo plane,
+  void setLassoSelection(QList<vx::Vector<double, 3>> nodes, PlaneInfo plane,
                          SliceVisualizerI* currentSV) override;
 
   /**
@@ -139,9 +139,9 @@ class StepManager : public QObject, public StepManagerI {
    * @param centerWithRadius Center of Brush [m] (global system) and Brush
    * Radius [m]
    */
-  void addVoxelsToBrushSelection(std::tuple<QVector3D, double> centerWithRadius,
-                                 PlaneInfo plane,
-                                 SliceVisualizerI* currentSV) override;
+  void addVoxelsToBrushSelection(
+      std::tuple<vx::Vector<double, 3>, double> centerWithRadius,
+      PlaneInfo plane, SliceVisualizerI* currentSV) override;
 
   /**
    * @brief sets the input volume data for the histograms

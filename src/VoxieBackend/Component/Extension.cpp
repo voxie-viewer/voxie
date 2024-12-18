@@ -191,8 +191,7 @@ ProcessStatus::ProcessStatus(QProcess* process) {
           std::function<void(int, QProcess::ExitStatus)>>(
       process, &QProcess::finished, this,
       std::function<void(int, QProcess::ExitStatus)>(
-          [this, process](int exitCode,
-                          QProcess::ExitStatus exitStatus) -> void {
+          [this](int exitCode, QProcess::ExitStatus exitStatus) -> void {
             if (this->isExited_) {
               qWarning() << "QProcess::finished emitted multiple times";
               return;
@@ -289,13 +288,15 @@ void Extension::startOperation(
   // exOp is claimed by the extension or until the process quits)
   connect(
       process, &QObject::destroyed, this,
-      [this, initialRef, scriptOutput, initialProcessStatus]() {
+      [initialRef, scriptOutput, initialProcessStatus]() {
         auto exOpValue = *initialRef;
         initialRef->reset();
         if (exOpValue) {  // exit without claiming the operation
+          /*
           QString scriptOutputString = *scriptOutput;
           if (scriptOutputString != "")
             scriptOutputString = "\n\nScript output:\n" + scriptOutputString;
+          */
 
           // QString errorString = "Extension failed to claim the operation" ;
           QString errorString;
@@ -326,11 +327,14 @@ void Extension::startOperation(
           }
 
           // TODO: Should this contain script output?
+          // Probably the caller (e.g. ExtensionFilterNode.cpp) should add the
+          // output instead if this is wanted.
           exOpValue->operation()->finish(
               createQSharedPointer<vx::io::Operation::ResultError>(
                   createQSharedPointer<Exception>(
                       "de.uni_stuttgart.Voxie.ExtensionErrorNoClaim",
-                      errorString + scriptOutputString)));
+                      errorString  // + scriptOutputString
+                      )));
         }
       });
 }
@@ -410,7 +414,7 @@ QList<QSharedPointer<vx::Component>> Extension::listComponents(
 
 QSharedPointer<vx::Component> Extension::getComponent(
     const QSharedPointer<ComponentType>& componentType, const QString& name,
-    bool allowCompatibilityNames) {
+    bool allowCompatibilityNames, bool allowMissing) {
   if (!components_.contains(componentType->name()))
     throw Exception("de.uni_stuttgart.Voxie.InvalidComponentType",
                     "Unknown component type in extension");
@@ -433,10 +437,31 @@ QSharedPointer<vx::Component> Extension::getComponent(
                           componentType->name() + "' is ambiguous");
     result = component;
   }
-  if (!result)
+  if (!result && !allowMissing)
     throw Exception("de.uni_stuttgart.Voxie.ComponentNotFound",
                     "Could not find component '" + name + "' with type '" +
                         componentType->name() + "'");
 
   return result;
+}
+
+QMap<QString, QString> Extension::getExtensionInfo() {
+  QMap<QString, QString> res;
+
+  res["ExecutableFileName"] = this->scriptFilename();
+
+  QFileInfo info(this->scriptFilename());
+  auto lastModified = info.lastModified();
+  if (lastModified.isValid()) {
+    res["ExecutableLastModificationDate"] = lastModified.toString(
+    // See https://bugreports.qt.io/browse/QTBUG-59235?focusedCommentId=349058
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+        Qt::ISODateWithMs
+#else
+        Qt::ISODate
+#endif
+    );
+  }
+
+  return res;
 }

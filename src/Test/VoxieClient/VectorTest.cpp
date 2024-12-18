@@ -58,7 +58,7 @@ class VectorTest : public QObject {
     // vx::Vector<int, 3> vector3 = {1, 3, 3.0}; // Should fail to compile
 
     std::array<int, 3> array1 = {1, 3, 3};
-    vx::Vector<int, 3> vector4(vx::toVector(array1));
+    [[gnu::unused]] vx::Vector<int, 3> vector4(vx::toVector(array1));
 
     vx::Vector<double, 3> vector5 = vx::vectorCastNarrow<double>(vector2);
 

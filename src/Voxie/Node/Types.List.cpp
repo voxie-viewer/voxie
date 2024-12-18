@@ -76,6 +76,10 @@ class PropertyTypeBoolean : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<bool>(value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<bool>())
       throw Exception(
@@ -212,6 +216,10 @@ class PropertyTypeBox3DAxisAligned : public PropertyType {
                                         std::tuple<double, double, double>>>(
         value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
         qMetaTypeId<std::tuple<std::tuple<double, double, double>,
@@ -314,6 +322,132 @@ QSharedPointer<PropertyType> vx::types::Box3DAxisAligned::type() {
 }
 
 namespace {
+class PropertyTypeChemicalComposition : public PropertyType {
+ public:
+  PropertyTypeChemicalComposition()
+      : PropertyType("de.uni_stuttgart.Voxie.PropertyType.ChemicalComposition",
+                     "Chemical composition",
+                     QVariant::fromValue<QJsonValue>(
+                         QJsonArray{"molecule", QJsonArray{}})) {}
+  ~PropertyTypeChemicalComposition() {}
+
+  void verifyValue(NodeProperty& property, const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QJsonValue>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QJsonValue>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    Q_UNUSED(property);
+    vx::ChemicalComposition::parse(value.value<QJsonValue>());
+  }
+  void verifyValueWithoutProperty(const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QJsonValue>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QJsonValue>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    vx::ChemicalComposition::parse(value.value<QJsonValue>());
+  }
+  QVariant canonicalize(NodeProperty& property,
+                        const QVariant& value) override {
+    verifyValue(property, value);
+    return value;
+  }
+  int getRawQMetaType() override { return qMetaTypeId<QJsonValue>(); }
+
+  bool isComparable() override { return false; }
+  int compare(/*const QSharedPointer<NodeProperty>&,*/ const QVariant&,
+              const QVariant&) override {
+    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
+                        "Comparison operator not implemented");
+  }
+
+  PropertyUI* createUI(const QSharedPointer<NodeProperty>& property,
+                       Node* node) override {
+    return new ChemicalCompositionUI(
+        createQSharedPointer<NodeNodeProperty>(node, property));
+  }
+  PropertyUI* createUISimple(
+      const QSharedPointer<PropertyInstance>& propertyInstance) override {
+    return new ChemicalCompositionUI(propertyInstance);
+  }
+
+  QList<QString> compatibilityNames() override { return {}; }
+  QVariant parseJson(const QJsonValue& value) override {
+    return QVariant::fromValue<QJsonValue>(
+        ParseJsonFun<QJsonValue>::parse(value));
+  }
+  QString valueToString(const QVariant& value) override {
+    return chemicalCompositionToString(value.value<QJsonValue>());
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    return chemicalCompositionGetDescription(value.value<QJsonValue>());
+  }
+  QDBusVariant rawToDBus(const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QJsonValue>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QJsonValue>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    auto valueRaw = value.value<QJsonValue>();
+    return dbusMakeVariant<QDBusVariant>(
+        PropertyValueConvertDBus<QJsonValue, QDBusVariant>::fromRaw(valueRaw));
+  }
+  QDBusVariant rawToDBusList(const QList<QVariant>& list) override {
+    QList<QDBusVariant> result;
+    for (const auto& entry : list) {
+      if (entry.userType() != qMetaTypeId<QJsonValue>())
+        throw Exception(
+            "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+            QString(
+                "Property value has unexpected type, expected %1, got %2 (%3)")
+                .arg(QMetaType::typeName(qMetaTypeId<QJsonValue>()))
+                .arg(QMetaType::typeName(entry.userType()))
+                .arg(entry.userType()));
+      auto valueRaw = entry.value<QJsonValue>();
+      auto valueDBus =
+          PropertyValueConvertDBus<QJsonValue, QDBusVariant>::fromRaw(valueRaw);
+      result << valueDBus;
+    }
+    return dbusMakeVariant<QList<QDBusVariant>>(result);
+  }
+  QVariant dbusToRaw(const QDBusVariant& value) override {
+    return QVariant::fromValue<QJsonValue>(
+        PropertyValueConvertDBus<QJsonValue, QDBusVariant>::toRaw(
+            dbusGetVariantValue<QDBusVariant>(value)));
+  }
+  QList<QVariant> dbusToRawList(const QDBusVariant& value) override {
+    QList<QVariant> result;
+    auto entries = dbusGetVariantValue<QList<QDBusVariant>>(value);
+    for (const auto& entry : entries) {
+      result << QVariant::fromValue<QJsonValue>(
+          PropertyValueConvertDBus<QJsonValue, QDBusVariant>::toRaw(entry));
+    }
+    return result;
+  }
+
+  QDBusSignature dbusSignature() override { return QDBusSignature("v"); }
+};
+}  // namespace
+QSharedPointer<PropertyType> vx::types::ChemicalCompositionType() {
+  return vx::types::ChemicalComposition::type();
+}
+QSharedPointer<PropertyType> vx::types::ChemicalComposition::type() {
+  static QSharedPointer<PropertyType> type =
+      makeSharedQObject<PropertyTypeChemicalComposition>();
+  return type;
+}
+
+namespace {
 class PropertyTypeColor : public PropertyType {
  public:
   PropertyTypeColor()
@@ -377,6 +511,10 @@ class PropertyTypeColor : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<std::tuple<double, double, double, double>>(value,
                                                                          this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
@@ -543,6 +681,10 @@ class PropertyTypeDataType : public PropertyType {
     return vx::valueToString<std::tuple<QString, quint32, QString>>(value,
                                                                     this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
         qMetaTypeId<std::tuple<QString, quint32, QString>>())
@@ -673,6 +815,10 @@ class PropertyTypeEnumeration : public PropertyType {
   }
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QString>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QString>())
@@ -806,6 +952,10 @@ class PropertyTypeFileName : public PropertyType {
   }
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QString>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QString>())
@@ -941,6 +1091,10 @@ class PropertyTypeFloat : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<double>(value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<double>())
       throw Exception(
@@ -1053,6 +1207,10 @@ class PropertyTypeGeometricPrimitive : public PropertyType {
   }
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<quint64>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<quint64>())
@@ -1188,6 +1346,10 @@ class PropertyTypeInt : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<qint64>(value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<qint64>())
       throw Exception(
@@ -1301,6 +1463,10 @@ class PropertyTypeIntList : public PropertyType {
   }
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QList<qint64>>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QList<qint64>>())
@@ -1418,6 +1584,10 @@ class PropertyTypeLabelList : public PropertyType {
   }
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QList<quint64>>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QList<quint64>>())
@@ -1545,6 +1715,10 @@ class PropertyTypeListPosition3D : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QList<std::tuple<double, double, double>>>(value,
                                                                         this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
@@ -1694,6 +1868,10 @@ class PropertyTypeListPosition3DDoubleTuple : public PropertyType {
     return vx::valueToString<
         QList<std::tuple<std::tuple<double, double, double>, double>>>(value,
                                                                        this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
@@ -1846,6 +2024,10 @@ class PropertyTypeNodeReference : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QDBusObjectPath>(value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QDBusObjectPath>())
       throw Exception(
@@ -1970,6 +2152,10 @@ class PropertyTypeNodeReferenceList : public PropertyType {
   }
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QList<QDBusObjectPath>>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QList<QDBusObjectPath>>())
@@ -2098,6 +2284,10 @@ class PropertyTypeOrientation3D : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<std::tuple<double, double, double, double>>(value,
                                                                          this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
@@ -2234,6 +2424,10 @@ class PropertyTypeOutputNodeReference : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QDBusObjectPath>(value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QDBusObjectPath>())
       throw Exception(
@@ -2292,6 +2486,208 @@ QSharedPointer<PropertyType> vx::types::OutputNodeReferenceType() {
 QSharedPointer<PropertyType> vx::types::OutputNodeReference::type() {
   static QSharedPointer<PropertyType> type =
       makeSharedQObject<PropertyTypeOutputNodeReference>();
+  return type;
+}
+
+namespace {
+class PropertyTypePiecewisePolynomialFunction : public PropertyType {
+ public:
+  PropertyTypePiecewisePolynomialFunction()
+      : PropertyType(
+            "de.uni_stuttgart.Voxie.PropertyType.PiecewisePolynomialFunction",
+            "Piecewise polynomial function",
+            QVariant::fromValue<std::tuple<
+                QList<std::tuple<double, std::tuple<double, double>>>,
+                QList<QList<double>>>>(
+                std::make_tuple(
+                    QList<std::tuple<double, std::tuple<double, double>>>(),
+                    QList<QList<double>>{QList<double>{0}}))) {}
+  ~PropertyTypePiecewisePolynomialFunction() {}
+
+  void verifyValue(NodeProperty& property, const QVariant& value) override {
+    if (value.userType() !=
+        qMetaTypeId<
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(
+                  qMetaTypeId<std::tuple<
+                      QList<std::tuple<double, std::tuple<double, double>>>,
+                      QList<QList<double>>>>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    Q_UNUSED(property);
+    vx::PiecewisePolynomialFunction::parse(
+        value.value<
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>>());
+  }
+  void verifyValueWithoutProperty(const QVariant& value) override {
+    if (value.userType() !=
+        qMetaTypeId<
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(
+                  qMetaTypeId<std::tuple<
+                      QList<std::tuple<double, std::tuple<double, double>>>,
+                      QList<QList<double>>>>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    vx::PiecewisePolynomialFunction::parse(
+        value.value<
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>>());
+  }
+  QVariant canonicalize(NodeProperty& property,
+                        const QVariant& value) override {
+    verifyValue(property, value);
+    return value;
+  }
+  int getRawQMetaType() override {
+    return qMetaTypeId<
+        std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                   QList<QList<double>>>>();
+  }
+
+  bool isComparable() override { return false; }
+  int compare(/*const QSharedPointer<NodeProperty>&,*/ const QVariant&,
+              const QVariant&) override {
+    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
+                        "Comparison operator not implemented");
+  }
+
+  PropertyUI* createUI(const QSharedPointer<NodeProperty>& property,
+                       Node* node) override {
+    return new PiecewisePolynomialFunctionUI(property, node);
+  }
+
+  QList<QString> compatibilityNames() override { return {}; }
+  QVariant parseJson(const QJsonValue& value) override {
+    return QVariant::fromValue<
+        std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                   QList<QList<double>>>>(
+        ParseJsonFun<
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>>::parse(value));
+  }
+  QString valueToString(const QVariant& value) override {
+    return vx::valueToString<
+        std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                   QList<QList<double>>>>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
+  QDBusVariant rawToDBus(const QVariant& value) override {
+    if (value.userType() !=
+        qMetaTypeId<
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(
+                  qMetaTypeId<std::tuple<
+                      QList<std::tuple<double, std::tuple<double, double>>>,
+                      QList<QList<double>>>>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    auto valueRaw = value.value<
+        std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                   QList<QList<double>>>>();
+    return dbusMakeVariant<
+        std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                   QList<QList<double>>>>(
+        PropertyValueConvertDBus<
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>,
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>>::fromRaw(valueRaw));
+  }
+  QDBusVariant rawToDBusList(const QList<QVariant>& list) override {
+    QList<std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                     QList<QList<double>>>>
+        result;
+    for (const auto& entry : list) {
+      if (entry.userType() !=
+          qMetaTypeId<
+              std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                         QList<QList<double>>>>())
+        throw Exception(
+            "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+            QString(
+                "Property value has unexpected type, expected %1, got %2 (%3)")
+                .arg(QMetaType::typeName(
+                    qMetaTypeId<std::tuple<
+                        QList<std::tuple<double, std::tuple<double, double>>>,
+                        QList<QList<double>>>>()))
+                .arg(QMetaType::typeName(entry.userType()))
+                .arg(entry.userType()));
+      auto valueRaw = entry.value<
+          std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                     QList<QList<double>>>>();
+      auto valueDBus = PropertyValueConvertDBus<
+          std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                     QList<QList<double>>>,
+          std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                     QList<QList<double>>>>::fromRaw(valueRaw);
+      result << valueDBus;
+    }
+    return dbusMakeVariant<
+        QList<std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                         QList<QList<double>>>>>(result);
+  }
+  QVariant dbusToRaw(const QDBusVariant& value) override {
+    return QVariant::fromValue<
+        std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                   QList<QList<double>>>>(
+        PropertyValueConvertDBus<
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>,
+            std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>>::
+            toRaw(dbusGetVariantValue<std::tuple<
+                      QList<std::tuple<double, std::tuple<double, double>>>,
+                      QList<QList<double>>>>(value)));
+  }
+  QList<QVariant> dbusToRawList(const QDBusVariant& value) override {
+    QList<QVariant> result;
+    auto entries = dbusGetVariantValue<
+        QList<std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                         QList<QList<double>>>>>(value);
+    for (const auto& entry : entries) {
+      result << QVariant::fromValue<
+          std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                     QList<QList<double>>>>(
+          PropertyValueConvertDBus<
+              std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                         QList<QList<double>>>,
+              std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                         QList<QList<double>>>>::toRaw(entry));
+    }
+    return result;
+  }
+
+  QDBusSignature dbusSignature() override {
+    return QDBusSignature("(a(d(dd))aad)");
+  }
+};
+}  // namespace
+QSharedPointer<PropertyType> vx::types::PiecewisePolynomialFunctionType() {
+  return vx::types::PiecewisePolynomialFunction::type();
+}
+QSharedPointer<PropertyType> vx::types::PiecewisePolynomialFunction::type() {
+  static QSharedPointer<PropertyType> type =
+      makeSharedQObject<PropertyTypePiecewisePolynomialFunction>();
   return type;
 }
 
@@ -2356,6 +2752,10 @@ class PropertyTypePoint2D : public PropertyType {
   }
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<std::tuple<double, double>>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<std::tuple<double, double>>())
@@ -2485,6 +2885,10 @@ class PropertyTypePosition3D : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<std::tuple<double, double, double>>(value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<std::tuple<double, double, double>>())
       throw Exception(
@@ -2554,6 +2958,148 @@ QSharedPointer<PropertyType> vx::types::Position3D::type() {
 }
 
 namespace {
+class PropertyTypeQuantity : public PropertyType {
+ public:
+  PropertyTypeQuantity()
+      : PropertyType("de.uni_stuttgart.Voxie.PropertyType.Quantity", "Quantity",
+                     QVariant::fromValue<QString>("")) {}
+  ~PropertyTypeQuantity() {}
+
+  void verifyValue(NodeProperty& property, const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    Q_UNUSED(property);
+  }
+  void verifyValueWithoutProperty(const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+  }
+  QVariant canonicalize(NodeProperty& property,
+                        const QVariant& value) override {
+    verifyValue(property, value);
+    return value;
+  }
+  int getRawQMetaType() override { return qMetaTypeId<QString>(); }
+
+  bool isComparable() override { return true; }
+  int compare(
+      /*const QSharedPointer<NodeProperty>& property,*/ const QVariant& v1,
+      const QVariant& v2) override {
+    if (v1.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(v1.userType()))
+              .arg(v1.userType()));
+    if (v2.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(v2.userType()))
+              .arg(v2.userType()));
+    return defaultValueCompare(  // property,
+        vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+            v1.value<QString>()),
+        vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+            v2.value<QString>()));
+  }
+
+  PropertyUI* createUI(const QSharedPointer<NodeProperty>& property,
+                       Node* node) override {
+    return new QuantityUI(
+        createQSharedPointer<NodeNodeProperty>(node, property));
+  }
+  PropertyUI* createUISimple(
+      const QSharedPointer<PropertyInstance>& propertyInstance) override {
+    return new QuantityUI(propertyInstance);
+  }
+
+  QList<QString> compatibilityNames() override { return {}; }
+  QVariant parseJson(const QJsonValue& value) override {
+    return QVariant::fromValue<QString>(ParseJsonFun<QString>::parse(value));
+  }
+  QString valueToString(const QVariant& value) override {
+    return vx::valueToString<QString>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
+  QDBusVariant rawToDBus(const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    auto valueRaw = value.value<QString>();
+    return dbusMakeVariant<QString>(
+        PropertyValueConvertDBus<QString, QString>::fromRaw(valueRaw));
+  }
+  QDBusVariant rawToDBusList(const QList<QVariant>& list) override {
+    QList<QString> result;
+    for (const auto& entry : list) {
+      if (entry.userType() != qMetaTypeId<QString>())
+        throw Exception(
+            "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+            QString(
+                "Property value has unexpected type, expected %1, got %2 (%3)")
+                .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+                .arg(QMetaType::typeName(entry.userType()))
+                .arg(entry.userType()));
+      auto valueRaw = entry.value<QString>();
+      auto valueDBus =
+          PropertyValueConvertDBus<QString, QString>::fromRaw(valueRaw);
+      result << valueDBus;
+    }
+    return dbusMakeVariant<QList<QString>>(result);
+  }
+  QVariant dbusToRaw(const QDBusVariant& value) override {
+    return QVariant::fromValue<QString>(
+        PropertyValueConvertDBus<QString, QString>::toRaw(
+            dbusGetVariantValue<QString>(value)));
+  }
+  QList<QVariant> dbusToRawList(const QDBusVariant& value) override {
+    QList<QVariant> result;
+    auto entries = dbusGetVariantValue<QList<QString>>(value);
+    for (const auto& entry : entries) {
+      result << QVariant::fromValue<QString>(
+          PropertyValueConvertDBus<QString, QString>::toRaw(entry));
+    }
+    return result;
+  }
+
+  QDBusSignature dbusSignature() override { return QDBusSignature("s"); }
+};
+}  // namespace
+QSharedPointer<PropertyType> vx::types::QuantityType() {
+  return vx::types::Quantity::type();
+}
+QSharedPointer<PropertyType> vx::types::Quantity::type() {
+  static QSharedPointer<PropertyType> type =
+      makeSharedQObject<PropertyTypeQuantity>();
+  return type;
+}
+
+namespace {
 class PropertyTypeSizeInteger3D : public PropertyType {
  public:
   PropertyTypeSizeInteger3D()
@@ -2617,6 +3163,10 @@ class PropertyTypeSizeInteger3D : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<std::tuple<quint64, quint64, quint64>>(value,
                                                                     this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
@@ -2765,6 +3315,10 @@ class PropertyTypeString : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QString>(value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QString>())
       throw Exception(
@@ -2820,6 +3374,144 @@ QSharedPointer<PropertyType> vx::types::StringType() {
 QSharedPointer<PropertyType> vx::types::String::type() {
   static QSharedPointer<PropertyType> type =
       makeSharedQObject<PropertyTypeString>();
+  return type;
+}
+
+namespace {
+class PropertyTypeSurfaceAttributeName : public PropertyType {
+ public:
+  PropertyTypeSurfaceAttributeName()
+      : PropertyType("de.uni_stuttgart.Voxie.PropertyType.SurfaceAttributeName",
+                     "Surface attribute name",
+                     QVariant::fromValue<QString>("")) {}
+  ~PropertyTypeSurfaceAttributeName() {}
+
+  void verifyValue(NodeProperty& property, const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    Q_UNUSED(property);
+  }
+  void verifyValueWithoutProperty(const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+  }
+  QVariant canonicalize(NodeProperty& property,
+                        const QVariant& value) override {
+    verifyValue(property, value);
+    return value;
+  }
+  int getRawQMetaType() override { return qMetaTypeId<QString>(); }
+
+  bool isComparable() override { return true; }
+  int compare(
+      /*const QSharedPointer<NodeProperty>& property,*/ const QVariant& v1,
+      const QVariant& v2) override {
+    if (v1.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(v1.userType()))
+              .arg(v1.userType()));
+    if (v2.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(v2.userType()))
+              .arg(v2.userType()));
+    return defaultValueCompare(  // property,
+        vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+            v1.value<QString>()),
+        vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+            v2.value<QString>()));
+  }
+
+  PropertyUI* createUI(const QSharedPointer<NodeProperty>& property,
+                       Node* node) override {
+    return new SurfaceAttributeNameUI(property, node);
+  }
+
+  QList<QString> compatibilityNames() override { return {}; }
+  QVariant parseJson(const QJsonValue& value) override {
+    return QVariant::fromValue<QString>(ParseJsonFun<QString>::parse(value));
+  }
+  QString valueToString(const QVariant& value) override {
+    return vx::valueToString<QString>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
+  QDBusVariant rawToDBus(const QVariant& value) override {
+    if (value.userType() != qMetaTypeId<QString>())
+      throw Exception(
+          "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+          QString(
+              "Property value has unexpected type, expected %1, got %2 (%3)")
+              .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+              .arg(QMetaType::typeName(value.userType()))
+              .arg(value.userType()));
+    auto valueRaw = value.value<QString>();
+    return dbusMakeVariant<QString>(
+        PropertyValueConvertDBus<QString, QString>::fromRaw(valueRaw));
+  }
+  QDBusVariant rawToDBusList(const QList<QVariant>& list) override {
+    QList<QString> result;
+    for (const auto& entry : list) {
+      if (entry.userType() != qMetaTypeId<QString>())
+        throw Exception(
+            "de.uni_stuttgart.Voxie.InvalidPropertyValue",
+            QString(
+                "Property value has unexpected type, expected %1, got %2 (%3)")
+                .arg(QMetaType::typeName(qMetaTypeId<QString>()))
+                .arg(QMetaType::typeName(entry.userType()))
+                .arg(entry.userType()));
+      auto valueRaw = entry.value<QString>();
+      auto valueDBus =
+          PropertyValueConvertDBus<QString, QString>::fromRaw(valueRaw);
+      result << valueDBus;
+    }
+    return dbusMakeVariant<QList<QString>>(result);
+  }
+  QVariant dbusToRaw(const QDBusVariant& value) override {
+    return QVariant::fromValue<QString>(
+        PropertyValueConvertDBus<QString, QString>::toRaw(
+            dbusGetVariantValue<QString>(value)));
+  }
+  QList<QVariant> dbusToRawList(const QDBusVariant& value) override {
+    QList<QVariant> result;
+    auto entries = dbusGetVariantValue<QList<QString>>(value);
+    for (const auto& entry : entries) {
+      result << QVariant::fromValue<QString>(
+          PropertyValueConvertDBus<QString, QString>::toRaw(entry));
+    }
+    return result;
+  }
+
+  QDBusSignature dbusSignature() override { return QDBusSignature("s"); }
+};
+}  // namespace
+QSharedPointer<PropertyType> vx::types::SurfaceAttributeNameType() {
+  return vx::types::SurfaceAttributeName::type();
+}
+QSharedPointer<PropertyType> vx::types::SurfaceAttributeName::type() {
+  static QSharedPointer<PropertyType> type =
+      makeSharedQObject<PropertyTypeSurfaceAttributeName>();
   return type;
 }
 
@@ -2906,6 +3598,10 @@ class PropertyTypeThresholdLabelMapping : public PropertyType {
     return vx::valueToString<QList<std::tuple<
         double, std::tuple<double, double, double, double>, qint64>>>(value,
                                                                       this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
@@ -3062,6 +3758,10 @@ class PropertyTypeTomographyRawDataImageKind : public PropertyType {
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<QJsonObject>(value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<QJsonObject>())
       throw Exception(
@@ -3185,6 +3885,10 @@ class PropertyTypeTomographyRawDataImageList : public PropertyType {
   }
   QString valueToString(const QVariant& value) override {
     return vx::valueToString<std::tuple<QString, QJsonObject>>(value, this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() != qMetaTypeId<std::tuple<QString, QJsonObject>>())
@@ -3346,6 +4050,10 @@ class PropertyTypeValueColorMapping : public PropertyType {
     return vx::valueToString<QList<std::tuple<
         double, std::tuple<double, double, double, double>, qint32>>>(value,
                                                                       this);
+  }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
   }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
@@ -3510,6 +4218,10 @@ class PropertyTypeVolumeIndexList : public PropertyType {
     return vx::valueToString<QList<std::tuple<quint32, quint32, quint32>>>(
         value, this);
   }
+  QString valueGetDescription(const QVariant& value) override {
+    Q_UNUSED(value);
+    return "";
+  }
   QDBusVariant rawToDBus(const QVariant& value) override {
     if (value.userType() !=
         qMetaTypeId<QList<std::tuple<quint32, quint32, quint32>>>())
@@ -3586,17 +4298,21 @@ QSharedPointer<PropertyType> vx::types::VolumeIndexList::type() {
 
 #define LIST_ALL_TYPES                                                        \
   vx::types::Boolean::type(), vx::types::Box3DAxisAligned::type(),            \
-      vx::types::Color::type(), vx::types::DataType::type(),                  \
-      vx::types::Enumeration::type(), vx::types::FileName::type(),            \
-      vx::types::Float::type(), vx::types::GeometricPrimitive::type(),        \
-      vx::types::Int::type(), vx::types::IntList::type(),                     \
-      vx::types::LabelList::type(), vx::types::ListPosition3D::type(),        \
+      vx::types::ChemicalComposition::type(), vx::types::Color::type(),       \
+      vx::types::DataType::type(), vx::types::Enumeration::type(),            \
+      vx::types::FileName::type(), vx::types::Float::type(),                  \
+      vx::types::GeometricPrimitive::type(), vx::types::Int::type(),          \
+      vx::types::IntList::type(), vx::types::LabelList::type(),               \
+      vx::types::ListPosition3D::type(),                                      \
       vx::types::ListPosition3DDoubleTuple::type(),                           \
       vx::types::NodeReference::type(), vx::types::NodeReferenceList::type(), \
       vx::types::Orientation3D::type(),                                       \
-      vx::types::OutputNodeReference::type(), vx::types::Point2D::type(),     \
-      vx::types::Position3D::type(), vx::types::SizeInteger3D::type(),        \
-      vx::types::String::type(), vx::types::ThresholdLabelMapping::type(),    \
+      vx::types::OutputNodeReference::type(),                                 \
+      vx::types::PiecewisePolynomialFunction::type(),                         \
+      vx::types::Point2D::type(), vx::types::Position3D::type(),              \
+      vx::types::Quantity::type(), vx::types::SizeInteger3D::type(),          \
+      vx::types::String::type(), vx::types::SurfaceAttributeName::type(),     \
+      vx::types::ThresholdLabelMapping::type(),                               \
       vx::types::TomographyRawDataImageKind::type(),                          \
       vx::types::TomographyRawDataImageList::type(),                          \
       vx::types::ValueColorMapping::type(),                                   \

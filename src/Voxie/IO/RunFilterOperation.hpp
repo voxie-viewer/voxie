@@ -41,7 +41,7 @@ namespace io {
 
 class VOXIECORESHARED_EXPORT RunFilterOperation : public vx::io::Operation {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(RunFilterOperation)
+  VX_REFCOUNTEDOBJECT
 
   QPointer<vx::FilterNode> filterNode_;
 

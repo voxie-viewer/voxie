@@ -24,7 +24,7 @@
 
 #include <VoxieBackend/OpenCL/CLUtil.hpp>
 
-#include <VoxieBackend/lib/CL/cl-patched.hpp>
+#include <VoxieBackend/OpenCL/OpenCLCPP.hpp>
 
 namespace vx {
 namespace opencl {

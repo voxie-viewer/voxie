@@ -24,6 +24,8 @@
 #include <VoxieBackend/IO/Operation.hpp>
 #include <VoxieBackend/IO/OperationRegistry.hpp>
 
+VX_NODE_INSTANTIATION(vx::MetaStep)
+
 using namespace vx;
 using namespace vx::io;
 
@@ -205,5 +207,3 @@ bool MetaStep::isCreatableChild(NodeKind) { return false; }
 QList<QString> MetaStep::supportedDBusInterfaces() { return {}; }
 
 void MetaStep::initializeCustomUIPropSections() {}
-
-NODE_PROTOTYPE_IMPL(MetaStep)

@@ -40,6 +40,9 @@ class VOXIEBACKEND_EXPORT ExtensionExporter : public vx::io::Exporter {
                     const QList<QString>& targetPrototypeNames);
   ~ExtensionExporter() override;
 
+  void validateComponent(
+      const QSharedPointer<ComponentContainer>& allComponents) override;
+
   // throws Exception
   QSharedPointer<OperationResult> exportData(
       const QSharedPointer<vx::Data>& data, const QString& fileName) override;

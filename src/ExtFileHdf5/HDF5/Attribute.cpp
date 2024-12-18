@@ -22,29 +22,27 @@
 
 #include "Attribute.hpp"
 
-#include <HDF5/Group.hpp>
-#include <HDF5/DataType.hpp>
 #include <HDF5/DataSpace.hpp>
+#include <HDF5/DataType.hpp>
+#include <HDF5/Group.hpp>
 
 namespace HDF5 {
-  void Attribute::checkType () const {
-    if (!isValid ())
-      return;
-    if (getType () != H5I_ATTR)
-      ABORT_MSG ("Not an attribute");
-  }
-
-  DataSpace Attribute::getSpace () const {
-    return DataSpace (Exception::check ("H5Aget_space", H5Aget_space (handle ())));
-  }
-  DataType Attribute::getDataType () const {
-    return DataType (Exception::check ("H5Aget_type", H5Aget_type (handle ())));
-  }
-  
-  void Attribute::read (void* buf, const HDF5::DataType& memType) const {
-    Exception::check ("H5Aread", H5Aread (handle (), memType.handle (), buf));
-  }
-  void Attribute::write (const void* buf, const HDF5::DataType& memType) const {
-    Exception::check ("H5Awrite", H5Awrite (handle (), memType.handle (), buf));
-  }
+void Attribute::checkType() const {
+  if (!isValid()) return;
+  if (getType() != H5I_ATTR) ABORT_MSG("Not an attribute");
 }
+
+DataSpace Attribute::getSpace() const {
+  return DataSpace(Exception::check("H5Aget_space", H5Aget_space(handle())));
+}
+DataType Attribute::getDataType() const {
+  return DataType(Exception::check("H5Aget_type", H5Aget_type(handle())));
+}
+
+void Attribute::read(void* buf, const HDF5::DataType& memType) const {
+  Exception::check("H5Aread", H5Aread(handle(), memType.handle(), buf));
+}
+void Attribute::write(const void* buf, const HDF5::DataType& memType) const {
+  Exception::check("H5Awrite", H5Awrite(handle(), memType.handle(), buf));
+}
+}  // namespace HDF5

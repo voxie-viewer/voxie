@@ -25,17 +25,32 @@
 
 #include <VoxieClient/Array.hpp>
 #include <VoxieClient/ClaimedOperation.hpp>
+#include <VoxieClient/Format.hpp>
 
 class VerifySurface {
  public:
   VerifySurface(vx::Array2<const uint32_t> triangles_nominal,
-                vx::Array2<const float> vertices_nominal);
+                vx::Array2<const float> vertices_nominal, QString* report);
+
+  template <typename... T>
+  void fail(const char* str, const T&... par) {
+    QString msg = vx::format(str, par...);
+    if (report)
+      *report += "- " + msg + "\n";
+    else
+      throw vx::Exception("de.uni_stuttgart.Voxie.Error", msg);
+  }
+
   void run(vx::ClaimedOperation<
            de::uni_stuttgart::Voxie::ExternalOperationRunFilter>& op);
+
+  std::vector<std::tuple<std::uint32_t, std::uint32_t, std::int32_t>>
+      failedEdges;
 
  private:
   vx::Array2<const uint32_t> triangles;
   vx::Array2<const float> vertices;
+  QString* report;
 };
 
 #endif  // VERIFYSURFACE_H

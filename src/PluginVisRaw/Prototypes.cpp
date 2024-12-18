@@ -3,6 +3,7 @@
 
 #include "Prototypes.hpp"
 
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodePrototype.hpp>
 #include <Voxie/Node/PropertyValueConvertDBus.hpp>
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
@@ -519,6 +520,9 @@ NodePropertyTyped<vx::types::Point2D>
 TomographyRawDataProperties::centerPointPropertyTyped() {
   return NodePropertyTyped<vx::types::Point2D>(centerPointProperty());
 }
+NodeNodeProperty TomographyRawDataProperties::centerPointInstance() {
+  return NodeNodeProperty(_node, centerPointProperty());
+}
 void TomographyRawDataProperties::setCenterPoint(QPointF value) {
   _node->setNodePropertyTyped<std::tuple<double, double>>(
       "de.uni_stuttgart.Voxie.View2D.CenterPoint",
@@ -543,6 +547,9 @@ NodePropertyTyped<vx::types::Float>
 TomographyRawDataProperties::verticalSizePropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(verticalSizeProperty());
 }
+NodeNodeProperty TomographyRawDataProperties::verticalSizeInstance() {
+  return NodeNodeProperty(_node, verticalSizeProperty());
+}
 void TomographyRawDataProperties::setVerticalSize(double value) {
   _node->setNodePropertyTyped<double>(
       "de.uni_stuttgart.Voxie.View2D.VerticalSize",
@@ -566,6 +573,9 @@ TomographyRawDataProperties::currentImageProperty() {
 NodePropertyTyped<vx::types::Int>
 TomographyRawDataProperties::currentImagePropertyTyped() {
   return NodePropertyTyped<vx::types::Int>(currentImageProperty());
+}
+NodeNodeProperty TomographyRawDataProperties::currentImageInstance() {
+  return NodeNodeProperty(_node, currentImageProperty());
 }
 void TomographyRawDataProperties::setCurrentImage(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -596,6 +606,9 @@ TomographyRawDataProperties::currentImageListPropertyTyped() {
   return NodePropertyTyped<vx::types::TomographyRawDataImageList>(
       currentImageListProperty());
 }
+NodeNodeProperty TomographyRawDataProperties::currentImageListInstance() {
+  return NodeNodeProperty(_node, currentImageListProperty());
+}
 void TomographyRawDataProperties::setCurrentImageList(
     std::tuple<QString, QJsonObject> value) {
   _node->setNodePropertyTyped<std::tuple<QString, QJsonObject>>(
@@ -622,6 +635,9 @@ TomographyRawDataProperties::imageKindPropertyTyped() {
   return NodePropertyTyped<vx::types::TomographyRawDataImageKind>(
       imageKindProperty());
 }
+NodeNodeProperty TomographyRawDataProperties::imageKindInstance() {
+  return NodeNodeProperty(_node, imageKindProperty());
+}
 void TomographyRawDataProperties::setImageKind(QJsonObject value) {
   _node->setNodePropertyTyped<QJsonObject>(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImageKind",
@@ -645,6 +661,9 @@ TomographyRawDataProperties::imagesPerSecondProperty() {
 NodePropertyTyped<vx::types::Float>
 TomographyRawDataProperties::imagesPerSecondPropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(imagesPerSecondProperty());
+}
+NodeNodeProperty TomographyRawDataProperties::imagesPerSecondInstance() {
+  return NodeNodeProperty(_node, imagesPerSecondProperty());
 }
 void TomographyRawDataProperties::setImagesPerSecond(double value) {
   _node->setNodePropertyTyped<double>(
@@ -670,6 +689,9 @@ NodePropertyTyped<vx::types::Enumeration>
 TomographyRawDataProperties::interpolationPropertyTyped() {
   return NodePropertyTyped<vx::types::Enumeration>(interpolationProperty());
 }
+NodeNodeProperty TomographyRawDataProperties::interpolationInstance() {
+  return NodeNodeProperty(_node, interpolationProperty());
+}
 void TomographyRawDataProperties::setInterpolation(QString value) {
   _node->setNodePropertyTyped<QString>(
       "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.Interpolation",
@@ -691,6 +713,9 @@ QSharedPointer<NodeProperty> TomographyRawDataProperties::rawDataProperty() {
 NodePropertyTyped<vx::types::NodeReference>
 TomographyRawDataProperties::rawDataPropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(rawDataProperty());
+}
+NodeNodeProperty TomographyRawDataProperties::rawDataInstance() {
+  return NodeNodeProperty(_node, rawDataProperty());
 }
 void TomographyRawDataProperties::setRawData(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -724,6 +749,9 @@ TomographyRawDataProperties::valueColorMappingPropertyTyped() {
   return NodePropertyTyped<vx::types::ValueColorMapping>(
       valueColorMappingProperty());
 }
+NodeNodeProperty TomographyRawDataProperties::valueColorMappingInstance() {
+  return NodeNodeProperty(_node, valueColorMappingProperty());
+}
 void TomographyRawDataProperties::setValueColorMapping(
     QList<vx::ColorizerEntry> value) {
   _node->setNodePropertyTyped<QList<
@@ -752,6 +780,9 @@ TomographyRawDataProperties::waitForImagesProperty() {
 NodePropertyTyped<vx::types::Boolean>
 TomographyRawDataProperties::waitForImagesPropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(waitForImagesProperty());
+}
+NodeNodeProperty TomographyRawDataProperties::waitForImagesInstance() {
+  return NodeNodeProperty(_node, waitForImagesProperty());
 }
 void TomographyRawDataProperties::setWaitForImages(bool value) {
   _node->setNodePropertyTyped<bool>(

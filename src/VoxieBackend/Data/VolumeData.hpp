@@ -49,7 +49,7 @@ class VolumeStructure;
  */
 class VOXIEBACKEND_EXPORT VolumeData : public Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(VolumeData)
+  VX_REFCOUNTEDOBJECT
 
  private:
   vx::Vector<double, 3> volumeOrigin_;
@@ -93,6 +93,8 @@ class VOXIEBACKEND_EXPORT VolumeData : public Data {
   void changed();  // TODO: remove, replace by Data::dataChanged?
 
  public:
+  // TODO: Move this somewhere else? VolumeDataBlock does not really have a data
+  // type.
   virtual DataType getDataType() = 0;
 
   // throws Exception

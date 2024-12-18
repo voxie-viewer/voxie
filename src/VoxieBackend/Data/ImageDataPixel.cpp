@@ -123,12 +123,7 @@ class ImageDataPixelAdaptorImpl : public ImageDataPixelAdaptor {
       vx::ExportedObject::checkOptions(options);
 
       auto updateObj = vx::DataUpdate::lookup(update);
-      if (updateObj->data().data() != object)
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is for another object");
-      if (!updateObj->running())
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is already finished");
+      updateObj->validateCanUpdate(object);
 
       return object->getData(true).toDBus();
     } catch (vx::Exception& e) {

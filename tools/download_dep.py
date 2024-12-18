@@ -257,6 +257,12 @@ def unpack(filename, base=None, *, unpack_program_7z=None):
             subprocess.run(['unzip', '-q', '../../build-dep/' + filename], check=True, cwd=outputDir)
         else:
             shutil.unpack_archive(archiveFilename, outputDir, 'zip')
+    elif filename.endswith('.deb'):
+        # Note: The --output option is not available in old ar versions (e.g. on Ubuntu 18.04 and earlier)
+        # subprocess.run(['ar', 'x', '--output', outputDir, archiveFilename], check=True)
+        subprocess.run(['ar', 'x', os.path.relpath(archiveFilename, outputDir)], check=True, cwd=outputDir)
+        # TODO: Automatically find filename instead of hardcoding '.tar.xz'
+        subprocess.run(['tar', 'xf', outputDir + '/data.tar.xz', '-C', outputDir], check=True)
     else:
         subprocess.run(['tar', 'xf', archiveFilename, '-C', outputDir], check=True)
 

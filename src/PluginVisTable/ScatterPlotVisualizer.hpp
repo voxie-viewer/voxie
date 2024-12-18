@@ -47,10 +47,9 @@ class ImageSelectionWidget;
  */
 class ScatterPlotVisualizer : public vx::visualization::SimpleVisualizer {
   Q_OBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Visualizer.ScatterPlot")
 
  public:
-  vx::ScatterPlotProperties* properties = nullptr;
-
   ScatterPlotVisualizer();
   virtual ~ScatterPlotVisualizer() override;
 
@@ -61,8 +60,6 @@ class ScatterPlotVisualizer : public vx::visualization::SimpleVisualizer {
   vx::SharedFunPtr<RenderFunction> getRenderFunction() override;
 
   QSharedPointer<QObject> getPropertyUIData(QString propertyName) override;
-
-  FACTORY_VISUALIZERMODULE_HPP(ScatterPlot)
 
  private:
   struct PointCache {

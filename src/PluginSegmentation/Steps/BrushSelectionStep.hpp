@@ -41,15 +41,17 @@ namespace vx {
  * radius. Sets the selection bit for these voxel indices that were calculated.
  */
 class BrushSelectionStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(BrushSelectionStep)
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep")
 
  private:
   void initializeCustomUIPropSections() override;
 
  public:
   BrushSelectionStep(
-      QList<std::tuple<QVector3D, double>> selectCentersWithRadiuses,
-      QList<std::tuple<QVector3D, double>> eraseCentersWithRadiuses,
+      QList<std::tuple<vx::Vector<double, 3>, double>>
+          selectCentersWithRadiuses,
+      QList<std::tuple<vx::Vector<double, 3>, double>> eraseCentersWithRadiuses,
       QVector3D volumeOrigin, QQuaternion volumeOrientation,
       QVector3D voxelSize, PlaneInfo plane);
   BrushSelectionStep(const BrushSelectionStep& oldStep);
@@ -82,7 +84,7 @@ class BrushSelectionStep : public SegmentationStep {
    * Radius [m]
    **/
   QSharedPointer<vx::io::Operation> selectPassedVoxels(
-      std::tuple<QVector3D, double> centerWithRadius,
+      std::tuple<vx::Vector<double, 3>, double> centerWithRadius,
       QSharedPointer<ParameterCopy> parameterCopy,
       QSharedPointer<ContainerData> containerData,
       QSharedPointer<vx::io::Operation> op);
@@ -95,7 +97,7 @@ class BrushSelectionStep : public SegmentationStep {
    * Radius [m]
    **/
   QSharedPointer<vx::io::Operation> erasePassedVoxels(
-      std::tuple<QVector3D, double> centerWithRadius,
+      std::tuple<vx::Vector<double, 3>, double> centerWithRadius,
       QSharedPointer<ParameterCopy> parameterCopy,
       QSharedPointer<ContainerData> containerData,
       QSharedPointer<vx::io::Operation> op);
@@ -103,8 +105,9 @@ class BrushSelectionStep : public SegmentationStep {
   QString getInfoString() override;
 
   void setProperties(
-      QList<std::tuple<QVector3D, double>> selectCentersWithRadiuses,
-      QList<std::tuple<QVector3D, double>> eraseCentersWithRadiuses,
+      QList<std::tuple<vx::Vector<double, 3>, double>>
+          selectCentersWithRadiuses,
+      QList<std::tuple<vx::Vector<double, 3>, double>> eraseCentersWithRadiuses,
       QVector3D volumeOrigin, QQuaternion volumeOrientation,
       QVector3D voxelSize, QVector3D planeOrigin, QQuaternion planeOrientation);
 
@@ -128,7 +131,8 @@ class BrushSelectionStep : public SegmentationStep {
    system) and Brush
    * Radius [m]
    **/
-  void addEraseCenterWithRadius(std::tuple<QVector3D, double> centerWithRadius);
+  void addEraseCenterWithRadius(
+      std::tuple<vx::Vector<double, 3>, double> centerWithRadius);
   /**
  * @brief Append single erase center
  * @param centerWithRadius centerWithRadius Center of Brush [m] (global
@@ -136,7 +140,7 @@ class BrushSelectionStep : public SegmentationStep {
  * Radius [m]
  **/
   void addSelectCenterWithRadius(
-      std::tuple<QVector3D, double> centerWithRadius);
+      std::tuple<vx::Vector<double, 3>, double> centerWithRadius);
 };
 
 /**

@@ -22,10 +22,13 @@
 
 #include "HDFExporter.hpp"
 
+#include <ExtFileHdf5/BoolHdf5.hpp>
+
 #include <ExtFileHdf5/CT/DataFiles.hpp>
 #include <ExtFileHdf5/CT/rawdatafiles.hpp>
 
 #include <VoxieClient/Array.hpp>
+#include <VoxieClient/Bool8.hpp>
 #include <VoxieClient/DBusProxies.hpp>
 #include <VoxieClient/DataTypeExt.hpp>
 #include <VoxieClient/JsonDBus.hpp>
@@ -34,10 +37,9 @@
 
 using namespace vx;
 
-// TODO: Also support Float16
-// TODO: Also support Bool8
 struct SupportedHDF5Types
     : vx::DataTypeExtList<
+          vx::DataTypeMeta<vx::BaseType::Float, 16, vx::Endianness::Native>,
           vx::DataTypeMeta<vx::BaseType::Float, 32, vx::Endianness::Native>,
           vx::DataTypeMeta<vx::BaseType::Float, 64, vx::Endianness::Native>,
           vx::DataTypeMeta<vx::BaseType::Int, 8, vx::Endianness::None>,
@@ -47,7 +49,8 @@ struct SupportedHDF5Types
           vx::DataTypeMeta<vx::BaseType::UInt, 8, vx::Endianness::None>,
           vx::DataTypeMeta<vx::BaseType::UInt, 16, vx::Endianness::Native>,
           vx::DataTypeMeta<vx::BaseType::UInt, 32, vx::Endianness::Native>,
-          vx::DataTypeMeta<vx::BaseType::UInt, 64, vx::Endianness::Native> > {};
+          vx::DataTypeMeta<vx::BaseType::UInt, 64, vx::Endianness::Native>,
+          vx::DataTypeMeta<vx::BaseType::Bool, 8, vx::Endianness::None>> {};
 
 void exportDataVolume(
     vx::DBusClient& dbusClient,
@@ -271,98 +274,99 @@ void exportDataRaw(
     throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
                     "No image found");
 
-  vx::switchOverDataTypeExt<SupportedHDF5Types, void>(
-      dataType, [&](auto traits) {
-        using Traits = decltype(traits);
-        using Type = typename Traits::Type;
+  vx::switchOverDataTypeExt<SupportedHDF5Types,
+                            void>(dataType, [&](auto traits) {
+    using Traits = decltype(traits);
+    using Type = typename Traits::Type;
 
-        try {
-          RawGen<Type, true> raw;
+    try {
+      RawGen<Type, true> raw;
 
-          raw.Type = "SimpleConeBeamCTImageSequence";
-          raw.DetectorPixelSizeX = pixelSizeX;
-          raw.DetectorPixelSizeY = pixelSizeY;
-          raw.DistanceSourceAxis = dsa;
-          raw.DistanceSourceDetector = dsd;
-          raw.Dimension = dimension.toStdString();
-          raw.Angle = std::vector<double>(images.size());
-          for (size_t i = 0; i < (size_t)images.size(); i++)
-            (*raw.Angle)[i] = std::get<2>(images[i]);
-          raw.Image.size[0] = countX;
-          raw.Image.size[1] = countY;
-          raw.Image.size[2] = images.size();
+      raw.Type = "SimpleConeBeamCTImageSequence";
+      raw.DetectorPixelSizeX = pixelSizeX;
+      raw.DetectorPixelSizeY = pixelSizeY;
+      raw.DistanceSourceAxis = dsa;
+      raw.DistanceSourceDetector = dsd;
+      raw.Dimension = dimension.toStdString();
+      raw.Angle = std::vector<double>(images.size());
+      for (size_t i = 0; i < (size_t)images.size(); i++)
+        (*raw.Angle)[i] = std::get<2>(images[i]);
+      raw.Image.size[0] = countX;
+      raw.Image.size[1] = countY;
+      raw.Image.size[2] = images.size();
 
-          // TODO: Set ObjectPosition and ObjectRotation?
+      // TODO: Set ObjectPosition and ObjectRotation?
 
-          // Don't set MirroredYAxis
+      // Don't set MirroredYAxis
 
-          HDF5::matlabSerialize(fileName.toStdString(), raw);
+      HDF5::matlabSerialize(fileName.toStdString(), raw);
 
-          vx::RefObjWrapper<
-              de::uni_stuttgart::Voxie::TomographyRawData2DRegular>
-              image(dbusClient,
-                    HANDLEDBUSPENDINGREPLY(
-                        dbusClient.instance()->CreateTomographyRawData2DRegular(
-                            dbusClient.clientPath(),
-                            std::make_tuple(countX, countY), images.size(),
-                            dataType.toTuple(), vx::emptyOptions())));
-          using BufferType = Type;
+      // TODO: Multiple images at once?
+      std::size_t maxSlices = 1;
 
-          vx::Array3<const BufferType> array(HANDLEDBUSPENDINGREPLY(
-              image->GetDataReadonly(vx::emptyOptions())));
+      vx::RefObjWrapper<de::uni_stuttgart::Voxie::TomographyRawData2DRegular>
+          image(
+              dbusClient,
+              HANDLEDBUSPENDINGREPLY(
+                  dbusClient.instance()->CreateTomographyRawData2DRegular(
+                      dbusClient.clientPath(), std::make_tuple(countX, countY),
+                      maxSlices, dataType.toTuple(), vx::emptyOptions())));
+      using BufferType = Type;
 
-          if (array.template size<0>() != countX)
-            throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
-                            "array.template size<0>() != countX");
-          if (array.template size<1>() != countY)
-            throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
-                            "array.template size<1>() != countY");
-          if (array.template strideBytes<0>() != (ptrdiff_t)sizeof(BufferType))
-            throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
-                            "array.template strideBytes<0>() != "
-                            "(ptrdiff_t)sizeof(BufferType)");
-          if (array.template strideBytes<1>() !=
-              (ptrdiff_t)sizeof(BufferType) *
-                  (ptrdiff_t)array.template size<0>())
-            throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
-                            "array.template strideBytes<0>() != "
-                            "(ptrdiff_t)sizeof(BufferType) * "
-                            "(ptrdiff_t)array.template size<0>()");
+      vx::Array3<const BufferType> array(
+          HANDLEDBUSPENDINGREPLY(image->GetDataReadonly(vx::emptyOptions())));
 
-          for (size_t i = 0; i < (size_t)images.size(); i++) {
-            // TODO: Multiple images at once?
-            std::size_t slices = 1;
+      if (array.template size<0>() != countX)
+        throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
+                        "array.template size<0>() != countX");
+      if (array.template size<1>() != countY)
+        throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
+                        "array.template size<1>() != countY");
+      if (array.template strideBytes<0>() != (ptrdiff_t)sizeof(BufferType))
+        throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
+                        "array.template strideBytes<0>() != "
+                        "(ptrdiff_t)sizeof(BufferType)");
+      if (array.template strideBytes<1>() !=
+          (ptrdiff_t)sizeof(BufferType) * (ptrdiff_t)array.template size<0>())
+        throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
+                        "array.template strideBytes<0>() != "
+                        "(ptrdiff_t)sizeof(BufferType) * "
+                        "(ptrdiff_t)array.template size<0>()");
 
-            QList<std::tuple<QString, quint64>> imageList;
-            imageList << std::make_tuple(std::get<0>(images[i]),
-                                         std::get<1>(images[i]));
-            HANDLEDBUSPENDINGREPLY(accessorOp->ReadImages(
-                imageKind, imageList, std::make_tuple(0, 0),
-                std::make_tuple(dbusClient.uniqueName(), image.path()), 0,
-                std::make_tuple(0, 0), std::make_tuple(countX, countY),
-                vx::emptyOptions()));
+      for (size_t i = 0; i < (size_t)images.size(); i++) {
+        // TODO: Multiple images at once?
+        std::size_t slices = 1;
 
-            HDF5::DataSpace memDataSpace =
-                HDF5::DataSpace::createSimple(slices, countY, countX);
-            HDF5::DataSpace fileDataSpace =
-                HDF5::DataSpace::createSimple(images.size(), countY, countX);
+        QList<std::tuple<QString, quint64>> imageList;
+        imageList << std::make_tuple(std::get<0>(images[i]),
+                                     std::get<1>(images[i]));
+        HANDLEDBUSPENDINGREPLY(accessorOp->ReadImages(
+            imageKind, imageList, std::make_tuple(0, 0),
+            std::make_tuple(dbusClient.uniqueName(), image.path()), 0,
+            std::make_tuple(0, 0), std::make_tuple(countX, countY),
+            vx::emptyOptions()));
 
-            hsize_t start[3] = {i, 0, 0};
-            hsize_t count[3] = {1, countY, countX};
-            fileDataSpace.selectHyperslab(H5S_SELECT_SET, count, start);
+        HDF5::DataSpace memDataSpace =
+            HDF5::DataSpace::createSimple(slices, countY, countX);
+        HDF5::DataSpace fileDataSpace =
+            HDF5::DataSpace::createSimple(images.size(), countY, countX);
 
-            raw.Image.dataSet.write(array.data(), HDF5::getH5Type<BufferType>(),
-                                    memDataSpace, fileDataSpace);
+        hsize_t start[3] = {i, 0, 0};
+        hsize_t count[3] = {1, countY, countX};
+        fileDataSpace.selectHyperslab(H5S_SELECT_SET, count, start);
 
-            op.throwIfCancelled();
-            HANDLEDBUSPENDINGREPLY(op.opGen().SetProgress(
-                1.0 * (i + 1) / images.size(), vx::emptyOptions()));
-          }
-        } catch (Exception& e) {
-          throw;
-        } catch (std::exception& e) {
-          throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
-                          QString() + "Failure while saving file: " + e.what());
-        }
-      });
+        raw.Image.dataSet.write(array.data(), HDF5::getH5Type<BufferType>(),
+                                memDataSpace, fileDataSpace);
+
+        op.throwIfCancelled();
+        HANDLEDBUSPENDINGREPLY(op.opGen().SetProgress(
+            1.0 * (i + 1) / images.size(), vx::emptyOptions()));
+      }
+    } catch (Exception& e) {
+      throw;
+    } catch (std::exception& e) {
+      throw Exception("de.uni_stuttgart.Voxie.HDFExporter.Error",
+                      QString() + "Failure while saving file: " + e.what());
+    }
+  });
 }

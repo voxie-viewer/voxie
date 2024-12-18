@@ -27,40 +27,42 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/BaseTypes.hpp>
 #include <HDF5/IdComponent.hpp>
-#include <HDF5/PropLists.hpp> // Needed for default constructors
+#include <HDF5/PropLists.hpp>  // Needed for default constructors
 
 namespace HDF5 {
-  class Object : public IdComponent {
-    void checkType () const;
+class Object : public IdComponent {
+  void checkType() const;
 
-  public:
-    Object () {
-    }
+ public:
+  Object() {}
 
-    explicit Object (const IdComponent& value) : IdComponent (value) {
-      checkType ();
-    }
+  explicit Object(const IdComponent& value) : IdComponent(value) {
+    checkType();
+  }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit Object (hid_t value) : IdComponent (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit Object(hid_t value) : IdComponent(value) { checkType(); }
 
-    File file () const;
+  File file() const;
 
-    ObjectReference reference () const;
+  ObjectReference reference() const;
 
-    Attribute createAttribute (const std::string& name, const DataType& type, const DataSpace& space, AttributeCreatePropList acpl = AttributeCreatePropList (), /*AttributeAccess*/PropList aapl = /*AttributeAccess*/PropList ()) const;
-    bool existsAttribute (const std::string& name) const;
-    Attribute openAttribute (const std::string& name, /*AttributeAccess*/PropList aapl = /*AttributeAccess*/PropList ()) const;
-  };
-}
+  Attribute createAttribute(
+      const std::string& name, const DataType& type, const DataSpace& space,
+      AttributeCreatePropList acpl = AttributeCreatePropList(),
+      /*AttributeAccess*/ PropList aapl = /*AttributeAccess*/ PropList()) const;
+  bool existsAttribute(const std::string& name) const;
+  Attribute openAttribute(
+      const std::string& name,
+      /*AttributeAccess*/ PropList aapl = /*AttributeAccess*/ PropList()) const;
+};
+}  // namespace HDF5
 
-#endif // !HDF5_OBJECT_HPP_INCLUDED
+#endif  // !HDF5_OBJECT_HPP_INCLUDED

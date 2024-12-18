@@ -25,8 +25,10 @@
 #include <Main/Root.hpp>
 
 #include <Main/Component/SessionManager.hpp>
+
 #include <Main/Gui/ButtonLabel.hpp>
 #include <Main/Gui/NodeGroupSelectWindow.hpp>
+#include <Main/Gui/NodeSection.hpp>
 #include <Main/Gui/SelectWindow.hpp>
 
 #include <Voxie/Component/Tool.hpp>
@@ -65,8 +67,9 @@ using namespace vx::io;
 SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
                      QWidget* parentWidget)
     : QWidget(parentWidget) {
-  // this->setMinimumWidth(405);
-  this->setMinimumWidth(405 / 96.0 * this->logicalDpiX());
+  // TODO: Decrease minimum width and have per-section horizontal scroll bars?
+  // this->setMinimumWidth(400);
+  this->setMinimumWidth(400 / 96.0 * this->logicalDpiX());
 
   auto layout = new QVBoxLayout();
   layout->setMargin(0);
@@ -241,7 +244,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
     actionRunAllChanged->setToolTip("Run all changed filters");
     actionRunAllChanged->setText("Run all changed filters");
     connect(actionRunAllChanged, &QAction::triggered, this,
-            [this] { RunAllFilterOperation::create()->runAll(true); });
+            [] { RunAllFilterOperation::create()->runAll(true); });
     toolButtonRunAll->setMenu(runAllMenu);
     toolButtonRunAll->setDefaultAction(actionRunAllChanged);
 
@@ -250,7 +253,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
     actionRunAll->setToolTip("Force-run all filters");
     actionRunAll->setText("Force-run all filters");
     connect(actionRunAll, &QAction::triggered, this,
-            [this] { RunAllFilterOperation::create()->runAll(); });
+            [] { RunAllFilterOperation::create()->runAll(); });
 
     toolBar->addWidget(toolButtonRunAll);
 
@@ -312,11 +315,13 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
           } else {
             if (sideBarPopout != nullptr) {
               if (Root::instance()->mainWindow()->isSidePanelOnLeft()) {
-                ((QSplitter*)Root::instance()->mainWindow()->centralWidget())
+                Root::instance()
+                    ->mainWindow()
+                    ->mainWindowSplitter()
                     ->insertWidget(0, this);
               } else {
-                ((QSplitter*)Root::instance()->mainWindow()->centralWidget())
-                    ->addWidget(this);
+                Root::instance()->mainWindow()->mainWindowSplitter()->addWidget(
+                    this);
               }
               toolBarActionExpandSidePanel->setChecked(false);
               sideBarPopout->close();
@@ -399,7 +404,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
   auto scroll = new QScrollArea();
   bottomLayout->addWidget(scroll);
   scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scroll->setWidgetResizable(true);
   {
     auto boxC = new ResizeEventWidget();
@@ -552,7 +557,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
       newNodes.insert(node, newNode);
       voxieRoot().setGraphPosition(
           newNode.data(),
-          voxieRoot().getGraphPosition(node) + QVector2D(150, 0));
+          voxieRoot().getGraphPosition(node) + vx::Vector<double, 2>{150, 0});
       newSelectedNodes << newNode.data();
     }
     dataflowWidget->setSelectedNodes(newSelectedNodes);
@@ -729,17 +734,29 @@ void SidePanel::addNode(vx::Node* obj) {
   auto hasDataSection = createQSharedPointer<bool>(false);
   connect(obj, &Node::propertySectionAdded, this,
           [this, hasDataSection, obj](QWidget* section) {
-            addSection(section, false, obj);
+            if (section->property("isInitiallyExpanded").isNull()) {
+              qWarning() << "No isInitiallyExpanded property found";
+            }
+            auto isInitiallyExpanded =
+                section->property("isInitiallyExpanded").value<bool>();
+
+            addSection(section, obj, false, isInitiallyExpanded);
             *hasDataSection = true;
           });
   for (auto section : obj->propertySections()) {
-    addSection(section, false, obj);
+    if (section->property("isInitiallyExpanded").isNull()) {
+      qWarning() << "No isInitiallyExpanded property found";
+    }
+    auto isInitiallyExpanded =
+        section->property("isInitiallyExpanded").value<bool>();
+
+    addSection(section, obj, false, isInitiallyExpanded);
     *hasDataSection = true;
   }
   // adds the custom ui widget for the object to the side panel list
   if (obj->getCustomUi()) {
     QWidget* widget = obj->getCustomUi();
-    addSection(widget, false, obj, true);
+    addSection(widget, obj, true);
   }
 }
 
@@ -929,86 +946,16 @@ void SidePanel::showContextMenu(QPoint globalPos) {
   }
 }
 
-QWidget* SidePanel::addSection(QWidget* section, bool closeable, vx::Node* obj,
-                               bool customUi) {
+QWidget* SidePanel::addSection(QWidget* section, vx::Node* obj, bool customUi,
+                               bool isInitiallyExpanded) {
   if (section == nullptr) {
     return nullptr;
   }
 
-  QString title = section->windowTitle();
-  if (title.length() == 0) {
-    qDebug() << "Window title not set for section" << section;
-  }
-
-  QWidget* dockWidget = new QWidget();
-  QVBoxLayout* layout = new QVBoxLayout();
-  layout->setMargin(0);
-  {
-    QWidget* headerContainer = new QWidget();
-    headerContainer->setStyleSheet(
-        "QWidget { background-color: gray; color: white }");
-    {
-      QHBoxLayout* headerBox = new QHBoxLayout();
-      headerBox->setMargin(0);
-      headerBox->setSpacing(0);
-      {
-        auto spaceX = 24 / 96.0 * this->logicalDpiX();
-        auto spaceY = 24 / 96.0 * this->logicalDpiY();
-        QSpacerItem* spacer =
-            new QSpacerItem(spaceX + (closeable ? spaceX : 0), spaceY,
-                            QSizePolicy::Minimum, QSizePolicy::Minimum);
-        headerBox->addSpacerItem(spacer);
-
-        QLabel* header = new QLabel("<b>" + title + "</b>");
-        connect(section, &QWidget::windowTitleChanged, header, [=]() {
-          header->setText("<b>" + section->windowTitle() + "</b>");
-        });
-        header->setAlignment(Qt::AlignCenter);
-        headerBox->addWidget(header);
-
-        // button for custom ui widget in sidepanel to return to main view
-        if (customUi) {
-          auto customUiButton = new ButtonLabel();
-          customUiButton->setPixmap(QPixmap(":/icons/arrow-return.png"));
-          connect(customUiButton, &ButtonLabel::clicked, this,
-                  [=]() { closeCustomUi(obj); });
-          connect(obj, &QObject::destroyed, this, [=]() { closeCustomUi(); });
-
-          headerBox->addWidget(customUiButton);
-        } else {
-          if (closeable) {
-            ButtonLabel* closeButton = new ButtonLabel();
-            closeButton->setPixmap(QPixmap(":/icons/cross-script.png"));
-            connect(closeButton, &ButtonLabel::clicked, dockWidget,
-                    &QObject::deleteLater);
-            headerBox->addWidget(closeButton);
-          }
-
-          ButtonLabel* hideButton = new ButtonLabel();
-          hideButton->setPixmap(QPixmap(":/icons/chevron.png"));
-          connect(
-              hideButton, &ButtonLabel::clicked,
-              [hideButton, section]() -> void {
-                section->setVisible(!section->isVisible());
-                if (section->isVisible()) {
-                  hideButton->setPixmap(QPixmap(":/icons/chevron.png"));
-                } else {
-                  hideButton->setPixmap(QPixmap(":/icons/chevron-expand.png"));
-                }
-              });
-          headerBox->addWidget(hideButton);
-        }
-      }
-      headerContainer->setLayout(headerBox);
-    }
-    layout->addWidget(headerContainer);
-    layout->addWidget(section);
-  }
-  dockWidget->setLayout(layout);
-  dockWidget->setWindowTitle(title);
-  connect(section, &QObject::destroyed, dockWidget, &QAction::deleteLater);
-  dockWidget->setProperty("section", QVariant::fromValue(section));
-  section->setProperty("dockWidget", QVariant::fromValue(dockWidget));
+  auto dockWidget =
+      new NodeSection(obj, section, customUi, isInitiallyExpanded);
+  connect(dockWidget, &NodeSection::closeCustomUi, this,
+          &SidePanel::closeCustomUi);
   this->sections->addWidget(dockWidget);
 
   bool visible = !obj || (this->dataflowWidget->selectedNodes().length() == 1 &&
@@ -1107,4 +1054,9 @@ void SidePanel::userPromptRenameNode(Node* node) {
   dataflowRenameBox->setText(node->displayName());
   dataflowRenameBox->setVisible(true);
   dataflowRenameBox->setFocus();
+}
+
+void SidePanel::setMode(bool poppedOut, bool expanded) {
+  this->toolBarActionPopoutSidePanel->setChecked(poppedOut);
+  this->toolBarActionExpandSidePanel->setChecked(expanded);
 }

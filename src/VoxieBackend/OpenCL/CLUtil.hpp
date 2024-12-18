@@ -24,7 +24,7 @@
 
 #include <VoxieBackend/VoxieBackend.hpp>
 
-#include <VoxieBackend/lib/CL/cl-patched.hpp>
+#include <VoxieBackend/OpenCL/OpenCLCPP.hpp>
 
 #include <QtCore/QDebug>
 #include <QtCore/QException>

@@ -32,7 +32,7 @@ namespace vx {
 namespace vis3d {
 class Grid : public vx::Object3DNode {
   Q_OBJECT
-  NODE_PROTOTYPE_DECL(Grid)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Object3D.Grid")
 
   Grid3D* grid3D;
 

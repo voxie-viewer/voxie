@@ -1,0 +1,37 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "A file loaded into memory.",
+            "DisplayName": "File data",
+            "Name": "de.uni_stuttgart.Voxie.Data.File",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Data",
+            "Icon": ":/icons/blue-folder-open-document-text.png",
+            "SupportedDataDBusInterfaces": [
+                "de.uni_stuttgart.Voxie.FileData"
+            ],
+            "DefaultExporter": "de.uni_stuttgart.Voxie.FileFormat.File.Json.Export",
+            "TroveClassifiers": [
+                "Development Status :: 4 - Beta"
+            ],
+            "Properties": {
+            },
+            "UI": {
+                "SidePanelSections": [
+                    {
+                        "Type": "AutomaticSectionPlaceholder"
+                    },
+                    {
+                        "Name": "InfoSection",
+                        "DisplayName": "Info",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.Data.File.ContentInfo"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

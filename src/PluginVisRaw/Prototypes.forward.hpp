@@ -3,11 +3,28 @@
 
 #pragma once
 
+#include <VoxieClient/StringConstant.hpp>
+
 namespace vx {
 inline namespace visualizer_prop {
+static inline auto TomographyRawDataProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData");
+}
+using TomographyRawDataProperties_name =
+    decltype(TomographyRawDataProperties_name_function());
 class TomographyRawDataPropertiesEntry;
 class TomographyRawDataPropertiesBase;
 class TomographyRawDataPropertiesCopy;
 class TomographyRawDataProperties;
 }  // namespace visualizer_prop
+template <typename S>
+struct PropertiesTypeAlias;
+template <>
+struct PropertiesTypeAlias<
+    ::vx::visualizer_prop::TomographyRawDataProperties_name> {
+  using PropertiesType = ::vx::visualizer_prop::TomographyRawDataProperties;
+  using PropertiesEntryType =
+      ::vx::visualizer_prop::TomographyRawDataPropertiesEntry;
+};
 }  // namespace vx

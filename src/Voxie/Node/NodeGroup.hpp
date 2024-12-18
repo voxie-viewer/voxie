@@ -32,8 +32,8 @@ class Node;
 
 class VOXIECORESHARED_EXPORT NodeGroup : public vx::Node {
   Q_OBJECT
-  NODE_PROTOTYPE_DECL(NodeGroup)
-  REFCOUNTEDOBJ_DECL(NodeGroup)
+  VX_REFCOUNTEDOBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Node.NodeGroup")
 
  public:
   NodeGroup();

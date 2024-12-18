@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <VoxieClient/TupleVector.hpp>
 #include <VoxieClient/VoxieClient.hpp>
 
 #include <QtDBus/QDBusArgument>
@@ -30,23 +31,6 @@
 #include <QtCore/qglobal.h>
 
 namespace vx {
-namespace DBusUtilIntern {
-template <typename T, size_t c>
-struct TupleVectorImpl {
-  template <typename... Tail>
-  static std::tuple<T, Tail...> addT(std::tuple<Tail...>);
-
-  typedef typename TupleVectorImpl<T, c - 1>::type prev;
-  typedef decltype(addT(*(prev*)nullptr)) type;
-};
-template <typename T>
-struct TupleVectorImpl<T, 0> {
-  typedef std::tuple<> type;
-};
-}  // namespace DBusUtilIntern
-template <typename T, size_t c>
-using TupleVector = typename DBusUtilIntern::TupleVectorImpl<T, c>::type;
-
 namespace DBusUtilIntern {
 // Useful e.g. for Q_DECLARE_METATYPE()
 // https://stackoverflow.com/questions/32314575/q-declare-metatype-a-boostmulti-array

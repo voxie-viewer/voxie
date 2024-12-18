@@ -85,6 +85,9 @@ proxiesHeader = proxiesHeader.replace('inline Q_REQUIRED_RESULT', 'Q_REQUIRED_RE
 # Fix compilation on gcc 12, also remove "inline"
 proxiesHeader = proxiesHeader.replace('inline Q_DECL_DEPRECATED Q_REQUIRED_RESULT', 'Q_DECL_DEPRECATED Q_REQUIRED_RESULT')
 
+# Fix proxies if there is a property "Property" in the DBus interface
+proxiesHeader = proxiesHeader.replace('(property("', '(QDBusAbstractInterface::property("')
+
 adaptorsHeaderNew = '#include <VoxieClient/DBusTypeList.hpp>\n'
 inCtor = False
 inPropMethod = False

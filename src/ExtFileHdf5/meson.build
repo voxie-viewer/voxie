@@ -1,5 +1,9 @@
 name = 'ExtFileHdf5'
 
+additional_collect_licenses_args += files(
+  'lib/utf8cpp.sw.json',
+)
+
 pluginhdf5_incdir = include_directories('.')
 
 imagehlp_dep = declare_dependency()
@@ -31,6 +35,7 @@ main = executable(
 
     'ExtFileHdf5.cpp',
 
+    'BoolHdf5.cpp',
     'HDFExporter.cpp',
     'HDFImporter.cpp',
 
@@ -59,6 +64,7 @@ main = executable(
     'HDF5/DataType.cpp',
     'HDF5/DataTypes.cpp',
     'HDF5/DelayedArray.cpp',
+    'HDF5/EnumType.cpp',
     'HDF5/File.cpp',
     'HDF5/Group.cpp',
     'HDF5/HDF5_Array.cpp',
@@ -113,6 +119,7 @@ main = executable(
     '-DOMPI_SKIP_MPICXX', # Needed to prevent unnecessary dependency when libhdf5-openmpi is used
     '-DNO_BOOST_FILESYSTEM_PATH', # Avoid dependency on BoostFilesystem
     '-DH5_BUILT_AS_DYNAMIC_LIB',
+    '-DUTIL_ENABLE_HALF_SUPPORT=1',
     additional_pluginhdf5_cpp_args,
   ],
   link_args : [

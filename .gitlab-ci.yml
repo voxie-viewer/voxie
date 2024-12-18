@@ -1,6 +1,8 @@
 stages:
   - build
 
+# TODO: Add build with --no-use-cmark-gfm option?
+
 
 check-formatting:
   stage: build
@@ -71,7 +73,7 @@ build-linux-2004:
 
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
-    - "tools/create-release.sh"
+    - "tools/create-release.sh --unpack-meson"
 
   artifacts:
     paths:
@@ -87,8 +89,8 @@ build-linux-2004-onlylib:
   image: "ubuntu:focal-20220826"
 
   script:
-    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers"
-    - "tools/build.sh --only-lib"
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers ca-certificates"
+    - "tools/build --unpack-meson --only-lib"
 
 build-linux-2004-nointern:
   stage: build
@@ -100,7 +102,7 @@ build-linux-2004-nointern:
 
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
-    - "tools/create-release.sh --no-intern"
+    - "tools/create-release.sh --unpack-meson --no-intern"
 
 
 build-linux-1804:
@@ -150,7 +152,7 @@ build-windows-10:
       - voxie*.zip
 
   variables:
-    VOXIEBUILD_PATH_VISUAL_STUDIO_VC: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build"
+    VOXIEBUILD_PATH_VISUAL_STUDIO_VC: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build"
     VOXIEBUILD_PATH_QT: "c:\\Qt\\Qt5.6.3\\5.6.3\\msvc2015_64"
     VOXIEBUILD_URL_QT_COPY: "https://www.cis.iti.uni-stuttgart.de/files/src/qt-everywhere-opensource-src-5.6.3.tar.xz"
     VOXIEBUILD_USE_GIT: "1"

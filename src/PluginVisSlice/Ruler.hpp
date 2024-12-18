@@ -38,7 +38,7 @@
  */
 class Ruler : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(Ruler)
+  VX_REFCOUNTEDOBJECT
 
  public:
   explicit Ruler(SliceVisualizer* sv);
@@ -53,7 +53,8 @@ class Ruler : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 };
 
 #endif  // RULER_H

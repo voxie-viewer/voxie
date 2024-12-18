@@ -20,6 +20,38 @@
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
                 }
             }
+        },
+        {
+            "Description": "Search for holes in the surface and create a report",
+            "DisplayName": "Verify Surface and Report",
+            "Name": "de.uni_stuttgart.Voxie.Filter.VerifySurfaceReport",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.VerifySurface.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input Surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.VerifySurfaceReport.OutputReport": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.File"
+                    ],
+                    "DisplayName": "Report",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.VerifySurfaceReport.OutputBrokenEdges": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.GeometricPrimitive"
+                    ],
+                    "DisplayName": "Broken edges",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
         }
     ]
 }

@@ -34,7 +34,7 @@ class DataFlowScene : public QGraphicsScene {
   QPoint m_MousePos;
   vx::gui::GraphWidget* graphWidget;
 
-  QPointF dragStart = QPointF();
+  // QPointF dragStart = QPointF();
 
  public:
   DataFlowScene(vx::gui::GraphWidget* graphWidget);

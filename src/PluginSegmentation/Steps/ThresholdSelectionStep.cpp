@@ -26,6 +26,8 @@
 
 #include <Voxie/Data/VolumeNode.hpp>
 
+VX_NODE_INSTANTIATION(vx::ThresholdSelectionStep)
+
 using namespace vx;
 using namespace vx::io;
 
@@ -196,5 +198,3 @@ QWidget* ThresholdSelectionStep::getCustomPropertySectionContent(
     return Node::getCustomPropertySectionContent(name);
   }
 }
-
-NODE_PROTOTYPE_IMPL(ThresholdSelectionStep)

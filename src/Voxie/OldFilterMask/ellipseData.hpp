@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <VoxieBackend/lib/CL/cl-patched.hpp>
+#include <VoxieBackend/OpenCL/OpenCLCPP.hpp>
 
 /**
  * @brief The ellipseData struct contains the values of the inverted

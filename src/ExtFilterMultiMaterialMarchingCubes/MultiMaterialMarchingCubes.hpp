@@ -41,8 +41,11 @@ class MultiMaterialMarchingCubes {
 
   const size_t batchSize =
       3;  // number of layers per batch (should stay at 3 for now)
+
+  [[gnu::unused]]  // TODO: Remove this?
   const size_t batchCount =
       1;  // number of parallel MMMC batches (should stay at 1 for now)
+
   const size_t
       batchCountMinor;  // number of simultaneously processed layers in xy- and
                         // yz-orientation (should stay uninitialized for now)
@@ -58,6 +61,7 @@ class MultiMaterialMarchingCubes {
   /*std::list<*/ std::array<
       std::vector<vx::Array2<std::pair<std::bitset<5>, std::bitset<8>>>>,
       3> /*>*/ squares;
+  [[gnu::unused]]  // TODO: Remove this?
   size_t layerIndex = 0;
 
   // marching squares per layer

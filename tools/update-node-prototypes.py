@@ -39,6 +39,8 @@ files = [
      glob.glob('src/Voxie/Data/Prototypes/*.json') +
      glob.glob('src/Voxie/PropertyObjects/Prototypes/*.json') +
      glob.glob('src/Voxie/Node/Prototypes/*.json'), True),
+    ('src/Main/Prototypes',
+     glob.glob('src/Main/Prototypes/*.json'), False),
     ('src/PluginFilter/Prototypes',
      glob.glob('src/PluginFilter/Prototypes/*.json'), False),
     ('src/PluginVisSlice/Prototypes',
@@ -144,6 +146,10 @@ for (outPrefix, inputFiles, doExport) in files:
         hppf.write('\n')
         hpp.write('#pragma once\n')
         hpp.write('\n')
+        hpp.write('#include "Prototypes.forward.hpp"\n')
+        hpp.write('\n')
+        hppf.write('#include <VoxieClient/StringConstant.hpp>\n')
+        hppf.write('\n')
         hpp.write('#include <Voxie/Node/Node.hpp>\n')
         hpp.write('#include <QtCore/QObject>\n')
         hpp.write('#include <QtCore/QPointer>\n')
@@ -157,11 +163,14 @@ for (outPrefix, inputFiles, doExport) in files:
         hpp.write('#include <VoxieBackend/Data/DataType.hpp>\n')
         hpp.write('#include <Voxie/Node/Types.hpp>\n')  # TODO: Add this include?
         hpp.write('\n')
+        hpp.write('class NodeNodeProperty; // In Voxie/Node/NodeNodeProperty.hpp\n')
+        hpp.write('\n')
         cpp.write('#include "Prototypes.hpp"\n')
         cpp.write('\n')
         cpp.write('#include <Voxie/Node/PropertyValueConvertRaw.hpp>\n')
         cpp.write('#include <Voxie/Node/PropertyValueConvertDBus.hpp>\n')
         cpp.write('#include <Voxie/Node/NodePrototype.hpp>\n')
+        cpp.write('#include <Voxie/Node/NodeNodeProperty.hpp>\n')
         hppf.write('namespace vx {\n')
         hpp.write('namespace vx {\n')
         cpp.write('namespace vx {\n')
@@ -183,6 +192,7 @@ for (outPrefix, inputFiles, doExport) in files:
             hpp.write('}\n')
             hpp.write('#endif\n')
 
+        aliases = []
         for prototype in allPrototypes:
             # print (prototype)
             name = prototype['Name']
@@ -194,7 +204,7 @@ for (outPrefix, inputFiles, doExport) in files:
             propertyKeys = list(prototype['Properties'])
             propertyKeys.sort()
 
-            # Make sure that symbols don't clash when e.g. for de.uni_stuttgart.Voxie.Data.TomographyRawData and de.uni_stuttgart.Voxie.Visualizer.TomographyRawData
+            # Make sure that symbols don't clash e.g. for de.uni_stuttgart.Voxie.Data.TomographyRawData and de.uni_stuttgart.Voxie.Visualizer.TomographyRawData
             # TODO: Put this into non-inline namespaces?
             parBare = name[:name.rfind('.')]
             parBare = parBare[parBare.rfind('.') + 1:]
@@ -202,10 +212,14 @@ for (outPrefix, inputFiles, doExport) in files:
             hppf.write('inline namespace ' + namespace + ' {\n')
             hpp.write('inline namespace ' + namespace + ' {\n')
             cpp.write('inline namespace ' + namespace + ' {\n')
+            fqn = '::vx::' + namespace + '::' + nameProperties
+            aliases.append((name, fqn))
 
             # Indicates for each pname whether the non-raw property should be in *Base and *Copy
             is_in_base = {}
 
+            hppf.write('static inline auto %s_name_function() { return VX_GET_STRING_CONSTANT_VALUE(%s); }\n' % (nameProperties, escapeCppString(name)))
+            hppf.write('using %s_name = decltype(%s_name_function());\n' % (nameProperties, nameProperties))
             hppf.write('class %s;\n' % (namePropertiesEntry,))
             hpp.write('class %s%s : public vx::PropertiesEntryBase {\n' % (exportStr, namePropertiesEntry,))
             hpp.write('%s() = delete;\n' % (namePropertiesEntry,))
@@ -356,6 +370,14 @@ for (outPrefix, inputFiles, doExport) in files:
                 cpp.write('return NodePropertyTyped<vx::types::%s>(%sProperty());\n' % (ptypeShort, getterName,))
                 cpp.write('}\n')
 
+                # TODO: Keep an instance of NodeNodeProperty in this class?
+                hpp.write(
+                    'NodeNodeProperty %sInstance();\n' % (getterName))
+                cpp.write('NodeNodeProperty %s::%sInstance() {\n' % (
+                    nameProperties, getterName))
+                cpp.write('return NodeNodeProperty(_node, %sProperty());\n' % (getterName,))
+                cpp.write('}\n')
+
                 hpp.write('void %s(%s value);\n' % (setterName, ptypeCpp))
                 cpp.write('void %s::%s(%s value) {\n' % (
                     nameProperties, setterName, ptypeCpp))
@@ -403,6 +425,9 @@ for (outPrefix, inputFiles, doExport) in files:
             hppf.write('}\n')
             hpp.write('}\n')
             cpp.write('}\n')
+        hppf.write('template<typename S> struct PropertiesTypeAlias;\n')
+        for name, fqn in aliases:
+            hppf.write('template<> struct PropertiesTypeAlias<{0}_name> {{ using PropertiesType = {0}; using PropertiesEntryType = {0}Entry; }};\n'.format(fqn))
         hppf.write('}\n')
         hpp.write('}\n')
         cpp.write('}\n')

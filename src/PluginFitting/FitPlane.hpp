@@ -34,7 +34,7 @@ namespace vx {
 namespace vis3d {
 
 class FitPlane : public FilterNode {
-  NODE_PROTOTYPE_DECL(FitPlane)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Filter.FitPlane")
 
   /**
    * @brief fitSurface does the actual fitting using the specified threshold and

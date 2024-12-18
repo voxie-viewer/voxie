@@ -164,7 +164,8 @@ QProcess* ScriptLauncher::startScript(const QString& scriptFile,
       std::function<void(int, QProcess::ExitStatus)>(
           [process, id](int exitCode, QProcess::ExitStatus exitStatus) -> void {
             Root::instance()->log(
-                QString("Process %1 finished with exit status %2 / exit code %3")
+                QString(
+                    "Process %1 finished with exit status %2 / exit code %3")
                     .arg(id)
                     .arg(exitStatusToString(exitStatus))
                     .arg(exitCode));

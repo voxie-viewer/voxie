@@ -22,10 +22,12 @@
 
 #include "LassoSelectionStep.hpp"
 
+VX_NODE_INSTANTIATION(vx::LassoSelectionStep)
+
 using namespace vx;
 using namespace vx::io;
 
-LassoSelectionStep::LassoSelectionStep(QList<QVector3D> nodes,
+LassoSelectionStep::LassoSelectionStep(QList<vx::Vector<double, 3>> nodes,
                                        QVector3D volumeOrigin,
                                        QQuaternion volumeOrientation,
                                        QVector3D voxelSize, PlaneInfo plane)
@@ -80,7 +82,8 @@ QSharedPointer<OperationResult> LassoSelectionStep::calculate(
       auto selectFunc =
           [&voxelCount](
               quint32& x, quint32& y, quint32& z,
-              QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
+              const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                  labelData) {
             SegmentationType voxelVal =
                 (SegmentationType)labelData->getVoxel(x, y, z);
             if (getBit(voxelVal, segmentationShift) == 0) {
@@ -117,7 +120,7 @@ bool LassoSelectionStep::isAllowedChild(NodeKind object) {
   return false;
 }
 
-void LassoSelectionStep::setProperties(QList<QVector3D> nodes,
+void LassoSelectionStep::setProperties(QList<vx::Vector<double, 3>> nodes,
                                        QVector3D volumeOrigin,
                                        QQuaternion volumeOrientation,
                                        QVector3D voxelSize,
@@ -140,16 +143,16 @@ QList<QString> LassoSelectionStep::supportedDBusInterfaces() { return {}; }
 
 void LassoSelectionStep::initializeCustomUIPropSections() {}
 
-NODE_PROTOTYPE_IMPL(LassoSelectionStep)
-
-LassoCalculator::LassoCalculator(QList<QVector3D> nodes,
+LassoCalculator::LassoCalculator(QList<vx::Vector<double, 3>> nodes,
                                  QSharedPointer<VolumeDataVoxel> originalVolume,
                                  QVector3D planeOrigin,
                                  QQuaternion planeOrientation)
     : IndexCalculator(originalVolume, planeOrigin, planeOrientation) {
   // Convert 3d nodes [m] to plane coordinates
   for (auto node : nodes) {
-    QVector3D planePoint = this->threeDToPlaneTrafo * node;
+    // TODO: Avoid QVector3D?
+    QVector3D planePoint =
+        this->threeDToPlaneTrafo * toQVector(vectorCastNarrow<float>(node));
     this->nodesPlane.append(QPointF(planePoint.x(), planePoint.y()));
   }
 

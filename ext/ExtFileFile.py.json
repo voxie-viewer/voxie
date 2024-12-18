@@ -1,0 +1,23 @@
+{
+    "Exporter": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.File.Json.Export",
+            "DisplayName": "Voxie file data JSON",
+            "TargetPrototypeNames": [
+                "de.uni_stuttgart.Voxie.Data.File"
+            ],
+            "Patterns": [
+                "*.vxfl.json"
+            ]
+        }
+    ],
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.File.Json.Import",
+            "DisplayName": "Voxie file data JSON",
+            "Patterns": [
+                "*.vxfl.json"
+            ]
+        }
+    ]
+}

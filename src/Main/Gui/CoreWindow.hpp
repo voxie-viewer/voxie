@@ -25,6 +25,7 @@
 #include <Main/Gui/VisualizerContainer.hpp>
 
 #include <Voxie/IVoxie.hpp>
+
 #include <Voxie/Node/Node.hpp>
 
 #include <QtCore/QMap>
@@ -41,9 +42,13 @@
 
 #include <QCloseEvent>
 
+class QSplitter;
+
 namespace vx {
 class Root;
 class VisualizerNode;
+enum class WindowMode;
+
 namespace io {
 class Importer;
 }
@@ -62,8 +67,12 @@ class ActiveVisualizerProviderImpl : public ActiveVisualizerProvider {
   ~ActiveVisualizerProviderImpl();
 
   VisualizerNode* activeVisualizer() const override;
+
   QList<Node*> selectedNodes() const override;
   void setSelectedNodes(const QList<Node*>& nodes) const override;
+
+  vx::WindowMode getWindowMode();
+  void setWindowMode(vx::WindowMode mode);
 };
 
 /**
@@ -79,6 +88,7 @@ class CoreWindow : public QMainWindow {
   QMenuBar* menuBar;
   QMenu* windowMenu;
   QMenu* scriptsMenu;
+  QSplitter* mainWindowSplitter_;
   int scriptsMenuStaticSize;
   QMenu* toolMenu = nullptr;
   int toolMenuStaticSize = 0;
@@ -118,6 +128,8 @@ class CoreWindow : public QMainWindow {
   QAction* toggleTabbedAction;
 
   void updateExtensions();
+
+  VisualizerContainer* getContainerForVisualizer(VisualizerNode* visualizer);
 
  private:
   /**
@@ -186,6 +198,8 @@ class CoreWindow : public QMainWindow {
    * @param event
    */
   void closeEvent(QCloseEvent* event) override;
+
+  QSplitter* mainWindowSplitter() { return mainWindowSplitter_; }
 
   bool isSidePanelOnLeft() { return sidePanelOnLeft; }
 };

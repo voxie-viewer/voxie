@@ -22,6 +22,7 @@
 
 #include "JsonUtil.hpp"
 
+#include <VoxieClient/CastFloatToIntSafe.hpp>
 #include <VoxieClient/Exception.hpp>
 #include <VoxieClient/Vector.hpp>
 
@@ -102,6 +103,17 @@ QString vx::jsonTypeToString(QJsonValue::Type type) {
   }
 }
 
+bool vx::isNull(const QJsonValue& value) {
+  return value.type() == QJsonValue::Null;
+}
+
+bool vx::expectBool(const QJsonValue& value) {
+  if (value.type() != QJsonValue::Bool)
+    throw Exception("de.uni_stuttgart.Voxie.JsonError",
+                    "Error in JSON data: Expected a boolean, got a " +
+                        jsonTypeToString(value.type()));
+  return value.toBool();
+}
 QString vx::expectString(const QJsonValue& value) {
   if (value.type() != QJsonValue::String)
     throw Exception("de.uni_stuttgart.Voxie.JsonError",
@@ -139,19 +151,61 @@ quint64 vx::expectUnsignedInt(const QJsonValue& value) {
                     "Error in JSON data: Expected a number, got a " +
                         jsonTypeToString(value.type()));
   double valDouble = value.toDouble();
-  if (valDouble < 0)
-    throw Exception(
-        "de.uni_stuttgart.Voxie.JsonError",
-        "Error in JSON data: Got a negative value for unsigned integer");
   // TODO: Return an error if value might be rounded
-  if (valDouble > std::numeric_limits<quint64>::max())
-    throw Exception("de.uni_stuttgart.Voxie.JsonError",
-                    "Error in JSON data: Got a too large for unsigned integer");
-  quint64 val = (quint64)valDouble;
+  auto valUInt = vx::castFloatToIntSafe<quint64>(valDouble);
+  // Note: A comparison "valDouble > std::numeric_limits<quint64>::max()" might
+  // not work because of rounding.
+  if (!valUInt.has_value()) {
+    if (valDouble < 0)
+      throw Exception(
+          "de.uni_stuttgart.Voxie.JsonError",
+          "Error in JSON data: Got a negative value for unsigned integer");
+    else if (valDouble > 0)
+      throw Exception(
+          "de.uni_stuttgart.Voxie.JsonError",
+          "Error in JSON data: Got a too large for unsigned integer");
+    else
+      // Currently this probably cannot happen
+      throw Exception(
+          "de.uni_stuttgart.Voxie.JsonError",
+          "Error in JSON data: Got a NaN value for unsigned integer");
+  }
+  quint64 val = valUInt.value();
   if ((double)val != valDouble)
     throw Exception(
         "de.uni_stuttgart.Voxie.JsonError",
         "Error in JSON data: Got non-integer value for unsigned integer");
+  return val;
+}
+// Note: This will fail if the value is too large to be represented accurately
+// as double
+qint64 vx::expectSignedInt(const QJsonValue& value) {
+  if (value.type() != QJsonValue::Double)
+    throw Exception("de.uni_stuttgart.Voxie.JsonError",
+                    "Error in JSON data: Expected a number, got a " +
+                        jsonTypeToString(value.type()));
+  double valDouble = value.toDouble();
+  // TODO: Return an error if value might be rounded
+  auto valInt = vx::castFloatToIntSafe<qint64>(valDouble);
+  // Note: A comparison with std::numeric_limits<qint64>::min or max() might
+  // not work because of rounding.
+  if (!valInt.has_value()) {
+    if (valDouble < 0)
+      throw Exception("de.uni_stuttgart.Voxie.JsonError",
+                      "Error in JSON data: Got a too small for signed integer");
+    else if (valDouble > 0)
+      throw Exception("de.uni_stuttgart.Voxie.JsonError",
+                      "Error in JSON data: Got a too large for signed integer");
+    else
+      // Currently this probably cannot happen
+      throw Exception("de.uni_stuttgart.Voxie.JsonError",
+                      "Error in JSON data: Got a NaN value for signed integer");
+  }
+  qint64 val = valInt.value();
+  if ((double)val != valDouble)
+    throw Exception(
+        "de.uni_stuttgart.Voxie.JsonError",
+        "Error in JSON data: Got non-integer value for signed integer");
   return val;
 }
 vx::Vector<double, 3> vx::expectVector3(const QJsonValue& value) {
@@ -166,6 +220,7 @@ vx::Vector<double, 3> vx::expectVector3(const QJsonValue& value) {
       expectDouble(array[2]),
   };
 }
+
 QList<QString> vx::expectStringList(const QJsonValue& value) {
   auto array = expectArray(value);
   QList<QString> ret;

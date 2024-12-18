@@ -89,16 +89,15 @@ class ExporterAdaptorImpl : public ExporterAdaptor {
     }
   }
 
-  QString FilterAddExtension(
+  QString FilterForceMatch(
       const QString& filename,
       const QMap<QString, QDBusVariant>& options) override {
     try {
       ExportedObject::checkOptions(options);
 
-      return object->filter().addExtension(filename);
+      return object->filter().forceMatch(filename);
     } catch (Exception& e) {
-      e.handle(object);
-      return "";
+      return e.handle(object);
     }
   }
 };

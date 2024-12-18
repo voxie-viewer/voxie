@@ -64,6 +64,22 @@ struct StringConversionHelper {
   static QString toString(const T&) { return QString(); }
 };
 
+// String conversion specialization (QList)
+template <typename T>
+struct StringConversionHelper<QList<T>> {
+  static QString toString(const QList<T>& value) {
+    QString result = "[";
+    bool useSep = false;
+    for (const auto& entry : value) {
+      if (useSep) result += ", ";
+      useSep = true;
+      result += StringConversionHelper<T>::toString(entry);
+    }
+    result += "]";
+    return result;
+  }
+};
+
 // String conversion specialization (string)
 template <>
 struct StringConversionHelper<QString> {

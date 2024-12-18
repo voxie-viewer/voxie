@@ -65,7 +65,7 @@ class VOXIEBACKEND_EXPORT FilenameFilter {
   bool matchesCaseInsensitive(const QString& filename) const;
 
   // Add the filter extension to the filename
-  QString addExtension(const QString& file) const;
+  QString forceMatch(const QString& file) const;
 };
 
 }  // namespace io

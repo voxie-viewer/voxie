@@ -25,10 +25,9 @@
 #include <HDF5/Group.hpp>
 
 namespace HDF5 {
-  void AtomicType::checkType () const {
-    if (!isValid ())
-      return;
-    switch (getClass ()) {
+void AtomicType::checkType() const {
+  if (!isValid()) return;
+  switch (getClass()) {
     case H5T_INTEGER:
     case H5T_FLOAT:
     case H5T_TIME:
@@ -37,7 +36,7 @@ namespace HDF5 {
       break;
 
     default:
-      ABORT_MSG ("Not a atomic datatype");
-    }
+      ABORT_MSG("Not a atomic datatype");
   }
 }
+}  // namespace HDF5

@@ -3,71 +3,200 @@
 
 #pragma once
 
+#include <VoxieClient/StringConstant.hpp>
+
 namespace vx {
 inline namespace data_prop {
+static inline auto ContainerProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Data.Container");
+}
+using ContainerProperties_name = decltype(ContainerProperties_name_function());
 class ContainerPropertiesEntry;
 class ContainerPropertiesBase;
 class ContainerPropertiesCopy;
 class ContainerProperties;
 }  // namespace data_prop
 inline namespace data_prop {
+static inline auto EventListDataProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Data.EventListData");
+}
+using EventListDataProperties_name =
+    decltype(EventListDataProperties_name_function());
 class EventListDataPropertiesEntry;
 class EventListDataPropertiesBase;
 class EventListDataPropertiesCopy;
 class EventListDataProperties;
 }  // namespace data_prop
 inline namespace data_prop {
+static inline auto FileProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Data.File");
+}
+using FileProperties_name = decltype(FileProperties_name_function());
+class FilePropertiesEntry;
+class FilePropertiesBase;
+class FilePropertiesCopy;
+class FileProperties;
+}  // namespace data_prop
+inline namespace data_prop {
+static inline auto GeometricPrimitiveProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Data.GeometricPrimitive");
+}
+using GeometricPrimitiveProperties_name =
+    decltype(GeometricPrimitiveProperties_name_function());
 class GeometricPrimitivePropertiesEntry;
 class GeometricPrimitivePropertiesBase;
 class GeometricPrimitivePropertiesCopy;
 class GeometricPrimitiveProperties;
 }  // namespace data_prop
 inline namespace data_prop {
+static inline auto SurfaceProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Data.Surface");
+}
+using SurfaceProperties_name = decltype(SurfaceProperties_name_function());
 class SurfacePropertiesEntry;
 class SurfacePropertiesBase;
 class SurfacePropertiesCopy;
 class SurfaceProperties;
 }  // namespace data_prop
 inline namespace data_prop {
+static inline auto TableProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Data.Table");
+}
+using TableProperties_name = decltype(TableProperties_name_function());
 class TablePropertiesEntry;
 class TablePropertiesBase;
 class TablePropertiesCopy;
 class TableProperties;
 }  // namespace data_prop
 inline namespace data_prop {
+static inline auto TomographyRawDataProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Data.TomographyRawData");
+}
+using TomographyRawDataProperties_name =
+    decltype(TomographyRawDataProperties_name_function());
 class TomographyRawDataPropertiesEntry;
 class TomographyRawDataPropertiesBase;
 class TomographyRawDataPropertiesCopy;
 class TomographyRawDataProperties;
 }  // namespace data_prop
 inline namespace data_prop {
+static inline auto VolumeProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Data.Volume");
+}
+using VolumeProperties_name = decltype(VolumeProperties_name_function());
 class VolumePropertiesEntry;
 class VolumePropertiesBase;
 class VolumePropertiesCopy;
 class VolumeProperties;
 }  // namespace data_prop
 inline namespace data_prop {
+static inline auto VolumeSeriesProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Data.VolumeSeries");
+}
+using VolumeSeriesProperties_name =
+    decltype(VolumeSeriesProperties_name_function());
 class VolumeSeriesPropertiesEntry;
 class VolumeSeriesPropertiesBase;
 class VolumeSeriesPropertiesCopy;
 class VolumeSeriesProperties;
 }  // namespace data_prop
 inline namespace node_prop {
+static inline auto NodeGroupProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Node.NodeGroup");
+}
+using NodeGroupProperties_name = decltype(NodeGroupProperties_name_function());
 class NodeGroupPropertiesEntry;
 class NodeGroupPropertiesBase;
 class NodeGroupPropertiesCopy;
 class NodeGroupProperties;
 }  // namespace node_prop
 inline namespace property_prop {
+static inline auto PlaneProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Property.Plane");
+}
+using PlaneProperties_name = decltype(PlaneProperties_name_function());
 class PlanePropertiesEntry;
 class PlanePropertiesBase;
 class PlanePropertiesCopy;
 class PlaneProperties;
 }  // namespace property_prop
 inline namespace property_prop {
+static inline auto PreviewBoxProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Property.PreviewBox");
+}
+using PreviewBoxProperties_name =
+    decltype(PreviewBoxProperties_name_function());
 class PreviewBoxPropertiesEntry;
 class PreviewBoxPropertiesBase;
 class PreviewBoxPropertiesCopy;
 class PreviewBoxProperties;
 }  // namespace property_prop
+template <typename S>
+struct PropertiesTypeAlias;
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::ContainerProperties_name> {
+  using PropertiesType = ::vx::data_prop::ContainerProperties;
+  using PropertiesEntryType = ::vx::data_prop::ContainerPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::EventListDataProperties_name> {
+  using PropertiesType = ::vx::data_prop::EventListDataProperties;
+  using PropertiesEntryType = ::vx::data_prop::EventListDataPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::FileProperties_name> {
+  using PropertiesType = ::vx::data_prop::FileProperties;
+  using PropertiesEntryType = ::vx::data_prop::FilePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::GeometricPrimitiveProperties_name> {
+  using PropertiesType = ::vx::data_prop::GeometricPrimitiveProperties;
+  using PropertiesEntryType =
+      ::vx::data_prop::GeometricPrimitivePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::SurfaceProperties_name> {
+  using PropertiesType = ::vx::data_prop::SurfaceProperties;
+  using PropertiesEntryType = ::vx::data_prop::SurfacePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::TableProperties_name> {
+  using PropertiesType = ::vx::data_prop::TableProperties;
+  using PropertiesEntryType = ::vx::data_prop::TablePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::TomographyRawDataProperties_name> {
+  using PropertiesType = ::vx::data_prop::TomographyRawDataProperties;
+  using PropertiesEntryType = ::vx::data_prop::TomographyRawDataPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::VolumeProperties_name> {
+  using PropertiesType = ::vx::data_prop::VolumeProperties;
+  using PropertiesEntryType = ::vx::data_prop::VolumePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::data_prop::VolumeSeriesProperties_name> {
+  using PropertiesType = ::vx::data_prop::VolumeSeriesProperties;
+  using PropertiesEntryType = ::vx::data_prop::VolumeSeriesPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::node_prop::NodeGroupProperties_name> {
+  using PropertiesType = ::vx::node_prop::NodeGroupProperties;
+  using PropertiesEntryType = ::vx::node_prop::NodeGroupPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::property_prop::PlaneProperties_name> {
+  using PropertiesType = ::vx::property_prop::PlaneProperties;
+  using PropertiesEntryType = ::vx::property_prop::PlanePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::property_prop::PreviewBoxProperties_name> {
+  using PropertiesType = ::vx::property_prop::PreviewBoxProperties;
+  using PropertiesEntryType = ::vx::property_prop::PreviewBoxPropertiesEntry;
+};
 }  // namespace vx

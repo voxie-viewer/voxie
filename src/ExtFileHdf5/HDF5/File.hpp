@@ -27,14 +27,14 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/IdComponent.hpp>
 
-#include <HDF5/PropLists.hpp> // Needed for default constructors
+#include <HDF5/PropLists.hpp>  // Needed for default constructors
 
 #ifndef NO_BOOST_FILESYSTEM_PATH
 #include <Core/BoostFilesystem.hpp>
@@ -42,39 +42,36 @@
 
 namespace HDF5 {
 #ifndef NO_BOOST_FILESYSTEM_PATH
-  typedef Core::Path FilenameType;
-  inline std::string getString (const FilenameType& path) { return path.string (); }
+typedef Core::Path FilenameType;
+inline std::string getString(const FilenameType& path) { return path.string(); }
 #else
-  typedef std::string FilenameType;
-  inline std::string getString (const FilenameType& path) { return path; }
+typedef std::string FilenameType;
+inline std::string getString(const FilenameType& path) { return path; }
 #endif
 
-  class File : public IdComponent {
-    void checkType () const;
+class File : public IdComponent {
+  void checkType() const;
 
-  public:
-    File () {
-    }
+ public:
+  File() {}
 
-    explicit File (const IdComponent& value) : IdComponent (value) {
-      checkType ();
-    }
+  explicit File(const IdComponent& value) : IdComponent(value) { checkType(); }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit File (hid_t value) : IdComponent (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit File(hid_t value) : IdComponent(value) { checkType(); }
 
-    static File open (const FilenameType& name, unsigned int flags, FileCreatePropList fcpl = FileCreatePropList (), FileAccessPropList fapl = FileAccessPropList ());
-    static bool isHDF5 (const FilenameType& name);
+  static File open(const FilenameType& name, unsigned int flags,
+                   FileCreatePropList fcpl = FileCreatePropList(),
+                   FileAccessPropList fapl = FileAccessPropList());
+  static bool isHDF5(const FilenameType& name);
 
-    Group rootGroup () const;
+  Group rootGroup() const;
 
-    void* getVFDHandle (FileAccessPropList fapl = FileAccessPropList ()) const;
-    int getVFDHandleFD (FileAccessPropList fapl = FileAccessPropList ()) const;
+  void* getVFDHandle(FileAccessPropList fapl = FileAccessPropList()) const;
+  int getVFDHandleFD(FileAccessPropList fapl = FileAccessPropList()) const;
 
-    std::string getFileName () const;
-  };
-}
+  std::string getFileName() const;
+};
+}  // namespace HDF5
 
-#endif // !HDF5_FILE_HPP_INCLUDED
+#endif  // !HDF5_FILE_HPP_INCLUDED

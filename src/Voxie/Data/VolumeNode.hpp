@@ -26,7 +26,7 @@
 
 #include <Voxie/MathQt.hpp>
 
-#include <Voxie/Data/PositionInterface.hpp>
+#include <Voxie/Data/MovableDataNode.hpp>
 #include <Voxie/Data/Prototypes.forward.hpp>
 
 #include <Voxie/Node/DataNode.hpp>
@@ -56,17 +56,15 @@ namespace vx {
 class VolumeData;
 class BoundingBox3D;
 
-class VOXIECORESHARED_EXPORT VolumeNode : public PositionInterface {
+class VOXIECORESHARED_EXPORT VolumeNode : public MovableDataNode {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(VolumeNode)
+  VX_REFCOUNTEDOBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Data.Volume")
 
  private:
-  VolumeProperties* properties;
   QSharedPointer<VolumeData> volumeDataPointer;
 
  public:
-  static QSharedPointer<NodePrototype> getPrototypeSingleton();
-
   explicit VolumeNode();
   ~VolumeNode();
 
@@ -82,21 +80,14 @@ class VOXIECORESHARED_EXPORT VolumeNode : public PositionInterface {
     return volumeDataPointer;
   }
 
+  // TODO: Clarify which coordinate systems these values are in
   QVector3D origin() const;
   QQuaternion orientation() const;
   QVector3D size() const;
   QVector3D volumeCenter() const;
   float diagonalSize() const;
 
-  // TODO: Rename to boundingBoxGlobal and consider object rotation and movement
-  BoundingBox3D boundingBox();
-
-  /**
-   * @brief Calculates 3D object coordinate [m] to global 3D coordinate [m]
-   * transformation matrix
-   * @return transformation matrix
-   */
-  AffineMap<double, 3UL, 3UL> getObjectToGlobalTrafo();
+  BoundingBox3D boundingBoxObject() override;
 
  Q_SIGNALS:
   /**
@@ -115,8 +106,5 @@ class VOXIECORESHARED_EXPORT VolumeNode : public PositionInterface {
   // changed handler for both properties.
   void rotationChanged(QQuaternion value);
   void translationChanged(QVector3D value);
-
-  // TODO: Rename to boundingBoxGlobal and consider object rotation and movement
-  void boundingBoxChanged();
 };
 }  // namespace vx

@@ -98,7 +98,10 @@ Ruler::Ruler(SliceVisualizer* sv) {
 Ruler::~Ruler() {}
 
 void Ruler::render(QImage& outputImage,
-                   const QSharedPointer<vx::ParameterCopy>& parameters) {
+                   const QSharedPointer<vx::ParameterCopy>& parameters,
+                   bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

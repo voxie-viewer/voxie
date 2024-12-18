@@ -24,14 +24,12 @@
 
 #if OS_WIN
 #include <windows.h>
-#endif // OS_WIN
+#endif  // OS_WIN
 
 namespace Core {
 #if OS_WIN
-  namespace Intern {
-    void windowsLocalFree (void* v) {
-      LocalFree (v);
-    }
-  }
-#endif // OS_WIN
-}
+namespace Intern {
+void windowsLocalFree(void* v) { LocalFree(v); }
+}  // namespace Intern
+#endif  // OS_WIN
+}  // namespace Core

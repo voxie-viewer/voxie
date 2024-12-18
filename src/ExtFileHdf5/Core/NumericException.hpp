@@ -27,78 +27,77 @@
 //
 // All Exceptions inherit from Core::NumericException
 
-#include <Core/Type.hpp>
-#include <Core/Exception.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Exception.hpp>
+#include <Core/Type.hpp>
 
 #include <limits>
 #include <ostream>
 #include <sstream>
 #include <typeinfo>
 
-#include <stdint.h>
 #include <limits.h>
+#include <stdint.h>
 
 namespace Core {
-  namespace Intern {
-    template <typename T> inline std::string intToString (T a) {
-      std::stringstream str;
-      if (std::numeric_limits<T>::is_signed)
-        str << (int64_t) a;
-      else
-        str << (uint64_t) a;
-      return str.str ();
-    }
-  }
-
-  class NumericException : public Exception {
-  };
-
-  class ConversionOverflowException : public virtual NumericException {
-  };
-
-  template <typename TargetType> class TargetTypedNumericException : public virtual NumericException {
-  public:
-    static bool isSigned () {
-      return std::numeric_limits<TargetType>::is_signed;
-    }
-
-    static TargetType typeMin () {
-      return std::numeric_limits<TargetType>::min ();
-    }
-
-    static TargetType typeMax () {
-      return std::numeric_limits<TargetType>::max ();
-    }
-
-    static std::string targetTypeInfo () {
-      std::stringstream str;
-
-      str << "Type `" << Type::getName<TargetType> () << "' is " << (isSigned () ? "signed" : "unsigned") << ", min is " << Intern::intToString (typeMin ()) << ", max is " << Intern::intToString (typeMax ());
-      
-      return str.str ();
-    }
-  };
-
-  template <typename From, typename To>
-  class TypedConversionOverflowException : public virtual TargetTypedNumericException<To>, public virtual ConversionOverflowException {
-    From _value;
-
-  public:
-    TypedConversionOverflowException (From value) : _value (value) {
-    }
-
-    From value () const {
-      return _value;
-    }
-
-    std::string message () const override {
-      std::stringstream str;
-      typedef std::numeric_limits<To> target;
-      str << "Error converting from " << Type::getName<From> () << " to " << Type::getName<To> () << ": " << Intern::intToString (value ()) << " is not in [" << Intern::intToString (target::min ()) << ";" << Intern::intToString (target::max ()) << "]";
-      return str.str ();
-    }
-  };
+namespace Intern {
+template <typename T>
+inline std::string intToString(T a) {
+  std::stringstream str;
+  if (std::numeric_limits<T>::is_signed)
+    str << (int64_t)a;
+  else
+    str << (uint64_t)a;
+  return str.str();
 }
+}  // namespace Intern
 
-#endif // !CORE_NUMERICEXCEPTION_HPP_INCLUDED
+class NumericException : public Exception {};
+
+class ConversionOverflowException : public virtual NumericException {};
+
+template <typename TargetType>
+class TargetTypedNumericException : public virtual NumericException {
+ public:
+  static bool isSigned() { return std::numeric_limits<TargetType>::is_signed; }
+
+  static TargetType typeMin() { return std::numeric_limits<TargetType>::min(); }
+
+  static TargetType typeMax() { return std::numeric_limits<TargetType>::max(); }
+
+  static std::string targetTypeInfo() {
+    std::stringstream str;
+
+    str << "Type `" << Type::getName<TargetType>() << "' is "
+        << (isSigned() ? "signed" : "unsigned") << ", min is "
+        << Intern::intToString(typeMin()) << ", max is "
+        << Intern::intToString(typeMax());
+
+    return str.str();
+  }
+};
+
+template <typename From, typename To>
+class TypedConversionOverflowException
+    : public virtual TargetTypedNumericException<To>,
+      public virtual ConversionOverflowException {
+  From _value;
+
+ public:
+  TypedConversionOverflowException(From value) : _value(value) {}
+
+  From value() const { return _value; }
+
+  std::string message() const override {
+    std::stringstream str;
+    typedef std::numeric_limits<To> target;
+    str << "Error converting from " << Type::getName<From>() << " to "
+        << Type::getName<To>() << ": " << Intern::intToString(value())
+        << " is not in [" << Intern::intToString(target::min()) << ";"
+        << Intern::intToString(target::max()) << "]";
+    return str.str();
+  }
+};
+}  // namespace Core
+
+#endif  // !CORE_NUMERICEXCEPTION_HPP_INCLUDED

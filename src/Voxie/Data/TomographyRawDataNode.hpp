@@ -40,15 +40,11 @@ class TomographyRawData2DAccessor;
  */
 class VOXIECORESHARED_EXPORT TomographyRawDataNode : public DataNode {
   Q_OBJECT
-  // Q_DISABLE_COPY(TomographyRawDataNode)
-
-  data_prop::TomographyRawDataProperties* properties;
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Data.TomographyRawData")
 
   QSharedPointer<TomographyRawData2DAccessor> data_;
 
  public:
-  static QSharedPointer<vx::NodePrototype> getPrototypeSingleton();
-
   TomographyRawDataNode();
   ~TomographyRawDataNode();
 

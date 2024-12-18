@@ -40,7 +40,7 @@ void HausdorffDistance::run(
     vx::ClaimedOperation<de::uni_stuttgart::Voxie::ExternalOperationRunFilter>&
         op) {
   auto vertexCount_nominal = vertices_nominal.size<0>();
-  auto trianglesCount_nominal = triangles_nominal.size<0>();
+  // auto trianglesCount_nominal = triangles_nominal.size<0>();
   auto vertexCount_actual = vertices_actual.size<0>();
   auto trianglesCount_actual = triangles_actual.size<0>();
 
@@ -248,6 +248,7 @@ void HausdorffDistance::run(
   */
 
   // calculate Hausdorff metric
+  // TODO: Write directly into outputDistances?
   vx::Array1<double> distances({vertices_nominal.size<0>()});
 
   for (size_t index = 0; index < vertices_nominal.size<0>(); index++) {
@@ -257,25 +258,21 @@ void HausdorffDistance::run(
         cellArray);
 
     // progressbar
-    HANDLEDBUSPENDINGREPLY(op.opGen().SetProgress(
-        static_cast<double>(index) /
-            static_cast<double>(vertices_nominal.size<0>()),
-        vx::emptyOptions()));
+    if (index % 1000 == 0 || index == vertices_nominal.size<0>() - 1)
+      HANDLEDBUSPENDINGREPLY(op.opGen().SetProgress(
+          static_cast<double>(index) /
+              static_cast<double>(vertices_nominal.size<0>()),
+          vx::emptyOptions()));
   }
 
-  // TODO: convert per-vertex-distance to per-triangle-distance;   REMOVE AFTER
-  // IMPLEMENTATION OF VERTEX COLORING
-  vx::Array1<double> distancesTriangles({trianglesCount_nominal});
-  for (size_t index = 0; index < trianglesCount_nominal; index++) {
-    distancesTriangles(index) = (distances(triangles_nominal(index, 0)) +
-                                 distances(triangles_nominal(index, 1)) +
-                                 distances(triangles_nominal(index, 2))) /
-                                3;
+  if (distances.size<0>() != outputDistances.size<0>()) {
+    throw vx::Exception(
+        "de.uni_stuttgart.Voxie.ExtFilterHausdorffDistance.Error",
+        "distances.size<0>() != outputDistances.size<0>()");
   }
 
-  for (size_t index = 0; index < distancesTriangles.size<0>();
-       index++) {  // change distancesTriangles to distances for vertex coloring
-    outputDistances(index, 0) = static_cast<float>(distancesTriangles(index));
+  for (size_t index = 0; index < distances.size<0>(); index++) {
+    outputDistances(index, 0) = static_cast<float>(distances(index));
 
     // std::cout << std::to_string(outputDistances(index,0)) << std::endl;
   }
@@ -320,6 +317,9 @@ double HausdorffDistance::calculateTriangleArea(const QVector3D vertexA,
  */
 int HausdorffDistance::calculateSampleFrequency(const double triangleArea,
                                                 const double samplingDensity) {
+  // TODO: Something is broken here, samplingDensity is not a percentage but
+  // seems to be in 1/m².
+  // TODO: samplingDensity should be settable by the user.
   /* rand variable in [0,1) interval */
   double random = rand() / (RAND_MAX + 1.0);
   double n_samples = triangleArea * samplingDensity;
@@ -380,6 +380,7 @@ std::vector<QVector3D> HausdorffDistance::triangleSampling(
 
 // TODO: kommentar
 // TODO: PArameter als Shared Pointer auf vertices Array übergeben
+// TODO: Seems to be unused, remove?
 std::vector<std::vector<QVector3D>> HausdorffDistance::getSamplingPoints(
     vx::Array2<const float>& actualVertices, const double samplingDensity) {
   std::vector<std::vector<QVector3D>> samplingCoordinates;

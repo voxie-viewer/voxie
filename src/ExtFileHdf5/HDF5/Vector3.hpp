@@ -31,20 +31,21 @@
 #include <Math/Vector3.hpp>
 
 namespace HDF5 {
-  template <typename T> class TypeImpl<Math::Vector3<T> > {
+template <typename T>
+class TypeImpl<Math::Vector3<T> > {
 #ifdef VECTOR3_USE_PADDING
 #error "VECTOR3_USE_PADDING is defined"
 #endif
-    struct MyVector3 {
-      T x, y, z;
-    };
-  
-    HDF5_TYPE (MyVector3)
-    HDF5_ADD_MEMBER (x)
-    HDF5_ADD_MEMBER (y)
-    HDF5_ADD_MEMBER (z)
-    HDF5_TYPE_END
+  struct MyVector3 {
+    T x, y, z;
   };
-}
 
-#endif // !HDF5_VECTOR3_HPP_INCLUDED
+  HDF5_TYPE(MyVector3)
+  HDF5_ADD_MEMBER(x)
+  HDF5_ADD_MEMBER(y)
+  HDF5_ADD_MEMBER(z)
+  HDF5_TYPE_END
+};
+}  // namespace HDF5
+
+#endif  // !HDF5_VECTOR3_HPP_INCLUDED

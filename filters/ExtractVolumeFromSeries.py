@@ -70,6 +70,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
         }
     op.Finish(result)
 
-    volume_version._referenceCountingObject.destroy()
+    if volume is not None:
+        volume_version._referenceCountingObject.destroy()
 
 context.client.destroy()

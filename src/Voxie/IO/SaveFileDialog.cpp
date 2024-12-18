@@ -105,7 +105,7 @@ void SaveFileDialog::accept() {
 
   const Filter* filter = currentFilter();
   if (filter && filter->filter.patterns().size()) {
-    file = filter->filter.addExtension(file);
+    file = filter->filter.forceMatch(file);
     this->setFocus(Qt::OtherFocusReason);  // Make lineEdit loose focus,
                                            // otherwise if the lineEdit is
                                            // selected it will not be updated

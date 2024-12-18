@@ -25,22 +25,29 @@
 #include <Voxie/Voxie.hpp>
 
 #include <VoxieClient/DBusTypeList.hpp>
+#include <VoxieClient/Vector.hpp>
 
 #include <QtGui/QColor>
 #include <QtGui/QVector4D>
 
 namespace vx {
 class VOXIECORESHARED_EXPORT Color {
+  // TODO: Use vx::Vector
   vx::TupleVector<double, 4> col;
 
  public:
   Color() : col(std::make_tuple(0, 0, 0, 1)) {}
   Color(double r, double g, double b, double a = 1.0) : col(r, g, b, a) {}
   Color(const vx::TupleVector<double, 4>& tuple) : col(tuple) {}
-  Color(const QColor color)
-      : col(color.redF(), color.greenF(), color.blueF(), color.alphaF()) {}
   Color(const QVector4D color)
       : col(color.x(), color.y(), color.z(), color.w()) {}
+
+  Color(const QColor color)
+      : col(color.redF(), color.greenF(), color.blueF(), color.alphaF()) {}
+  static Color fromRgba(QRgb rgba) {
+    return Color(qRed(rgba) / 255.0, qGreen(rgba) / 255.0, qBlue(rgba) / 255.0,
+                 qAlpha(rgba) / 255.0);
+  }
 
   const vx::TupleVector<double, 4>& asTuple() const { return col; }
   const QColor asQColor() const {
@@ -52,7 +59,14 @@ class VOXIECORESHARED_EXPORT Color {
                      std::get<3>(col));
   }
 
+  vx::Vector<double, 4> premultiplied() const {
+    return vx::Vector<double, 4>(red() * alpha(), green() * alpha(),
+                                 blue() * alpha(), alpha());
+  }
+
   static Color black() { return Color(std::make_tuple(0, 0, 0, 1)); }
+
+  static Color transparent() { return Color(std::make_tuple(0, 0, 0, 0)); }
 
   double red() const { return std::get<0>(col); }
   void setRed(double value) { std::get<0>(col) = value; }

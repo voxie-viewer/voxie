@@ -28,6 +28,24 @@
 
 using namespace vx;
 
+// TODO: Rename file
+
+class VOXIECORESHARED_EXPORT PropertyInstance {
+ public:
+  virtual ~PropertyInstance();
+
+  virtual QSharedPointer<PropertyType> type() const = 0;
+  virtual QVariant get() const = 0;
+  virtual void set(const QVariant& value) const = 0;
+  virtual QMetaObject::Connection connectChanged(
+      QObject* obj, std::function<void(const QVariant&)>&& callback) const = 0;
+  template <typename T>
+  QMetaObject::Connection connectChanged(
+      T* obj, void (T::*fun)(const QVariant& value)) {
+    return connectChanged(obj, [fun](const QVariant& value) { fun(value); });
+  }
+};
+
 /***
  * @brief The "NodeProperty" class only holds a property of a node prototype,
  * but not what specific node it belongs to. This makes it impossible to get the
@@ -35,7 +53,16 @@ using namespace vx;
  * This helper struct can be used to conveniently save a NodeProperty and the
  * Node it belongs to in one place.
  */
-struct NodeNodeProperty {
+// TODO: Rename to e.g. NodePropertyInstance
+class VOXIECORESHARED_EXPORT NodeNodeProperty : public PropertyInstance {
+ public:
+  NodeNodeProperty(QPointer<Node> _node,
+                   QSharedPointer<NodeProperty> _property) {
+    node = _node;
+    property = _property;
+  }
+  ~NodeNodeProperty() override;
+
   QPointer<Node> node;
   QSharedPointer<NodeProperty> property;
 
@@ -48,9 +75,10 @@ struct NodeNodeProperty {
     return node == other.node && property == other.property;
   }
 
-  NodeNodeProperty(QPointer<Node> _node,
-                   QSharedPointer<NodeProperty> _property) {
-    node = _node;
-    property = _property;
-  }
+  QSharedPointer<PropertyType> type() const override;
+  QVariant get() const override;
+  void set(const QVariant& value) const override;
+  QMetaObject::Connection connectChanged(
+      QObject* obj,
+      std::function<void(const QVariant&)>&& callback) const override;
 };

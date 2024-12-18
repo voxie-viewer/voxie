@@ -3,11 +3,25 @@
 
 #pragma once
 
+#include <VoxieClient/StringConstant.hpp>
+
 namespace vx {
 inline namespace visualizer_prop {
+static inline auto SliceProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Visualizer.Slice");
+}
+using SliceProperties_name = decltype(SliceProperties_name_function());
 class SlicePropertiesEntry;
 class SlicePropertiesBase;
 class SlicePropertiesCopy;
 class SliceProperties;
 }  // namespace visualizer_prop
+template <typename S>
+struct PropertiesTypeAlias;
+template <>
+struct PropertiesTypeAlias<::vx::visualizer_prop::SliceProperties_name> {
+  using PropertiesType = ::vx::visualizer_prop::SliceProperties;
+  using PropertiesEntryType = ::vx::visualizer_prop::SlicePropertiesEntry;
+};
 }  // namespace vx

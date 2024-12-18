@@ -3,6 +3,7 @@
 
 #include "Prototypes.hpp"
 
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodePrototype.hpp>
 #include <Voxie/Node/PropertyValueConvertDBus.hpp>
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
@@ -127,6 +128,66 @@ EventListDataProperties::~EventListDataProperties() {}
 
 EventListDataProperties::EventListDataProperties(vx::Node* parent)
     : QObject(parent) {
+  this->_node = parent;
+}
+
+}  // namespace data_prop
+inline namespace data_prop {
+FilePropertiesEntry::~FilePropertiesEntry() {}
+FilePropertiesBase::~FilePropertiesBase() {}
+FilePropertiesCopy::FilePropertiesCopy(
+    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    : _properties(properties) {}
+static const char _prototype_File_[] = {
+    123, 34,  68,  101, 102, 97,  117, 108, 116, 69,  120, 112, 111, 114, 116,
+    101, 114, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
+    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,
+    105, 108, 101, 70,  111, 114, 109, 97,  116, 46,  70,  105, 108, 101, 46,
+    74,  115, 111, 110, 46,  69,  120, 112, 111, 114, 116, 34,  44,  32,  34,
+    68,  101, 115, 99,  114, 105, 112, 116, 105, 111, 110, 34,  58,  32,  34,
+    65,  32,  102, 105, 108, 101, 32,  108, 111, 97,  100, 101, 100, 32,  105,
+    110, 116, 111, 32,  109, 101, 109, 111, 114, 121, 46,  34,  44,  32,  34,
+    68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,
+    70,  105, 108, 101, 32,  100, 97,  116, 97,  34,  44,  32,  34,  73,  99,
+    111, 110, 34,  58,  32,  34,  58,  47,  105, 99,  111, 110, 115, 47,  98,
+    108, 117, 101, 45,  102, 111, 108, 100, 101, 114, 45,  111, 112, 101, 110,
+    45,  100, 111, 99,  117, 109, 101, 110, 116, 45,  116, 101, 120, 116, 46,
+    112, 110, 103, 34,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,
+    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
+    116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116, 97,  46,  70,  105,
+    108, 101, 34,  44,  32,  34,  78,  111, 100, 101, 75,  105, 110, 100, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  78,  111, 100, 101,
+    75,  105, 110, 100, 46,  68,  97,  116, 97,  34,  44,  32,  34,  80,  114,
+    111, 112, 101, 114, 116, 105, 101, 115, 34,  58,  32,  123, 125, 44,  32,
+    34,  83,  117, 112, 112, 111, 114, 116, 101, 100, 68,  97,  116, 97,  68,
+    66,  117, 115, 73,  110, 116, 101, 114, 102, 97,  99,  101, 115, 34,  58,
+    32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,  105, 108, 101,
+    68,  97,  116, 97,  34,  93,  44,  32,  34,  84,  114, 111, 118, 101, 67,
+    108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,  34,
+    68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116, 97,
+    116, 117, 115, 32,  58,  58,  32,  52,  32,  45,  32,  66,  101, 116, 97,
+    34,  93,  44,  32,  34,  85,  73,  34,  58,  32,  123, 34,  83,  105, 100,
+    101, 80,  97,  110, 101, 108, 83,  101, 99,  116, 105, 111, 110, 115, 34,
+    58,  32,  91,  123, 34,  84,  121, 112, 101, 34,  58,  32,  34,  65,  117,
+    116, 111, 109, 97,  116, 105, 99,  83,  101, 99,  116, 105, 111, 110, 80,
+    108, 97,  99,  101, 104, 111, 108, 100, 101, 114, 34,  125, 44,  32,  123,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  73,  110, 102, 111, 34,  44,  32,  34,  69,  110, 116, 114, 105, 101,
+    115, 34,  58,  32,  91,  123, 34,  78,  97,  109, 101, 34,  58,  32,  34,
+    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
+    116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116, 97,  46,  70,  105,
+    108, 101, 46,  67,  111, 110, 116, 101, 110, 116, 73,  110, 102, 111, 34,
+    44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  67,  117, 115, 116,
+    111, 109, 34,  125, 93,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,
+    34,  73,  110, 102, 111, 83,  101, 99,  116, 105, 111, 110, 34,  125, 93,
+    125, 125, 0};
+const char* FileProperties::_getPrototypeJson() { return _prototype_File_; }
+
+FileProperties::~FileProperties() {}
+
+FileProperties::FileProperties(vx::Node* parent) : QObject(parent) {
   this->_node = parent;
 }
 
@@ -312,6 +373,9 @@ GeometricPrimitiveProperties::measurementPrimitive1PropertyTyped() {
   return NodePropertyTyped<vx::types::GeometricPrimitive>(
       measurementPrimitive1Property());
 }
+NodeNodeProperty GeometricPrimitiveProperties::measurementPrimitive1Instance() {
+  return NodeNodeProperty(_node, measurementPrimitive1Property());
+}
 void GeometricPrimitiveProperties::setMeasurementPrimitive1(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
       "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.MeasurementPrimitive1",
@@ -338,6 +402,9 @@ GeometricPrimitiveProperties::measurementPrimitive2PropertyTyped() {
   return NodePropertyTyped<vx::types::GeometricPrimitive>(
       measurementPrimitive2Property());
 }
+NodeNodeProperty GeometricPrimitiveProperties::measurementPrimitive2Instance() {
+  return NodeNodeProperty(_node, measurementPrimitive2Property());
+}
 void GeometricPrimitiveProperties::setMeasurementPrimitive2(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
       "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.MeasurementPrimitive2",
@@ -362,6 +429,9 @@ NodePropertyTyped<vx::types::GeometricPrimitive>
 GeometricPrimitiveProperties::selectedPrimitivePropertyTyped() {
   return NodePropertyTyped<vx::types::GeometricPrimitive>(
       selectedPrimitiveProperty());
+}
+NodeNodeProperty GeometricPrimitiveProperties::selectedPrimitiveInstance() {
+  return NodeNodeProperty(_node, selectedPrimitiveProperty());
 }
 void GeometricPrimitiveProperties::setSelectedPrimitive(quint64 value) {
   _node->setNodePropertyTyped<quint64>(
@@ -580,6 +650,9 @@ NodePropertyTyped<vx::types::Orientation3D>
 SurfaceProperties::rotationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(rotationProperty());
 }
+NodeNodeProperty SurfaceProperties::rotationInstance() {
+  return NodeNodeProperty(_node, rotationProperty());
+}
 void SurfaceProperties::setRotation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.MovableDataNode.Rotation",
@@ -603,6 +676,9 @@ QSharedPointer<NodeProperty> SurfaceProperties::translationProperty() {
 NodePropertyTyped<vx::types::Position3D>
 SurfaceProperties::translationPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(translationProperty());
+}
+NodeNodeProperty SurfaceProperties::translationInstance() {
+  return NodeNodeProperty(_node, translationProperty());
 }
 void SurfaceProperties::setTranslation(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -908,6 +984,9 @@ NodePropertyTyped<vx::types::Orientation3D>
 VolumeProperties::rotationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(rotationProperty());
 }
+NodeNodeProperty VolumeProperties::rotationInstance() {
+  return NodeNodeProperty(_node, rotationProperty());
+}
 void VolumeProperties::setRotation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.MovableDataNode.Rotation",
@@ -931,6 +1010,9 @@ QSharedPointer<NodeProperty> VolumeProperties::translationProperty() {
 NodePropertyTyped<vx::types::Position3D>
 VolumeProperties::translationPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(translationProperty());
+}
+NodeNodeProperty VolumeProperties::translationInstance() {
+  return NodeNodeProperty(_node, translationProperty());
 }
 void VolumeProperties::setTranslation(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -1051,53 +1133,42 @@ static const char _prototype_VolumeSeries_[] = {
     95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
     101, 46,  77,  111, 118, 97,  98,  108, 101, 68,  97,  116, 97,  78,  111,
     100, 101, 46,  82,  111, 116, 97,  116, 105, 111, 110, 34,  58,  32,  123,
-    34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121, 78,
-    97,  109, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105,
-    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
-    101, 46,  77,  111, 118, 97,  98,  108, 101, 68,  97,  116, 97,  79,  98,
-    106, 101, 99,  116, 46,  82,  111, 116, 97,  116, 105, 111, 110, 34,  93,
-    44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,
-    58,  32,  34,  82,  111, 116, 97,  116, 105, 111, 110, 34,  44,  32,  34,
-    73,  115, 67,  117, 115, 116, 111, 109, 83,  116, 111, 114, 97,  103, 101,
-    34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  73,  115, 67,  117, 115,
-    116, 111, 109, 85,  73,  34,  58,  32,  116, 114, 117, 101, 44,  32,  34,
-    84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
-    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
-    46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  79,
-    114, 105, 101, 110, 116, 97,  116, 105, 111, 110, 51,  68,  34,  125, 44,
-    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
-    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  77,  111, 118, 97,  98,
-    108, 101, 68,  97,  116, 97,  78,  111, 100, 101, 46,  84,  114, 97,  110,
-    115, 108, 97,  116, 105, 111, 110, 34,  58,  32,  123, 34,  67,  111, 109,
-    112, 97,  116, 105, 98,  105, 108, 105, 116, 121, 78,  97,  109, 101, 115,
-    34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
-    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  77,  111,
-    118, 97,  98,  108, 101, 68,  97,  116, 97,  79,  98,  106, 101, 99,  116,
-    46,  84,  114, 97,  110, 115, 108, 97,  116, 105, 111, 110, 34,  93,  44,
-    32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,
-    32,  34,  84,  114, 97,  110, 115, 108, 97,  116, 105, 111, 110, 34,  44,
-    32,  34,  73,  115, 67,  117, 115, 116, 111, 109, 83,  116, 111, 114, 97,
-    103, 101, 34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  73,  115, 67,
-    117, 115, 116, 111, 109, 85,  73,  34,  58,  32,  116, 114, 117, 101, 44,
-    32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110,
-    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
-    105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101,
-    46,  80,  111, 115, 105, 116, 105, 111, 110, 51,  68,  34,  125, 125, 44,
-    32,  34,  83,  117, 112, 112, 111, 114, 116, 101, 100, 68,  97,  116, 97,
-    68,  66,  117, 115, 73,  110, 116, 101, 114, 102, 97,  99,  101, 115, 34,
-    58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
-    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  111, 108,
-    117, 109, 101, 83,  101, 114, 105, 101, 115, 68,  97,  116, 97,  34,  93,
-    44,  32,  34,  84,  79,  68,  79,  95,  68,  101, 102, 97,  117, 108, 116,
-    69,  120, 112, 111, 114, 116, 101, 114, 34,  58,  32,  34,  100, 101, 46,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  82,  111, 116, 97,  116, 105, 111, 110, 34,  44,  32,  34,  73,  115,
+    67,  117, 115, 116, 111, 109, 83,  116, 111, 114, 97,  103, 101, 34,  58,
+    32,  116, 114, 117, 101, 44,  32,  34,  73,  115, 67,  117, 115, 116, 111,
+    109, 85,  73,  34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  84,  121,
+    112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
+    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
+    114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  79,  114, 105,
+    101, 110, 116, 97,  116, 105, 111, 110, 51,  68,  34,  125, 44,  32,  34,
+    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
+    116, 46,  86,  111, 120, 105, 101, 46,  77,  111, 118, 97,  98,  108, 101,
+    68,  97,  116, 97,  78,  111, 100, 101, 46,  84,  114, 97,  110, 115, 108,
+    97,  116, 105, 111, 110, 34,  58,  32,  123, 34,  68,  105, 115, 112, 108,
+    97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  84,  114, 97,  110, 115,
+    108, 97,  116, 105, 111, 110, 34,  44,  32,  34,  73,  115, 67,  117, 115,
+    116, 111, 109, 83,  116, 111, 114, 97,  103, 101, 34,  58,  32,  116, 114,
+    117, 101, 44,  32,  34,  73,  115, 67,  117, 115, 116, 111, 109, 85,  73,
+    34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  84,  121, 112, 101, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112,
+    101, 114, 116, 121, 84,  121, 112, 101, 46,  80,  111, 115, 105, 116, 105,
+    111, 110, 51,  68,  34,  125, 125, 44,  32,  34,  83,  117, 112, 112, 111,
+    114, 116, 101, 100, 68,  97,  116, 97,  68,  66,  117, 115, 73,  110, 116,
+    101, 114, 102, 97,  99,  101, 115, 34,  58,  32,  91,  34,  100, 101, 46,
     117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
-    111, 120, 105, 101, 46,  70,  105, 108, 101, 70,  111, 114, 109, 97,  116,
-    46,  86,  111, 108, 117, 109, 101, 83,  101, 114, 105, 101, 115, 46,  86,
-    120, 86,  111, 108, 83,  101, 114, 46,  69,  120, 112, 111, 114, 116, 34,
-    44,  32,  34,  84,  79,  68,  79,  95,  73,  99,  111, 110, 34,  58,  32,
-    34,  58,  47,  105, 99,  111, 110, 115, 45,  118, 111, 120, 105, 101, 47,
-    118, 111, 120, 101, 108, 45,  100, 97,  116, 97,  45,  51,  50,  46,  112,
-    110, 103, 34,  125, 0};
+    111, 120, 105, 101, 46,  86,  111, 108, 117, 109, 101, 83,  101, 114, 105,
+    101, 115, 68,  97,  116, 97,  34,  93,  44,  32,  34,  84,  79,  68,  79,
+    95,  68,  101, 102, 97,  117, 108, 116, 69,  120, 112, 111, 114, 116, 101,
+    114, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,  105,
+    108, 101, 70,  111, 114, 109, 97,  116, 46,  86,  111, 108, 117, 109, 101,
+    83,  101, 114, 105, 101, 115, 46,  86,  120, 86,  111, 108, 83,  101, 114,
+    46,  69,  120, 112, 111, 114, 116, 34,  44,  32,  34,  84,  79,  68,  79,
+    95,  73,  99,  111, 110, 34,  58,  32,  34,  58,  47,  105, 99,  111, 110,
+    115, 45,  118, 111, 120, 105, 101, 47,  118, 111, 120, 101, 108, 45,  100,
+    97,  116, 97,  45,  51,  50,  46,  112, 110, 103, 34,  125, 0};
 const char* VolumeSeriesProperties::_getPrototypeJson() {
   return _prototype_VolumeSeries_;
 }
@@ -1125,6 +1196,9 @@ NodePropertyTyped<vx::types::Orientation3D>
 VolumeSeriesProperties::rotationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(rotationProperty());
 }
+NodeNodeProperty VolumeSeriesProperties::rotationInstance() {
+  return NodeNodeProperty(_node, rotationProperty());
+}
 void VolumeSeriesProperties::setRotation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.MovableDataNode.Rotation",
@@ -1148,6 +1222,9 @@ QSharedPointer<NodeProperty> VolumeSeriesProperties::translationProperty() {
 NodePropertyTyped<vx::types::Position3D>
 VolumeSeriesProperties::translationPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(translationProperty());
+}
+NodeNodeProperty VolumeSeriesProperties::translationInstance() {
+  return NodeNodeProperty(_node, translationProperty());
 }
 void VolumeSeriesProperties::setTranslation(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -1379,6 +1456,9 @@ NodePropertyTyped<vx::types::Orientation3D>
 PlaneProperties::orientationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(orientationProperty());
 }
+NodeNodeProperty PlaneProperties::orientationInstance() {
+  return NodeNodeProperty(_node, orientationProperty());
+}
 void PlaneProperties::setOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.Property.Plane.Orientation",
@@ -1402,6 +1482,9 @@ QSharedPointer<NodeProperty> PlaneProperties::originProperty() {
 NodePropertyTyped<vx::types::Position3D>
 PlaneProperties::originPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(originProperty());
+}
+NodeNodeProperty PlaneProperties::originInstance() {
+  return NodeNodeProperty(_node, originProperty());
 }
 void PlaneProperties::setOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(

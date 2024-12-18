@@ -23,6 +23,8 @@
 #include "RemoveLabelStep.hpp"
 #include <VoxieBackend/IO/OperationRegistry.hpp>
 
+VX_NODE_INSTANTIATION(vx::RemoveLabelStep)
+
 using namespace vx;
 using namespace vx::io;
 
@@ -38,8 +40,8 @@ QSharedPointer<OperationResult> RemoveLabelStep::calculate(
   Q_UNUSED(inputVolume);
 
   return this->runThreaded(
-      "RemoveLabelStep", [parameterCopy, containerData,
-                          this](const QSharedPointer<Operation>& op) {
+      "RemoveLabelStep",
+      [parameterCopy, containerData](const QSharedPointer<Operation>& op) {
         RemoveLabelStepPropertiesCopy propertyCopy(
             parameterCopy->properties()[parameterCopy->mainNodePath()]);
 
@@ -63,29 +65,43 @@ QSharedPointer<OperationResult> RemoveLabelStep::calculate(
           }
         }
 
-        auto voxelFunc =
-            [&labelIDs](size_t& x, size_t& y, size_t& z,
-                        QSharedPointer<VolumeDataVoxelInst<SegmentationType>>
-                            labelData) {
-              SegmentationType voxelVal =
-                  (SegmentationType)labelData->getVoxel(x, y, z);
-
-              auto isSelected = getBit(voxelVal, segmentationShift);
-
-              if (isSelected) clearBit(voxelVal, segmentationShift);
-
-              // if label id is choosen to be removed, set its value back to 0
-              // or if it was selected before set the selection bit again
-              if (labelIDs.contains(voxelVal)) {
-                SegmentationType newVal = 0;
-                if (isSelected) setBit(newVal, segmentationShift);
-                labelData->setVoxel(x, y, z, newVal);
-              }
-            };
-
-        iterateAllLabelVolumeVoxels(voxelFunc, containerData, op, false);
+        // TODO: Track changes? Might not be needed because the label is deleted
+        // anyway. Might still be useful to detect when the statistics were
+        // wrong.
+        QMutex changeTrackerOverallMutex;
+        LabelChangeTracker changeTrackerOverall;
 
         auto outerUpdate = containerData->createUpdate();
+
+        auto task = Task::create();
+        forwardProgressFromTaskToOperation(task.data(), op.data());
+
+        iterateAllLabelVolumeVoxels(
+            containerData, outerUpdate, task.data(), op.data(),
+            [&labelIDs, &changeTrackerOverallMutex,
+             &changeTrackerOverall](const auto& cb) {
+              LabelChangeTracker changeTrackerThread;
+
+              cb([&](size_t& x, size_t& y, size_t& z,
+                     const QSharedPointer<
+                         VolumeDataVoxelInst<SegmentationType>>& labelData) {
+                SegmentationType voxelVal =
+                    (SegmentationType)labelData->getVoxel(x, y, z);
+                auto isSelected = getBit(voxelVal, segmentationShift);
+
+                clearBit(voxelVal, segmentationShift);
+
+                if (!labelIDs.contains(voxelVal)) return;
+
+                // Set to 0, but keep selection state
+                changeTrackerThread.set(labelData, x, y, z, 0, isSelected);
+              });
+
+              {
+                QMutexLocker locker(&changeTrackerOverallMutex);
+                changeTrackerOverall.mergeChangesFrom(changeTrackerThread);
+              }
+            });
 
         // Remove rows from labelTable
         for (auto labelID : labelIDs) {
@@ -134,5 +150,3 @@ bool RemoveLabelStep::isCreatableChild(NodeKind) { return false; }
 QList<QString> RemoveLabelStep::supportedDBusInterfaces() { return {}; }
 
 void RemoveLabelStep::initializeCustomUIPropSections() {}
-
-NODE_PROTOTYPE_IMPL(RemoveLabelStep)

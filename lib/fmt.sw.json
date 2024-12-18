@@ -1,0 +1,12 @@
+{
+    "Name": "fmt",
+    "Description": "fmt: A modern formatting library",
+    "GitRepository": "https://github.com/fmtlib/fmt",
+    "GitCommit": "e69e5f977d458f2650bb346dadf2ad30c5320281",
+    "FileFilter": [
+        "LICENSE",
+        "include",
+        "src"
+    ],
+    "LicenseFilename": "LICENSE"
+}

@@ -24,11 +24,41 @@
 
 #include <PluginVisSlice/Layer.hpp>
 
+#include <PluginVisSlice/MultivariateDataWidget/multivariateDataWidget.hpp>
+#include <PluginVisSlice/SliceVisualizer.hpp>
+
+#include <Voxie/Data/Colorizer.hpp>
+#include <Voxie/Data/Prototypes.hpp>
+#include <Voxie/Data/Slice.hpp>
+#include <Voxie/Data/Spectrum.hpp>
+
+#include <Voxie/Node/ParameterCopy.hpp>
+
+#include <VoxieBackend/Data/DataProperty.hpp>
+#include <VoxieBackend/Data/VolumeSeriesData.hpp>
+
+using namespace vx;
+
 class SliceVisualizer;
 
 class ImageLayer : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ImageLayer)
+  VX_REFCOUNTEDOBJECT
+
+  // TODO: This is a hack, remove?
+  // Note: This may only be used when isMainImage is true
+  SliceVisualizer* sv;
+
+ private:
+  /**
+   * Sum up colors at all pixel positions of a given images in a image list.
+   * This function implements a post classification color mapping.
+   */
+  void sumUpColorsOverImages(QList<QPair<QImage, float>>* imageList,
+                             QImage* outputImage);
+  QPair<double, double> calcMean_StandardDeviation(QList<float>* data);
+  QList<ColorizerEntry> createColorEntries(QColor channelColor,
+                                           int channelMappingValue);
 
  public:
   ImageLayer(SliceVisualizer* sv);
@@ -38,5 +68,6 @@ class ImageLayer : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 };

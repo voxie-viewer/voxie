@@ -48,6 +48,10 @@ SurfaceAttribute::SurfaceAttribute(
       componentCount_(std::get<2>(attributeData)) {
   ExportedObject::checkOptions(std::get<6>(attributeData));
 
+  if (this->name() == "")
+    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidArgument",
+                        "Invalid surface attribute name");
+
   if (this->kind_ == "de.uni_stuttgart.Voxie.SurfaceAttributeKind.Triangle")
     count_ = surface->triangles().size();
   else if (this->kind_ == "de.uni_stuttgart.Voxie.SurfaceAttributeKind.Vertex")

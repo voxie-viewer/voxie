@@ -32,7 +32,7 @@ class Colorizer;
 namespace vis3d {
 class Plane : public vx::Object3DNode {
   Q_OBJECT
-  NODE_PROTOTYPE_DECL_SEP(object3d_prop::Plane, Plane)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Object3D.Plane")
 
   QSharedPointer<Colorizer> colorizer;
 
@@ -58,12 +58,16 @@ class Plane : public vx::Object3DNode {
 
   BoundingBox3D getBoundingBox() override;
 
+  QRectF getPlaneBoundingBox();
+
   void getClippingPlanes(QList<ClippingPlane>& planes) override;
 
  Q_SIGNALS:
   void planeOrigOrientChanged();
 
   void regenerateSliceImage();
+
+  void planeBoundingBoxChanged();
 };
 }  // namespace vis3d
 }  // namespace vx

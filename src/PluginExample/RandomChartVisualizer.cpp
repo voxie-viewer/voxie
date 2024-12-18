@@ -32,11 +32,14 @@
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QLabel>
 
+VX_NODE_INSTANTIATION(vx::RandomChartVisualizer)
+
 using namespace vx::visualization;
 using namespace vx;
 
 RandomChartVisualizer::RandomChartVisualizer()
-    : SimpleVisualizer(getPrototypeSingleton()) {
+    : SimpleVisualizer(getPrototypeSingleton()),
+      properties(new PropertiesType(this)) {
   this->view()->setMinimumSize(300 / 96.0 * this->view()->logicalDpiX(),
                                200 / 96.0 * this->view()->logicalDpiY());
 
@@ -137,5 +140,3 @@ RandomChartVisualizer::getRenderFunction() {
     outputImage->fromQImage(qimage, outputRegionStart);
   };
 }
-
-NODE_PROTOTYPE_IMPL_2(RandomChart, Visualizer)

@@ -29,7 +29,7 @@
 namespace vx {
 class Test3DObject : public vx::Object3DNode {
   Q_OBJECT
-  NODE_PROTOTYPE_DECL(Test3DObject)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Example.Object3D.Test3DObject")
 
  public:
   explicit Test3DObject();

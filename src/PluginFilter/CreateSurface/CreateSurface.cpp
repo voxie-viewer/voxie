@@ -40,6 +40,8 @@
 #include "MarchingCubes.hpp"
 #include "SurfaceExtractor.hpp"
 
+VX_NODE_INSTANTIATION(vx::filters::CreateSurface)
+
 using namespace vx::filters;
 using namespace vx;
 using namespace vx::io;
@@ -160,5 +162,3 @@ void CreateSurface::setNodePropertyCustom(QString key, QVariant value) {
     Node::setNodePropertyCustom(key, value);
   }
 }
-
-NODE_PROTOTYPE_IMPL(CreateSurface)

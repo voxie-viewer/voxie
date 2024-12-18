@@ -62,7 +62,7 @@ void ImagePaintWidget::wheelEvent(QWheelEvent* event) {
   auto pos = getMousePosition(this, event);
   sv->view3d()->wheelEvent(pos, event, size());
 
-  sv->currentTool()->toolWheelEvent(event);
+  sv->currentTool()->toolWheelEvent(event, pos);
 }
 
 void ImagePaintWidget::mousePressEvent(QMouseEvent* event) {
@@ -72,7 +72,7 @@ void ImagePaintWidget::mousePressEvent(QMouseEvent* event) {
 
   sv->view3d()->mousePressEvent(mouseLast, pos, event, size());
 
-  sv->currentTool()->toolMousePressEvent(event);
+  sv->currentTool()->toolMousePressEvent(event, pos);
 
   this->mouseLast = pos;
 }
@@ -82,7 +82,7 @@ void ImagePaintWidget::mouseReleaseEvent(QMouseEvent* event) {
 
   sv->view3d()->mouseReleaseEvent(mouseLast, pos, event, size());
 
-  sv->currentTool()->toolMouseReleaseEvent(event);
+  sv->currentTool()->toolMouseReleaseEvent(event, pos);
 
   this->mouseLast = pos;
 }
@@ -118,10 +118,8 @@ void ImagePaintWidget::mouseMoveEvent(QMouseEvent* event) {
 
   sv->view3d()->mouseMoveEvent(mouseLast, pos, event, size());
 
-  auto& imgUnf = this->sv->sliceImage();
-  auto planePoint = imgUnf.pixelToPlanePoint(event->pos(), true);
-  auto threeDPoint =
-      this->sv->getCuttingPlane().get3DPoint(planePoint.x(), planePoint.y());
+  auto planePoint = this->sv->pixelPosToPlanePosCurrentImage(pos);
+  auto threeDPoint = this->sv->planePosTo3DPosCurrentImage(planePoint);
 
   // TODO: rotation and translation of object
   vx::Vector<double, 3> posVoxel;
@@ -132,8 +130,7 @@ void ImagePaintWidget::mouseMoveEvent(QMouseEvent* event) {
     auto data =
         qSharedPointerDynamicCast<vx::VolumeDataVoxel>(vol->volumeData());
     if (data) {
-      posVoxel = data->getObjectToVoxelTrafo().map(
-          vx::vectorCast<double>(vx::toVector(threeDPoint)));
+      posVoxel = data->getObjectToVoxelTrafo().map(threeDPoint);
       posVoxelPtr = &posVoxel;
 
       valNearest = data->performInGenericContext([threeDPoint](auto& volInst) {
@@ -150,7 +147,7 @@ void ImagePaintWidget::mouseMoveEvent(QMouseEvent* event) {
   Q_EMIT this->sv->imageMouseMove(event, planePoint, threeDPoint, posVoxelPtr,
                                   valNearest, valLinear);
 
-  sv->currentTool()->toolMouseMoveEvent(event);
+  sv->currentTool()->toolMouseMoveEvent(event, pos);
 
   this->mouseLast = pos;
 }

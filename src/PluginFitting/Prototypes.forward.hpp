@@ -3,11 +3,24 @@
 
 #pragma once
 
+#include <VoxieClient/StringConstant.hpp>
+
 namespace vx {
 inline namespace filter_prop {
+static inline auto FitPlaneProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Filter.FitPlane");
+}
+using FitPlaneProperties_name = decltype(FitPlaneProperties_name_function());
 class FitPlanePropertiesEntry;
 class FitPlanePropertiesBase;
 class FitPlanePropertiesCopy;
 class FitPlaneProperties;
 }  // namespace filter_prop
+template <typename S>
+struct PropertiesTypeAlias;
+template <>
+struct PropertiesTypeAlias<::vx::filter_prop::FitPlaneProperties_name> {
+  using PropertiesType = ::vx::filter_prop::FitPlaneProperties;
+  using PropertiesEntryType = ::vx::filter_prop::FitPlanePropertiesEntry;
+};
 }  // namespace vx

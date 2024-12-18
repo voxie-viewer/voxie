@@ -54,6 +54,25 @@ Q_REQUIRED_RESULT inline T handleDBusCallOnBackgroundThreadOne(
   return T();
 }
 
+// Version with more type checking for returning two result
+// Use with 'return
+// vx::handleDBusCallOnBackgroundThreadTwo<...>(secondReturnParameter, ...);'
+// TODO: Make this more generic?
+template <typename T, typename U>
+Q_REQUIRED_RESULT inline T handleDBusCallOnBackgroundThreadTwo(
+    U& ignored, vx::ExportedObject* obj,
+    std::function<std::tuple<T, U>()> fun) {
+  Q_UNUSED(ignored);
+  handleDBusCallOnBackgroundThread(obj, [fun]() {
+    std::tuple<T, U> res = fun();
+    return QList<QDBusVariant>{
+        vx::dbusMakeVariant<T>(std::get<0>(res)),
+        vx::dbusMakeVariant<U>(std::get<1>(res)),
+    };
+  });
+  return T();
+}
+
 inline void handleDBusCallOnBackgroundThreadVoid(vx::ExportedObject* obj,
                                                  std::function<void()> fun) {
   handleDBusCallOnBackgroundThread(obj, [fun]() {

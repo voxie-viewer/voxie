@@ -3,6 +3,7 @@
 
 #include "Prototypes.hpp"
 
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodePrototype.hpp>
 #include <Voxie/Node/PropertyValueConvertDBus.hpp>
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
@@ -160,6 +161,9 @@ NodePropertyTyped<vx::types::Int>
 TheSphereGeneratorProperties::seedPropertyTyped() {
   return NodePropertyTyped<vx::types::Int>(seedProperty());
 }
+NodeNodeProperty TheSphereGeneratorProperties::seedInstance() {
+  return NodeNodeProperty(_node, seedProperty());
+}
 void TheSphereGeneratorProperties::setSeed(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
       "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Seed",
@@ -182,6 +186,9 @@ NodePropertyTyped<vx::types::Int>
 TheSphereGeneratorProperties::sizePropertyTyped() {
   return NodePropertyTyped<vx::types::Int>(sizeProperty());
 }
+NodeNodeProperty TheSphereGeneratorProperties::sizeInstance() {
+  return NodeNodeProperty(_node, sizeProperty());
+}
 void TheSphereGeneratorProperties::setSize(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
       "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Size",
@@ -203,6 +210,9 @@ QSharedPointer<NodeProperty> TheSphereGeneratorProperties::outputProperty() {
 NodePropertyTyped<vx::types::OutputNodeReference>
 TheSphereGeneratorProperties::outputPropertyTyped() {
   return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
+}
+NodeNodeProperty TheSphereGeneratorProperties::outputInstance() {
+  return NodeNodeProperty(_node, outputProperty());
 }
 void TheSphereGeneratorProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(

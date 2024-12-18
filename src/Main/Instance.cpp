@@ -27,8 +27,8 @@
 
 #include "Instance.hpp"
 
-#include <Main/DebugOptionDBus.hpp>
 #include <Main/AllDebugOptions.hpp>
+#include <Main/DebugOptionDBus.hpp>
 #include <Main/IO/Load.hpp>
 #include <Main/Root.hpp>
 #include <Main/Utilities.hpp>
@@ -36,6 +36,11 @@
 
 #include <Main/IO/RunAllFilterOperation.hpp>
 
+#include <VoxieBackend/Data/BlockJpegImplementation.hpp>
+#include <VoxieBackend/Data/Buffer.hpp>
+#include <VoxieBackend/Data/BufferType.hpp>
+#include <VoxieBackend/Data/DataProperty.hpp>
+#include <VoxieBackend/Data/FileData.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveData.hpp>
 #include <VoxieBackend/Data/ImageDataPixel.hpp>
 #include <VoxieBackend/Data/SeriesData.hpp>
@@ -63,10 +68,13 @@
 #include <VoxieBackend/Data/EventListDataBuffer.hpp>
 #include <VoxieBackend/Data/SurfaceData.hpp>
 #include <VoxieBackend/Data/TomographyRawData2DAccessor.hpp>
+#include <VoxieBackend/Data/VolumeDataBlockJpeg.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxel.hpp>
 
 #include <VoxieClient/DBusUtil.hpp>
 #include <VoxieClient/Exception.hpp>
+#include <VoxieClient/JsonDBus.hpp>
+#include <VoxieClient/JsonUtil.hpp>
 
 #include <QtDBus/QDBusAbstractAdaptor>
 #include <QtDBus/QDBusArgument>
@@ -81,13 +89,6 @@ using namespace vx::gui;
 using namespace vx;
 using namespace vx::plugin;
 using namespace vx;
-
-// TODO: Is it possible to make this generic (independent of the number of
-// values)? (So that it can be put into VoxieClient/Vector.hpp)
-template <typename T>
-vx::Vector<T, 3> toVectorTu(const std::tuple<T, T, T>& value) {
-  return {std::get<0>(value), std::get<1>(value), std::get<2>(value)};
-}
 
 Instance::Instance(Root* root)
     : ExportedObject("", nullptr, true), root_(root) {
@@ -223,6 +224,65 @@ QList<QDBusObjectPath> InstanceAdaptorImpl::ListObjects(
   }
 }
 
+QDBusObjectPath InstanceAdaptorImpl::CreateBuffer(
+    const QDBusObjectPath& client, qint64 offsetBytes, const QDBusVariant& type,
+    const QMap<QString, QDBusVariant>& options) {
+  try {
+    ExportedObject::checkOptions(options);
+
+    Client* clientPtr =
+        qobject_cast<Client*>(ExportedObject::lookupWeakObject(client));
+    if (!clientPtr) {
+      throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                      "Cannot find client object");
+    }
+
+    if (offsetBytes != 0)
+      throw vx::Exception("de.uni_stuttgart.Voxie.NotImplemented",
+                          "CreateBuffer: Non-zero offsets not implemented");
+    auto typeVal = vx::BufferTypeBase::fromJson(dbusToJson(type));
+    auto typeArray = qSharedPointerDynamicCast<vx::BufferTypeArray>(typeVal);
+    if (!typeArray)
+      throw vx::Exception("de.uni_stuttgart.Voxie.NotImplemented",
+                          "CreateBuffer: Non-array types not implemented");
+    if (typeArray->dim() != 1)
+      throw vx::Exception("de.uni_stuttgart.Voxie.NotImplemented",
+                          "CreateBuffer: Arrays with dim != 1 not implemented");
+    auto count = typeArray->shape()[0];
+    auto strideBytes = typeArray->stridesBytes()[0];
+    auto innerType = typeArray->elementType();
+
+    // TODO: Should this check whether there is a matching buffer type? Or
+    // should it accept any valid type? Or any type?
+    QSharedPointer<BufferType> bufferType;
+    for (const auto& bt :
+         vx::voxieRoot().components()->listComponentsTyped<BufferType>()) {
+      // qDebug() << "Compare" << bt->type()->toJson() << "and"
+      //          << innerType->toJson();
+      if (bt->type()->equals(innerType.data())) {
+        bufferType = bt;
+        break;
+      }
+    }
+    if (!bufferType)
+      throw vx::Exception("de.uni_stuttgart.Voxie.NotImplemented",
+                          "CreateBuffer: Unknown data type");
+
+    // TODO: Should this be checked here? This will not work if there are
+    // multiple BufferTypes with the same members and offsets but with a
+    // different overall size (because of padding).
+    if (strideBytes < 0 || (quint64)strideBytes != bufferType->sizeBytes())
+      throw vx::Exception("de.uni_stuttgart.Voxie.NotImplemented",
+                          "CreateBuffer: Invalid array stride");
+
+    auto buffer = Buffer::create(innerType, count, strideBytes);
+    clientPtr->incRefCount(buffer);
+    return ExportedObject::getPath(buffer.data());
+  } catch (Exception& e) {
+    return e.handle(object);
+  }
+}
+
 QDBusObjectPath InstanceAdaptorImpl::CreateImage(
     const QDBusObjectPath& client, const vx::TupleVector<quint64, 2>& size,
     quint64 componentCount,
@@ -307,8 +367,61 @@ QDBusObjectPath InstanceAdaptorImpl::CreateVolumeDataVoxel(
       throw Exception("de.uni_stuttgart.Voxie.Overflow",
                       "Volume dimensions too large");
     auto data = VolumeDataVoxel::createVolume(
-        vectorCastNarrow<size_t>(toVectorTu(size)), datatype,
-        toVectorTu(gridOrigin), toVectorTu(gridSpacing));
+        vectorCastNarrow<size_t>(toVector(size)), datatype,
+        toVector(gridOrigin), toVector(gridSpacing));
+    clientPtr->incRefCount(data);
+    return ExportedObject::getPath(data.data());
+  } catch (Exception& e) {
+    e.handle(object);
+    return ExportedObject::getPath(nullptr);
+  }
+}
+
+QDBusObjectPath InstanceAdaptorImpl::CreateVolumeDataBlockJpeg(
+    const QDBusObjectPath& client,
+    const std::tuple<quint64, quint64, quint64>& arrayShape,
+    const std::tuple<quint64, quint64, quint64>& blockShape,
+    const std::tuple<double, double, double>& volumeOrigin,
+    const std::tuple<double, double, double>& gridSpacing, double valueOffset,
+    double valueScalingFactor, uint samplePrecision,
+    const QList<QByteArray>& huffmanTableDC,
+    const QList<QByteArray>& huffmanTableAC,
+    const QList<QList<quint16>>& quantizationTable,
+    const QMap<QString, QDBusVariant>& options) {
+  try {
+    ExportedObject::checkOptions(options);
+    Client* clientPtr =
+        qobject_cast<Client*>(ExportedObject::lookupWeakObject(client));
+    if (!clientPtr) {
+      throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                      "Cannot find client object");
+    }
+
+    if (std::get<0>(arrayShape) > std::numeric_limits<size_t>::max() ||
+        std::get<1>(arrayShape) > std::numeric_limits<size_t>::max() ||
+        std::get<2>(arrayShape) > std::numeric_limits<size_t>::max())
+      throw Exception("de.uni_stuttgart.Voxie.Overflow",
+                      "Volume dimensions too large");
+    auto arrayShapeC = vectorCastNarrow<size_t>(toVector(arrayShape));
+
+    if (std::get<0>(blockShape) > std::numeric_limits<size_t>::max() ||
+        std::get<1>(blockShape) > std::numeric_limits<size_t>::max() ||
+        std::get<2>(blockShape) > std::numeric_limits<size_t>::max())
+      throw Exception("de.uni_stuttgart.Voxie.Overflow",
+                      "Volume dimensions too large");
+    auto blockShapeC = vectorCastNarrow<size_t>(toVector(blockShape));
+
+    auto possibleImplementations =
+        voxieRoot()
+            .components()
+            ->listComponentsTyped<BlockJpegImplementation>();
+
+    auto data = VolumeDataBlockJpeg::create(
+        arrayShapeC, blockShapeC, toVector(volumeOrigin), toVector(gridSpacing),
+        valueOffset, valueScalingFactor, samplePrecision,
+        fromByteArray(huffmanTableDC), fromByteArray(huffmanTableAC),
+        quantizationTable, possibleImplementations);
+
     clientPtr->incRefCount(data);
     return ExportedObject::getPath(data.data());
   } catch (Exception& e) {
@@ -442,6 +555,32 @@ QDBusObjectPath InstanceAdaptorImpl::CreateGeometricPrimitiveData(
   }
 }
 
+QDBusObjectPath InstanceAdaptorImpl::CreateFileDataByteStream(
+    const QDBusObjectPath& client, const QString& mediaType,
+    quint64 lengthBytes, const QMap<QString, QDBusVariant>& options) {
+  try {
+    ExportedObject::checkOptions(options);
+    Client* clientPtr =
+        qobject_cast<Client*>(ExportedObject::lookupWeakObject(client));
+    if (!clientPtr) {
+      throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                      "Cannot find client object");
+    }
+
+    if (lengthBytes > std::numeric_limits<std::size_t>::max())
+      throw vx::Exception("de.uni_stuttgart.Voxie.OutOfMemory",
+                          "Overflow for file size");
+    // TODO: Do allocation on background thread?
+    auto data = FileDataByteStream::create(mediaType, lengthBytes);
+
+    clientPtr->incRefCount(data);
+    return ExportedObject::getPath(data);
+  } catch (Exception& e) {
+    e.handle(object);
+    return ExportedObject::getPath(nullptr);
+  }
+}
+
 QDBusObjectPath InstanceAdaptorImpl::CreateTableData(
     const QDBusObjectPath& client,
     const QList<std::tuple<QString, QDBusObjectPath, QString,
@@ -535,7 +674,7 @@ QDBusObjectPath InstanceAdaptorImpl::CreateVolumeSeriesData(
       dimensionsObj << SeriesDimension::lookup(dimension);
 
     auto seriesData = VolumeSeriesData::create(
-        dimensionsObj, toVectorTu(volumeOrigin), toVectorTu(volumeSize));
+        dimensionsObj, toVector(volumeOrigin), toVector(volumeSize));
 
     clientPtr->incRefCount(seriesData);
     return ExportedObject::getPath(seriesData);
@@ -544,9 +683,35 @@ QDBusObjectPath InstanceAdaptorImpl::CreateVolumeSeriesData(
   }
 }
 
-QDBusObjectPath InstanceAdaptorImpl::CreateSeriesDimension(
+QDBusObjectPath InstanceAdaptorImpl::CreateDataProperty(
     const QDBusObjectPath& client, const QString& name,
-    const QString& displayName, const QDBusObjectPath& type,
+    const QDBusVariant& json, const QMap<QString, QDBusVariant>& options) {
+  try {
+    ExportedObject::checkOptions(options);
+
+    Client* clientPtr =
+        qobject_cast<Client*>(ExportedObject::lookupWeakObject(client));
+    if (!clientPtr) {
+      throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
+                      "Cannot find client object");
+    }
+
+    // TODO: Allow passing in the type object directly?
+
+    // TODO: Check whether this type is allowed here?
+
+    auto dataProperty = DataProperty::create(
+        name, expectObject(dbusToJson(json)), vx::voxieRoot().components());
+
+    clientPtr->incRefCount(dataProperty);
+    return ExportedObject::getPath(dataProperty);
+  } catch (Exception& e) {
+    return e.handle(object);
+  }
+}
+
+QDBusObjectPath InstanceAdaptorImpl::CreateSeriesDimension(
+    const QDBusObjectPath& client, const QDBusObjectPath& property,
     const QDBusVariant& entries, const QMap<QString, QDBusVariant>& options) {
   try {
     ExportedObject::checkOptions(options);
@@ -558,21 +723,11 @@ QDBusObjectPath InstanceAdaptorImpl::CreateSeriesDimension(
                       "Cannot find client object");
     }
 
-    // TODO: This should be able to look up the QSharedPointer directly
-    auto typeWeak =
-        qobject_cast<PropertyType*>(ExportedObject::lookupWeakObject(type));
-    if (!typeWeak)
-      throw Exception("de.uni_stuttgart.Voxie.ObjectNotFound",
-                      "Cannot find type object '" + type.path() + "'");
-    auto typeObj =
-        vx::voxieRoot().components()->getComponentTyped<PropertyType>(
-            typeWeak->name(), false);
-    // TODO: Check whether this type is allowed here?
+    auto propertyObj = DataProperty::lookup(property);
 
-    QList<QVariant> entriesRaw = typeObj->dbusToRawList(entries);
+    QList<QVariant> entriesRaw = propertyObj->type()->dbusToRawList(entries);
 
-    auto seriesDimension =
-        SeriesDimension::create(name, displayName, typeObj, entriesRaw);
+    auto seriesDimension = SeriesDimension::create(propertyObj, entriesRaw);
 
     clientPtr->incRefCount(seriesDimension);
     return ExportedObject::getPath(seriesDimension);
@@ -711,8 +866,7 @@ static QList<DebugOptionDBus*> getDebugOptionList() {
 }
 static QSharedPointer<QList<DebugOptionDBus*>> debugOptionList() {
   static QSharedPointer<QList<DebugOptionDBus*>> cache =
-      createQSharedPointer<QList<DebugOptionDBus*>>(
-          std::move(getDebugOptionList()));
+      createQSharedPointer<QList<DebugOptionDBus*>>(getDebugOptionList());
   return cache;
 }
 

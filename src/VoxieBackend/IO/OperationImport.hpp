@@ -35,7 +35,7 @@ class OperationResultImport;
 
 class VOXIEBACKEND_EXPORT OperationImport : public vx::io::Operation {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(OperationImport)
+  VX_REFCOUNTEDOBJECT
 
  public:
   class VOXIEBACKEND_EXPORT Result : public Operation::ResultSuccess {
@@ -76,7 +76,7 @@ class VOXIEBACKEND_EXPORT OperationImport : public vx::io::Operation {
 
 // Note: This is a separate class to allow forward declarations to it
 class VOXIEBACKEND_EXPORT OperationResultImport : public OperationResult {
-  REFCOUNTEDOBJ_DECL(OperationResultImport)
+  VX_REFCOUNTEDOBJECT
 
   bool doCreateNode_;
 

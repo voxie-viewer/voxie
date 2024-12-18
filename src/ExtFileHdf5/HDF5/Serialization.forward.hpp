@@ -24,8 +24,8 @@
 #define HDF5_SERIALIZATION_FORWARD_HPP_INCLUDED
 
 namespace HDF5 {
-  class SerializationContext;
-  class DeserializationContext;
-}
+class SerializationContext;
+class DeserializationContext;
+}  // namespace HDF5
 
-#endif // !HDF5_SERIALIZATION_FORWARD_HPP_INCLUDED
+#endif  // !HDF5_SERIALIZATION_FORWARD_HPP_INCLUDED

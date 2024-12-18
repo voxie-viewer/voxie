@@ -22,7 +22,6 @@
 
 #include "SliceVisualizer.hpp"
 
-#include <PluginVisSlice/ColorizerWorker.hpp>
 #include <PluginVisSlice/ImagePaintWidget.hpp>
 
 #include <PluginVisSlice/DefaultTool.hpp>
@@ -30,6 +29,7 @@
 #include <PluginVisSlice/Ruler.hpp>
 #include <PluginVisSlice/SliceCenterLayer.hpp>
 #include <PluginVisSlice/SurfaceVisualizerTool.hpp>
+#include <PluginVisSlice/TextLayer.hpp>
 #include <PluginVisSlice/ToolSelection.hpp>
 #include <PluginVisSlice/View3DPropertiesConnection.hpp>
 #include <PluginVisSlice/ViewCenterLayer.hpp>
@@ -72,6 +72,8 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QSizePolicy>
 
+VX_NODE_INSTANTIATION(SliceVisualizer)
+
 using namespace vx::visualization;
 using namespace vx;
 
@@ -110,7 +112,8 @@ SliceVisualizer::SliceVisualizer()
           &SliceVisualizer::signalRequestSliceImageUpdate);
 
   forwardSignalFromPropertyOnReconnect(this, properties->volumePropertyTyped(),
-                                       &VolumeNode::boundingBoxChanged, this,
+                                       &VolumeNode::boundingBoxGlobalChanged,
+                                       this,
                                        &SliceVisualizer::updateBoundingBox);
 
   forwardSignalFromPropertyNodeOnReconnect(
@@ -180,6 +183,11 @@ SliceVisualizer::SliceVisualizer()
       &SliceProperties::labelContainerChanged, &DataNode::dataChangedFinished,
       this, &SliceVisualizer::labelContainerChangedFinished);
 
+  forwardSignalFromPropertyNodeOnReconnect(
+      properties, &SliceProperties::volume, &SliceProperties::volumeChanged,
+      &Node::displayNameChanged, this,
+      &SliceVisualizer::volumeDisplayNameChanged);
+
   // TODO: Remove?
   QObject::connect(this, &SliceVisualizer::volumeDataChangedFinished, this,
                    &SliceVisualizer::signalRequestSliceImageUpdate);
@@ -187,37 +195,46 @@ SliceVisualizer::SliceVisualizer()
   this->view = new QWidget();
   this->setAutomaticDisplayName("Slice Visualizer");
 
-  connect(properties, &SliceProperties::volumeChanged, this,
-          [this](vx::Node* value) {
-            auto dataset = dynamic_cast<VolumeNode*>(value);
-            if (value && !dataset) {
-              qWarning() << "Cannot cast Volume property to VolumeNode";
-              return;
-            }
-
-            if (dataset == this->mainVolumeNode) return;
-
-            if (this->mainVolumeNode) {
-              // TODO: What does this disconnect do? Remove displayNameChanged
-              // connection?
-              this->disconnect(this->mainVolumeNode, 0, this, 0);
-              this->setAutomaticDisplayName("Slice Visualizer");
-              this->mainVolumeNode = nullptr;
-              this->redraw();
-              Q_EMIT this->signalRequestSliceImageUpdate();
-            }
-            if (dataset) {
-              this->mainVolumeNode = dataset;
-              this->initializeSV();
-            }
-          });
-
-  // Update image when interpolation is changed
-  connect(properties, &SliceProperties::interpolationChanged, this, [this]() {
-    doGenerateSliceImage(this->getCuttingPlane(), this->volumeData(),
-                         currentPlaneArea(), canvasSize(),
-                         getInterpolation(this->properties));
+  connect(this, &SliceVisualizer::volumeDisplayNameChanged, this, [this]() {
+    // Set name of slice visualizer
+    auto node = this->properties->volume();
+    if (node) {
+      this->setAutomaticDisplayName(node->displayName());
+    } else {
+      this->setAutomaticDisplayName("Slice Visualizer");
+    }
   });
+
+  connect(
+      properties, &SliceProperties::volumeChanged, this,
+      [this](vx::Node* newVolume) {
+        (void)newVolume;
+
+        // Update bounding box on volume change
+        // updateBoundingBox() is needed otherwise the zoom will be reset to the
+        // wrong value
+        this->updateBoundingBox();
+        view3d()->resetView(View3DProperty::LookAt | View3DProperty::ZoomLog);
+
+        // TODO: Clean up redraw code here
+        this->redraw();
+        Q_EMIT this->signalRequestSliceImageUpdate();
+
+        for (const auto& layer : this->layers()) {
+          layer->triggerRedraw();  // Make sure all layers are drawn at least
+                                   // once
+        }
+
+        // TODO: This was broken by the removal of the vx::Slice class, fix
+        // this? (Without this, the filter won't be notified if the plane gets
+        // changed.)
+        /*
+        connect(this->_slice, &Slice::planeChanged,
+                this->_filterChain2DWidget->getFilterChain(),
+                &vx::filter::FilterChain2D::onPlaneChanged,
+        Qt::DirectConnection);
+        */
+      });
 
   this->view->setMinimumSize(300 / 96.0 * this->view->logicalDpiX(),
                              200 / 96.0 * this->view->logicalDpiY());
@@ -235,6 +252,8 @@ SliceVisualizer::SliceVisualizer()
   imageLayer = ImageLayer::create(this);
   imageLayer->setObjectName(this->imageLayerName);
   this->layers_.append(imageLayer);
+
+  this->layers_.append(LegendLayer::create(this));
 
   this->defaultTool = new DefaultTool(view, this);
   this->defaultTool->setObjectName("DefaultTool");
@@ -278,22 +297,6 @@ SliceVisualizer::SliceVisualizer()
   _filterChain2DWidget = new FilterChain2DWidget(view);
 
   this->dynamicSections().append(this->_filterChain2DWidget);
-  connect(this->_filterChain2DWidget->getFilterChain(),
-          &vx::filter::FilterChain2D::allFiltersApplied, [=]() {
-            this->onSliceImageFiltered(
-                this->_filterChain2DWidget->getFilterChain()->getOutputSlice());
-          });
-  connect(this->_filterChain2DWidget->getFilterChain(),
-          &vx::filter::FilterChain2D::allFiltersApplied, [=]() {
-            this->_filterWorkerRunning = false;
-            runFilterWorker();
-          });
-  connect(this->_filterChain2DWidget->getFilterChain(),
-          &vx::filter::FilterChain2D::filterListChanged, this,
-          &SliceVisualizer::applyFilters);
-  connect(this->_filterChain2DWidget->getFilterChain(),
-          &vx::filter::FilterChain2D::filterChanged, this,
-          &SliceVisualizer::applyFilters);
   connect(this->_filterChain2DWidget,
           &FilterChain2DWidget::requestFilterMaskEditor, this,
           &SliceVisualizer::onFilterMaskRequest);
@@ -400,15 +403,24 @@ SliceVisualizer::SliceVisualizer()
   auto ruler = Ruler::create(this);
   this->layers_.append(ruler);
 
-  //**** RULERWIDGET *** END
-
   //**** VolumeGridWidget ***
   auto volumegrid = VolumeGrid::create(this);
   this->layers_.append(volumegrid);
 
-  //**** VolumeGridWidget *** END
+  //***** Multivariate Data Widget ****
+  this->multivariateDataWidget = new MultivariateDataWidget(this->view, this);
 
-  //*****   ****
+  connect(properties, &SliceProperties::volumeChanged, multivariateDataWidget,
+          &MultivariateDataWidget::data_channelsChanged);
+
+  connect(this, &QObject::destroyed, multivariateDataWidget,
+          &QObject::deleteLater);
+
+  // Bridge from MultivariateDataWidget to SliceVisualizer to ImageLayer
+  connect(multivariateDataWidget,
+          &MultivariateDataWidget::multivariateDataVisChanged, this,
+          &SliceVisualizer::multivariateDataPropertiesChangedIn);
+  //***** Multivariate Data Widget ****
 
   hobox = new QVBoxLayout(view);
   hobox->setSpacing(0);
@@ -424,11 +436,6 @@ SliceVisualizer::SliceVisualizer()
           &SliceVisualizer::resized);
   connect(this, &SliceVisualizer::resized, this,
           &SliceVisualizer::signalRequestSliceImageUpdate);
-
-  // TODO: This often will be triggered several times for one changed, avoid
-  // recomputing the slice several times in this case
-  connect(this, &SliceVisualizer::signalRequestSliceImageUpdate, this,
-          &SliceVisualizer::updateSliceImageFromSlice);
 
   if (_tools.size() > 0) {
     this->switchToolTo(this->currentTool());
@@ -449,6 +456,12 @@ SliceVisualizer::SliceVisualizer()
   addContextMenuAction(createPlaneNodeAction);
 
   addSegmentationFunctionality(10);
+
+  // Note: This currently has to be the last layer (because it iterates over the
+  // layers)
+  // TODO: Make sure that there is only one redraw after a layers is finished
+  // and not two (because the TextLayer also has to be updated)?
+  this->layers_.append(TextLayer::create(this));
 
   for (const auto& layer : this->layers()) {
     connect(this, &SliceVisualizer::resized, layer.data(),
@@ -479,37 +492,21 @@ QWidget* SliceVisualizer::getCustomPropertySectionContent(const QString& name) {
     return histogramBox;
   } else if (name == "de.uni_stuttgart.Voxie.SliceVisualizer.Info") {
     return infoWidget;
+  } else if (name ==
+             "de.uni_stuttgart.Voxie.SliceVisualizer.MultivariateDataWidget") {
+    return multivariateDataWidget;
   } else {
     return Node::getCustomPropertySectionContent(name);
   }
 }
 
-// TODO: Clean up, remove SliceVisualizer::initializeSV()
-void SliceVisualizer::initializeSV() {
-  // updateBoundingBox() is needed otherwise the zoom will be reset to the wrong
-  // value
-  this->updateBoundingBox();
-  view3d()->resetView(View3DProperty::LookAt | View3DProperty::ZoomLog);
+std::tuple<vx::SlicePropertiesBase*, QSize>
+SliceVisualizer::currentImageProperties() {
+  vx::checkOnMainThread("SliceVisualizer::currentImageProperties");
 
-  if (mainVolumeNode != nullptr) {
-    this->setAutomaticDisplayName(this->dataSet()->displayName());
-
-    connect(this->mainVolumeNode, &Node::displayNameChanged, this, [this] {
-      this->setAutomaticDisplayName(this->dataSet()->displayName());
-    });
-  }
-
-  for (const auto& layer : this->layers()) {
-    layer->triggerRedraw();  // Make sure all layers are drawn at least once
-  }
-
-  // TODO: This was broken by the removal of the vx::Slice class, fix this?
-  // (Without this, the filter won't be notified if the plane gets changed.)
-  /*
-  connect(this->_slice, &Slice::planeChanged,
-          this->_filterChain2DWidget->getFilterChain(),
-          &vx::filter::FilterChain2D::onPlaneChanged, Qt::DirectConnection);
-  */
+  // TODO: Actually return information about the currently shown image instead
+  // of the image which will be shown?
+  return std::make_tuple(this->properties, this->canvasSize());
 }
 
 double SliceVisualizer::getCurrentPixelSize(SlicePropertiesBase* properties,
@@ -532,6 +529,53 @@ QRectF SliceVisualizer::getCurrentPlaneArea(SlicePropertiesBase* properties,
 }
 QRectF SliceVisualizer::currentPlaneArea() {
   return getCurrentPlaneArea(this->properties, this->canvasSize());
+}
+
+vx::Vector<double, 2> SliceVisualizer::pixelPosToPlanePos(
+    vx::SlicePropertiesBase* properties, const QSize& canvasSize,
+    const vx::Vector<double, 2>& pixelPos) {
+  auto planeArea = getCurrentPlaneArea(properties, canvasSize);
+
+  double relX = pixelPos[0] / (canvasSize.width() * 1.0);
+  double relY = pixelPos[1] / (canvasSize.height() * 1.0);
+
+  return {relX * planeArea.width() + planeArea.left(),
+          relY * planeArea.height() + planeArea.top()};
+}
+vx::Vector<double, 2> SliceVisualizer::pixelPosToPlanePosCurrentImage(
+    const vx::Vector<double, 2>& pixelPos) {
+  auto prop = this->currentImageProperties();
+  return pixelPosToPlanePos(std::get<0>(prop), std::get<1>(prop), pixelPos);
+}
+
+vx::Vector<double, 3> SliceVisualizer::planePosTo3DPos(
+    vx::SlicePropertiesBase* properties, const QSize& canvasSize,
+    const vx::Vector<double, 2>& planePos) {
+  // TODO: Dont pass canvasSize?
+  (void)canvasSize;
+
+  // TODO: Avoid using PlaneInfo / QVector3D?
+  vx::PlaneInfo cuttingPlane(properties->origin(), properties->orientation());
+
+  return vectorCast<double>(
+      toVector(cuttingPlane.get3DPoint(planePos[0], planePos[1])));
+}
+vx::Vector<double, 3> SliceVisualizer::planePosTo3DPosCurrentImage(
+    const vx::Vector<double, 2>& planePos) {
+  auto prop = this->currentImageProperties();
+  return planePosTo3DPos(std::get<0>(prop), std::get<1>(prop), planePos);
+}
+
+vx::Vector<double, 3> SliceVisualizer::pixelPosTo3DPos(
+    vx::SlicePropertiesBase* properties, const QSize& canvasSize,
+    const vx::Vector<double, 2>& pixelPos) {
+  return planePosTo3DPos(properties, canvasSize,
+                         pixelPosToPlanePos(properties, canvasSize, pixelPos));
+}
+vx::Vector<double, 3> SliceVisualizer::pixelPosTo3DPosCurrentImage(
+    const vx::Vector<double, 2>& pixelPos) {
+  auto prop = this->currentImageProperties();
+  return pixelPosTo3DPos(std::get<0>(prop), std::get<1>(prop), pixelPos);
 }
 
 QPointF SliceVisualizer::planePointToPixel(const QSize& imageSize,
@@ -560,42 +604,6 @@ void SliceVisualizer::switchToolTo(Visualizer2DTool* tool) {
   this->_currentTool = i;
   data[_currentTool]->activateTool();
   this->_imageDisplayingWidget->setFocus();
-}
-
-void SliceVisualizer::updateSliceImageFromSlice() {
-  int width = this->canvasWidth();
-  int height = this->canvasHeight();
-  if (width > 0 && height > 0 && currentPlaneArea().height() > 0 &&
-      currentPlaneArea().width() > 0) {
-    doGenerateSliceImage(this->getCuttingPlane(), this->volumeData(),
-                         currentPlaneArea(), QSize(width, height),
-                         getInterpolation(this->properties));
-  }
-}
-
-void SliceVisualizer::doGenerateSliceImage(
-    vx::PlaneInfo cuttingPlane,
-    const QSharedPointer<vx::VolumeData>& volumeData, const QRectF& sliceArea,
-    const QSize& imageSize, vx::InterpolationMethod interpolation) {
-  if (!volumeData) return;
-
-  if (_imageQueueWorker != nullptr) {
-    delete _imageQueueWorker;
-  }
-
-  if (mainVolumeNode) {
-    auto plane = cuttingPlane;
-    auto adjustedRotation = this->dataSet()->getAdjustedRotation();
-    auto adjustedPosition = this->dataSet()->getAdjustedPosition();
-    plane.origin =
-        adjustedRotation.inverted() * (plane.origin - adjustedPosition);
-    plane.rotation = (adjustedRotation.inverted() * plane.rotation);
-    _imageQueueWorker = new ImageGeneratorWorker(volumeData, plane, sliceArea,
-                                                 imageSize, interpolation);
-    if (!_imageWorkerRunning) {
-      runSliceImageGeneratorWorker();
-    }
-  }
 }
 
 QVariant SliceVisualizer::getNodePropertyCustom(QString key) {
@@ -657,23 +665,6 @@ QSharedPointer<QObject> SliceVisualizer::getPropertyUIData(
   }
 }
 
-void SliceVisualizer::runSliceImageGeneratorWorker() {
-  if (!_imageQueueWorker || _imageWorkerRunning) {
-    return;
-  }
-  ImageGeneratorWorker* worker = _imageQueueWorker;
-  _imageQueueWorker = nullptr;
-  _imageWorkerRunning = true;
-  connect(worker, &ImageGeneratorWorker::imageGenerated, this,
-          &SliceVisualizer::onSliceImageGenerated);
-  worker->setAutoDelete(true);
-  connect(worker, &ImageGeneratorWorker::imageGenerated, this, [=]() -> void {
-    _imageWorkerRunning = false;
-    runSliceImageGeneratorWorker();  // run next item in queue if existant
-  });
-  QThreadPool::globalInstance()->start(worker);
-}
-
 void SliceVisualizer::onCanvasResized(QResizeEvent* event) {
   Q_UNUSED(event);
   this->_resizeTimer.stop();
@@ -712,24 +703,70 @@ void SliceVisualizer::updateCreatePlaneNode() {
 
 void SliceVisualizer::redraw() { _imageDisplayingWidget->update(); }
 
-void SliceVisualizer::applyFilters() {
-  this->_filterQueueImage = this->_sliceImage.clone();
-  this->_filterImageWorked = false;
-  // apply to clone so sliceImage will not be modified
-  if (!_filterWorkerRunning) {
-    runFilterWorker();
-  }
+QSharedPointer<vx::VolumeData> SliceVisualizer::volumeData() {
+  auto volume = dynamic_cast<vx::VolumeNode*>(this->properties->volume());
+  if (!volume)
+    return QSharedPointer<vx::VolumeData>();
+  else
+    return volume->volumeData();
 }
 
-void SliceVisualizer::runFilterWorker() {
-  if (!this->volumeData()) return;
-
-  if (_filterWorkerRunning || _filterImageWorked) {
-    return;
+QString SliceVisualizer::getLoadedDataType() {
+  auto volume = dynamic_cast<vx::VolumeNode*>(this->properties->volume());
+  if (volume) {
+    auto data = volume->data();
+    auto volumeData = qSharedPointerDynamicCast<vx::VolumeData>(data);
+    if (volumeData) {
+      // ToDo: replace with real non-multivariate data type name
+      return "non-multivariate data";
+    } else {
+      return "";
+    }
   }
-  _filterWorkerRunning = true;
-  this->_filterImageWorked = true;
-  this->_filterChain2DWidget->applyFilter(this->_filterQueueImage);
+
+  auto volumeSeries =
+      dynamic_cast<VolumeSeriesNode*>(this->properties->volume());
+  if (volumeSeries) {
+    auto data = volumeSeries ? volumeSeries->data() : QSharedPointer<Data>();
+    auto seriesData = qSharedPointerDynamicCast<vx::VolumeSeriesData>(data);
+    if (seriesData) {
+      return seriesData->dimensions()[0]->property()->name();
+    } else {
+      return "";
+    }
+  }
+  return "No data loaded";
+}
+
+QList<rawMetaData> SliceVisualizer::getMultivariateDimensionData() {
+  QList<rawMetaData> outputList = QList<rawMetaData>();
+
+  auto node = dynamic_cast<DataNode*>(this->properties->volume());
+  auto data = node ? node->data() : QSharedPointer<Data>();
+  auto dataSeries = qSharedPointerDynamicCast<VolumeSeriesData>(data);
+
+  if (!dataSeries || dataSeries->dimensionCount() != 1) {
+    // qDebug() << "No multivariate data to return";
+    return QList<rawMetaData>();
+  }
+
+  // ToDo: get additional info about channel and save
+  // them in rawMetaData.infoText
+  auto dimension = dataSeries->dimensions()[0];
+  for (SeriesDimension::EntryKey i = 0;
+       i < (unsigned int)dimension->entries().size(); i++) {
+    QString description =
+        dimension->property()->type()->valueToString(dimension->entries()[i]);
+    QString info = dimension->property()->type()->valueGetDescription(
+        dimension->entries()[i]);
+
+    rawMetaData metadata;
+    metadata.description = description;
+    metadata.infoText = info;
+    metadata.entryIndex = i;
+    outputList.append(metadata);
+  }
+  return outputList;
 }
 
 vx::PlaneInfo SliceVisualizer::getCuttingPlane() {
@@ -737,9 +774,9 @@ vx::PlaneInfo SliceVisualizer::getCuttingPlane() {
                        this->properties->orientation());
 }
 
-void SliceVisualizer::movePlaneOrigin(const QPointF& planePoint) {
+void SliceVisualizer::movePlaneOrigin(const vx::Vector<double, 2>& planePos) {
   auto oldPlane = this->getCuttingPlane();
-  auto origin = oldPlane.get3DPoint(planePoint.x(), planePoint.y());
+  auto origin = oldPlane.get3DPoint(planePos[0], planePos[1]);
 
   // TODO: Allow for rounding errors here?
   if (origin == oldPlane.origin) return;
@@ -785,17 +822,8 @@ void SliceVisualizer::setPlaneInfo(const vx::PlaneInfo& newPlane,
   Q_EMIT signalRequestSliceImageUpdate();
 }
 
-void SliceVisualizer::onSliceImageGenerated(SliceImage image) {
-  this->_sliceImage = image;
-  this->applyFilters();
-}
-
-void SliceVisualizer::onSliceImageFiltered(SliceImage image) {
-  this->_filteredSliceImage = image;
-  // TODO: Currently the base image is extracted twice, once for the histogram
-  // (here) and once for showing (in ImageLayer). It should be extracted only
-  // once, ore the histogram should be switched to a volume histogram.
-  Q_EMIT this->signalRequestHistogram(this->_filteredSliceImage);
+void SliceVisualizer::multivariateDataPropertiesChangedIn() {
+  Q_EMIT multivariateDataPropertiesChangedOut();
 }
 
 void SliceVisualizer::onFilterMaskRequest(vx::filter::Filter2D* filter) {
@@ -807,8 +835,8 @@ QSize SliceVisualizer::canvasSize() {
   return this->_imageDisplayingWidget->size();
 }
 
-// TODO: Lookups should not be done by object name (and the object name for the
-// layers probably should not be set in the constructor)
+// TODO: Lookups should not be done by object name (and the object name for
+// the layers probably should not be set in the constructor)
 int SliceVisualizer::getLayerIndexByName(QString name) {
   // TODO: This is broken
   int layerIndex = 0;
@@ -989,13 +1017,14 @@ vx::InterpolationMethod SliceVisualizer::getInterpolation(
 }
 
 void SliceVisualizer::renderEverything(
-    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters) {
-  imageLayer->render(outputImage, parameters);
+    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters,
+    bool isMainImage) {
+  imageLayer->render(outputImage, parameters, isMainImage);
 
   // TODO: when renderEverything() is called from a background thread, is it
   // okay to access layers()? => Make a copy of layers()
   for (const auto& tool : this->layers()) {
-    tool->render(outputImage, parameters);
+    tool->render(outputImage, parameters, isMainImage);
   }
 }
 
@@ -1011,6 +1040,9 @@ SliceVisualizer::getRenderFunction() {
     // when the SliceVisualizer is destroyed).
 
     Q_UNUSED(options);
+
+    // The main drawing function does not call getRenderFunction()
+    bool isMainImage = false;
 
     quint64 width = size.x;
     quint64 height = size.y;
@@ -1030,7 +1062,7 @@ SliceVisualizer::getRenderFunction() {
     QImage qimage(width, height, QImage::Format_ARGB32);
     qimage.fill(qRgba(0, 0, 0, 0));  // Fill will transparent // TODO:
                                      // doesn't really work currently
-    renderEverything(qimage, parameters);
+    renderEverything(qimage, parameters, isMainImage);
     outputImage->fromQImage(qimage, outputRegionStart);
   };
 }
@@ -1061,14 +1093,12 @@ bool SliceVisualizer::isAllowedParent(vx::NodeKind object) {
 
 void SliceVisualizer::updateBoundingBox() {
   BoundingBox3D bb = BoundingBox3D::empty();
-  auto volume = dynamic_cast<VolumeNode*>(this->properties->volume());
-  if (volume) bb = volume->boundingBox();
+  auto volume = dynamic_cast<MovableDataNode*>(this->properties->volume());
+  if (volume) bb = volume->boundingBoxGlobal();
   if (bb.isEmpty())
     // Default BB
-    bb = BoundingBox3D::point(QVector3D(-0.2, -0.2, -0.2)) +
-         BoundingBox3D::point(QVector3D(0.2, 0.2, 0.2));
+    bb = BoundingBox3D::point(vx::Vector<double, 3>(-0.2, -0.2, -0.2)) +
+         BoundingBox3D::point(vx::Vector<double, 3>(0.2, 0.2, 0.2));
 
   this->view3d()->setBoundingBox(bb);
 }
-
-NODE_PROTOTYPE_IMPL_2(Slice, Visualizer)

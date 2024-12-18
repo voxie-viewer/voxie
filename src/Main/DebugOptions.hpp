@@ -7,6 +7,7 @@
 
 namespace vx {
 namespace debug_option {
+vx::DebugOptionBool* CMark_VerifyNodeDeepClone();
 vx::DebugOptionBool* Log_FocusChanges();
 vx::DebugOptionBool* Log_HelpPageCache();
 vx::DebugOptionBool* Log_QtEvents();

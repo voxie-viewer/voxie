@@ -21,9 +21,16 @@
  */
 
 #include "SubtractStep.hpp"
+
 #include <PluginSegmentation/SegmentationUtils.hpp>
+
 #include <VoxieBackend/IO/Operation.hpp>
 #include <VoxieBackend/IO/OperationRegistry.hpp>
+
+VX_NODE_INSTANTIATION(vx::SubtractStep)
+
+// TODO: Make "LabelID" vs. "LabelId" consistent between SubtractStep,
+// AssignmentStep etc.
 
 using namespace vx;
 using namespace vx::io;
@@ -45,54 +52,68 @@ QSharedPointer<OperationResult> SubtractStep::calculate(
     QSharedPointer<ContainerData> containerData, QDBusObjectPath inputVolume) {
   Q_UNUSED(inputVolume);
 
-  return this->runThreaded("SubtractStep", [parameterCopy, containerData, this](
-                                               const QSharedPointer<Operation>&
-                                                   op) {
-    SubtractStepPropertiesCopy propertyCopy(
-        parameterCopy->properties()[parameterCopy->mainNodePath()]);
+  return this->runThreaded(
+      "SubtractStep",
+      [parameterCopy, containerData](const QSharedPointer<Operation>& op) {
+        SubtractStepPropertiesCopy propertyCopy(
+            parameterCopy->properties()[parameterCopy->mainNodePath()]);
 
-    auto labelId = propertyCopy.labelId();
+        auto labelId = propertyCopy.labelId();
 
-    if (labelId == -1) {
-      throw vx::Exception("de.uni_stuttgart.Voxie.Error",
-                          QString("No LabelID provided in SubtractStep"));
-    }
+        if (labelId == -1) {
+          throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                              QString("No LabelID provided in SubtractStep"));
+        }
 
-    auto labelTable = qSharedPointerDynamicCast<TableData>(
-        containerData->getElement("labelTable"));
+        auto labelTable = qSharedPointerDynamicCast<TableData>(
+            containerData->getElement("labelTable"));
 
-    // fill voxel value map
-    QMap<qint64, qint64> labelVoxelChangeMap =
-        initLabelVoxelChangeMap(labelTable);
+        QMutex changeTrackerOverallMutex;
+        LabelChangeTracker changeTrackerOverall;
 
-    auto voxelFunc =
-        [&labelId, &labelVoxelChangeMap](
-            size_t& x, size_t& y, size_t& z,
-            QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
-          auto voxelValue = labelData->getVoxel(x, y, z);
-          if (getBit((SegmentationType)voxelValue, segmentationShift) > 0) {
-            // remove the selectionBit
-            clearBit(voxelValue, segmentationShift);
+        auto outerUpdate = containerData->createUpdate();
 
-            if (voxelValue == labelId) {
-              // assign values back to 0 for voxels selected for removal
-              labelData->setVoxel(x, y, z, (SegmentationType)0);
+        auto task = Task::create();
+        forwardProgressFromTaskToOperation(task.data(), op.data());
 
-              // check if labelId of voxel changes
-              if (voxelValue != 0) {
-                labelVoxelChangeMap[voxelValue]--;
+        iterateAllLabelVolumeVoxels(
+            containerData, outerUpdate, task.data(), op.data(),
+            [&labelId, &changeTrackerOverallMutex,
+             &changeTrackerOverall](const auto& cb) {
+              LabelChangeTracker changeTrackerThread;
+
+              cb([&](size_t& x, size_t& y, size_t& z,
+                     const QSharedPointer<
+                         VolumeDataVoxelInst<SegmentationType>>& labelData) {
+                SegmentationType voxelValue = labelData->getVoxel(x, y, z);
+
+                if (!getBit((SegmentationType)voxelValue, segmentationShift))
+                  return;
+
+                clearBit(voxelValue, segmentationShift);
+
+                if (voxelValue == labelId) voxelValue = 0;
+
+                // Clear selection and possible change label
+                changeTrackerThread.set(labelData, x, y, z, voxelValue, false);
+              });
+
+              {
+                QMutexLocker locker(&changeTrackerOverallMutex);
+                changeTrackerOverall.mergeChangesFrom(changeTrackerThread);
               }
-            } else {
-              // remove the selection for voxels not from the given labelId
-              labelData->setVoxel(x, y, z, voxelValue);
-            }
-          }
-        };
+            });
 
-    iterateAllLabelVolumeVoxels(voxelFunc, containerData, op, false);
+        // TODO: Reuse outerUpdate
+        updateStatistics(containerData, changeTrackerOverall);
 
-    updateStatistics(containerData, labelVoxelChangeMap);
-  });
+        // TODO: Doesn't this also have to update SelectedVoxelCount?
+        // Currently this is done in StepManager::createSubtractStep(), but this
+        // will not work when the filter is re-run
+        // See also AssignmentStep.cpp
+
+        outerUpdate->finish({});
+      });
 }
 
 void SubtractStep::resetUIWidget() {}
@@ -117,5 +138,3 @@ bool SubtractStep::isCreatableChild(NodeKind) { return false; }
 QList<QString> SubtractStep::supportedDBusInterfaces() { return {}; }
 
 void SubtractStep::initializeCustomUIPropSections() {}
-
-NODE_PROTOTYPE_IMPL(SubtractStep)

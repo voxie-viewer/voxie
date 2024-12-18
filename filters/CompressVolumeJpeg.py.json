@@ -1,0 +1,87 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Compress a volume using JEPG.",
+            "DisplayName": "Compress volume using JPEG",
+            "Name": "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Input volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Output volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.Quality": {
+                    "DisplayName": "Quality",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "MinimumValue": 0,
+                    "MaximumValue": 100,
+                    "DefaultValue": 95
+                },
+                "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Lower": {
+                    "DisplayName": "Range selection (lower limit)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.MinMax",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.MinMax": {
+                            "DisplayName": "Choose min/max value",
+                            "UIPosition": 0
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Manual": {
+                            "DisplayName": "Set value manually",
+                            "UIPosition": 1
+                        }
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Upper": {
+                    "DisplayName": "Range selection (upper limit)",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "DefaultValue": "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.MinMax",
+                    "EnumEntries": {
+                        "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.MinMax": {
+                            "DisplayName": "Choose min/max value",
+                            "UIPosition": 0
+                        },
+                        "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Manual": {
+                            "DisplayName": "Set value manually",
+                            "UIPosition": 1
+                        }
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Lower.ManualValue": {
+                    "DisplayName": "Range selection (lower limit) value",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0,
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Lower",
+                        "Values": [
+                            "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Manual"
+                        ]
+                    }
+                },
+                "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Upper.ManualValue": {
+                    "DisplayName": "Range selection (upper limit) value",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 100,
+                    "EnabledCondition": {
+                        "Type": "de.uni_stuttgart.Voxie.PropertyCondition.HasValue",
+                        "Property": "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Upper",
+                        "Values": [
+                            "de.uni_stuttgart.Voxie.Filter.CompressVolumeJpeg.RangeSelection.Manual"
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

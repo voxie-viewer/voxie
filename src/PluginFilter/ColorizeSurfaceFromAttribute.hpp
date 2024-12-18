@@ -40,8 +40,9 @@ namespace filters {
  * surface's attributes.
  */
 class ColorizeSurfaceFromAttribute : public FilterNode {
-  NODE_PROTOTYPE_DECL(ColorizeSurfaceFromAttribute)
   Q_OBJECT
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute")
 
  public:
   ColorizeSurfaceFromAttribute();

@@ -25,6 +25,8 @@
 #include <VoxieBackend/IO/Operation.hpp>
 #include <VoxieBackend/IO/OperationRegistry.hpp>
 
+VX_NODE_INSTANTIATION(vx::AssignmentStep)
+
 using namespace vx;
 using namespace vx::io;
 
@@ -80,33 +82,48 @@ void AssignmentStep::addSelection(QSharedPointer<ContainerData> containerData,
                                 "exceeds available data range"));
   }
 
-  // fill voxel value map
-  QMap<qint64, qint64> labelVoxelChangeMap =
-      initLabelVoxelChangeMap(labelTable);
+  QMutex changeTrackerOverallMutex;
+  LabelChangeTracker changeTrackerOverall;
 
-  auto voxelFunc =
-      [&labelID, &labelVoxelChangeMap](
-          size_t& x, size_t& y, size_t& z,
-          QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
-        auto voxelValue = labelData->getVoxel(x, y, z);
-        if (getBit((SegmentationType)voxelValue, segmentationShift)) {
-          // selection is implicitly cleared by setting the voxel value
-          labelData->setVoxel(x, y, z, labelID);
-          // remove the selectionBit
-          clearBit(voxelValue, segmentationShift);
-          // check if labelID of voxel changes
-          if (voxelValue != 0) {
-            labelVoxelChangeMap[voxelValue]--;
-          }
-          // one voxel added to labelID
-          labelVoxelChangeMap[labelID]++;
+  auto outerUpdate = containerData->createUpdate();
+
+  auto task = Task::create();
+  forwardProgressFromTaskToOperation(task.data(), op.data());
+
+  iterateAllLabelVolumeVoxels(
+      containerData, outerUpdate, task.data(), op.data(),
+      [&labelID, &changeTrackerOverallMutex,
+       &changeTrackerOverall](const auto& cb) {
+        LabelChangeTracker changeTrackerThread;
+
+        cb([&](size_t& x, size_t& y, size_t& z,
+               const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                   labelData) {
+          SegmentationType voxelValue = labelData->getVoxel(x, y, z);
+
+          if (!getBit((SegmentationType)voxelValue, segmentationShift)) return;
+
+          changeTrackerThread.set(labelData, x, y, z, labelID, false);
+        });
+
+        {
+          QMutexLocker locker(&changeTrackerOverallMutex);
+          changeTrackerOverall.mergeChangesFrom(changeTrackerThread);
         }
-      };
+      });
 
-  iterateAllLabelVolumeVoxels(voxelFunc, containerData, op, false);
-  updateStatistics(containerData, labelVoxelChangeMap);
+  // TODO: Reuse outerUpdate
+  updateStatistics(containerData, changeTrackerOverall);
 
+  // TODO: Use changeTrackerOverall->getSelectedChange() / check that the result
+  // is 0?
+  // qDebug() << "getSelectedChange()" <<
+  // changeTrackerOverall.getSelectedChange();
+
+  // TODO: Reuse outerUpdate
   Q_EMIT(this->updateSelectedVoxelCount((qint64)0, false));
+
+  outerUpdate->finish({});
 }
 
 void AssignmentStep::resetUIWidget() {}
@@ -126,5 +143,3 @@ bool AssignmentStep::isCreatableChild(NodeKind) { return false; }
 QList<QString> AssignmentStep::supportedDBusInterfaces() { return {}; }
 
 void AssignmentStep::initializeCustomUIPropSections() {}
-
-NODE_PROTOTYPE_IMPL(AssignmentStep)

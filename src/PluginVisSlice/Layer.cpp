@@ -52,7 +52,10 @@ void Layer::maybeStartRedraw() {
     qDebug() << "Layer::maybeStartRedraw" << getName() << redrawPending
              << redrawRequested;
 
-  if (!redrawRequested) return;
+  if (!redrawRequested) {
+    maybeUpdateIsUpToDate();
+    return;
+  }
   if (redrawPending) return;
 
   enqueueOnThread(this, [this]() {
@@ -102,9 +105,28 @@ void Layer::maybeStartRedraw() {
       this->maybeStartRedraw();
     });
     redrawRunning = true;
+    maybeUpdateIsUpToDate();
     thread->start();
   });
   redrawPending = true;
+  maybeUpdateIsUpToDate();
+}
+
+void Layer::maybeUpdateIsUpToDate() {
+  vx::checkOnMainThread("Layer::maybeUpdateIsUpToDate");
+  auto newIsUpToDate = !redrawPending && !redrawRunning;
+  if (verbose)
+    qDebug() << this << "isUpToDate changes from" << isUpToDate_ << "to"
+             << newIsUpToDate;
+  if (isUpToDate_ != newIsUpToDate) {
+    isUpToDate_ = newIsUpToDate;
+    Q_EMIT isUpToDateChanged();
+  }
+}
+
+bool Layer::isUpToDate() {
+  vx::checkOnMainThread("Layer::isUpToDate");
+  return isUpToDate_;
 }
 
 // Will be called on background thread
@@ -121,7 +143,7 @@ void Layer::doRedraw(const QSharedPointer<vx::ParameterCopy>& parameters,
     QImage cachedImage(size, QImage::Format_ARGB32);
 
     cachedImage.fill(qRgba(0, 0, 0, 0));  // Fill with transparent
-    render(cachedImage, parameters);
+    render(cachedImage, parameters, true);
 
     setResultImage(cachedImage);
   } catch (vx::Exception& e) {

@@ -31,6 +31,8 @@
 
 using namespace vx;
 
+VX_NODE_INSTANTIATION(vx::PreviewBoxNode)
+
 PreviewBoxNode::PreviewBoxNode()
     : PropertyNode("PreviewBoxNode", getPrototypeSingleton()),
       properties(new PreviewBoxProperties(this)) {
@@ -77,8 +79,3 @@ PreviewBox* PreviewBoxNode::getPreviewBox() {
   this->previewBox->setActive(this->activeCheckbox->isChecked());
   return this->previewBox;
 }
-
-// TODO: Clean up
-typedef PreviewBoxProperties PreviewBoxNodeProperties;
-
-NODE_PROTOTYPE_IMPL(PreviewBoxNode)

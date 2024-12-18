@@ -22,46 +22,54 @@
 
 #include "Object.hpp"
 
-#include <HDF5/File.hpp>
-#include <HDF5/DataType.hpp>
-#include <HDF5/DataSpace.hpp>
 #include <HDF5/Attribute.hpp>
+#include <HDF5/DataSpace.hpp>
+#include <HDF5/DataType.hpp>
+#include <HDF5/File.hpp>
 
 namespace HDF5 {
-  void Object::checkType () const {
-    if (!isValid ())
-      return;
-    H5I_type_t type = getType ();
-    switch (type) {
+void Object::checkType() const {
+  if (!isValid()) return;
+  H5I_type_t type = getType();
+  switch (type) {
     case H5I_GROUP:
     case H5I_DATATYPE:
     case H5I_DATASET:
       break;
 
     default:
-      ABORT_MSG ("Not a object");
-    }
-  }
-
-  File Object::file () const {
-    return File (Exception::check ("H5Iget_file_id", H5Iget_file_id (handle ())));
-  }
-
-  ObjectReference Object::reference () const {
-    ObjectReference ref;
-    Exception::check ("H5Rcreate", H5Rcreate (&ref.value (), handle (), ".", H5R_OBJECT, -1));
-    return ref;
-  }
-
-  Attribute Object::createAttribute (const std::string& name, const DataType& type, const DataSpace& space, AttributeCreatePropList acpl, /*AttributeAccess*/PropList aapl) const {
-    return Attribute (Exception::check ("H5Acreate2", H5Acreate2 (handle (), name.c_str (), type.handle (), space.handle (), acpl.handleOrDefault (), aapl.handleOrDefault ())));
-  }
-
-  bool Object::existsAttribute (const std::string& name) const {
-    return Exception::check ("H5Aexists", H5Aexists (handle (), name.c_str ())) != 0;
-  }
-
-  Attribute Object::openAttribute (const std::string& name, /*AttributeAccess*/PropList aapl) const {
-    return Attribute (Exception::check ("H5Aopen", H5Aopen (handle (), name.c_str (), aapl.handleOrDefault ())));
+      ABORT_MSG("Not a object");
   }
 }
+
+File Object::file() const {
+  return File(Exception::check("H5Iget_file_id", H5Iget_file_id(handle())));
+}
+
+ObjectReference Object::reference() const {
+  ObjectReference ref;
+  Exception::check("H5Rcreate",
+                   H5Rcreate(&ref.value(), handle(), ".", H5R_OBJECT, -1));
+  return ref;
+}
+
+Attribute Object::createAttribute(const std::string& name, const DataType& type,
+                                  const DataSpace& space,
+                                  AttributeCreatePropList acpl,
+                                  /*AttributeAccess*/ PropList aapl) const {
+  return Attribute(Exception::check(
+      "H5Acreate2",
+      H5Acreate2(handle(), name.c_str(), type.handle(), space.handle(),
+                 acpl.handleOrDefault(), aapl.handleOrDefault())));
+}
+
+bool Object::existsAttribute(const std::string& name) const {
+  return Exception::check("H5Aexists", H5Aexists(handle(), name.c_str())) != 0;
+}
+
+Attribute Object::openAttribute(const std::string& name,
+                                /*AttributeAccess*/ PropList aapl) const {
+  return Attribute(Exception::check(
+      "H5Aopen", H5Aopen(handle(), name.c_str(), aapl.handleOrDefault())));
+}
+}  // namespace HDF5

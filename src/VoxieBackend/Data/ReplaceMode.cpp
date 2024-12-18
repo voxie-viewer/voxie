@@ -27,10 +27,12 @@
 vx::ReplaceMode vx::parseReplaceMode(const QString& s) {
   if (s == "de.uni_stuttgart.Voxie.ReplaceMode.Insert")
     return ReplaceMode::Insert;
-  else if (s == "de.uni_stuttgart.Voxie.ReplaceMode.Set")
-    return ReplaceMode::Set;
+  else if (s == "de.uni_stuttgart.Voxie.ReplaceMode.InsertOrReplace")
+    return ReplaceMode::InsertOrReplace;
   else if (s == "de.uni_stuttgart.Voxie.ReplaceMode.ReplaceExisting")
     return ReplaceMode::ReplaceExisting;
+  else if (s == "de.uni_stuttgart.Voxie.ReplaceMode.InsertOrSame")
+    return ReplaceMode::InsertOrSame;
   else
     throw vx::Exception("de.uni_stuttgart.Voxie.InvalidReplaceMode",
                         "Unknown replace mode");

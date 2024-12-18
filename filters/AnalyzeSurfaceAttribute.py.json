@@ -1,0 +1,31 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Get information about a surface attribute.",
+            "DisplayName": "Analyze surface attribute",
+            "Name": "de.uni_stuttgart.Voxie.Filter.AnalyzeSurfaceAttribute",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.AnalyzeSurfaceAttribute.AttributeName": {
+                    "DisplayName": "Attribute",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.SurfaceAttributeName",
+                    "ParentProperty": "de.uni_stuttgart.Voxie.Input"
+                },
+                "de.uni_stuttgart.Voxie.Input": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Input surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.TextOutput": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.File"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

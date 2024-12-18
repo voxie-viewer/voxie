@@ -29,7 +29,8 @@
 
 class TheSphereGenerator : public vx::FilterNode {
   Q_OBJECT
-  NODE_PROTOTYPE_DECL(TheSphereGenerator)
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator")
 
  public:
   TheSphereGenerator();

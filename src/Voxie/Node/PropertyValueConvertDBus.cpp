@@ -50,3 +50,12 @@ PropertyValueConvertDBus<std::tuple<QString, QJsonObject>,
     toRaw(const std::tuple<QString, QMap<QString, QDBusVariant>>& dbus) {
   return std::make_tuple(std::get<0>(dbus), vx::dbusToJson(std::get<1>(dbus)));
 }
+
+QDBusVariant PropertyValueConvertDBus<QJsonValue, QDBusVariant>::fromRaw(
+    const QJsonValue& raw) {
+  return vx::jsonToDBus(raw);
+}
+QJsonValue PropertyValueConvertDBus<QJsonValue, QDBusVariant>::toRaw(
+    const QDBusVariant& dbus) {
+  return vx::dbusToJson(dbus);
+}

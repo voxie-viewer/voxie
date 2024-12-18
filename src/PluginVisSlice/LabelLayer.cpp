@@ -25,6 +25,7 @@
 
 #include <Voxie/Data/Colorizer.hpp>
 #include <Voxie/Data/Prototypes.hpp>
+#include <Voxie/Data/Slice.hpp>
 
 #include <Voxie/Node/ParameterCopy.hpp>
 
@@ -49,7 +50,10 @@ LabelLayer::LabelLayer(SliceVisualizer* sv) {
 }
 
 void LabelLayer::render(QImage& outputImage,
-                        const QSharedPointer<vx::ParameterCopy>& parameters) {
+                        const QSharedPointer<vx::ParameterCopy>& parameters,
+                        bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

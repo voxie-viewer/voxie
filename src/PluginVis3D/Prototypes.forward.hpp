@@ -3,47 +3,126 @@
 
 #pragma once
 
+#include <VoxieClient/StringConstant.hpp>
+
 namespace vx {
 inline namespace object3d_prop {
+static inline auto Test3DObjectProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Example.Object3D.Test3DObject");
+}
+using Test3DObjectProperties_name =
+    decltype(Test3DObjectProperties_name_function());
 class Test3DObjectPropertiesEntry;
 class Test3DObjectPropertiesBase;
 class Test3DObjectPropertiesCopy;
 class Test3DObjectProperties;
 }  // namespace object3d_prop
 inline namespace object3d_prop {
+static inline auto GeometricPrimitiveProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Object3D.GeometricPrimitive");
+}
+using GeometricPrimitiveProperties_name =
+    decltype(GeometricPrimitiveProperties_name_function());
 class GeometricPrimitivePropertiesEntry;
 class GeometricPrimitivePropertiesBase;
 class GeometricPrimitivePropertiesCopy;
 class GeometricPrimitiveProperties;
 }  // namespace object3d_prop
 inline namespace object3d_prop {
+static inline auto GridProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Object3D.Grid");
+}
+using GridProperties_name = decltype(GridProperties_name_function());
 class GridPropertiesEntry;
 class GridPropertiesBase;
 class GridPropertiesCopy;
 class GridProperties;
 }  // namespace object3d_prop
 inline namespace object3d_prop {
+static inline auto PlaneProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Object3D.Plane");
+}
+using PlaneProperties_name = decltype(PlaneProperties_name_function());
 class PlanePropertiesEntry;
 class PlanePropertiesBase;
 class PlanePropertiesCopy;
 class PlaneProperties;
 }  // namespace object3d_prop
 inline namespace object3d_prop {
+static inline auto SurfaceProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Object3D.Surface");
+}
+using SurfaceProperties_name = decltype(SurfaceProperties_name_function());
 class SurfacePropertiesEntry;
 class SurfacePropertiesBase;
 class SurfacePropertiesCopy;
 class SurfaceProperties;
 }  // namespace object3d_prop
 inline namespace visualizer_prop {
+static inline auto View3DProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Visualizer.View3D");
+}
+using View3DProperties_name = decltype(View3DProperties_name_function());
 class View3DPropertiesEntry;
 class View3DPropertiesBase;
 class View3DPropertiesCopy;
 class View3DProperties;
 }  // namespace visualizer_prop
 inline namespace visualizer_prop {
+static inline auto VolumeRenderingProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Visualizer.VolumeRendering");
+}
+using VolumeRenderingProperties_name =
+    decltype(VolumeRenderingProperties_name_function());
 class VolumeRenderingPropertiesEntry;
 class VolumeRenderingPropertiesBase;
 class VolumeRenderingPropertiesCopy;
 class VolumeRenderingProperties;
 }  // namespace visualizer_prop
+template <typename S>
+struct PropertiesTypeAlias;
+template <>
+struct PropertiesTypeAlias<::vx::object3d_prop::Test3DObjectProperties_name> {
+  using PropertiesType = ::vx::object3d_prop::Test3DObjectProperties;
+  using PropertiesEntryType = ::vx::object3d_prop::Test3DObjectPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<
+    ::vx::object3d_prop::GeometricPrimitiveProperties_name> {
+  using PropertiesType = ::vx::object3d_prop::GeometricPrimitiveProperties;
+  using PropertiesEntryType =
+      ::vx::object3d_prop::GeometricPrimitivePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::object3d_prop::GridProperties_name> {
+  using PropertiesType = ::vx::object3d_prop::GridProperties;
+  using PropertiesEntryType = ::vx::object3d_prop::GridPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::object3d_prop::PlaneProperties_name> {
+  using PropertiesType = ::vx::object3d_prop::PlaneProperties;
+  using PropertiesEntryType = ::vx::object3d_prop::PlanePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::object3d_prop::SurfaceProperties_name> {
+  using PropertiesType = ::vx::object3d_prop::SurfaceProperties;
+  using PropertiesEntryType = ::vx::object3d_prop::SurfacePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::visualizer_prop::View3DProperties_name> {
+  using PropertiesType = ::vx::visualizer_prop::View3DProperties;
+  using PropertiesEntryType = ::vx::visualizer_prop::View3DPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<
+    ::vx::visualizer_prop::VolumeRenderingProperties_name> {
+  using PropertiesType = ::vx::visualizer_prop::VolumeRenderingProperties;
+  using PropertiesEntryType =
+      ::vx::visualizer_prop::VolumeRenderingPropertiesEntry;
+};
 }  // namespace vx

@@ -57,8 +57,11 @@ QSharedPointer<RequestResponse> vx::requestVoxieUrl(const QUrl& url) {
   // qDebug() << path;
 
   // TODO
-  if (path.startsWith("/help/static/lib/katex-0.11.1/")) {
-    auto relPath = path.mid(strlen("/help/static/lib/katex-0.11.1/"));
+  if (path.startsWith("/help/static/lib/katex-0.11.1/") ||
+      path.startsWith("/help/static/lib/simple.css/")) {
+    bool isKatex = path.startsWith("/help/static/lib/katex-0.11.1/");
+    auto relPath = isKatex ? path.mid(strlen("/help/static/lib/katex-0.11.1/"))
+                           : path.mid(strlen("/help/static/lib/simple.css/"));
     for (const auto& part : relPath.split('/')) {
       if (part == "" || part == "." || part == "..") {
         qWarning() << "Request for" << url
@@ -96,7 +99,9 @@ QSharedPointer<RequestResponse> vx::requestVoxieUrl(const QUrl& url) {
       type = "font/woff2";
 
     QString sourceFilename =
-        voxieRoot().directoryManager()->katexPath() + "/" + relPath;
+        (isKatex ? voxieRoot().directoryManager()->katexPath()
+                 : voxieRoot().directoryManager()->simpleCssPath()) +
+        "/" + relPath;
     QFile* file = new QFile(sourceFilename);
     if (!file->open(QIODevice::ReadOnly)) {
       qWarning() << "Request for" << url << "failed: Cannot open"

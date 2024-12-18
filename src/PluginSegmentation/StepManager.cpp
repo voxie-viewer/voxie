@@ -21,12 +21,18 @@
  */
 
 #include "StepManager.hpp"
+
 #include <PluginSegmentation/Steps/AssignmentStep.hpp>
 #include <PluginSegmentation/Steps/MetaStep.hpp>
 #include <PluginSegmentation/Steps/RemoveLabelStep.hpp>
 #include <PluginSegmentation/Steps/SubtractStep.hpp>
+
+#include <Voxie/DebugOptions.hpp>
+
 #include <Voxie/Data/VolumeNode.hpp>
+
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
+
 #include <VoxieBackend/IO/OperationRegistry.hpp>
 
 using namespace vx;
@@ -385,7 +391,8 @@ bool StepManager::isDataAvailable() const {
   return dataIsAvailable;
 }
 
-void StepManager::setLassoSelection(QList<QVector3D> nodes, PlaneInfo plane,
+void StepManager::setLassoSelection(QList<vx::Vector<double, 3>> nodes,
+                                    PlaneInfo plane,
                                     SliceVisualizerI* currentSV) {
   if (!isDataAvailable()) {
     return;
@@ -421,15 +428,19 @@ void StepManager::setBrushSelectionProperties(PlaneInfo plane,
   }
 
   step->setProperties(
-      QList<std::tuple<QVector3D, double>>(),
-      QList<std::tuple<QVector3D, double>>(), getInputVolume()->origin(),
-      getInputVolume()->orientation(), this->getLabelVolume()->getSpacing(),
-      plane.origin, plane.rotation);
+      QList<std::tuple<vx::Vector<double, 3>, double>>(),
+      QList<std::tuple<vx::Vector<double, 3>, double>>(),
+      getInputVolume()->origin(), getInputVolume()->orientation(),
+      this->getLabelVolume()->getSpacing(), plane.origin, plane.rotation);
 }
 
 void StepManager::addVoxelsToBrushSelection(
-    std::tuple<QVector3D, double> centerWithRadius, PlaneInfo plane,
+    std::tuple<vx::Vector<double, 3>, double> centerWithRadius, PlaneInfo plane,
     SliceVisualizerI* currentSV) {
+  if (vx::debug_option::Log_VisSlice_BrushSelection()->get())
+    qDebug() << "addVoxelsToBrushSelection" << std::get<0>(centerWithRadius)
+             << std::get<1>(centerWithRadius);
+
   if (!isDataAvailable()) {
     return;
   }
@@ -444,7 +455,12 @@ void StepManager::addVoxelsToBrushSelection(
       ParameterCopy::getParameters(step.data());
   auto op = OperationSimple::create();
 
-  OperationRegistry::instance()->addOperation(op);
+  // TODO: Should this be added to the list of operations? Should this be on the
+  // current thread or on a background thread? In either case, there should not
+  // be multiple operations running at the same time.
+  // TODO: Make sure that if there are too many calls to
+  // addVoxelsToBrushSelection() calls are dropped instead of piling up?
+  // OperationRegistry::instance()->addOperation(op);
   connect(op.data(), &OperationSimple::finished, this,
           &StepManager::selectionIsFinished);
   QSharedPointer<ContainerData> containerData = getOutputData();
@@ -479,9 +495,14 @@ void StepManager::addVoxelsToBrushSelection(
       break;
   }
 
+  // TODO: Avoid contains() call (is slow because it has to go through the list
+  // of steps)
   if (!this->selectionStepList.contains(step)) {
     this->selectionStepList.append(step);
   }
+  if (vx::debug_option::Log_VisSlice_BrushSelection()->get())
+    qDebug() << "addVoxelsToBrushSelection" << std::get<0>(centerWithRadius)
+             << std::get<1>(centerWithRadius) << "done";
 
   Q_EMIT this->selectionIsFinished(true);
   Q_EMIT this->canApplyActiveSelection(true);
@@ -618,15 +639,6 @@ void StepManager::clearSelection() {
   Q_EMIT this->canApplyActiveSelection(false);
   Q_EMIT this->selectionIsFinished(false);
 
-  auto voxelFunc =
-      [](size_t& x, size_t& y, size_t& z,
-         QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelData) {
-        SegmentationType voxelVal =
-            (SegmentationType)labelData->getVoxel(x, y, z);
-        clearBit(voxelVal, segmentationShift);
-        labelData->setVoxel(x, y, z, voxelVal);
-      };
-
   auto op = OperationSimple::create();
   OperationRegistry::instance()->addOperation(op);
   connect(op.data(), &OperationSimple::finished, this,
@@ -642,8 +654,49 @@ void StepManager::clearSelection() {
       i.remove();
     }
   }
-  auto runnable = functionalRunnable([op, voxelFunc, this]() {
-    iterateAllLabelVolumeVoxels(voxelFunc, getOutputData(), op);
+
+  auto containerData = getOutputData();
+
+  // TODO: Be more consistend in how operations like this are run in the
+  // background (also see e.g. Segmentation::initData()).
+  auto runnable = functionalRunnable([containerData, op]() {
+    // TODO: Track changes? Might not be needed because the label is deleted
+    // anyway. Might still be useful to detect when the statistics were
+    // wrong.
+    QMutex changeTrackerOverallMutex;
+    LabelChangeTracker changeTrackerOverall;
+
+    auto outerUpdate = containerData->createUpdate();
+
+    auto task = Task::create();
+    forwardProgressFromTaskToOperation(task.data(), op.data());
+
+    // Clear selection
+    iterateAllLabelVolumeVoxels(
+        containerData, outerUpdate, task.data(), op.data(),
+        [&changeTrackerOverallMutex, &changeTrackerOverall](const auto& cb) {
+          LabelChangeTracker changeTrackerThread;
+
+          cb([&](size_t& x, size_t& y, size_t& z,
+                 const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                     labelData) {
+            SegmentationType voxelVal =
+                (SegmentationType)labelData->getVoxel(x, y, z);
+
+            if (!getBit(voxelVal, segmentationShift)) return;
+
+            clearBit(voxelVal, segmentationShift);
+
+            changeTrackerThread.set(labelData, x, y, z, voxelVal, false);
+          });
+
+          {
+            QMutexLocker locker(&changeTrackerOverallMutex);
+            changeTrackerOverall.mergeChangesFrom(changeTrackerThread);
+          }
+        });
+
+    outerUpdate->finish({});
   });
   QThreadPool::globalInstance()->start(runnable);
 

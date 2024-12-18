@@ -161,41 +161,32 @@ void ToolSelection::setMask(vx::filter::Filter2D* filter) {
   }
 }
 
-void ToolSelection::toolMousePressEvent(QMouseEvent* e) {
+void ToolSelection::toolMousePressEvent(QMouseEvent* e,
+                                        const vx::Vector<double, 2>& pixelPos) {
   if (mask != nullptr) {
-    vx::SliceImage sliceImg = sv->sliceImage();
-    QPoint tempPos = e->pos();
+    auto planePos = this->sv->pixelPosToPlanePosCurrentImage(pixelPos);
+    // TODO: Probably plane coordinates should be used here
     start = e->pos();
     if (rectangleActive) {
       // qDebug() << "bla";
       // if (firstValue)
       //{
-      sliceImg.imagePoint2PlanePoint(
-          tempPos.x(), tempPos.y(),
-          QSize(sv->canvasWidth(), sv->canvasHeight()), sv->currentPlaneArea(),
-          startRect, true);
       // firstValue = false;
       layer()->setPreview(QPainterPath());
+      startRect = planePos;
       mousePressed = true;
       /*} else {
           qDebug() << startRect;
           qDebug()<< tempPos;
           QPointF endRect;
-          sliceImg.imagePoint2PlanePoint(tempPos.x(), tempPos.y(),
-      QSize(sv->canvasWidth(), sv->canvasHeight()), sv->currentPlaneArea(),
-      endRect); mask->addRectangle(startRect.x(), startRect.y(), endRect.x(),
+          mask->addRectangle(startRect.x(), startRect.y(), endRect.x(),
       endRect.y()); qDebug() << endRect; firstValue = true; this->draw();
       }*/
     }
 
     if (polygonActive) {
       this->previewPolygon.append(e->pos());
-      QPointF polyPoint;
-      sliceImg.imagePoint2PlanePoint(
-          tempPos.x(), tempPos.y(),
-          QSize(sv->canvasWidth(), sv->canvasHeight()), sv->currentPlaneArea(),
-          polyPoint, true);
-      this->polygon.append(polyPoint);
+      this->polygon.append(QPointF(planePos[0], planePos[1]));
       QPainterPath temp;
       temp.addPolygon(QPolygonF(this->previewPolygon));
       layer()->setPreview(temp);
@@ -204,18 +195,13 @@ void ToolSelection::toolMousePressEvent(QMouseEvent* e) {
     if (ellipseActive) {
       // if (firstValue)
       //{
-      sliceImg.imagePoint2PlanePoint(
-          tempPos.x(), tempPos.y(),
-          QSize(sv->canvasWidth(), sv->canvasHeight()), sv->currentPlaneArea(),
-          middlePointEllipse, true);
+      middlePointEllipse = planePos;
       //  firstValue = false;
       layer()->setPreview(QPainterPath());
       mousePressed = true;
       /*} else {
           QPointF radius;
-          sliceImg.imagePoint2PlanePoint(tempPos.x(), tempPos.y(),
-      QSize(sv->canvasWidth(), sv->canvasHeight()), sv->currentPlaneArea(),
-      radius); this->mask->addEllipse(this->middlePointEllipse.x(),
+          this->mask->addEllipse(this->middlePointEllipse.x(),
       this->middlePointEllipse.y(), fabs(this->middlePointEllipse.x() -
       radius.x()), fabs(this->middlePointEllipse.x() - radius.y())); firstValue
       = true; this->draw();
@@ -224,7 +210,10 @@ void ToolSelection::toolMousePressEvent(QMouseEvent* e) {
   }
 }
 
-void ToolSelection::toolMouseMoveEvent(QMouseEvent* e) {
+void ToolSelection::toolMouseMoveEvent(QMouseEvent* e,
+                                       const vx::Vector<double, 2>& pixelPos) {
+  Q_UNUSED(pixelPos);
+
   if (mousePressed) {
     if (rectangleActive) {
       QPoint tempEnd = e->pos();
@@ -264,26 +253,25 @@ void ToolSelection::toolMouseMoveEvent(QMouseEvent* e) {
   }
 }
 
-void ToolSelection::toolMouseReleaseEvent(QMouseEvent* e) {
+void ToolSelection::toolMouseReleaseEvent(
+    QMouseEvent* e, const vx::Vector<double, 2>& pixelPos) {
+  Q_UNUSED(e);
+
   if (polygonActive) {
     return;
   }
   mousePressed = false;
   layer()->clearPreview();
 
-  vx::SliceImage sliceImg = sv->sliceImage();
-  QPointF tempEnd;
-  sliceImg.imagePoint2PlanePoint(e->pos().x(), e->pos().y(),
-                                 QSize(sv->canvasWidth(), sv->canvasHeight()),
-                                 sv->currentPlaneArea(), tempEnd, true);
+  auto planePos = this->sv->pixelPosToPlanePosCurrentImage(pixelPos);
   if (rectangleActive) {
-    mask->addRectangle(startRect.x(), startRect.y(), tempEnd.x(), tempEnd.y());
+    mask->addRectangle(startRect[0], startRect[1], planePos[0], planePos[1]);
   }
 
   if (ellipseActive) {
-    mask->addEllipse(this->middlePointEllipse.x(), this->middlePointEllipse.y(),
-                     fabs(tempEnd.x() - this->middlePointEllipse.x()),
-                     fabs(tempEnd.y() - this->middlePointEllipse.y()));
+    mask->addEllipse(this->middlePointEllipse[0], this->middlePointEllipse[1],
+                     fabs(planePos[0] - this->middlePointEllipse[0]),
+                     fabs(planePos[1] - this->middlePointEllipse[1]));
   }
 }
 
@@ -371,7 +359,10 @@ void ToolSelectionLayer::setPreview(const QPainterPath& preview) {
 }
 
 void ToolSelectionLayer::render(
-    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters) {
+    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters,
+    bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

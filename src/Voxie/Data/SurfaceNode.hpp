@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <Voxie/Data/PositionInterface.hpp>
+#include <Voxie/Data/MovableDataNode.hpp>
 #include <Voxie/Data/Prototypes.forward.hpp>
 #include <VoxieBackend/Data/SurfaceData.hpp>
 
@@ -44,11 +44,10 @@
 namespace vx {
 class VolumeNode;
 
-class VOXIECORESHARED_EXPORT SurfaceNode : public PositionInterface {
+class VOXIECORESHARED_EXPORT SurfaceNode : public MovableDataNode {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(SurfaceNode)
-
-  NODE_PROTOTYPE_DECL_DATA(Surface)
+  VX_REFCOUNTEDOBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Data.Surface")
 
   QLabel* numberOfVerticesLabel;
   QLabel* numberOfTrianglesLabel;
@@ -77,6 +76,8 @@ class VOXIECORESHARED_EXPORT SurfaceNode : public PositionInterface {
 
   void adjustPosition(QVector3D position, bool isAbsolute = false) override;
   void adjustRotation(QQuaternion rotation, bool isAbsolute = false) override;
+
+  BoundingBox3D boundingBoxObject() override;
 
  protected:
   void setDataImpl(const QSharedPointer<Data>& data) override;

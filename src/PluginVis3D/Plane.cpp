@@ -44,6 +44,8 @@
 
 #include <QtOpenGL/QGLWidget>  // TODO: remove
 
+VX_NODE_INSTANTIATION(vx::vis3d::Plane)
+
 using namespace vx;
 using namespace vx::visualization;
 using namespace vx::vis3d;
@@ -132,20 +134,23 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
     connect(plane, &PlaneNode::rotationChanged, this,
             [this](QQuaternion rotation) {
               (void)rotation;
-              qDebug() << "rotChanged";
+              // qDebug() << "rotChanged";
               this->requestLoadSliceImage();
             });
     connect(plane, &PlaneNode::originChanged, this, [this](QVector3D origin) {
       (void)origin;
-      qDebug() << "origChanged";
+      // qDebug() << "origChanged";
       this->requestLoadSliceImage();
     });
+    connect(planeObj, &vx::vis3d::Plane::planeBoundingBoxChanged, this,
+            &PlanePerShareGroup::requestLoadSliceImage);
 
     auto planeDataPtr =
         makeSharedQObject<PlaneData>(planeShared, vertexBuffer, colorizer);
 
     connect(planeDataPtr.data(), &PlaneData::drawTextureFlagChanged, this,
             [this] {
+              if (!this->planeObj) return;
               shareContext->select();
               if (!planeData->drawTexture()) {
                 shareContext->unselect();
@@ -154,27 +159,24 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
               if (textureTimer.isActive()) textureTimer.stop();
               loadSliceImage(planeData->resolution());
               shareContext->select();
-              // TODO: Properly calculate bounding box for slice
-              /*
-              auto volume = planeData->getVolume();
-              auto bbox = slice ? slice->getBoundingRectangle()
-                                : planeData->getBoundingRectangle();  // TODO
-              */
-              auto bbox = planeData->getBoundingRectangle();
+              auto bbox = this->planeObj->getPlaneBoundingBox();
               planeShader.updateBuffers(planeData, bbox);
               // TODO: update();
               shareContext->unselect();
             });
 
+    connect(planeObj, &vx::vis3d::Plane::planeBoundingBoxChanged, this, [this] {
+      if (!this->planeObj) return;
+      shareContext->select();
+      auto bbox = this->planeObj->getPlaneBoundingBox();
+      planeShader.updateBuffers(planeData, bbox);
+      // update();
+      shareContext->unselect();
+    });
+
     // TODO
     shareContext->select();
-    // TODO: Properly calculate bounding box for slice
-    /*
-    auto volume = planeData->getVolume();
-    auto bbox = slice ? slice->getBoundingRectangle()
-                      : planeData->getBoundingRectangle();  // TODO
-    */
-    auto bbox = planeData->getBoundingRectangle();
+    auto bbox = planeObj->getPlaneBoundingBox();
     planeShader.updateBuffers(planeDataPtr, bbox);
 
     planeData = planeDataPtr;
@@ -188,9 +190,7 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
                      });
 
     connect(properties, &object3d_prop::PlaneProperties::sliceVolumeChanged,
-            this,
-            // TODO: capture plane here?
-            [this, plane, properties](vx::Node* value) {
+            this, [this, properties](vx::Node* value) {
               // TODO
               shareContext->select();
 
@@ -271,17 +271,10 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
     shareContext->select();
 
     qDebug() << "LSI";
+    if (!planeObj) return;
 
     auto volume = planeData->getVolume();
-    // auto bbox = planeData->getBoundingRectangle();
-    // TODO: actually make the slice this large
-    // TODO: Properly calculate bounding box for slice
-    /*
-    auto volume = planeData->getVolume();
-    auto bbox = slice ? slice->getBoundingRectangle()
-                      : planeData->getBoundingRectangle();  // TODO
-    */
-    auto bbox = planeData->getBoundingRectangle();
+    auto bbox = this->planeObj->getPlaneBoundingBox();
     QSharedPointer<Texture> texture;
 
     if (volume) {
@@ -319,14 +312,7 @@ class PlanePerShareGroup : public Object3DPerShareGroup {
       });
 
       shareContext->select();
-      // TODO: Check what this is doing and should be doing
-      /*
-        auto volume = planeData->getVolume();
-        auto bbox2 = slice ? slice->getBoundingRectangle()
-        : planeData->getBoundingRectangle();  // TODO
-      */
-      auto bbox2 = planeData->getBoundingRectangle();
-      planeShader.updateBuffers(planeData, bbox2);
+      planeShader.updateBuffers(planeData, bbox);
       // shareContext->unselect();
       // TODO
       // update();
@@ -355,6 +341,7 @@ vx::vis3d::Plane::Plane()
   QObject::connect(properties,
                    &object3d_prop::PlaneProperties::sliceVolumeChanged, this,
                    &Plane::boundingBoxChanged);
+
   // TODO: update bounding box when either the volume
   // adjustedRotation/adjustedPosition changes or the volume size changes
   // because a new VolumeData is set
@@ -391,6 +378,15 @@ vx::vis3d::Plane::Plane()
                    this, &Plane::clippingPlanesChanged);
   QObject::connect(this, &Plane::planeOrigOrientChanged, this,
                    &Plane::clippingPlanesChanged);
+
+  // Update the bounding box if the default size changes
+  QObject::connect(properties,
+                   &object3d_prop::PlaneProperties::defaultSizeChanged, this,
+                   &Plane::planeBoundingBoxChanged);
+
+  // Re-render after the plane bounding box changes
+  QObject::connect(this, &Plane::planeBoundingBoxChanged, this,
+                   &Plane::triggerRendering);
 
   colorizer = makeSharedQObject<Colorizer>();
 
@@ -494,7 +490,17 @@ BoundingBox3D vx::vis3d::Plane::getBoundingBox() {
     qWarning() << "Could not cast Node to VolumeNode";
     return BoundingBox3D::empty();
   }
-  return volume->boundingBox();
+  return volume->boundingBoxGlobal();
+}
+
+QRectF vx::vis3d::Plane::getPlaneBoundingBox() {
+  // TODO: Properly calculate bounding box for slice if a volume is connected
+
+  // TODO: This should get the property value from the vx::ParameterCopy used
+  // for rendering.
+  double size = this->properties->defaultSize();
+
+  return QRectF(-size / 2, -size / 2, size, size);
 }
 
 void vx::vis3d::Plane::getClippingPlanes(QList<ClippingPlane>& planes) {
@@ -516,5 +522,3 @@ void vx::vis3d::Plane::getClippingPlanes(QList<ClippingPlane>& planes) {
     qCritical() << "Invalid value for clipping direction";
   }
 }
-
-NODE_PROTOTYPE_IMPL_SEP(object3d_prop::Plane, vis3d::Plane)

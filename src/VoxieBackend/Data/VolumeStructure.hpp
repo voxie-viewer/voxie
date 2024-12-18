@@ -29,7 +29,7 @@
 namespace vx {
 class VOXIEBACKEND_EXPORT VolumeStructure : public vx::DynamicObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(VolumeStructure)
+  VX_REFCOUNTEDOBJECT
 
  protected:
   // throws Exception

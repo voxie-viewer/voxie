@@ -87,18 +87,38 @@ QLibrary* getOpenLibrary() {
   return lib;
 }
 
+bool haveOpenCLSymbol(const char* name) {
+  auto lib = getOpenLibrary();
+  auto symb = lib->resolve(name);
+  return symb != nullptr;
+}
+bool lazyHaveClRetainDevice() {
+  static bool haveRetainDevice = haveOpenCLSymbol("clRetainDevice");
+  return haveRetainDevice;
+}
+
+static cl_int fakeRetainReleaseDevice(cl_device_id device) {
+  // Before OpenCL 1.2 there is no clRetainDevice() / clReleaseDevice(), all
+  // those calls can be ignored there.
+  (void)device;
+  return CL_SUCCESS;
+}
+
 SymbolType loadOpenCLSymbol(const char* name) {
   auto lib = getOpenLibrary();
+
+  if (strcmp(name, "clRetainDevice") == 0 ||
+      strcmp(name, "clReleaseDevice") == 0) {
+    if (!lazyHaveClRetainDevice()) {
+      return reinterpret_cast<SymbolType>(fakeRetainReleaseDevice);
+    }
+  }
+
   auto symb = lib->resolve(name);
   if (!symb) {
     throw OpenCLLoadException(lib->errorString(), name);
   }
   return symb;
-}
-bool haveOpenCLSymbol(const char* name) {
-  auto lib = getOpenLibrary();
-  auto symb = lib->resolve(name);
-  return symb != nullptr;
 }
 }  // namespace
 
@@ -119,15 +139,6 @@ bool haveOpenCLSymbol(const char* name) {
 #endif
 
 namespace cl {
-// TODO: Use exception for error handling
-OPENCL_LAZY_EXPORT void errorHandler(cl_int err, const char* errStr) {
-  Q_UNUSED(err);
-  Q_UNUSED(errStr);
-}
-bool lazyHaveClRetainDevice() {
-  static bool haveRetainDevice = haveOpenCLSymbol("clRetainDevice");
-  return haveRetainDevice;
-}
 namespace OpenCLLibLazy {
 OPENCL_LAZY_SYMBOLS(OPENCL_LAZY_DEFINE)
 }

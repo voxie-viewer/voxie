@@ -48,7 +48,7 @@ class ToolSelection;
 
 class ToolSelectionLayer : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ToolSelectionLayer)
+  VX_REFCOUNTEDOBJECT
 
   QMutex previewMutex_;
   bool previewSet_ = false;
@@ -63,7 +63,8 @@ class ToolSelectionLayer : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 
   void clearPreview();
   void setPreview(const QPainterPath& preview);
@@ -85,12 +86,19 @@ class ToolSelection : public Visualizer2DTool {
  public Q_SLOTS:
   void activateTool() override;
   void deactivateTool() override;
-  void toolMousePressEvent(QMouseEvent* e) override;
-  void toolMouseReleaseEvent(QMouseEvent* e) override;
-  void toolMouseMoveEvent(QMouseEvent* e) override;
+  void toolMousePressEvent(QMouseEvent* e,
+                           const vx::Vector<double, 2>& pixelPos) override;
+  void toolMouseReleaseEvent(QMouseEvent* e,
+                             const vx::Vector<double, 2>& pixelPos) override;
+  void toolMouseMoveEvent(QMouseEvent* e,
+                          const vx::Vector<double, 2>& pixelPos) override;
   void toolKeyPressEvent(QKeyEvent* e) override;
   void toolKeyReleaseEvent(QKeyEvent* e) override { Q_UNUSED(e); }
-  void toolWheelEvent(QWheelEvent* e) override { Q_UNUSED(e); }
+  void toolWheelEvent(QWheelEvent* e,
+                      const vx::Vector<double, 2>& pixelPos) override {
+    Q_UNUSED(e);
+    Q_UNUSED(pixelPos);
+  }
   void setMask(vx::filter::Filter2D* filter);
 
  private:
@@ -112,8 +120,8 @@ class ToolSelection : public Visualizer2DTool {
 
   QVector<QPointF> previewPolygon;
   QVector<QPointF> polygon;
-  QPointF startRect;
-  QPointF middlePointEllipse;
+  vx::Vector<double, 2> startRect;
+  vx::Vector<double, 2> middlePointEllipse;
   QPoint start;
   bool firstValue = true;
 

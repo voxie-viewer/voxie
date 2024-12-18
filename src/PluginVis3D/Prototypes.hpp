@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Prototypes.forward.hpp"
+
 #include <QtCore/QJsonObject>
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -14,6 +16,8 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+
+class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
 namespace vx {
 #ifndef VOXIE_PROP_DEFINED_BackColor
@@ -41,6 +45,15 @@ class Color : public vx::PropTypeBase {};
 }  // namespace PropType
 namespace Prop {
 constexpr vx::PropType::Color Color = {};
+}
+#endif
+#ifndef VOXIE_PROP_DEFINED_DefaultSize
+#define VOXIE_PROP_DEFINED_DefaultSize
+namespace PropType {
+class DefaultSize : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::DefaultSize DefaultSize = {};
 }
 #endif
 #ifndef VOXIE_PROP_DEFINED_DrawAxisArrows
@@ -297,6 +310,7 @@ class Test3DObjectProperties : public QObject,
   double lengthRaw() override final;
   static QSharedPointer<NodeProperty> lengthProperty();
   static NodePropertyTyped<vx::types::Float> lengthPropertyTyped();
+  NodeNodeProperty lengthInstance();
   void setLength(double value);
  Q_SIGNALS:
   void lengthChanged(double value);
@@ -349,6 +363,7 @@ class GeometricPrimitiveProperties : public QObject,
   bool visibleRaw() override final;
   static QSharedPointer<NodeProperty> visibleProperty();
   static NodePropertyTyped<vx::types::Boolean> visiblePropertyTyped();
+  NodeNodeProperty visibleInstance();
   void setVisible(bool value);
  Q_SIGNALS:
   void visibleChanged(bool value);
@@ -362,6 +377,7 @@ class GeometricPrimitiveProperties : public QObject,
   static QSharedPointer<NodeProperty> geometricPrimitiveProperty();
   static NodePropertyTyped<vx::types::NodeReference>
   geometricPrimitivePropertyTyped();
+  NodeNodeProperty geometricPrimitiveInstance();
   void setGeometricPrimitive(vx::Node* value);
  Q_SIGNALS:
   void geometricPrimitiveChanged(vx::Node* value);
@@ -410,6 +426,7 @@ class PlanePropertiesEntry : public vx::PropertiesEntryBase {
   ~PlanePropertiesEntry();
   PlanePropertiesEntry(vx::PropType::ClippingDirection, QString);
   PlanePropertiesEntry(vx::PropType::Color, vx::Color);
+  PlanePropertiesEntry(vx::PropType::DefaultSize, double);
   PlanePropertiesEntry(vx::PropType::Plane, vx::Node*);
   PlanePropertiesEntry(vx::PropType::ShowVolumeSlice, bool);
   PlanePropertiesEntry(vx::PropType::SliceTextureResolution, QString);
@@ -424,6 +441,8 @@ class PlanePropertiesBase {
   virtual QString clippingDirectionRaw() = 0;
   virtual vx::Color color() = 0;
   virtual std::tuple<double, double, double, double> colorRaw() = 0;
+  virtual double defaultSize() = 0;
+  virtual double defaultSizeRaw() = 0;
   virtual QDBusObjectPath planeRaw() = 0;
   virtual bool showVolumeSlice() = 0;
   virtual bool showVolumeSliceRaw() = 0;
@@ -445,6 +464,8 @@ class PlanePropertiesCopy : public PlanePropertiesBase {
   QString clippingDirectionRaw() override final;
   vx::Color color() override final;
   std::tuple<double, double, double, double> colorRaw() override final;
+  double defaultSize() override final;
+  double defaultSizeRaw() override final;
   QDBusObjectPath planeRaw() override final;
   bool showVolumeSlice() override final;
   bool showVolumeSliceRaw() override final;
@@ -470,6 +491,7 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
   static QSharedPointer<NodeProperty> clippingDirectionProperty();
   static NodePropertyTyped<vx::types::Enumeration>
   clippingDirectionPropertyTyped();
+  NodeNodeProperty clippingDirectionInstance();
   void setClippingDirection(QString value);
  Q_SIGNALS:
   void clippingDirectionChanged(QString value);
@@ -482,6 +504,7 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
   std::tuple<double, double, double, double> colorRaw() override final;
   static QSharedPointer<NodeProperty> colorProperty();
   static NodePropertyTyped<vx::types::Color> colorPropertyTyped();
+  NodeNodeProperty colorInstance();
   void setColor(vx::Color value);
  Q_SIGNALS:
   void colorChanged(vx::Color value);
@@ -489,10 +512,24 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
  public:
   // Q_PROPERTY(vx::Color Color READ color WRITE setColor NOTIFY colorChanged)
 
+  double defaultSize() override final;
+  double defaultSizeRaw() override final;
+  static QSharedPointer<NodeProperty> defaultSizeProperty();
+  static NodePropertyTyped<vx::types::Float> defaultSizePropertyTyped();
+  NodeNodeProperty defaultSizeInstance();
+  void setDefaultSize(double value);
+ Q_SIGNALS:
+  void defaultSizeChanged(double value);
+
+ public:
+  // Q_PROPERTY(double DefaultSize READ defaultSize WRITE setDefaultSize NOTIFY
+  // defaultSizeChanged)
+
   vx::Node* plane();
   QDBusObjectPath planeRaw() override final;
   static QSharedPointer<NodeProperty> planeProperty();
   static NodePropertyTyped<vx::types::NodeReference> planePropertyTyped();
+  NodeNodeProperty planeInstance();
   void setPlane(vx::Node* value);
  Q_SIGNALS:
   void planeChanged(vx::Node* value);
@@ -504,6 +541,7 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
   bool showVolumeSliceRaw() override final;
   static QSharedPointer<NodeProperty> showVolumeSliceProperty();
   static NodePropertyTyped<vx::types::Boolean> showVolumeSlicePropertyTyped();
+  NodeNodeProperty showVolumeSliceInstance();
   void setShowVolumeSlice(bool value);
  Q_SIGNALS:
   void showVolumeSliceChanged(bool value);
@@ -517,6 +555,7 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
   static QSharedPointer<NodeProperty> sliceTextureResolutionProperty();
   static NodePropertyTyped<vx::types::Enumeration>
   sliceTextureResolutionPropertyTyped();
+  NodeNodeProperty sliceTextureResolutionInstance();
   void setSliceTextureResolution(QString value);
  Q_SIGNALS:
   void sliceTextureResolutionChanged(QString value);
@@ -531,6 +570,7 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
   static QSharedPointer<NodeProperty> sliceValueColorMappingProperty();
   static NodePropertyTyped<vx::types::ValueColorMapping>
   sliceValueColorMappingPropertyTyped();
+  NodeNodeProperty sliceValueColorMappingInstance();
   void setSliceValueColorMapping(QList<vx::ColorizerEntry> value);
  Q_SIGNALS:
   void sliceValueColorMappingChanged(QList<vx::ColorizerEntry> value);
@@ -544,6 +584,7 @@ class PlaneProperties : public QObject, public PlanePropertiesBase {
   QDBusObjectPath sliceVolumeRaw() override final;
   static QSharedPointer<NodeProperty> sliceVolumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> sliceVolumePropertyTyped();
+  NodeNodeProperty sliceVolumeInstance();
   void setSliceVolume(vx::Node* value);
  Q_SIGNALS:
   void sliceVolumeChanged(vx::Node* value);
@@ -634,6 +675,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   bool visibleRaw() override final;
   static QSharedPointer<NodeProperty> visibleProperty();
   static NodePropertyTyped<vx::types::Boolean> visiblePropertyTyped();
+  NodeNodeProperty visibleInstance();
   void setVisible(bool value);
  Q_SIGNALS:
   void visibleChanged(bool value);
@@ -646,6 +688,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   std::tuple<double, double, double, double> backColorRaw() override final;
   static QSharedPointer<NodeProperty> backColorProperty();
   static NodePropertyTyped<vx::types::Color> backColorPropertyTyped();
+  NodeNodeProperty backColorInstance();
   void setBackColor(vx::Color value);
  Q_SIGNALS:
   void backColorChanged(vx::Color value);
@@ -658,6 +701,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   bool drawAxisArrowsRaw() override final;
   static QSharedPointer<NodeProperty> drawAxisArrowsProperty();
   static NodePropertyTyped<vx::types::Boolean> drawAxisArrowsPropertyTyped();
+  NodeNodeProperty drawAxisArrowsInstance();
   void setDrawAxisArrows(bool value);
  Q_SIGNALS:
   void drawAxisArrowsChanged(bool value);
@@ -670,6 +714,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   bool drawBoundingBoxRaw() override final;
   static QSharedPointer<NodeProperty> drawBoundingBoxProperty();
   static NodePropertyTyped<vx::types::Boolean> drawBoundingBoxPropertyTyped();
+  NodeNodeProperty drawBoundingBoxInstance();
   void setDrawBoundingBox(bool value);
  Q_SIGNALS:
   void drawBoundingBoxChanged(bool value);
@@ -682,6 +727,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   bool drawOriginRaw() override final;
   static QSharedPointer<NodeProperty> drawOriginProperty();
   static NodePropertyTyped<vx::types::Boolean> drawOriginPropertyTyped();
+  NodeNodeProperty drawOriginInstance();
   void setDrawOrigin(bool value);
  Q_SIGNALS:
   void drawOriginChanged(bool value);
@@ -694,6 +740,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   QString faceCullingRaw() override final;
   static QSharedPointer<NodeProperty> faceCullingProperty();
   static NodePropertyTyped<vx::types::Enumeration> faceCullingPropertyTyped();
+  NodeNodeProperty faceCullingInstance();
   void setFaceCulling(QString value);
  Q_SIGNALS:
   void faceCullingChanged(QString value);
@@ -706,6 +753,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   std::tuple<double, double, double, double> frontColorRaw() override final;
   static QSharedPointer<NodeProperty> frontColorProperty();
   static NodePropertyTyped<vx::types::Color> frontColorPropertyTyped();
+  NodeNodeProperty frontColorInstance();
   void setFrontColor(vx::Color value);
  Q_SIGNALS:
   void frontColorChanged(vx::Color value);
@@ -719,6 +767,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   static QSharedPointer<NodeProperty> highlightCurrentTriangleProperty();
   static NodePropertyTyped<vx::types::Boolean>
   highlightCurrentTrianglePropertyTyped();
+  NodeNodeProperty highlightCurrentTriangleInstance();
   void setHighlightCurrentTriangle(bool value);
  Q_SIGNALS:
   void highlightCurrentTriangleChanged(bool value);
@@ -732,6 +781,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   static QSharedPointer<NodeProperty> shadingTechniqueProperty();
   static NodePropertyTyped<vx::types::Enumeration>
   shadingTechniquePropertyTyped();
+  NodeNodeProperty shadingTechniqueInstance();
   void setShadingTechnique(QString value);
  Q_SIGNALS:
   void shadingTechniqueChanged(QString value);
@@ -744,6 +794,7 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
   QDBusObjectPath surfaceRaw() override final;
   static QSharedPointer<NodeProperty> surfaceProperty();
   static NodePropertyTyped<vx::types::NodeReference> surfacePropertyTyped();
+  NodeNodeProperty surfaceInstance();
   void setSurface(vx::Node* value);
  Q_SIGNALS:
   void surfaceChanged(vx::Node* value);
@@ -819,6 +870,7 @@ class View3DProperties : public QObject, public View3DPropertiesBase {
   double fieldOfViewRaw() override final;
   static QSharedPointer<NodeProperty> fieldOfViewProperty();
   static NodePropertyTyped<vx::types::Float> fieldOfViewPropertyTyped();
+  NodeNodeProperty fieldOfViewInstance();
   void setFieldOfView(double value);
  Q_SIGNALS:
   void fieldOfViewChanged(double value);
@@ -831,6 +883,7 @@ class View3DProperties : public QObject, public View3DPropertiesBase {
   std::tuple<double, double, double> lookAtRaw() override final;
   static QSharedPointer<NodeProperty> lookAtProperty();
   static NodePropertyTyped<vx::types::Position3D> lookAtPropertyTyped();
+  NodeNodeProperty lookAtInstance();
   void setLookAt(QVector3D value);
  Q_SIGNALS:
   void lookAtChanged(QVector3D value);
@@ -843,6 +896,7 @@ class View3DProperties : public QObject, public View3DPropertiesBase {
   std::tuple<double, double, double, double> orientationRaw() override final;
   static QSharedPointer<NodeProperty> orientationProperty();
   static NodePropertyTyped<vx::types::Orientation3D> orientationPropertyTyped();
+  NodeNodeProperty orientationInstance();
   void setOrientation(QQuaternion value);
  Q_SIGNALS:
   void orientationChanged(QQuaternion value);
@@ -855,6 +909,7 @@ class View3DProperties : public QObject, public View3DPropertiesBase {
   double viewSizeUnzoomedRaw() override final;
   static QSharedPointer<NodeProperty> viewSizeUnzoomedProperty();
   static NodePropertyTyped<vx::types::Float> viewSizeUnzoomedPropertyTyped();
+  NodeNodeProperty viewSizeUnzoomedInstance();
   void setViewSizeUnzoomed(double value);
  Q_SIGNALS:
   void viewSizeUnzoomedChanged(double value);
@@ -867,6 +922,7 @@ class View3DProperties : public QObject, public View3DPropertiesBase {
   double zoomLogRaw() override final;
   static QSharedPointer<NodeProperty> zoomLogProperty();
   static NodePropertyTyped<vx::types::Float> zoomLogPropertyTyped();
+  NodeNodeProperty zoomLogInstance();
   void setZoomLog(double value);
  Q_SIGNALS:
   void zoomLogChanged(double value);
@@ -879,6 +935,7 @@ class View3DProperties : public QObject, public View3DPropertiesBase {
   QList<QDBusObjectPath> objectsRaw() override final;
   static QSharedPointer<NodeProperty> objectsProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList> objectsPropertyTyped();
+  NodeNodeProperty objectsInstance();
   void setObjects(QList<vx::Node*> value);
  Q_SIGNALS:
   void objectsChanged(QList<vx::Node*> value);
@@ -891,6 +948,7 @@ class View3DProperties : public QObject, public View3DPropertiesBase {
   bool showViewCenterRaw() override final;
   static QSharedPointer<NodeProperty> showViewCenterProperty();
   static NodePropertyTyped<vx::types::Boolean> showViewCenterPropertyTyped();
+  NodeNodeProperty showViewCenterInstance();
   void setShowViewCenter(bool value);
  Q_SIGNALS:
   void showViewCenterChanged(bool value);
@@ -937,6 +995,7 @@ class VolumeRenderingProperties : public QObject,
   QList<QDBusObjectPath> inputRaw() override final;
   static QSharedPointer<NodeProperty> inputProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList> inputPropertyTyped();
+  NodeNodeProperty inputInstance();
   void setInput(QList<vx::Node*> value);
  Q_SIGNALS:
   void inputChanged(QList<vx::Node*> value);

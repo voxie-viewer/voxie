@@ -45,7 +45,8 @@ namespace filters {
  * @brief This class extract a Surface.
  */
 class CreateSurface : public FilterNode {
-  NODE_PROTOTYPE_DECL(CreateSurface)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Filter.CreateSurface")
+
  public:
   CreateSurface();
 

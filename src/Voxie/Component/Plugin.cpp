@@ -161,6 +161,8 @@ void Plugin::initialize() {
   addObjects("Exporter", this->allExporters);
   addObjects("NodePrototype", this->allObjectPrototypes);
   addObjects("Tool", QList<QSharedPointer<Component>>());
+  addObjects("BufferType", QList<QSharedPointer<Component>>());
+  addObjects("BlockJpegImplementation", QList<QSharedPointer<Component>>());
   // TODO: Support these as plugin members?
   addObjects("PropertyType", QList<QSharedPointer<Component>>());
   addObjects("GeometricPrimitiveType", QList<QSharedPointer<Component>>());
@@ -215,7 +217,7 @@ QList<QSharedPointer<Component>> Plugin::listComponents(
 
 QSharedPointer<Component> Plugin::getComponent(
     const QSharedPointer<ComponentType>& componentType, const QString& name,
-    bool allowCompatibilityNames) {
+    bool allowCompatibilityNames, bool allowMissing) {
   // There currently are no compatibility names in plugins
   (void)allowCompatibilityNames;
 
@@ -225,10 +227,12 @@ QSharedPointer<Component> Plugin::getComponent(
                     "Unknown plugin member type: " + componentType->name());
   const auto& map = allObjectsByName[componentType->name()];
 
-  if (map.find(name) == map.end())
+  if (map.find(name) == map.end()) {
+    if (allowMissing) return QSharedPointer<Component>();
     throw Exception("de.uni_stuttgart.Voxie.ComponentNotFound",
                     "Could not find component '" + name + "' with type '" +
                         componentType->name() + "'");
+  }
 
   return map[name];
 }

@@ -129,6 +129,7 @@ $files = @(
   "ICSharpCode.SharpZipLib.dll",
   "7za920.zip",
   "lessmsi-v1.6.1.zip",
+  "7z2301-x64.msi",
   # Note: Meson 0.56.2 seems to fail with the error message: '..\src\meson.build:1:0: ERROR: Requested C runtime based on buildtype, but buildtype is "custom".'
   # Seems to be fixed by using an optimization level of 3, see commit aeb5982d207035f62ba7ad8fc3d1e78e641eedb5
   #"meson-0.56.2-64.msi",
@@ -147,6 +148,8 @@ $files_lic = @(
   "hdf5-1.10.0-patch1-win64-vs2015-shared.zip",
   "expat-2.1.0.tar.gz",
   "dbus-1.8.2.tar.gz",
+
+  "libjpeg-turbo-3.0.2-vc64.exe",
 
   #"LAPACKE_examples.zip",
   #"lapack-3.5.0.tgz",
@@ -323,6 +326,14 @@ External build/dep/7za -obuild/dep x "tools/build-dep/hdf5-1.10.0-patch1-win64-v
 External build/dep/lessmsi/lessmsi x "build\dep\hdf5\HDF5-1.10.0-win64.msi" "build\dep\hdf5\"
 $PATH_HDF5 = "build/dep/hdf5/SourceDir/HDF_Group/HDF5/1.10.0"
 
+echo "Unpacking 7z-full..."
+External build\dep\lessmsi\lessmsi x "tools\build-dep\7z2301-x64.msi" "build\dep\7z-full\" | Out-Null
+$PATH_7ZFULL = "build\dep\7z-full\SourceDir\Files\7-Zip\7z.exe"
+
+echo "Unpacking libjpeg-turbo..."
+External $PATH_7ZFULL -obuild/dep/libjpeg-turbo x "tools/build-dep/libjpeg-turbo-3.0.2-vc64.exe" | Out-Null
+$PATH_LIBJPEG = "build/dep/libjpeg-turbo"
+
 echo "Unpacking LAPACKE..."
 #External build/dep/7za -obuild/dep x "tools/build-dep/LAPACKE_examples.zip" | Out-Null
 #Rename-Item build/dep/LAPACKE_examples/lib build/dep/LAPACKE_examples/lib.old
@@ -366,7 +377,7 @@ echo "Building Voxie..."
 # New-Item -type directory build | Out-Null
 cd build
 # -Dbuildtype=release seems to be needed to prevent meson from using the debug version of Qt
-& $MESON setup "-Dboost_include_path=$BOOST_INCLUDE" "-Dhdf5_path=$PATH_HDF5" "-Dadditional_licenses_file=build/licenses/list.jsonl" "-Dlapacke_path=$PATH_LAPACKE" "-Ddebug=false" "-Doptimization=3" "-Dbuildtype=release" ..
+& $MESON setup "-Dboost_include_path=$BOOST_INCLUDE" "-Dhdf5_path=$PATH_HDF5" "-Dadditional_licenses_file=build/licenses/list.jsonl" "-Dlapacke_path=$PATH_LAPACKE" "-Dlibjpeg_path=$PATH_LIBJPEG" "-Ddebug=false" "-Doptimization=3" "-Dbuildtype=release" "-Duse_system_cmark_gfm=false" ..
 CheckErrorCode
 # & $NINJA --verbose -k0
 & $NINJA --verbose
@@ -438,6 +449,7 @@ Copy-Item -recurse doc/prototype $TARGET/doc
 
 New-Item -type directory $TARGET/lib | Out-Null
 Copy-Item -recurse lib/katex-0.11.1 $TARGET/lib
+Copy-Item -recurse lib/simple.css $TARGET/lib
 
 # CMake (needed for building Expat and DBus)
 echo "Unpacking CMake..."

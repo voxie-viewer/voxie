@@ -38,7 +38,7 @@ class BusConnection;
 
 class VOXIEBACKEND_EXPORT EventListDataAccessor : public Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(EventListDataAccessor)
+  VX_REFCOUNTEDOBJECT
 
  public:
   EventListDataAccessor();
@@ -79,7 +79,7 @@ class VOXIEBACKEND_EXPORT EventListDataAccessor : public Data {
 class VOXIEBACKEND_EXPORT EventListDataAccessorDBus
     : public EventListDataAccessor {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(EventListDataAccessorDBus)
+  VX_REFCOUNTEDOBJECT
 
   QSharedPointer<BusConnection> connection_;
   std::tuple<QString, QDBusObjectPath> provider_;

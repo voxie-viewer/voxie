@@ -1,0 +1,7 @@
+{
+    "Name": "libjpeg-turbo",
+    "Version": "3.0.2",
+    "LicenseFilename": "usr/share/doc/libjpeg-turbo-official-3.0.2/LICENSE.md",
+    "SourceFilename": "libjpeg-turbo-3.0.2.tar.gz",
+    "Source": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.0.2/libjpeg-turbo-official_3.0.2_amd64.deb"
+}

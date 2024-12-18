@@ -182,8 +182,6 @@ void DataFlowScene::onMouseChanged(QPoint newMousePos) {
 void DataFlowScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
   QGraphicsScene::mouseReleaseEvent(event);
 
-  this->graphWidget->setDragMode(QGraphicsView::NoDrag);
-
   if (event->button() == Qt::RightButton) {
   } else {
     // auto item = itemAt(event->scenePos(), QTransform()); // TODO?
@@ -248,29 +246,23 @@ void DataFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     auto item = itemAt(event->scenePos(), QTransform());
     // qDebug() << "Mouse press" << event->button() << "at item" << item;
     if (item == nullptr || !dynamic_cast<GraphNode*>(item)) {
-      if (event->button() == Qt::RightButton) {
-        this->clickIsHandled = true;
-        this->graphWidget->lastClickPos = event->scenePos();
-        // TODO: Also do this for left mouse button? Clashes with scroll
-        // dragging
-        if (!(QApplication::keyboardModifiers() &
-              Qt::KeyboardModifier::ControlModifier)) {
-          this->graphWidget->setSelectedNodes({});
-        }
+      // TODO: Should clicking on the background with the left mouse button
+      // clear the node selection (currently yes)? Note that doing so prevents
+      // drag scrolling with the left mouse button (currently disabled).
+      // if (event->button() == Qt::RightButton) {
+      this->clickIsHandled = true;
+      this->graphWidget->lastClickPos = event->scenePos();
+      if (!(QApplication::keyboardModifiers() &
+            Qt::KeyboardModifier::ControlModifier)) {
+        this->graphWidget->setSelectedNodes({});
       }
+      //}
     } else {
-      this->dragStart = QPointF();
+      // this->dragStart = QPointF();
     }
   }
 
   QGraphicsScene::mousePressEvent(event);
-
-  if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton) {
-    if (!clickIsHandled) {
-      // qDebug() << "Mouse press 2";
-      this->graphWidget->setDragMode(QGraphicsView::ScrollHandDrag);
-    }
-  }
 
   if (event->button() == Qt::RightButton) {
     graphWidget->requestContextMenu(

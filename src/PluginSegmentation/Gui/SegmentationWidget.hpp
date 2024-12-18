@@ -91,7 +91,7 @@ class SegmentationWidget : public QWidget {
   /**
    * @brief Set the info text of the hovered voxel
    */
-  void setHoverInfo(double voxelValue, QString voxelLabel);
+  void setHoverInfo(double voxelValue, QString voxelLabel, bool selected);
 
   /**
    * @brief Sets histogram variable provider for slices
@@ -221,6 +221,7 @@ class SegmentationWidget : public QWidget {
 
   QLabel* hoveredVoxelValue;
   QLabel* hoveredVoxelLabel;
+  QLabel* hoveredSelectedLabel;
 
   QListView* historyListView;
 };

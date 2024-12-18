@@ -42,6 +42,8 @@
 
 #include <VoxieBackend/IO/SharpThread.hpp>
 
+VX_NODE_INSTANTIATION(vx::filters::ColorizeLabeledSurface)
+
 using namespace vx::filters;
 using namespace vx;
 using namespace vx::io;
@@ -54,6 +56,10 @@ ColorizeLabeledSurface::ColorizeLabeledSurface()
   qRegisterMetaType<QSharedPointer<RunFilterOperation>>();
   PropertySection* section = new PropertySection();
   this->setAutomaticDisplayName("Colorize Labeled Surface");
+
+  // TODO: Create a new property type
+  // de.uni_stuttgart.Voxie.PropertyType.TableColumnName and use that instead of
+  // columnKeySelector and columnValueSelector
 
   columnKeySelector = new QComboBox();
   columnKeySelector->addItems({"-"});
@@ -232,5 +238,3 @@ void ColorizeLabeledSurface::updateSurface(
   }
   operation->emitFinished();
 }
-
-NODE_PROTOTYPE_IMPL(ColorizeLabeledSurface)

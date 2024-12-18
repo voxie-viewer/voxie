@@ -103,12 +103,12 @@ static QString fillPattern(const QString& str) {
   }
   return res;
 }
-QString FilenameFilter::addExtension(const QString& file) const {
+QString FilenameFilter::forceMatch(const QString& file) const {
   // No need to add extension
   if (matches(file)) return file;
 
   if (patterns().isEmpty()) {
-    qWarning() << "FilenameFilter::addExtension: Empty pattern list";
+    qWarning() << "FilenameFilter::forceMatch: Empty pattern list";
     return file;
   }
 
@@ -125,6 +125,6 @@ QString FilenameFilter::addExtension(const QString& file) const {
     else
       return dir.filePath(resFilename);
   }
-  qWarning() << "FilenameFilter::addExtension: No pattern with '*' found";
+  qWarning() << "FilenameFilter::forceMatch: No pattern with '*' found";
   return file;
 }

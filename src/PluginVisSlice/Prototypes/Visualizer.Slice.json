@@ -48,7 +48,8 @@
                         "de.uni_stuttgart.Voxie.SliceVisualizer.Volume"
                     ],
                     "AllowedNodePrototypes": [
-                        "de.uni_stuttgart.Voxie.Data.Volume"
+                        "de.uni_stuttgart.Voxie.Data.Volume",
+                        "de.uni_stuttgart.Voxie.Data.VolumeSeries"
                     ],
                     "DisplayName": "Volume",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
@@ -56,7 +57,7 @@
                 },
                 "de.uni_stuttgart.Voxie.Visualizer.Slice.LabelContainer": {
                     "AllowedNodePrototypes": [
-                        "de.uni_stuttgart.Voxie.Data.ContainerNode"
+                        "de.uni_stuttgart.Voxie.Data.Container"
                     ],
                     "DisplayName": "LabelContainer",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
@@ -395,6 +396,11 @@
                     "DisplayName": "Show view center",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
                     "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.ShowLegend": {
+                    "DisplayName": "Show legend",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": false
                 }
             },
             "UI": {
@@ -447,6 +453,7 @@
                     {
                         "Name": "Grid",
                         "DisplayName": "Grid",
+                        "ShowOnStartup": false,
                         "Entries": [
                             {
                                 "Type": "Property",
@@ -469,6 +476,7 @@
                     {
                         "Name": "Ruler",
                         "DisplayName": "Ruler",
+                        "ShowOnStartup": false,
                         "Entries": [
                             {
                                 "Type": "Property",
@@ -491,6 +499,7 @@
                     {
                         "Name": "VolumeGrid",
                         "DisplayName": "Volume grid",
+                        "ShowOnStartup": false,
                         "Entries": [
                             {
                                 "Type": "Property",
@@ -499,6 +508,17 @@
                             {
                                 "Type": "Property",
                                 "Property": "de.uni_stuttgart.Voxie.Visualizer.Slice.VolumeGridColor"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "MultivariateDataWidget",
+                        "DisplayName": "Multivariate Data",
+                        "ShowOnStartup": false,
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.SliceVisualizer.MultivariateDataWidget"
                             }
                         ]
                     }

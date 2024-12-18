@@ -36,7 +36,7 @@ namespace vx {
 
 class VOXIEBACKEND_EXPORT EventListDataBuffer : public Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(EventListDataBuffer)
+  VX_REFCOUNTEDOBJECT
 
  public:
   using AttributeInfo =

@@ -22,6 +22,10 @@
 
 #include "VisualizerContainer.hpp"
 
+#include <Voxie/MathQt.hpp>
+
+#include <Voxie/Gui/WindowMode.hpp>
+
 #include <Voxie/Vis/VisualizerNode.hpp>
 
 #include <Voxie/Component/HelpCommon.hpp>
@@ -224,23 +228,22 @@ void VisualizerContainer::activate() {
   }
 }
 
-void VisualizerContainer::setWindowMode(vx::VisualizerWindowMode mode) {
-  switch (mode) {
-    case vx::VisualizerWindowMode::Normal:
-      this->window->showNormal();
-      break;
-    case vx::VisualizerWindowMode::Minimize:
-      this->window->showMinimized();
-      break;
-    case vx::VisualizerWindowMode::Maximize:
-      this->window->showMaximized();
-      break;
-    case vx::VisualizerWindowMode::FullScreen:
-      this->window->showFullScreen();
-      break;
-    default:
-      this->window->showNormal();
+vx::WindowMode VisualizerContainer::getWindowMode() {
+  QWidget* widget = this->window;
+  if (!widget) widget = this;
+
+  return vx::getWindowMode(widget);
+}
+void VisualizerContainer::setWindowMode(vx::WindowMode mode) {
+  QWidget* widget = this->window;
+  if (!widget) widget = this;
+
+  if (mode == vx::WindowMode::FullScreen && this->window) {
+    qWarning() << "Cannot set window mode to FullScreen for MDI window";
+    return;
   }
+
+  vx::setWindowMode(widget, mode);
 }
 
 void VisualizerContainer::closeWindow() {
@@ -261,34 +264,48 @@ void VisualizerContainer::closeEvent(QCloseEvent* ev) {
   }
 }
 
-QPoint VisualizerContainer::getVisualizerPosition() {
+vx::Vector<double, 2> VisualizerContainer::getVisualizerPosition() {
   if (this->window != nullptr) {
-    return this->window->pos();
+    return vectorCastNarrow<double>(pointToVector(this->window->pos()));
   } else {
-    return this->pos();
+    return vectorCastNarrow<double>(pointToVector(this->pos()));
   }
 }
 
-void VisualizerContainer::setVisualizerPosition(QPoint pos) {
+void VisualizerContainer::setVisualizerPosition(
+    const vx::Vector<double, 2>& pos) {
   if (this->window != nullptr) {
-    this->window->move(pos);
+    this->window->move(toQPoint(vectorCastNarrow<int>(pos)));
   } else {
-    this->move(pos);
+    this->move(toQPoint(vectorCastNarrow<int>(pos)));
   }
 }
 
-QSize VisualizerContainer::getVisualizerSize() {
+vx::Vector<double, 2> VisualizerContainer::getVisualizerSize() {
   if (this->window != nullptr) {
-    return this->window->size();
+    return vectorCastNarrow<double>(sizeToVector(this->window->size()));
   } else {
-    return this->size();
+    return vectorCastNarrow<double>(sizeToVector(this->size()));
   }
 }
 
-void VisualizerContainer::setVisualizerSize(QSize size) {
+void VisualizerContainer::setVisualizerSize(const vx::Vector<double, 2>& size) {
+  // Enforce minimum size
+  // This is important because some voxie versions were writing project files
+  // which set the size to (0, 0)
+  vx::Vector<double, 2> size2 = size;
+  QSize minimumSize = this->minimumSizeHint();
+  if (!minimumSize.isValid()) {
+    qWarning() << "VisualizerContainer::setVisualizerSize(): "
+                  "this->minimumSizeHint() is not valid";
+    minimumSize = QSize(100, 100);
+  }
+  if (size2[0] < minimumSize.width()) size2[0] = minimumSize.width();
+  if (size2[1] < minimumSize.height()) size2[1] = minimumSize.height();
+
   if (this->window != nullptr) {
-    this->window->resize(size);
+    this->window->resize(toQSize(vectorCastNarrow<int>(size2)));
   } else {
-    this->resize(size);
+    this->resize(toQSize(vectorCastNarrow<int>(size2)));
   }
 }

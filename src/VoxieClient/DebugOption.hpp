@@ -33,6 +33,8 @@
 #include <QtDBus/QDBusSignature>
 #include <QtDBus/QDBusVariant>
 
+#include <atomic>
+
 namespace vx {
 class VOXIECLIENT_EXPORT DebugOption {
   const char* name_;
@@ -66,6 +68,30 @@ class VOXIECLIENT_EXPORT DebugOptionBool : public DebugOption {
 
   void registerAndCallChangeHandler(QObject* obj,
                                     std::function<void(bool)>&& fun);
+
+  void setValueStringEmpty() override;
+  void setValueString(const QString& value) override;
+
+  QDBusSignature dbusSignature() override;
+  QDBusVariant getValueDBus() override;
+  void setValueDBus(const QDBusVariant& value) override;
+};
+
+// TODO: Use templates?
+class VOXIECLIENT_EXPORT DebugOptionFloat : public DebugOption {
+  std::atomic<double> valueAtomic;
+  QList<std::tuple<QPointer<QObject>,
+                   QSharedPointer<std::function<void(double)>>>>
+      changeHandlers;
+
+ public:
+  DebugOptionFloat(const char* name, double initialValue)
+      : DebugOption(name), valueAtomic(initialValue ? 1 : 0) {}
+  double get() { return valueAtomic.load(); }
+  void set(double value);
+
+  void registerAndCallChangeHandler(QObject* obj,
+                                    std::function<void(double)>&& fun);
 
   void setValueStringEmpty() override;
   void setValueString(const QString& value) override;

@@ -24,20 +24,15 @@
 
 #include <Voxie/Voxie.hpp>
 
+#include <VoxieClient/Vector.hpp>
 #include <VoxieClient/VoxieClient.hpp>
-
-#include <QVector3D>
 
 #include <limits>
 
 namespace vx {
 
-template <typename T, std::size_t dim>
-class Vector;
-// TODO: Switch from QVector3D to vx::Vector<double, 3>
-
 class VOXIECORESHARED_EXPORT BoundingBox3D {
-  QVector3D min_, max_;
+  vx::Vector<double, 3> min_, max_;
 
   static constexpr double infinity = std::numeric_limits<double>::infinity();
 
@@ -46,19 +41,23 @@ class VOXIECORESHARED_EXPORT BoundingBox3D {
       : min_(infinity, infinity, infinity),
         max_(-infinity, -infinity, -infinity) {}
 
-  BoundingBox3D(const QVector3D& min, const QVector3D& max)
+  BoundingBox3D(const vx::Vector<double, 3>& min,
+                const vx::Vector<double, 3>& max)
       : min_(min), max_(max) {}
 
-  const QVector3D& min() const { return min_; }
-  const QVector3D& max() const { return max_; }
+  const vx::Vector<double, 3>& min() const { return min_; }
+  const vx::Vector<double, 3>& max() const { return max_; }
 
   BoundingBox3D operator+(const BoundingBox3D& other) const {
-    return BoundingBox3D(QVector3D(std::min(min().x(), other.min().x()),
-                                   std::min(min().y(), other.min().y()),
-                                   std::min(min().z(), other.min().z())),
-                         QVector3D(std::max(max().x(), other.max().x()),
-                                   std::max(max().y(), other.max().y()),
-                                   std::max(max().z(), other.max().z())));
+    return BoundingBox3D(
+        vx::Vector<double, 3>(
+            std::min(min().access<0>(), other.min().access<0>()),
+            std::min(min().access<1>(), other.min().access<1>()),
+            std::min(min().access<2>(), other.min().access<2>())),
+        vx::Vector<double, 3>(
+            std::max(max().access<0>(), other.max().access<0>()),
+            std::max(max().access<1>(), other.max().access<1>()),
+            std::max(max().access<2>(), other.max().access<2>())));
   }
 
   BoundingBox3D& operator+=(const BoundingBox3D& other) {
@@ -67,14 +66,14 @@ class VOXIECORESHARED_EXPORT BoundingBox3D {
 
   static BoundingBox3D empty() { return BoundingBox3D(); }
 
-  static BoundingBox3D point(const QVector3D& point) {
+  static BoundingBox3D point(const vx::Vector<double, 3>& point) {
     return BoundingBox3D(point, point);
   }
-  static BoundingBox3D pointV(const vx::Vector<double, 3>& point);
 
   bool isEmpty() const {
-    return min().x() > max().x() || min().y() > max().y() ||
-           min().z() > max().z();
+    return min().access<0>() > max().access<0>() ||
+           min().access<1>() > max().access<1>() ||
+           min().access<2>() > max().access<2>();
   }
 
   QList<vx::Vector<double, 3>> corners() const;

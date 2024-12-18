@@ -1,0 +1,12 @@
+{
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.Volume.Tiff.Import",
+            "DisplayName": "Multi-Page TIFF file",
+            "Description": "Load volume from a Multi-Page TIFF file",
+            "Patterns": [
+                "*.tif", "*.tiff"
+            ]
+        }
+    ]
+}

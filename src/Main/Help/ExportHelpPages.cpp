@@ -179,6 +179,12 @@ bool vx::help::exportHelpPages(Root* root, HelpPageGenerator* pageGenerator,
     qWarning() << "cp failed";
     fail = true;
   }
+  if (QProcess::execute("cp",
+                        {"-R", "--", root->directoryManager()->simpleCssPath(),
+                         dir + "/static/lib/simple.css"})) {
+    qWarning() << "cp failed";
+    fail = true;
+  }
 
   return !fail;
 }

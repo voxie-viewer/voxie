@@ -189,6 +189,32 @@ with open(typeListFilename + '.new', 'w') as typeList, open(typeListHeaderFilena
             verifyCodeProp = '{VerifyFunction}(property, value.value<{RawType}>());'.format(VerifyFunction=ptype['VerifyFunctionProperty'], RawType=rawType)
             verifyCodeNoProp = 'throw vx::Exception("de.uni_stuttgart.Voxie.Error", {});'.format(escapeCppString('Property type {} cannot be used without a property'.format(name)))
 
+        toStringExpression = 'vx::valueToString<{RawType}>(value, this)'.format(RawType=rawType)
+        if 'ToString' in ptype:
+            toStringExpression = '{ToString}(value.value<{RawType}>())'.format(ToString=ptype['ToString'], RawType=rawType)
+
+        returnDescriptionCode = 'Q_UNUSED(value); return "";'
+        if 'GetDescription' in ptype:
+            returnDescriptionCode = 'return {GetDescription}(value.value<{RawType}>());'.format(GetDescription=ptype['GetDescription'], RawType=rawType)
+
+        if ptype.get('SimpleUI', False):
+            uiSnippet = '''
+      PropertyUI *createUI(const QSharedPointer<NodeProperty> &property,
+                           Node *node) override {{
+        return new {sname}UI(createQSharedPointer<NodeNodeProperty>(node, property));
+      }}
+      PropertyUI *createUISimple(const QSharedPointer<PropertyInstance>& propertyInstance) override {{
+        return new {sname}UI(propertyInstance);
+      }}
+            '''.format(sname=sname)
+        else:
+            uiSnippet = '''
+      PropertyUI *createUI(const QSharedPointer<NodeProperty> &property,
+                           Node *node) override {{
+        return new {sname}UI(property, node);
+      }}
+            '''.format(sname=sname)
+
         typeList.write('''
 namespace {{
 class PropertyType{sname} : public PropertyType {{
@@ -228,10 +254,7 @@ public:
 
   {compareSnippet}
 
-  PropertyUI *createUI(const QSharedPointer<NodeProperty> &property,
-                       Node *node) override {{
-    return new {sname}UI(property, node);
-  }}
+  {uiSnippet}
 
   QList<QString> compatibilityNames() override {{
     return {compatNames};
@@ -240,7 +263,10 @@ public:
     return QVariant::fromValue<{RawType}>({parseFun}(value));
   }}
   QString valueToString(const QVariant &value) override {{
-    return vx::valueToString<{RawType}>(value, this);
+    return {toStringExpression};
+  }}
+  QString valueGetDescription(const QVariant &value) override {{
+    {returnDescriptionCode}
   }}
   QDBusVariant rawToDBus(const QVariant& value) override {{
     if (value.userType() != qMetaTypeId<{RawType}>())
@@ -303,11 +329,14 @@ QSharedPointer<PropertyType> vx::types::{sname}::type() {{
             'RawType': rawType,
             'defaultValue': defValExpr,
             'compareSnippet': compareSnippet,
+            'uiSnippet': uiSnippet,
             # TODO
             'verifyCodeProp': verifyCodeProp,
             'verifyCodeNoProp': verifyCodeNoProp,
             'canonicalizeCode': ('return QVariant::fromValue<{RawType}>({CanonicalizeFunction}(property, value.value<{RawType}>()));'.format(CanonicalizeFunction=ptype['CanonicalizeFunction'], RawType=rawType)) if 'CanonicalizeFunction' in ptype else 'verifyValue(property, value); return value;',
             'parseFun': parseFun,
+            'toStringExpression': toStringExpression,
+            'returnDescriptionCode': returnDescriptionCode,
         }))
         listOfTypes += 'vx::types::%s::type(), ' % (sname,)
         typeListHeader.write('''struct {sname} {{

@@ -23,28 +23,25 @@
 #include "Serialization.hpp"
 
 namespace HDF5 {
-  SerializationContext::SerializationContext (const HDF5::File& file)
-    : file (file), id (0)
-  {
-  }
+SerializationContext::SerializationContext(const HDF5::File& file)
+    : file(file), id(0) {}
 
-  SerializationContext::~SerializationContext () {
-  }
+SerializationContext::~SerializationContext() {}
 
-  DeserializationContext::DeserializationContext (const HDF5::File& file)
-    : file (file)
-  {
-  }
+DeserializationContext::DeserializationContext(const HDF5::File& file)
+    : file(file) {}
 
-  DeserializationContext::~DeserializationContext () {
-  }
+DeserializationContext::~DeserializationContext() {}
 
-  HDF5::DataSet SerializationContextHandle::createDataSet (const HDF5::DataType& data_type, const HDF5::DataSpace& data_space, const DataSetCreatePropList& dcpl) const {
-    std::string name = context ().newName ();
-    ASSERT (context ().references.count (key ()) == 0);
-    HDF5::DataSet ds = HDF5::DataSet::create (context ().file, data_type, data_space, dcpl, setEFilePrefix ());
-    context ().references[key ()] = ds.reference ();
-    context ().getRefGroup ().link (name, ds);
-    return ds;
-  }
+HDF5::DataSet SerializationContextHandle::createDataSet(
+    const HDF5::DataType& data_type, const HDF5::DataSpace& data_space,
+    const DataSetCreatePropList& dcpl) const {
+  std::string name = context().newName();
+  ASSERT(context().references.count(key()) == 0);
+  HDF5::DataSet ds = HDF5::DataSet::create(context().file, data_type,
+                                           data_space, dcpl, setEFilePrefix());
+  context().references[key()] = ds.reference();
+  context().getRefGroup().link(name, ds);
+  return ds;
 }
+}  // namespace HDF5

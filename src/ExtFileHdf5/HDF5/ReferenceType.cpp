@@ -25,10 +25,8 @@
 #include <HDF5/Group.hpp>
 
 namespace HDF5 {
-  void ReferenceType::checkType () const {
-    if (!isValid ())
-      return;
-    if (getClass () != H5T_REFERENCE)
-      ABORT_MSG ("Not a reference datatype");
-  }
+void ReferenceType::checkType() const {
+  if (!isValid()) return;
+  if (getClass() != H5T_REFERENCE) ABORT_MSG("Not a reference datatype");
 }
+}  // namespace HDF5

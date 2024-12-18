@@ -66,6 +66,8 @@
 #include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QSizePolicy>
 
+VX_NODE_INSTANTIATION(RawVisualizer)
+
 using namespace vx;
 using namespace vx::visualization;
 
@@ -749,5 +751,3 @@ void RawVisualizer::selectInitialImageKindAndList() {
       this->properties->setCurrentImageList(availableImageLists[0]);
   }
 }
-
-NODE_PROTOTYPE_IMPL_SEP(visualizer_prop::TomographyRawData, RawVisualizer)

@@ -27,9 +27,9 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
 #include <Core/Exception.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
@@ -38,42 +38,42 @@
 #include <boost/utility/enable_if.hpp>
 
 namespace HDF5 {
-  class Exception : public Core::Exception {
-    std::string methodName_;
+class Exception : public Core::Exception {
+  std::string methodName_;
 
-  public:
-    Exception (const std::string& methodName);
-    virtual ~Exception () throw ();
+ public:
+  Exception(const std::string& methodName);
+  virtual ~Exception() throw();
 
-    std::string message () const override;
+  std::string message() const override;
 
-    const std::string& methodName () const {
-      return methodName_;
-    }
+  const std::string& methodName() const { return methodName_; }
 
-    static NORETURN error (const char* methodName);
+  static NORETURN error(const char* methodName);
 
-#define C(T)                                            \
-    static T check (const char* methodName, T value) {  \
-      if (value < 0)                                    \
-        error (methodName);                             \
-      return value;                                     \
-    }
-    C(H5I_type_t) C(H5S_class_t) C(H5T_class_t) C(H5T_sign_t)
+#define C(T)                                        \
+  static T check(const char* methodName, T value) { \
+    if (value < 0) error(methodName);               \
+    return value;                                   \
+  }
+  C(H5I_type_t)
+  C(H5S_class_t) C(H5T_class_t) C(H5T_sign_t)
 #undef C
-    template <typename T>
-    static T check (typename boost::enable_if_c<std::numeric_limits<T>::is_integer && std::numeric_limits<T>::is_signed, const char*>::type methodName, T value) {
-      if (value < 0)
-        error (methodName);
-      return value;
-    }
-    template <typename T>
-    static T* check (const char* methodName, T* value) {
-      if (!value)
-        error (methodName);
-      return value;
-    }
-  };
-}
+      template <typename T>
+      static T
+      check(typename boost::enable_if_c<std::numeric_limits<T>::is_integer &&
+                                            std::numeric_limits<T>::is_signed,
+                                        const char*>::type methodName,
+            T value) {
+    if (value < 0) error(methodName);
+    return value;
+  }
+  template <typename T>
+  static T* check(const char* methodName, T* value) {
+    if (!value) error(methodName);
+    return value;
+  }
+};
+}  // namespace HDF5
 
-#endif // !HDF5_EXCEPTION_HPP_INCLUDED
+#endif  // !HDF5_EXCEPTION_HPP_INCLUDED

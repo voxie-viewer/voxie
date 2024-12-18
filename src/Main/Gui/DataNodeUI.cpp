@@ -32,6 +32,7 @@
 
 #include <Voxie/IO/SaveFileDialog.hpp>
 
+#include <VoxieBackend/Data/DataProperty.hpp>
 #include <VoxieBackend/Data/SharedMemory.hpp>
 
 #include <VoxieBackend/IO/Exporter.hpp>
@@ -192,9 +193,14 @@ void vx::createDataNodeUI(vx::DataNode* obj) {
   sizeLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                      Qt::TextSelectableByKeyboard);
   layout->addWidget(sizeLabel);
+  auto propertiesWidget = new QWidget();
+  layout->addWidget(propertiesWidget);
+  propertiesWidget->setLayout(new QVBoxLayout());
   enqueueOnMainThread([sizeLabelPtr = QPointer<QLabel>(sizeLabel),
+                       propertiesWidgetPtr =
+                           QPointer<QWidget>(propertiesWidget),
                        objPtr = QPointer<vx::DataNode>(obj)]() {
-    auto onDataChange = [sizeLabelPtr](
+    auto onDataChange = [sizeLabelPtr, propertiesWidgetPtr](
                             const QSharedPointer<Data>& data,
                             const QSharedPointer<DataVersion>& newVersion,
                             DataChangedReason reason) {
@@ -215,6 +221,42 @@ void vx::createDataNodeUI(vx::DataNode* obj) {
       else
         qWarning() << "vx::createDataNodeUI() onDataChange(): Label is "
                       "destroyed";
+
+      if (!propertiesWidgetPtr) {
+        qWarning() << "vx::createDataNodeUI() onDataChange(): propertiesWidget "
+                      "is destroyed";
+      } else {
+        // TODO: Avoid doing this when the metadata does not change?
+
+        qDeleteAll(propertiesWidgetPtr->findChildren<QWidget*>(
+            "", Qt::FindDirectChildrenOnly));
+
+        try {
+          if (data) {
+            auto properties = data->listProperties();
+            for (const auto& property : properties) {
+              QString name = property->displayName();
+              if (name == "") name = property->name();
+
+              auto type = property->type();
+
+              auto value = data->getProperty(property);
+
+              // TODO: Display the property value in a different way
+
+              auto valueStr = type->valueToString(value);
+              auto label = new QLabel(name + ": " + valueStr);
+              propertiesWidgetPtr->layout()->addWidget(label);
+
+              // TODO: Support this
+              // auto ui = type->createUI(property, nullptr);
+              // propertiesWidgetPtr->layout()->addWidget(ui);
+            }
+          }
+        } catch (const vx::Exception& e) {
+          vx::showErrorMessage("Error while updating data properties UI", e);
+        }
+      }
     };
     if (!objPtr) {
       qWarning() << "vx::createDataNodeUI(): DataNode already "

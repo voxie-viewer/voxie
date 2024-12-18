@@ -34,10 +34,13 @@
 
 #include <QtGui/QIcon>
 
+VX_NODE_INSTANTIATION(vx::TomographyRawDataNode)
+
 using namespace vx;
 
 TomographyRawDataNode::TomographyRawDataNode()
-    : DataNode("TomographyRawDataNode", getPrototypeSingleton()) {
+    : DataNode("TomographyRawDataNode", getPrototypeSingleton()),
+      properties(new PropertiesType(this)) {
   this->addPropertySection(new vx::gui::TomographyRawDataNodeView(this));
 }
 TomographyRawDataNode::~TomographyRawDataNode() {}
@@ -52,5 +55,3 @@ void TomographyRawDataNode::setDataImpl(const QSharedPointer<Data>& data) {
 
   this->data_ = dataCast;
 }
-
-NODE_PROTOTYPE_IMPL_SEP(TomographyRawData, TomographyRawDataNode)

@@ -36,10 +36,12 @@ ParameterCopyBase::ParameterCopyBase(
     const QDBusObjectPath& mainNodePath,
     const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, QVariant>>>&
         properties,
-    const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes)
+    const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes,
+    const QMap<QDBusObjectPath, QMap<QString, QString>>& extensionInfo)
     : mainNodePath_(mainNodePath),
       properties_(properties),
-      prototypes_(prototypes) {}
+      prototypes_(prototypes),
+      extensionInfo_(extensionInfo) {}
 
 const QDBusObjectPath& ParameterCopyBase::mainNodePath() const {
   return mainNodePath_;
@@ -53,4 +55,9 @@ ParameterCopyBase::properties() const {
 const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>&
 ParameterCopyBase::prototypes() const {
   return prototypes_;
+}
+
+const QMap<QDBusObjectPath, QMap<QString, QString>>&
+ParameterCopyBase::extensionInfo() const {
+  return extensionInfo_;
 }

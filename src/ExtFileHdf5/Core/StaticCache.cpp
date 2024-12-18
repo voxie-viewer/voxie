@@ -49,7 +49,7 @@ class DeadlockException : public Core::Exception {
 
  public:
   DeadlockException(const std::type_info& retType,
-                        const std::type_info& lambdaType)
+                    const std::type_info& lambdaType)
       : retType(retType), lambdaType(lambdaType) {}
 
   std::string message() const override {

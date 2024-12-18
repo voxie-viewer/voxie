@@ -8,7 +8,7 @@
             "Properties": {
                 "de.uni_stuttgart.Voxie.Input": {
                     "AllowedNodePrototypes": [
-                        "de.uni_stuttgart.Voxie.Data.ContainerNode"
+                        "de.uni_stuttgart.Voxie.Data.Container"
                     ],
                     "DisplayName": "Input",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"

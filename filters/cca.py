@@ -29,9 +29,15 @@ import dbus
 import os
 import concurrent.futures
 import math
-from skimage import measure as skmeasure
 from scipy import ndimage, nan, inf
+from skimage import measure as skmeasure
 
+# marching_cubes_lewiner was removed in 0.19
+# https://scikit-image.org/docs/stable/release_notes/release_0.19.html
+try:
+    from skimage.measure import marching_cubes
+except ImportError:
+    from skimage.measure import marching_cubes_lewiner as marching_cubes
 
 args = voxie.parser.parse_args()
 context = voxie.VoxieContext(args)
@@ -240,7 +246,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
                 # Compute unweighted mean of matching voxel positions by passing in an array of 1s as the weight
                 # array. Afterwards, add slice position to local position to
                 # correct for bounding box slicing
-                centerOfMass = voxelCoordsToMeters(numpy.asarray(ndimage.measurements.center_of_mass(
+                centerOfMass = voxelCoordsToMeters(numpy.asarray(ndimage.center_of_mass(
                     input=numpy.ones(slicedLabelData.shape),
                     labels=slicedLabelData,
                     index=labelID)) + slicePosition)
@@ -260,7 +266,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
                     standardDeviation = math.sqrt(variance)
 
                     # Compute weighted mean of matching voxel positions
-                    weightedCenterOfMass = voxelCoordsToMeters(numpy.asarray(ndimage.measurements.center_of_mass(
+                    weightedCenterOfMass = voxelCoordsToMeters(numpy.asarray(ndimage.center_of_mass(
                         input=slicedVolumeData,
                         labels=slicedLabelData,
                         index=labelID)) + slicePosition)
@@ -275,7 +281,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
                 if voxelCount < thresholdSurfaceArea:
                     # Compute the area of the region mask's isosurface
                     # (generated using Marching Cubes)
-                    surfaceVertices, surfaceFaces, surfaceNormals, surfaceValues = skmeasure.marching_cubes_lewiner(
+                    surfaceVertices, surfaceFaces, surfaceNormals, surfaceValues = marching_cubes(
                         numpy.pad(maskedLabelData, mode='constant', pad_width=1, constant_values=0), level=0.001,
                         spacing=spacing)
                     surfaceArea = skmeasure.mesh_surface_area(

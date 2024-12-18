@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <VoxieClient/Vector.hpp>
+
 #include <QtWidgets/QAction>
 #include <QtWidgets/QMdiArea>
 #include <QtWidgets/QMdiSubWindow>
@@ -30,7 +32,7 @@
 namespace vx {
 class VisualizerNode;
 
-enum class VisualizerWindowMode { Normal, Minimize, Maximize, FullScreen };
+enum class WindowMode;
 }  // namespace vx
 
 class VisualizerContainer : public QWidget {
@@ -57,17 +59,18 @@ class VisualizerContainer : public QWidget {
 
   vx::VisualizerNode* getVisualizer();
 
-  QPoint getVisualizerPosition();
+  vx::Vector<double, 2> getVisualizerPosition();
 
-  void setVisualizerPosition(QPoint pos);
+  void setVisualizerPosition(const vx::Vector<double, 2>& pos);
 
-  QSize getVisualizerSize();
+  vx::Vector<double, 2> getVisualizerSize();
 
-  void setVisualizerSize(QSize size);
+  void setVisualizerSize(const vx::Vector<double, 2>& size);
 
   void switchPopState();
 
-  void setWindowMode(vx::VisualizerWindowMode mode);
+  vx::WindowMode getWindowMode();
+  void setWindowMode(vx::WindowMode mode);
 
  protected:
   virtual void closeEvent(QCloseEvent* ev) override;

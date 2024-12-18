@@ -171,6 +171,18 @@ class VOXIECLIENT_EXPORT RefCountedObject : public ExportedObject {
   }
 
  public:
+  template <typename T>
+  Q_NORETURN void lookupFailedIncorrectType(const char* parameterName) {
+    lookupFailedIncorrectTypeImpl(typeid(T), qMetaTypeId<T*>(), parameterName);
+  }
+
+ private:
+  Q_NORETURN
+  void lookupFailedIncorrectTypeImpl(const std::type_info& expected,
+                                     int expectedPointerMetaTypeId,
+                                     const char* parameterName);
+
+ public:
   explicit RefCountedObject(const QString& type);
 
   static QSharedPointer<RefCountedObject> tryLookupObject(
@@ -198,35 +210,71 @@ QSharedPointer<T> RefCountedObject::createBase(Args&&... args) {
   });
 }
 
-#define REFCOUNTEDOBJ_DECL(CLSNAME)                                            \
- public:                                                                       \
-  QSharedPointer<CLSNAME> thisShared() {                                       \
-    return this->thisSharedCasted<CLSNAME>();                                  \
-  }                                                                            \
-                                                                               \
- public:                                                                       \
-  template <typename... Args>                                                  \
-  static QSharedPointer<CLSNAME> create(Args&&... args) {                      \
-    return vx::RefCountedObject::createBase<CLSNAME, Args...>(                 \
-        std::forward<Args>(args)...);                                          \
-  }                                                                            \
-                                                                               \
-  static QSharedPointer<CLSNAME> lookup(const QDBusObjectPath& path) {         \
-    auto obj = vx::RefCountedObject::tryLookupObject(path);                    \
-    if (!obj)                                                                  \
-      throw vx::Exception("de.uni_stuttgart.Voxie.ObjectNotFound",             \
-                          "Object " + path.path() + " not found");             \
-    auto objCst = qSharedPointerDynamicCast<CLSNAME>(obj);                     \
-    if (!objCst)                                                               \
-      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidObjectType",          \
-                          "Object " + path.path() + " is not a " #CLSNAME);    \
-    return objCst;                                                             \
-  }                                                                            \
-  static QSharedPointer<CLSNAME> lookupOptional(const QDBusObjectPath& path) { \
-    if (path.path() == "/") return QSharedPointer<CLSNAME>();                  \
-    return lookup(path);                                                       \
-  }                                                                            \
-                                                                               \
+// See
+// https://stackoverflow.com/questions/21143835/can-i-implement-an-autonomous-self-member-type-in-c/70701479#70701479
+// and https://github.com/MitalAshok/self_macro/
+// Alternative, but does not work with clang (and probably not correct C++):
+// https://stackoverflow.com/questions/21143835/can-i-implement-an-autonomous-self-member-type-in-c/51160552#51160552
+namespace impl_self_type {
+template <typename T>
+struct Reader {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-template-friend"
+#endif
+  friend auto adl_GetSelfType(Reader<T>);
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+};
+
+template <typename T, typename U>
+struct Writer {
+  friend auto adl_GetSelfType(Reader<T>) { return U{}; }
+};
+
+inline void adl_GetSelfType() {}
+
+template <typename T>
+using Read = std::remove_pointer_t<decltype(adl_GetSelfType(Reader<T>{}))>;
+}  // namespace impl_self_type
+
+#define VX_REFCOUNTEDOBJECT                                                   \
+ private:                                                                     \
+  struct vx_self_type_tag {};                                                 \
+  auto vx_self_type_helper()->decltype(                                       \
+      ::vx::impl_self_type::Writer<vx_self_type_tag, decltype(this)>{},       \
+      void()) {}                                                              \
+  using vx_self_type = ::vx::impl_self_type::Read<vx_self_type_tag>;          \
+                                                                              \
+ public:                                                                      \
+  QSharedPointer<vx_self_type> thisShared() {                                 \
+    return this->thisSharedCasted<vx_self_type>();                            \
+  }                                                                           \
+                                                                              \
+ public:                                                                      \
+  template <typename... Args>                                                 \
+  static QSharedPointer<vx_self_type> create(Args&&... args) {                \
+    return vx::RefCountedObject::createBase<vx_self_type, Args...>(           \
+        std::forward<Args>(args)...);                                         \
+  }                                                                           \
+                                                                              \
+  static QSharedPointer<vx_self_type> lookup(                                 \
+      const QDBusObjectPath& path, const char* parameterName = nullptr) {     \
+    auto obj = vx::RefCountedObject::tryLookupObject(path);                   \
+    if (!obj)                                                                 \
+      throw vx::Exception("de.uni_stuttgart.Voxie.ObjectNotFound",            \
+                          "Object " + path.path() + " not found");            \
+    auto objCst = qSharedPointerDynamicCast<vx_self_type>(obj);               \
+    if (!objCst) obj->lookupFailedIncorrectType<vx_self_type>(parameterName); \
+    return objCst;                                                            \
+  }                                                                           \
+  static QSharedPointer<vx_self_type> lookupOptional(                         \
+      const QDBusObjectPath& path) {                                          \
+    if (path.path() == "/") return QSharedPointer<vx_self_type>();            \
+    return lookup(path);                                                      \
+  }                                                                           \
+                                                                              \
  private:
 
 }  // namespace vx

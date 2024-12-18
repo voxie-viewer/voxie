@@ -141,9 +141,8 @@ int main(int argc, char* argv[]) {
           QString, QMap<QString, QDBusVariant>, QMap<QString, QDBusVariant>>>
           attributes{std::make_tuple(
               "de.uni_stuttgart.Voxie.SurfaceAttribute.Distance",
-              "de.uni_stuttgart.Voxie.SurfaceAttributeKind.Triangle",
-              1,  // change '.Triangle' to '.Vertex' when vertex coloring works
-              std::make_tuple("float", 32, "native"), "Distances",
+              "de.uni_stuttgart.Voxie.SurfaceAttributeKind.Vertex", 1,
+              std::make_tuple("float", 32, "native"), "Distance",
               QMap<QString, QDBusVariant>(), QMap<QString, QDBusVariant>())};
 
       QMap<QString, QDBusVariant> options;
@@ -187,10 +186,16 @@ int main(int argc, char* argv[]) {
                                outputDistances);
       filter.run(op);
 
+      vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion> version(
+          dbusClient, HANDLEDBUSPENDINGREPLY(update->Finish(
+                          dbusClient.clientPath(), vx::emptyOptions())));
+
       // Define Output
       QMap<QString, QDBusVariant> outputResult;
       outputResult["Data"] =
           vx::dbusMakeVariant<QDBusObjectPath>(outputSurface.path());
+      outputResult["DataVersion"] =
+          vx::dbusMakeVariant<QDBusObjectPath>(version.path());
 
       QMap<QDBusObjectPath, QMap<QString, QDBusVariant>> result;
       result[outputPath] = outputResult;

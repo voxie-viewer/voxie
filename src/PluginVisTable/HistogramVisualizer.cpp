@@ -59,6 +59,8 @@
 
 #include <cmath>
 
+VX_NODE_INSTANTIATION(HistogramVisualizer)
+
 using namespace vx;
 using namespace vx::visualization;
 
@@ -345,5 +347,3 @@ void HistogramVisualizer::BucketCache::populateHistogramProvider(
   }
   histogramProvider.setData(histogramData);
 }
-
-NODE_PROTOTYPE_IMPL_SEP(visualizer_prop::Histogram, HistogramVisualizer)

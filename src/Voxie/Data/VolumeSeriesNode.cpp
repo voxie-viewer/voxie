@@ -46,18 +46,24 @@
 #include <QtCore/QThreadPool>
 #include <QtCore/QUuid>
 
+VX_NODE_INSTANTIATION(vx::VolumeSeriesNode)
+
 using namespace vx;
 using namespace vx::internal;
 
 VolumeSeriesNode::VolumeSeriesNode()
-    : PositionInterface("VolumeSeriesNode", getPrototypeSingleton()),
+    : MovableDataNode("VolumeSeriesNode", getPrototypeSingleton()),
       properties(new VolumeSeriesProperties(this)) {
-  connect(this, &PositionInterface::adjustedPositionChanged, this, [this]() {
+  connect(this, &MovableDataNode::adjustedPositionChanged, this, [this]() {
     this->emitCustomPropertyChanged(this->properties->translationProperty());
   });
-  connect(this, &PositionInterface::adjustedRotationChanged, this, [this]() {
+  connect(this, &MovableDataNode::adjustedRotationChanged, this, [this]() {
     this->emitCustomPropertyChanged(this->properties->rotationProperty());
   });
+
+  // TODO: This should only be triggered if the bounding box actually changes
+  QObject::connect(this, &DataNode::dataChangedFinished, this,
+                   &MovableDataNode::boundingBoxObjectChanged);
 
   if (!voxieRoot().isHeadless())
     this->addPropertySection(new vx::gui::VolumeSeriesNodeView(this));
@@ -75,4 +81,9 @@ void VolumeSeriesNode::setDataImpl(const QSharedPointer<Data>& data) {
   this->dataPointer = dataCast;
 }
 
-NODE_PROTOTYPE_IMPL_DATA(VolumeSeries)
+BoundingBox3D VolumeSeriesNode::boundingBoxObject() {
+  auto data = volumeSeriesData();
+  if (!data) return BoundingBox3D::empty();
+  return BoundingBox3D(data->volumeOrigin(),
+                       data->volumeOrigin() + data->volumeSize());
+}

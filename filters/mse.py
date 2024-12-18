@@ -51,15 +51,19 @@ VOLUME_DATA_VOXEL = 'de.uni_stuttgart.Voxie.VolumeDataVoxel'
 
 with context.makeObject(context.bus, context.busName, args.voxie_operation,
                         [VOXIE_RUN_FILTER]).ClaimOperationAndCatch() as op:
+    properties = op.Properties
+
     # check if both inputs are available
-    inputPath1 = op.Properties[VOLUME_1].getValue(
+    inputPath1 = properties[VOLUME_1].getValue(
         'o')
     if inputPath1 == dbus.ObjectPath('/'):
         raise Exception('No input for volume 1 connected')
-    inputPath2 = op.Properties[VOLUME_2].getValue(
+    inputPath2 = properties[VOLUME_2].getValue(
         'o')
     if inputPath2 == dbus.ObjectPath('/'):
         raise Exception('No input for volume 2 connected')
+
+    output_path = properties['de.uni_stuttgart.Voxie.TextOutput'].getValue('o')
 
     input1 = op.GetInputData(VOLUME_1).CastTo(VOLUME_DATA_VOXEL)
     input2 = op.GetInputData(VOLUME_2).CastTo(VOLUME_DATA_VOXEL)
@@ -72,7 +76,21 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation,
             if v1.shape != v2.shape:
                 raise ValueError('Volumes need to be of equal dimensions!')
 
-            print(f'MSE: {mse(v1, v2)}')
+            text = f'MSE: {mse(v1, v2)}'
+            print(text)
+            text_bin = (text + '\n').encode('utf-8')
 
-            op.Finish({})
+            with instance.CreateFileDataByteStream('text/plain; charset=UTF-8', len(text_bin)) as output:
+                with output.CreateUpdate() as update:
+                    with output.GetBufferWritable(update) as buffer:
+                        buffer[:] = bytearray(text_bin)
+
+                    with update.Finish() as version:
+                        result = {}
+                        result[output_path] = {
+                            'Data': voxie.Variant('o', output._objectPath),
+                            'DataVersion': voxie.Variant('o', version._objectPath),
+                        }
+                        op.Finish(result)
+
             instance._context.client.destroy()

@@ -9,8 +9,15 @@
 
 namespace vx {
 namespace debug_option {
+VOXIEBACKEND_EXPORT vx::DebugOptionBool* ExtractSlice_UseMultiThreading();
+VOXIEBACKEND_EXPORT vx::DebugOptionBool* ExtractSlice_UseStaticScheduling();
+VOXIEBACKEND_EXPORT vx::DebugOptionBool* Log_BlockCache_Statistics();
+VOXIEBACKEND_EXPORT vx::DebugOptionBool* Log_BlockJpeg();
+VOXIEBACKEND_EXPORT vx::DebugOptionBool* Log_BufferType();
+VOXIEBACKEND_EXPORT vx::DebugOptionBool* Log_ExtractSliceTime();
+VOXIEBACKEND_EXPORT vx::DebugOptionBool* Log_OperationRegistry();
 VOXIEBACKEND_EXPORT vx::DebugOptionBool* Log_SurfaceBoundingBox();
-}
+}  // namespace debug_option
 
 VOXIEBACKEND_EXPORT QList<vx::DebugOption*> getVoxieBackendDebugOptions();
 }  // namespace vx

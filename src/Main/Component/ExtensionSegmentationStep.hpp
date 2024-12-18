@@ -37,7 +37,7 @@ class PropertyBase;
 
 class ExtensionSegmentationStep : public SegmentationStep {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ExtensionSegmentationStep)
+  VX_REFCOUNTEDOBJECT
 
   QString scriptFilename_;
   QString infoString;
@@ -69,6 +69,8 @@ class ExtensionSegmentationStep : public SegmentationStep {
   bool isAllowedParent(NodeKind node) override;
   bool isCreatableChild(NodeKind node) override;
 
+  QMap<QString, QString> getExtensionInfo() override;
+
  Q_SIGNALS:
   void error(const Exception& e, const QSharedPointer<QString>& scriptOutput);
 };
@@ -77,7 +79,7 @@ class ExternalOperationRunSegmentationStepAdaptorImpl;
 
 class ExternalOperationRunSegmentationStep : public ExternalOperation {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ExternalOperationRunSegmentationStep)
+  VX_REFCOUNTEDOBJECT
 
   friend class ExternalOperationRunSegmentationStepAdaptorImpl;
 

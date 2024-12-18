@@ -33,6 +33,8 @@
 namespace vx {
 class RandomChartVisualizer : public vx::visualization::SimpleVisualizer {
   Q_OBJECT
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.Example.Visualizer.RandomChart")
 
   QVector<QWidget*> sections;
   float (*f)(float);
@@ -44,7 +46,5 @@ class RandomChartVisualizer : public vx::visualization::SimpleVisualizer {
   ~RandomChartVisualizer();
 
   vx::SharedFunPtr<RenderFunction> getRenderFunction() override;
-
-  NODE_PROTOTYPE_DECL_2(RandomChart, Visualizer)
 };
 }  // namespace vx

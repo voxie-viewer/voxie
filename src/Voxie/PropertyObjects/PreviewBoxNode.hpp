@@ -39,7 +39,7 @@ namespace vx {
  * a faster processing
  */
 class VOXIECORESHARED_EXPORT PreviewBoxNode : public PropertyNode {
-  PreviewBoxProperties* properties;
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Property.PreviewBox")
 
   QuaternionWidget* originWidget;
   QuaternionWidget* sizeWidget;
@@ -49,8 +49,6 @@ class VOXIECORESHARED_EXPORT PreviewBoxNode : public PropertyNode {
   PreviewBox* previewBox = new PreviewBox(QVector3D(), QVector3D(), false);
 
  public:
-  static QSharedPointer<NodePrototype> getPrototypeSingleton();
-
   PreviewBoxNode();
 
   PreviewBox* getPreviewBox();

@@ -68,7 +68,10 @@ VolumeGrid::VolumeGrid(SliceVisualizer* sv) {
 VolumeGrid::~VolumeGrid() {}
 
 void VolumeGrid::render(QImage& outputImage,
-                        const QSharedPointer<vx::ParameterCopy>& parameters) {
+                        const QSharedPointer<vx::ParameterCopy>& parameters,
+                        bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

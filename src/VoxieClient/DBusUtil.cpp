@@ -65,9 +65,35 @@ QDBusSignature vx::dbusGetVariantSignature(const QDBusVariant& variant) {
   }
 }
 
+QList<quint8> vx::fromByteArray(const QByteArray& data) {
+  QList<quint8> res;
+  for (const auto& value : data) res << value;
+  return res;
+}
+QByteArray vx::toByteArray(const QList<quint8>& data) {
+  QByteArray res(data.size(), 0);
+  for (int i = 0; i < data.size(); i++) res[i] = data[i];
+  return res;
+}
+
+QList<QList<quint8>> vx::fromByteArray(const QList<QByteArray>& data) {
+  QList<QList<quint8>> res;
+  for (const auto& array : data) {
+    res << fromByteArray(array);
+  }
+  return res;
+}
+QList<QByteArray> vx::toByteArray(const QList<QList<quint8>>& data) {
+  QList<QByteArray> res;
+  for (const auto& array : data) {
+    res << toByteArray(array);
+  }
+  return res;
+}
+
 Q_DECLARE_METATYPE(VX_IDENTITY_TYPE((std::tuple<int, int>)))
 
-static void dbusCompileTest() {
+[[gnu::unused]] static void dbusCompileTest() {
   (void)&dbusCompileTest;  // Ignore the fact that the function is unused
 
   QDBusArgument arg;

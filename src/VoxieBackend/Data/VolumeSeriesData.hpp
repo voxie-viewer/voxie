@@ -29,7 +29,7 @@
 namespace vx {
 class VOXIEBACKEND_EXPORT VolumeSeriesData : public SeriesData {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(VolumeSeriesData)
+  VX_REFCOUNTEDOBJECT
 
   vx::Vector<double, 3> volumeOrigin_;
   vx::Vector<double, 3> volumeSize_;

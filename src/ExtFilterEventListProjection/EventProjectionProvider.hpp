@@ -46,7 +46,7 @@ class SpecialImageProvider;
 
 class EventProjectionProvider : public RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(EventProjectionProvider)
+  VX_REFCOUNTEDOBJECT
 
  public:
   EventProjectionProvider(vx::DBusClient& dbusClient);

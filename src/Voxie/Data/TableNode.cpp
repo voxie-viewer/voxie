@@ -38,6 +38,8 @@
 
 using namespace vx;
 
+VX_NODE_INSTANTIATION(vx::TableNode)
+
 TableNode::TableNode()
     : DataNode("TableNode", getPrototypeSingleton()),
       properties(new PropertiesType(this)),
@@ -78,5 +80,3 @@ void TableNode::updateTable() {
   }
   tableView->updateTable(tableData());
 }
-
-NODE_PROTOTYPE_IMPL_2(Table, Node)

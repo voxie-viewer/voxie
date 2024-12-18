@@ -24,6 +24,11 @@
         "LicenseFilename": "LICENSE.txt"
     },
     {
+        "Name": "PyWavelets",
+        "Version": "1.3.0",
+        "LicenseFilename": "LICENSE"
+    },
+    {
         "Name": "Mako",
         "Version": "1.1.4",
         "IsPurePython": true,

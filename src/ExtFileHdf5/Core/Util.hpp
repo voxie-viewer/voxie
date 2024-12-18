@@ -28,21 +28,23 @@
 #include <Core/Util.h>
 
 // Make sure there is (at least some) support for C++11
-#if !(defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || (defined (_MSC_VER) && _MSC_VER >= 1800))
+#if !(defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || \
+      (defined(_MSC_VER) && _MSC_VER >= 1800))
 #warning "The C++ version seems to be before C++11, this will probably not work"
 #endif
 #define HAVE_CXX11 1
 
-#define NO_COPY_CLASS(n)                        \
-  private:                                      \
-  n& operator= (const n &x) = delete;           \
-  n (const n &x) = delete
+#define NO_COPY_CLASS(n)             \
+ private:                            \
+  n& operator=(const n& x) = delete; \
+  n(const n& x) = delete
 
-#define STATIC_CLASS(n)                         \
-  NO_COPY_CLASS (n);                            \
-private:                                        \
- n () = delete;                                 \
- ~n () = delete
+#define STATIC_CLASS(n) \
+  NO_COPY_CLASS(n);     \
+                        \
+ private:               \
+  n() = delete;         \
+  ~n() = delete
 
 #ifdef __CUDACC__
 #define NVCC_HOST_DEVICE __host__ __device__
@@ -50,6 +52,6 @@ private:                                        \
 #define NVCC_HOST_DEVICE
 #endif
 
-#define DECLTYPE(...) decltype (__VA_ARGS__)
+#define DECLTYPE(...) decltype(__VA_ARGS__)
 
-#endif // !CORE_UTIL_HPP_INCLUDED
+#endif  // !CORE_UTIL_HPP_INCLUDED

@@ -505,6 +505,7 @@ bool NodeProperty::allowsAsValue(vx::NodePrototype* childPrototype) {
 
 class NodePropertyAdaptorImpl : public NodePropertyAdaptor,
                                 public ObjectPropertyAdaptor {
+  [[gnu::unused]]  // Currently not used
   NodeProperty* object;
 
  public:

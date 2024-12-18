@@ -82,12 +82,7 @@ class GeometricPrimitiveDataAdaptorImpl : public GeometricPrimitiveDataAdaptor {
       ExportedObject::checkOptions(options);
 
       auto updateObj = vx::DataUpdate::lookup(update);
-      if (updateObj->data().data() != object)
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is for another object");
-      if (!updateObj->running())
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is already finished");
+      updateObj->validateCanUpdate(object);
 
       auto primitiveTypeObj = dynamic_cast<GeometricPrimitiveType*>(
           ExportedObject::lookupWeakObject(primitiveType));
@@ -143,12 +138,7 @@ quint64 GeometricPrimitiveData::addPrimitive(
     throw vx::Exception("de.uni_stuttgart.Voxie.Error", "update is nullptr");
   if (!primitive)
     throw vx::Exception("de.uni_stuttgart.Voxie.Error", "primitive is nullptr");
-  if (update->data().data() != this)
-    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                        "update does not match data");
-  if (!update->running())
-    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                        "update is not running");
+  update->validateCanUpdate(this);
 
   lastId++;
   auto id = lastId;
@@ -166,12 +156,7 @@ void GeometricPrimitiveData::addOrReplacePrimitive(
     throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                                  "newPrimitive is nullptr");
   */
-  if (update->data().data() != this)
-    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                        "update does not match data");
-  if (!update->running())
-    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                        "update is not running");
+  update->validateCanUpdate(this);
   if (id == 0) throw vx::Exception("de.uni_stuttgart.Voxie.Error", "id is 0");
 
   if (id > lastId) lastId = id;

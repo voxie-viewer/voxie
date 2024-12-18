@@ -28,6 +28,8 @@
 
 #include <Voxie/Vis/OpenGLWidget.hpp>
 
+VX_NODE_INSTANTIATION(vx::Test3DObject)
+
 using namespace vx;
 using namespace vx::visualization;
 
@@ -77,7 +79,7 @@ void Test3DObject::render(
 
   auto val = properties->length();
 
-  drawingBuffer.addLine(QVector3D(1.0f, 0.0f, 0.0f),
+  drawingBuffer.addLine(vx::Color(1.0f, 0.0f, 0.0f),
                         QVector3D(-val, -val, -val), QVector3D(val, val, val));
 
   psg->utils.draw(drawingBuffer, matViewProj);
@@ -85,8 +87,6 @@ void Test3DObject::render(
 
 BoundingBox3D Test3DObject::getBoundingBox() {
   auto val = properties->length();
-  return BoundingBox3D::point(QVector3D(-val, -val, -val)) +
-         BoundingBox3D::point(QVector3D(val, val, val));
+  return BoundingBox3D::point(vx::Vector<double, 3>(-val, -val, -val)) +
+         BoundingBox3D::point(vx::Vector<double, 3>(val, val, val));
 }
-
-NODE_PROTOTYPE_IMPL(Test3DObject)

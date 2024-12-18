@@ -28,37 +28,42 @@
 #include <boost/type_traits/is_class.hpp>
 
 // Based on boost=1.46.1-5ubuntu3 /usr/include/boost/thread/locks.hpp
-#define CORE_DEFINE_HAS_MEMBER_CALLED(MemberName)                       \
-  namespace Core_HasMemberCalled_Impl {                                 \
-    template<typename T, bool=boost::is_class<T>::value>                \
-    struct HasMemberCalledImpl_##MemberName {                           \
-      BOOST_STATIC_CONSTANT(bool, value=false);                         \
-    };                                                                  \
-                                                                        \
-    template<typename T>                                                \
-    struct HasMemberCalledImpl_##MemberName<T,true> {                   \
-      typedef char true_type;                                           \
-      struct false_type {                                               \
-        true_type dummy[2];                                             \
-      };                                                                \
-                                                                        \
-      struct fallback { int MemberName; };                              \
-      struct derived : T, fallback {                                    \
-        derived();                                                      \
-      };                                                                \
-                                                                        \
-      template<int fallback::*> struct tester;                          \
-                                                                        \
-      template<typename U>                                              \
-      static false_type has_member(tester<&U::MemberName>*);            \
-      template<typename U>                                              \
-      static true_type has_member(...);                                 \
-                                                                        \
-      BOOST_STATIC_CONSTANT(bool, value=sizeof(has_member<derived>(0))==sizeof(true_type)); \
-    };                                                                  \
-  }                                                                     \
-  template <typename T>                                                 \
-  struct HasMemberCalled_##MemberName : boost::mpl::bool_<Core_HasMemberCalled_Impl::HasMemberCalledImpl_##MemberName<T>::value> {}
+#define CORE_DEFINE_HAS_MEMBER_CALLED(MemberName)                         \
+  namespace Core_HasMemberCalled_Impl {                                   \
+  template <typename T, bool = boost::is_class<T>::value>                 \
+  struct HasMemberCalledImpl_##MemberName {                               \
+    BOOST_STATIC_CONSTANT(bool, value = false);                           \
+  };                                                                      \
+                                                                          \
+  template <typename T>                                                   \
+  struct HasMemberCalledImpl_##MemberName<T, true> {                      \
+    typedef char true_type;                                               \
+    struct false_type {                                                   \
+      true_type dummy[2];                                                 \
+    };                                                                    \
+                                                                          \
+    struct fallback {                                                     \
+      int MemberName;                                                     \
+    };                                                                    \
+    struct derived : T, fallback {                                        \
+      derived();                                                          \
+    };                                                                    \
+                                                                          \
+    template <int fallback::*>                                            \
+    struct tester;                                                        \
+                                                                          \
+    template <typename U>                                                 \
+    static false_type has_member(tester<&U::MemberName>*);                \
+    template <typename U>                                                 \
+    static true_type has_member(...);                                     \
+                                                                          \
+    BOOST_STATIC_CONSTANT(bool, value = sizeof(has_member<derived>(0)) == \
+                                        sizeof(true_type));               \
+  };                                                                      \
+  }                                                                       \
+  template <typename T>                                                   \
+  struct HasMemberCalled_##MemberName                                     \
+      : boost::mpl::bool_<Core_HasMemberCalled_Impl::                     \
+                              HasMemberCalledImpl_##MemberName<T>::value> {}
 
-
-#endif // !CORE_HASMEMBERCALLED_HPP_INCLUDED
+#endif  // !CORE_HASMEMBERCALLED_HPP_INCLUDED

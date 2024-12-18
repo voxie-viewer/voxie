@@ -51,7 +51,7 @@ class EventProjectionWorker {
   EventProjectionWorker(EventProjectionTask& task);
 
   EventProjectionWorker(EventProjectionWorker&& other) = default;
-  EventProjectionWorker& operator=(EventProjectionWorker&& other) = default;
+  EventProjectionWorker& operator=(EventProjectionWorker&& other) = delete;
 
   QSharedPointer<ProjectionImage> process();
 

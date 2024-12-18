@@ -27,6 +27,8 @@
 #include <Voxie/Node/DataNode.hpp>
 #include <Voxie/Voxie.hpp>
 
+VX_NODE_INSTANTIATION(vx::ContainerNode)
+
 using namespace vx;
 
 void ContainerNode::setCompoundPointer(
@@ -47,7 +49,8 @@ ContainerNode::ContainerNode(QSharedPointer<ContainerData>& containerData)
 }
 
 ContainerNode::ContainerNode()
-    : DataNode("ContainerNode", getPrototypeSingleton()) {
+    : DataNode("ContainerNode", getPrototypeSingleton()),
+      properties(new PropertiesType(this)) {
   setAutomaticDisplayName(tr("Container"));
   this->initializeInfoWidget();
   connect(this, &QObject::destroyed, infoWidget, &QObject::deleteLater);
@@ -107,5 +110,3 @@ void ContainerNode::initializeInfoWidget() {
 
   this->infoWidget = widget;
 }
-
-NODE_PROTOTYPE_IMPL_2(Container, Node)

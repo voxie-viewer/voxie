@@ -28,6 +28,7 @@
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
 
 #include <Voxie/Node/Node.hpp>
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodeProperty.hpp>
 
 namespace vx {
@@ -43,6 +44,8 @@ class PropertyUIImplBase : public PropertyUI {
   bool suppressForwardFromUI = false;
 
  protected:
+  // TODO: Merge code with other constructor, i.e. by calling it with
+  // NodeNodeProperty instance?
   PropertyUIImplBase(const QSharedPointer<NodeProperty>& property, Node* node)
       : PropertyUI(property, node) {
     if (property->type() != TypeInfo::type()) {
@@ -73,6 +76,29 @@ class PropertyUIImplBase : public PropertyUI {
           }
           suppressForwardFromUI = false;
         });
+  }
+  PropertyUIImplBase(const QSharedPointer<PropertyInstance>& propertyInstance)
+      : PropertyUI(propertyInstance) {
+    if (propertyInstance->type() != TypeInfo::type()) {
+      qDebug() << "Trying to construct a property UI with incorrect type:"
+               << "Property has type" << propertyInstance->type()->name()
+               << "but the property UI expects" << TypeInfo::type()->name();
+    }
+
+    propertyInstance->connectChanged(this, [this](const QVariant& value) {
+      try {
+        Node* o = this->node();
+        if (!o) return;  // Probably should never happen
+        if (suppressForwardToUI) return;
+        auto valRaw = Node::parseVariant<RawType>(value);
+        auto val = PropertyValueConvertRaw<RawType, CppType>::fromRaw(valRaw);
+        suppressForwardFromUI = true;
+        updateUIValue(val);
+      } catch (Exception& e) {
+        qCritical() << "Error while updating property UI:" << e.what();
+      }
+      suppressForwardFromUI = false;
+    });
   }
   ~PropertyUIImplBase() override {}
 

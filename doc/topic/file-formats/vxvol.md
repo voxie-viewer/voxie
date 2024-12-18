@@ -12,5 +12,6 @@ the following keys:
 - `"VolumeOrigin"`: An array with 3 values, giving the position of the lower left corner of the first voxel (im m) in X, Y and Z direction
 - `"DataSourceType"`: A string indicating how the data is stored
 - `"DataSource"`: Additional data depeneding on `DataSourceType`
+- `"DataProperties"` (optional): Data properties in JSON format, see [data properties documentation](voxie:///help/topic/file-formats/data-properties)
 
 For the supported data source types see the [data source documentation](voxie:///help/topic/file-formats/data-sources).

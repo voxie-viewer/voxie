@@ -35,6 +35,8 @@
 
 #include <QtCore/QJsonValue>
 
+class PropertyInstance;
+
 namespace vx {
 class Node;
 class NodeProperty;
@@ -101,6 +103,9 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
   virtual PropertyUI* createUI(const QSharedPointer<NodeProperty>& property,
                                Node* node) = 0;
 
+  virtual PropertyUI* createUISimple(
+      const QSharedPointer<PropertyInstance>& propertyInstance);
+
   /**
    * @brief Parse the given JSON data value as a property of this type.
    *
@@ -119,6 +124,16 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
    * for this PropertyType.
    */
   virtual QString valueToString(const QVariant& value) = 0;
+
+  /**
+   * @brief Get a detailed description of the value as a human-readable string.
+   *
+   * Throws an exception if the type of the value contained within the passed
+   * variant is not compatible with this PropertyType.
+   *
+   * Returns an empty string if no description is defined for this PropertyType.
+   */
+  virtual QString valueGetDescription(const QVariant& value) = 0;
 
   /**
    * @brief Convert the raw representation to the DBus representation.

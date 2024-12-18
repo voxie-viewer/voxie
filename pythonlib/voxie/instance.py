@@ -140,6 +140,10 @@ class InstanceImpl(voxie.DBusObject):
         self.__DebugOptions = DebugOptionsImpl(self)
         return self.__DebugOptions
 
+    # Automatically set the timeout for CreateVolumeDataVoxel (creating a large volume can be slow)
+    def CreateVolumeDataVoxel(self, arrayShape, dataType, volumeOrigin, gridSpacing, options={}, *, DBusObject_timeout=timeoutValue):
+        return self._getDBusMethod('CreateVolumeDataVoxel')(arrayShape, dataType, volumeOrigin, gridSpacing, options, DBusObject_timeout=DBusObject_timeout)
+
 
 class DynamicObjectImpl(voxie.DBusObject):
     def __init__(self, obj, interfaces, context=None, referenceCountingObject=None):
@@ -275,7 +279,7 @@ class OperationImpl(voxie.DBusObject):
     #         self.WaitForNoTimeout()
 
 
-class ObjectImpl(DynamicObjectImpl):
+class NodeImpl(DynamicObjectImpl):
     def __init__(self, obj, interfaces, context=None, referenceCountingObject=None):
         DynamicObjectImpl.__init__(
             self, obj, interfaces, context=context, referenceCountingObject=referenceCountingObject)
@@ -291,6 +295,37 @@ class ObjectImpl(DynamicObjectImpl):
             # TODO: More details in error message
             print('Error while setting properties: ' + str(e), file=sys.stderr)
             return None
+
+
+class BufferImpl(DynamicObjectImpl):
+    def __init__(self, obj, interfaces, context=None, referenceCountingObject=None):
+        DynamicObjectImpl.__init__(
+            self, obj, interfaces, context=context, referenceCountingObject=referenceCountingObject)
+        self.__cacheBufferReadonly = None
+        self.__cacheBufferWritable = None
+
+    def GetBufferReadonly(self):
+        if self.__cacheBufferReadonly is not None:
+            return self.__cacheBufferReadonly
+        self.__cacheBufferReadonly = Buffer(self.GetDataReadonly(), None, False)
+        return self.__cacheBufferReadonly
+
+    def GetBufferWritable(self, update=None):
+        # Note: This is cached regardless of the 'update' value because currently the update value is ignored anyway
+        # return Buffer(self.GetDataWritable(update), None, True)
+        if self.__cacheBufferWritable is not None:
+            return self.__cacheBufferWritable
+        self.__cacheBufferWritable = Buffer(self.GetDataWritable(update), None, True)
+        return self.__cacheBufferWritable
+
+    def __array__(self, *args, **kwargs):
+        return self.GetBufferWritable().__array__(*args, **kwargs)
+
+    def __getitem__(self, *args, **kwargs):
+        return self.GetBufferWritable().__getitem__(*args, **kwargs)
+
+    def __setitem__(self, *args, **kwargs):
+        return self.GetBufferWritable().__setitem__(*args, **kwargs)
 
 
 class RawData2DRegularImpl(DynamicObjectImpl):
@@ -432,6 +467,30 @@ class ImageDataPixelImpl(voxie.DBusObject):
             "Don't know how to create PIL image object with %d components and dtype %s" % (components, dtype))
 
 
+class FileDataByteStreamImpl(DynamicObjectImpl):
+    def __init__(self, obj, interfaces, context=None, referenceCountingObject=None):
+        DynamicObjectImpl.__init__(self, obj, interfaces, context=context, referenceCountingObject=referenceCountingObject)
+        self.__cacheBufferReadonly = None
+
+    def GetBufferReadonly(self):
+        if self.__cacheBufferReadonly is not None:
+            return self.__cacheBufferReadonly
+        self.__cacheBufferReadonly = Buffer(self.GetContentReadonly(), 1, False)
+        return self.__cacheBufferReadonly
+
+    def GetBufferWritable(self, update):
+        return Buffer(self.GetContentWritable(update), 1, True)
+
+    def __array__(self, *args, **kwargs):
+        return self.GetBufferReadonly().__array__(*args, **kwargs)
+
+    def __getitem__(self, *args, **kwargs):
+        return self.GetBufferReadonly().__getitem__(*args, **kwargs)
+
+    def __setitem__(self, *args, **kwargs):
+        return self.GetBufferReadonly().__setitem__(*args, **kwargs)
+
+
 class OperationCancelledException(Exception):
     voxieErrorName = 'de.uni_stuttgart.Voxie.OperationCancelled'
 
@@ -455,7 +514,10 @@ class ExternalOperationWrapper:
                     name = value.voxieErrorName
                 else:
                     name = type.__name__
-                print(name, str(value))
+                # print(name, str(value))
+                # Flush output stream before FinishError() so all messages are shown in error dialog
+                sys.stdout.flush()
+                sys.stderr.flush()
                 self.__operation.FinishError(name, str(value))
                 return False  # Show the error on the command line
                 # return True
@@ -489,6 +551,21 @@ class ExternalOperationImpl(voxie.DBusObject):
     def ThrowIfCancelled(self):
         if self.IsCancelled:  # TODO: Use signal to avoid roundtrip here?
             raise OperationCancelledException()
+
+    def progress_wrapper(self, collection, min_progress=0, max_progress=1):
+        length = len(collection)
+        self.SetProgress(min_progress)
+        self.ThrowIfCancelled()
+        pos = 0
+        for obj in collection:
+            pos += 1
+            if pos > length:
+                raise Exception('pos > length')
+            yield obj
+            self.SetProgress(min_progress + (pos / length) * (max_progress - min_progress))
+            self.ThrowIfCancelled()
+        if pos != length:
+            raise Exception('pos != length')
 
 
 class ExternalOperationRunFilterImpl(ExternalOperationImpl):
@@ -542,25 +619,34 @@ class ExternalOperationRunFilterImpl(ExternalOperationImpl):
         return inputData
 
     # Create a new output data object or reuse the existing one
-    def GetOutputVolumeDataVoxelLike(self, outputPath, inputDataVoxel, type=None):
-        inputDataVoxel = refcountingcontext.castImplicit(
-            inputDataVoxel, 'de.uni_stuttgart.Voxie.VolumeDataVoxel')
+    def GetOutputVolumeDataVoxelLike(self, outputPath, inputData, type=None, volume_structure_type=None):
+        inputData = refcountingcontext.castImplicit(inputData, 'de.uni_stuttgart.Voxie.VolumeData')
 
-        inputOrigin = inputDataVoxel.VolumeOrigin
-        inputSpacing = inputDataVoxel.GridSpacing
-        inputSize = inputDataVoxel.ArrayShape
-        inputType = inputDataVoxel.DataType
+        is_block = False
+        if 'de.uni_stuttgart.Voxie.VolumeDataVoxel' in inputData.SupportedInterfaces:
+            inputData = refcountingcontext.cast(inputData, 'de.uni_stuttgart.Voxie.VolumeDataVoxel')
+        elif 'de.uni_stuttgart.Voxie.VolumeDataBlock' in inputData.SupportedInterfaces:
+            # inputData = refcountingcontext.cast(inputData, 'de.uni_stuttgart.Voxie.VolumeDataBlockJpeg')
+            inputData = refcountingcontext.cast(inputData, 'de.uni_stuttgart.Voxie.VolumeDataBlock')
+            # is_block = True
+            # blockShape = inputData.BlockShape
+        else:
+            raise Exception('Unknown volume interface: ' + repr(inputData.SupportedInterfaces))
+
+        inputOrigin = inputData.VolumeOrigin
+        inputSpacing = inputData.GridSpacing
+        inputSize = inputData.ArrayShape
+        inputType = inputData.DataType
         if type is None:
             type = inputType
 
         outputDataPath = self.ParametersCached[outputPath]['Data'].getValue(
             'o')
         if outputDataPath != dbus.ObjectPath('/'):
-            outputData = self._context.makeObject(self._context.bus, self._context.busName, outputDataPath, [
-                                                  'de.uni_stuttgart.Voxie.Data']).CastTo('de.uni_stuttgart.Voxie.VolumeData')
-            if outputData.IsInstance('de.uni_stuttgart.Voxie.VolumeDataVoxel'):
-                outputDataVoxel = outputData.CastTo(
-                    'de.uni_stuttgart.Voxie.VolumeDataVoxel')
+            outputData = self._context.makeObject(self._context.bus, self._context.busName, outputDataPath, ['de.uni_stuttgart.Voxie.Data']).CastTo('de.uni_stuttgart.Voxie.VolumeData')
+            # TODO: Also reuse VolumeDataBlock
+            if outputData.IsInstance('de.uni_stuttgart.Voxie.VolumeDataVoxel') and not is_block:
+                outputDataVoxel = outputData.CastTo('de.uni_stuttgart.Voxie.VolumeDataVoxel')
                 outputOrigin = outputDataVoxel.VolumeOrigin
                 outputSpacing = outputDataVoxel.GridSpacing
                 outputSize = outputDataVoxel.ArrayShape
@@ -572,7 +658,11 @@ class ExternalOperationRunFilterImpl(ExternalOperationImpl):
                     return outputDataVoxel
             # print ('Creating new data')
 
-        return self._context.instance.CreateVolumeDataVoxel(inputSize, type, inputOrigin, inputSpacing)
+        if is_block:
+            # TODO: Check whether input is really JPEG?
+            return self._context.instance.CreateVolumeDataBlockJpeg(inputSize, blockShape, inputOrigin, inputSpacing, inputData.ValueOffset, inputData.ValueScalingFactor, inputData.SamplePrecision, inputData.HuffmanTableDC, inputData.HuffmanTableAC, inputData.QuantizationTable)
+        else:
+            return self._context.instance.CreateVolumeDataVoxel(inputSize, type, inputOrigin, inputSpacing)
 
 
 class ExternalOperationRunSegmentationStepImpl(ExternalOperationImpl):
@@ -781,20 +871,24 @@ class VoxieContext(RefCountingContext):
                 return DynamicObjectImpl
             elif interface == 'de.uni_stuttgart.Voxie.ComponentContainer':
                 return ComponentContainerImpl
-            elif interface == 'de.uni_stuttgart.Voxie.Object':
-                return ObjectImpl
+            elif interface == 'de.uni_stuttgart.Voxie.Node' or interface == 'de.uni_stuttgart.Voxie.Object':
+                return NodeImpl
             elif interface == 'de.uni_stuttgart.Voxie.NodePrototype' or interface == 'de.uni_stuttgart.Voxie.ObjectPrototype':
                 return NodePrototypeImpl
             elif interface == 'de.uni_stuttgart.Voxie.Operation':
                 return OperationImpl
             elif interface == 'de.uni_stuttgart.Voxie.Importer':
                 return ImporterImpl
+            elif interface == 'de.uni_stuttgart.Voxie.Buffer':
+                return BufferImpl
             elif interface == 'de.uni_stuttgart.Voxie.TomographyRawData2DRegular':
                 return RawData2DRegularImpl
             elif interface == 'de.uni_stuttgart.Voxie.VolumeDataVoxel':
                 return VolumeDataVoxelImpl
             elif interface == 'de.uni_stuttgart.Voxie.ImageDataPixel':
                 return ImageDataPixelImpl
+            elif interface == 'de.uni_stuttgart.Voxie.FileDataByteStream':
+                return FileDataByteStreamImpl
             elif interface == 'de.uni_stuttgart.Voxie.ExternalOperation':
                 return ExternalOperationImpl
             elif interface == 'de.uni_stuttgart.Voxie.ExternalOperationRunFilter':

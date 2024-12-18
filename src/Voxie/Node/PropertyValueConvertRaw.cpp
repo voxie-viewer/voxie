@@ -30,6 +30,7 @@
 #include <Voxie/Data/BoundingBox3D.hpp>
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
+#include <Voxie/Data/PiecewisePolynomialFunction.hpp>
 
 #include <VoxieBackend/Data/DataType.hpp>
 
@@ -192,56 +193,57 @@ QList<ColorizerEntry> PropertyValueConvertRaw<
   return result;
 }
 
-QList<QVector3D> PropertyValueConvertRaw<
-    QList<vx::TupleVector<double, 3>>,
-    QList<QVector3D>>::fromRaw(const QList<vx::TupleVector<double, 3>>& raw) {
-  QList<QVector3D> res;
+QList<vx::Vector<double, 3>> PropertyValueConvertRaw<
+    QList<vx::TupleVector<double, 3>>, QList<vx::Vector<double, 3>>>::
+    fromRaw(const QList<vx::TupleVector<double, 3>>& raw) {
+  QList<vx::Vector<double, 3>> res;
 
   for (const auto& value : raw) {
-    res.append(
-        QVector3D(std::get<0>(value), std::get<1>(value), std::get<2>(value)));
+    res.append(vx::Vector<double, 3>{std::get<0>(value), std::get<1>(value),
+                                     std::get<2>(value)});
   }
   return res;
 }
 
 QList<vx::TupleVector<double, 3>> PropertyValueConvertRaw<
     QList<vx::TupleVector<double, 3>>,
-    QList<QVector3D>>::toRaw(const QList<QVector3D>& cooked) {
+    QList<vx::Vector<double, 3>>>::toRaw(const QList<vx::Vector<double, 3>>&
+                                             cooked) {
   QList<vx::TupleVector<double, 3>> res;
 
   for (const auto& value : cooked) {
-    res.append(vx::TupleVector<double, 3>(value.x(), value.y(), value.z()));
+    res.append(vx::TupleVector<double, 3>(value[0], value[1], value[2]));
   }
   return res;
 }
 
 QList<std::tuple<vx::TupleVector<double, 3>, double>>
 PropertyValueConvertRaw<QList<std::tuple<vx::TupleVector<double, 3>, double>>,
-                        QList<std::tuple<QVector3D, double>>>::
-    toRaw(const QList<std::tuple<QVector3D, double>>& cooked) {
+                        QList<std::tuple<vx::Vector<double, 3>, double>>>::
+    toRaw(const QList<std::tuple<vx::Vector<double, 3>, double>>& cooked) {
   QList<std::tuple<vx::TupleVector<double, 3>, double>> res;
 
   for (const auto& value : cooked) {
-    res.append(
-        std::make_tuple(vx::TupleVector<double, 3>(std::get<0>(value).x(),
-                                                   std::get<0>(value).y(),
-                                                   std::get<0>(value).z()),
-                        std::get<1>(value)));
+    res.append(std::make_tuple(
+        vx::TupleVector<double, 3>(std::get<0>(value)[0], std::get<0>(value)[1],
+                                   std::get<0>(value)[2]),
+        std::get<1>(value)));
   }
   return res;
 }
 
-QList<std::tuple<QVector3D, double>>
+QList<std::tuple<vx::Vector<double, 3>, double>>
 PropertyValueConvertRaw<QList<std::tuple<vx::TupleVector<double, 3>, double>>,
-                        QList<std::tuple<QVector3D, double>>>::
+                        QList<std::tuple<vx::Vector<double, 3>, double>>>::
     fromRaw(const QList<std::tuple<vx::TupleVector<double, 3>, double>>& raw) {
-  QList<std::tuple<QVector3D, double>> res;
+  QList<std::tuple<vx::Vector<double, 3>, double>> res;
 
   for (const auto& value : raw) {
-    res.append(std::make_tuple(QVector3D(std::get<0>(std::get<0>(value)),
-                                         std::get<1>(std::get<0>(value)),
-                                         std::get<2>(std::get<0>(value))),
-                               std::get<1>(value)));
+    res.append(
+        std::make_tuple(vx::Vector<double, 3>{std::get<0>(std::get<0>(value)),
+                                              std::get<1>(std::get<0>(value)),
+                                              std::get<2>(std::get<0>(value))},
+                        std::get<1>(value)));
   }
   return res;
 }
@@ -261,19 +263,31 @@ BoundingBox3D PropertyValueConvertRaw<
     std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>,
     BoundingBox3D>::fromRaw(const std::tuple<TupleVector<double, 3>,
                                              TupleVector<double, 3>>& raw) {
-  return BoundingBox3D(
-      QVector3D(std::get<0>(std::get<0>(raw)), std::get<1>(std::get<0>(raw)),
-                std::get<2>(std::get<0>(raw))),
-      QVector3D(std::get<0>(std::get<1>(raw)), std::get<1>(std::get<1>(raw)),
-                std::get<2>(std::get<1>(raw))));
+  return BoundingBox3D(toVector(std::get<0>(raw)), toVector(std::get<1>(raw)));
 }
 std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>
 PropertyValueConvertRaw<
     std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>,
     BoundingBox3D>::toRaw(const BoundingBox3D& cooked) {
-  return std::make_tuple(
-      TupleVector<double, 3>(cooked.min().x(), cooked.min().y(),
-                             cooked.min().z()),
-      TupleVector<double, 3>(cooked.max().x(), cooked.max().y(),
-                             cooked.max().z()));
+  return std::make_tuple(toTupleVector(cooked.min()),
+                         toTupleVector(cooked.max()));
+}
+
+PiecewisePolynomialFunction PropertyValueConvertRaw<
+    std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+               QList<QList<double>>>,
+    PiecewisePolynomialFunction>::
+    fromRaw(
+        const std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                         QList<QList<double>>>& raw) {
+  return PiecewisePolynomialFunction::parse(raw);
+}
+std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+           QList<QList<double>>>
+PropertyValueConvertRaw<
+    std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+               QList<QList<double>>>,
+    PiecewisePolynomialFunction>::toRaw(const PiecewisePolynomialFunction&
+                                            cooked) {
+  return cooked.toRaw();
 }

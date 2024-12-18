@@ -22,26 +22,27 @@
 
 #include "BoundingBox3D.hpp"
 
-#include <Voxie/MathQt.hpp>
-
 #include <VoxieClient/Vector.hpp>
 
 #include <QtCore/QList>
 
 QList<vx::Vector<double, 3>> vx::BoundingBox3D::corners() const {
   return {
-      vx::Vector<double, 3>(this->min().x(), this->min().y(), this->min().z()),
-      vx::Vector<double, 3>(this->max().x(), this->min().y(), this->min().z()),
-      vx::Vector<double, 3>(this->min().x(), this->max().y(), this->min().z()),
-      vx::Vector<double, 3>(this->max().x(), this->max().y(), this->min().z()),
-      vx::Vector<double, 3>(this->min().x(), this->min().y(), this->max().z()),
-      vx::Vector<double, 3>(this->max().x(), this->min().y(), this->max().z()),
-      vx::Vector<double, 3>(this->min().x(), this->max().y(), this->max().z()),
-      vx::Vector<double, 3>(this->max().x(), this->max().y(), this->max().z()),
+      vx::Vector<double, 3>(this->min().access<0>(), this->min().access<1>(),
+                            this->min().access<2>()),
+      vx::Vector<double, 3>(this->max().access<0>(), this->min().access<1>(),
+                            this->min().access<2>()),
+      vx::Vector<double, 3>(this->min().access<0>(), this->max().access<1>(),
+                            this->min().access<2>()),
+      vx::Vector<double, 3>(this->max().access<0>(), this->max().access<1>(),
+                            this->min().access<2>()),
+      vx::Vector<double, 3>(this->min().access<0>(), this->min().access<1>(),
+                            this->max().access<2>()),
+      vx::Vector<double, 3>(this->max().access<0>(), this->min().access<1>(),
+                            this->max().access<2>()),
+      vx::Vector<double, 3>(this->min().access<0>(), this->max().access<1>(),
+                            this->max().access<2>()),
+      vx::Vector<double, 3>(this->max().access<0>(), this->max().access<1>(),
+                            this->max().access<2>()),
   };
-}
-
-vx::BoundingBox3D vx::BoundingBox3D::pointV(
-    const vx::Vector<double, 3>& point_) {
-  return point(toQVector(vectorCastNarrow<float>(point_)));
 }

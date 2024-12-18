@@ -29,47 +29,49 @@
 #include <limits>
 
 namespace HDF5 {
-  void CompoundType::checkType () const {
-    if (!isValid ())
-      return;
-    if (getClass () != H5T_COMPOUND)
-      ABORT_MSG ("Not a compound datatype");
-  }
-
-  CompoundType CompoundType::create (size_t size) {
-    return (CompoundType) DataType::create (H5T_COMPOUND, size);
-  }
-
-  void CompoundType::insert (const std::string& name, size_t offset, const DataType& field) const {
-    Exception::check ("H5Tinsert", H5Tinsert (handle (), name.c_str (), offset, field.handle ()));
-  }
-
-  size_t CompoundType::nMembers () const {
-    return Exception::check ("H5Tget_nmembers", H5Tget_nmembers (handle ()));
-  }
-
-  std::string CompoundType::memberName (size_t i) const {
-    ASSERT (i <= std::numeric_limits<unsigned>::max ());
-    unsigned i2 = static_cast<unsigned> (i);
-    Core::MallocRefHolder<char> result (HDF5::Exception::check ("H5Tget_member_name", H5Tget_member_name (handle (), i2)));
-    return result.p;
-  }
-
-  size_t CompoundType::memberOffset (size_t i) const {
-    ASSERT (i <= std::numeric_limits<unsigned>::max ());
-    unsigned i2 = static_cast<unsigned> (i);
-    size_t result = H5Tget_member_offset (handle (), i2);
-    if (result == 0) {
-      // Check for errors, H5Tget_member_offset fails only if H5Tget_member_name also fails
-      // http://www.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-GetMemberOffset
-      memberName (i);
-    }
-    return result;
-  }
-
-  DataType CompoundType::memberType (size_t i) const {
-    ASSERT (i <= std::numeric_limits<unsigned>::max ());
-    unsigned i2 = static_cast<unsigned> (i);
-    return DataType (Exception::check ("H5Tget_member_type", H5Tget_member_type (handle (), i2)));
-  }
+void CompoundType::checkType() const {
+  if (!isValid()) return;
+  if (getClass() != H5T_COMPOUND) ABORT_MSG("Not a compound datatype");
 }
+
+CompoundType CompoundType::create(size_t size) {
+  return (CompoundType)DataType::create(H5T_COMPOUND, size);
+}
+
+void CompoundType::insert(const std::string& name, size_t offset,
+                          const DataType& field) const {
+  Exception::check("H5Tinsert",
+                   H5Tinsert(handle(), name.c_str(), offset, field.handle()));
+}
+
+size_t CompoundType::nMembers() const {
+  return Exception::check("H5Tget_nmembers", H5Tget_nmembers(handle()));
+}
+
+std::string CompoundType::memberName(size_t i) const {
+  ASSERT(i <= std::numeric_limits<unsigned>::max());
+  unsigned i2 = static_cast<unsigned>(i);
+  Core::MallocRefHolder<char> result(HDF5::Exception::check(
+      "H5Tget_member_name", H5Tget_member_name(handle(), i2)));
+  return result.p;
+}
+
+size_t CompoundType::memberOffset(size_t i) const {
+  ASSERT(i <= std::numeric_limits<unsigned>::max());
+  unsigned i2 = static_cast<unsigned>(i);
+  size_t result = H5Tget_member_offset(handle(), i2);
+  if (result == 0) {
+    // Check for errors, H5Tget_member_offset fails only if H5Tget_member_name also fails
+    // http://www.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-GetMemberOffset
+    memberName(i);
+  }
+  return result;
+}
+
+DataType CompoundType::memberType(size_t i) const {
+  ASSERT(i <= std::numeric_limits<unsigned>::max());
+  unsigned i2 = static_cast<unsigned>(i);
+  return DataType(
+      Exception::check("H5Tget_member_type", H5Tget_member_type(handle(), i2)));
+}
+}  // namespace HDF5

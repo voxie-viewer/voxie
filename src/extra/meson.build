@@ -73,6 +73,8 @@ install_subdir('../../doc/prototype', install_dir : doc_install_dir)
 
 install_subdir('../../lib/katex-0.11.1', install_dir : lib_install_dir)
 
+install_subdir('../../lib/simple.css', install_dir : lib_install_dir)
+
 install_data('../../scripts/getAverage.py', install_dir : script_install_dir)
 
 endif

@@ -521,7 +521,7 @@ class HelpPageSourceDBusInterface : public HelpPageSource {
               const QSharedPointer<DBusXmlNode>& node) {
     if (node->doc) {
       // qDebug() << "Got doc" << node->doc->body();
-      auto rootNode = vx::cmark::Node::parseDocument(node->doc->body());
+      auto rootNode = vx::cmark::parseDocumentWithExtensions(node->doc->body());
 
       // Move all nodes from rootNode to doc
       doc->appendAllChildrenOf(rootNode);

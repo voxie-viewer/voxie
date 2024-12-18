@@ -27,6 +27,9 @@
 
 #include <PluginVisSlice/Prototypes.hpp>
 #include <PluginVisSlice/SliceVisualizer.hpp>
+
+#include <Voxie/DebugOptions.hpp>
+
 #include <Voxie/Vis/VisualizerView.hpp>
 
 #include <QtGui/QGuiApplication>
@@ -63,25 +66,57 @@ void BrushSelectionTool::deactivateTool() {
   }
 }
 
-void BrushSelectionTool::toolMousePressEvent(QMouseEvent* ev) {
+void BrushSelectionTool::toolMousePressEvent(
+    QMouseEvent* ev, const vx::Vector<double, 2>& pixelPos) {
   if (ev->button() == Qt::LeftButton) {
+    if (vx::debug_option::Log_VisSlice_BrushSelection()->get())
+      qDebug() << "Press";
+
     this->mousePressed = true;
-    this->startPos = ev->pos();
-    runBrushSelection(ev->pos());
+    this->startPosPixel = pixelPos;
+    runBrushSelection(pixelPos);
   }
 }
 
-void BrushSelectionTool::toolMouseReleaseEvent(QMouseEvent* ev) {
+void BrushSelectionTool::toolMouseReleaseEvent(
+    QMouseEvent* ev, const vx::Vector<double, 2>& pixelPos) {
+  Q_UNUSED(pixelPos);
+
   if (ev->button() == Qt::LeftButton) {
     this->mousePressed = false;
+
+    // TODO: Add the current position here?
   }
 }
 
-void BrushSelectionTool::toolMouseMoveEvent(QMouseEvent* ev) {
-  if (this->mousePressed &&
-      (ev->pos() - this->startPos).manhattanLength() > 1) {
-    runBrushSelection(ev->pos());
+// TODO: Move to Vector.hpp?
+template <typename T, size_t dim>
+static T manhattanLength(const vx::Vector<T, dim>& vec) {
+  using std::abs;
+
+  T res = 0;
+  for (size_t i = 0; i < dim; i++) res += abs(vec[i]);
+  return res;
+}
+
+void BrushSelectionTool::toolMouseMoveEvent(
+    QMouseEvent* ev, const vx::Vector<double, 2>& pixelPos) {
+  Q_UNUSED(ev);
+
+  if (!this->mousePressed)
+    return;
+
+  auto distance = manhattanLength(pixelPos - this->startPosPixel);
+  // if (distance >= 1) {
+  if (distance >=
+      vx::debug_option::VisSlice_BrushSelection_MinDistance()->get()) {
+    if (vx::debug_option::Log_VisSlice_BrushSelection()->get())
+      qDebug() << "runBrushSelection()" << distance;
+    runBrushSelection(pixelPos);
+    this->startPosPixel = pixelPos;
   } else {
+    if (vx::debug_option::Log_VisSlice_BrushSelection()->get())
+      qDebug() << "Skip mouse move" << distance;
   }
 }
 
@@ -127,18 +162,17 @@ bool BrushSelectionTool::getStepManager() {
   }
 }
 
-void inline BrushSelectionTool::runBrushSelection(QPoint middlePoint) {
-  QPointF planepoint =
-      this->sv->sliceImage().pixelToPlanePoint(middlePoint, true);
-  QVector3D threeDPoint =
-      sv->getCuttingPlane().get3DPoint(planepoint.x(), planepoint.y());
+void BrushSelectionTool::runBrushSelection(
+    const vx::Vector<double, 2>& middlePoint) {
+  auto pos3D = this->sv->pixelPosTo3DPosCurrentImage(middlePoint);
 
   // TODO: Add a meter calculation function
-  double brushRadiusMeter = this->sv->sliceImage().distanceInMeter(
-      QPoint(this->brushRadius, 0), QPoint(0, 0));
+  double brushRadiusMeter = std::sqrt(squaredNorm(
+      this->sv->pixelPosToPlanePosCurrentImage({(double)this->brushRadius, 0}) -
+      this->sv->pixelPosToPlanePosCurrentImage({0, 0})));
 
   this->stepManager->addVoxelsToBrushSelection(
-      std::tuple<QVector3D, double>(threeDPoint, brushRadiusMeter),
+      std::tuple<vx::Vector<double, 3>, double>(pos3D, brushRadiusMeter),
       sv->getCuttingPlane(), this->sv);
 }
 
@@ -168,6 +202,7 @@ BrushSelectionLayer::BrushSelectionLayer(SliceVisualizer* sv) : sv(sv) {
   connect(sv->properties, &SliceProperties::verticalSizeChanged, this,
           &Layer::triggerRedraw);
 
+  // TODO: Why are these connected to triggerRedraw?
   connect(sv, &SliceVisualizer::gpoDataChangedFinished, this,
           &Layer::triggerRedraw);
   connect(sv, &SliceVisualizer::currentPointChanged, this,
@@ -186,26 +221,31 @@ BrushSelectionLayer::BrushSelectionLayer(SliceVisualizer* sv) : sv(sv) {
                    &SliceProperties::geometricPrimitiveColorBehindSliceChanged,
                    this, &BrushSelectionLayer::triggerRedraw);
 
-  QObject::connect(sv, &SliceVisualizer::imageMouseMove, this,
-                   [this](QMouseEvent* e, const QPointF& pointPlane,
-                          const QVector3D& threeDPoint,
-                          const vx::Vector<double, 3>* posVoxelPtr,
-                          double valNearest, double valLinear) {
-                     Q_UNUSED(pointPlane);
-                     Q_UNUSED(posVoxelPtr);
-                     Q_UNUSED(valNearest);
-                     Q_UNUSED(valLinear);
+  QObject::connect(
+      sv, &SliceVisualizer::imageMouseMove, this,
+      [this, sv](QMouseEvent* e, const vx::Vector<double, 2>& planePos,
+                 const vx::Vector<double, 3>& pos3D,
+                 const vx::Vector<double, 3>* posVoxelPtr, double valNearest,
+                 double valLinear) {
+        Q_UNUSED(planePos);
+        Q_UNUSED(posVoxelPtr);
+        Q_UNUSED(valNearest);
+        Q_UNUSED(valLinear);
 
-                     SegmentationI* segmentation = dynamic_cast<SegmentationI*>(
-                         this->sv->properties->segmentationFilter());
-                     if (segmentation) {
-                       segmentation->updatePosition(threeDPoint);
-                     }
+        SegmentationI* segmentation = dynamic_cast<SegmentationI*>(
+            this->sv->properties->segmentationFilter());
+        if (segmentation) {
+          // TODO: Don't use QVector3D
+          segmentation->updatePosition(
+              toQVector(vectorCastNarrow<float>(pos3D)));
+        }
 
-                     this->mousePos = e->pos();
-                     this->mousePosValid = true;
-                     this->triggerRedraw();
-                   });
+        this->mousePos = e->pos();
+        this->mousePosValid = true;
+
+        if (sv->currentTool()->objectName() == "BrushSelectionTool")
+          this->triggerRedraw();
+      });
 }
 
 void BrushSelectionLayer::drawCircle(QImage& outputImage, float visibility,
@@ -225,7 +265,10 @@ void BrushSelectionLayer::drawCircle(QImage& outputImage, float visibility,
 }
 
 void BrushSelectionLayer::render(
-    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters) {
+    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters,
+    bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

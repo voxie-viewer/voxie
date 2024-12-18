@@ -50,7 +50,10 @@ SliceCenterLayer::SliceCenterLayer(SliceVisualizer* sv) : sv(sv) {
 }
 
 void SliceCenterLayer::render(
-    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters) {
+    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters,
+    bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

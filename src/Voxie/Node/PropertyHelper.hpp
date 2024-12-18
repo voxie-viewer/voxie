@@ -66,7 +66,8 @@ class ForwardSignalFromPropertyNodeHelper : public QObject {
 
  public:
   ForwardSignalFromPropertyNodeHelper(
-      SourceProperties* properties, PropType* (SourceProperties::*getter)(),
+      VX_NODE_INITIALIZED_POINTER(SourceProperties) properties,
+      PropType* (SourceProperties::*getter)(),
       void (SourceProperties::*changedSignal)(PropType*),
       void (RealType::*signal)(Pars...), Target* target,
       TargetSignal targetSignal)
@@ -140,7 +141,7 @@ class ForwardSignalFromListPropertyNodeHelper : public QObject {
 
  public:
   ForwardSignalFromListPropertyNodeHelper(
-      SourceProperties* properties,
+      VX_NODE_INITIALIZED_POINTER(SourceProperties) properties,
       QList<PropType*> (SourceProperties::*getter)(),
       void (SourceProperties::*changedSignal)(QList<PropType*>),
       void (RealType::*signal)(Pars...), Target* target,
@@ -292,7 +293,8 @@ struct PropertyHelperGetFunPointerClass<RetType (Cls::*)(Pars...)> {
 template <typename SourceProperties, typename PropType, typename RealType,
           typename Target1, typename TargetSignal, typename... Pars>
 void forwardSignalFromPropertyNode(
-    SourceProperties* properties, PropType* (SourceProperties::*getter)(),
+    VX_NODE_INITIALIZED_POINTER(SourceProperties) properties,
+    PropType* (SourceProperties::*getter)(),
     void (SourceProperties::*changedSignal)(PropType*),
     void (RealType::*signal)(Pars...), Target1* target,
     TargetSignal targetSignal) {
@@ -310,7 +312,8 @@ void forwardSignalFromPropertyNode(
 template <typename SourceProperties, typename PropType, typename RealType,
           typename Target1, typename TargetSignal, typename... Pars>
 void forwardSignalFromPropertyNodeOnReconnect(
-    SourceProperties* properties, PropType* (SourceProperties::*getter)(),
+    VX_NODE_INITIALIZED_POINTER(SourceProperties) properties,
+    PropType* (SourceProperties::*getter)(),
     void (SourceProperties::*changedSignal)(PropType*),
     void (RealType::*signal)(Pars...), Target1* target,
     TargetSignal targetSignal, bool invokeNow = false) {
@@ -330,7 +333,7 @@ void forwardSignalFromPropertyNodeOnReconnect(
 template <typename SourceProperties, typename PropType, typename RealType,
           typename Target1, typename TargetSignal, typename... Pars>
 void forwardSignalFromListPropertyNode(
-    SourceProperties* properties,
+    VX_NODE_INITIALIZED_POINTER(SourceProperties) properties,
     QList<PropType*> (SourceProperties::*getter)(),
     void (SourceProperties::*changedSignal)(QList<PropType*>),
     void (RealType::*signal)(Pars...), Target1* target,
@@ -349,7 +352,7 @@ void forwardSignalFromListPropertyNode(
 template <typename SourceProperties, typename PropType, typename RealType,
           typename Target1, typename TargetSignal, typename... Pars>
 void forwardSignalFromListPropertyNodeOnReconnect(
-    SourceProperties* properties,
+    VX_NODE_INITIALIZED_POINTER(SourceProperties) properties,
     QList<PropType*> (SourceProperties::*getter)(),
     void (SourceProperties::*changedSignal)(QList<PropType*>),
     void (RealType::*signal)(Pars...), Target1* target,

@@ -67,7 +67,10 @@ SurfaceVisualizerTool::SurfaceVisualizerTool(SliceVisualizer* sv) {
 }
 
 void SurfaceVisualizerTool::render(
-    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters) {
+    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters,
+    bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

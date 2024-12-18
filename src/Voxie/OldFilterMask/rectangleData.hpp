@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <VoxieBackend/lib/CL/cl-patched.hpp>
+#include <VoxieBackend/OpenCL/OpenCLCPP.hpp>
 
 struct rectangleData {
   cl_float scaleX = 1;

@@ -63,6 +63,28 @@ ExtensionExporter::ExtensionExporter(const QString& name,
     : Exporter(name, filter, targetPrototypeNames) {}
 ExtensionExporter::~ExtensionExporter() {}
 
+void ExtensionExporter::validateComponent(
+    const QSharedPointer<ComponentContainer>& allComponents) {
+  // Hardcode here to avoid depending on code in src/Voxie
+  QString prototypeTypeName =
+      "de.uni_stuttgart.Voxie.ComponentType.NodePrototype";
+  auto prototypeType = allComponents->lookupType(prototypeTypeName, true);
+
+  for (const auto& name : this->targetPrototypeNames()) {
+    auto component =
+        allComponents->getComponent(prototypeType, name, true, true);
+
+    if (!component)
+      qWarning() << "Cannot find target prototype" << name << "for exporter"
+                 << this->name();
+    else if (!allComponents->getComponent(prototypeType, name, false, true))
+      // Note: Using a compatibility name currently will not work
+      qWarning() << "Target prototype for exporter" << this->name()
+                 << "uses compatibility name" << name << "instead of"
+                 << component->name();
+  }
+}
+
 QSharedPointer<OperationResult> ExtensionExporter::exportData(
     const QSharedPointer<vx::Data>& data, const QString& fileName) {
   auto op = Operation::create();

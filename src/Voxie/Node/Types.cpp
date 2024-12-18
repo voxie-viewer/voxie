@@ -24,6 +24,7 @@
 
 #include <VoxieClient/DBusTypeList.hpp>
 #include <VoxieClient/DBusUtil.hpp>
+#include <VoxieClient/Format.hpp>
 #include <VoxieClient/JsonDBus.hpp>
 #include <VoxieClient/JsonUtil.hpp>
 
@@ -33,20 +34,25 @@
 #include <Voxie/Component/HelpCommon.hpp>
 
 #include <Voxie/Data/BoundingBox3D.hpp>
+#include <Voxie/Data/ChemicalComposition.hpp>
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorInterpolator.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
 #include <Voxie/Data/ContainerNode.hpp>
 #include <Voxie/Data/GeometricPrimitiveObject.hpp>
+#include <Voxie/Data/PiecewisePolynomialFunction.hpp>
+#include <Voxie/Data/SurfaceNode.hpp>
 #include <Voxie/Data/TomographyRawDataNode.hpp>
 
 #include <VoxieBackend/Data/DataType.hpp>
 #include <VoxieBackend/Data/GeometricPrimitive.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveData.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveType.hpp>
+#include <VoxieBackend/Data/SurfaceAttribute.hpp>
 #include <VoxieBackend/Data/TomographyRawData2DAccessor.hpp>
 
 #include <Voxie/Node/Node.hpp>
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodeProperty.hpp>
 #include <Voxie/Node/PropertyHelper.hpp>
 #include <Voxie/Node/PropertyUI.hpp>
@@ -55,6 +61,7 @@
 #include <Voxie/Node/StringConversionHelper.hpp>
 
 #include <Voxie/Gui/ColorizerWidget.hpp>
+#include <Voxie/Gui/ErrorMessage.hpp>
 #include <Voxie/Gui/Int64SpinBox.hpp>
 #include <Voxie/Gui/LabelTableView.hpp>
 #include <Voxie/Gui/ObjectProperties.hpp>
@@ -74,6 +81,7 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
 
 using namespace vx;
@@ -89,6 +97,12 @@ class FloatUI : public PropertyUIImplBase<vx::types::Float> {
 
     input = hasUnit ? new UnitSpinBox() : new QDoubleSpinBox();
     QObject::connect(this, &QObject::destroyed, input, &QObject::deleteLater);
+
+    // TODO: Do this? Allow both '.' and ',' in values?
+    input->setLocale(QLocale::c());
+
+    // TODO: Allow typing more digits than 'decimals' into QDoubleSpinBox,
+    // similar to UnitSpinBox
 
     // input->setStepType(QAbstractSpinBox::AdaptiveDecimalStepType);
     if (hasUnit) {
@@ -120,9 +134,8 @@ class FloatUI : public PropertyUIImplBase<vx::types::Float> {
     if (!hasUnit) input->setDecimals(3);  // TODO
 
     QObject::connect(
-        input,
-        (void (QDoubleSpinBox::*)(double)) & QDoubleSpinBox::valueChanged, this,
-        [this](double value) {
+        input, (void(QDoubleSpinBox::*)(double)) & QDoubleSpinBox::valueChanged,
+        this, [this](double value) {
           // qDebug() << "Value in QDoubleSpinBox changed to" << value;
           setValueChecked(value);
         });
@@ -156,7 +169,7 @@ class IntUI : public PropertyUIImplBase<vx::types::Int> {
     QObject::connect(
         input,
         //(void (QSpinBox::*)(int)) & QSpinBox::valueChanged, this,
-        (void (Int64SpinBox::*)(qint64)) & Int64SpinBox::valueChanged, this,
+        (void(Int64SpinBox::*)(qint64)) & Int64SpinBox::valueChanged, this,
         [this](int value) {
           setValueChecked(value);
           // qDebug() << "Value in QSpinBox changed to" << value;
@@ -338,7 +351,7 @@ class UInt64UI : public PropertyUI {
     QObject::connect(this, &QObject::destroyed, input, &QObject::deleteLater);
 
     QObject::connect(
-        input, (void (QSpinBox::*)(int)) & QSpinBox::valueChanged, this,
+        input, (void(QSpinBox::*)(int)) & QSpinBox::valueChanged, this,
         [this](int value) {
           // qDebug() << "Value in QSpinBox changed to" << value;
           if (!this->node()) return;
@@ -483,7 +496,7 @@ class FileNameUI : public PropertyUI {
 
     // TODO: Use textEdited or textChanged?
     QObject::connect(
-        input, (void (QLineEdit::*)(const QString&)) & QLineEdit::textEdited,
+        input, (void(QLineEdit::*)(const QString&)) & QLineEdit::textEdited,
         this, [this](const QString& value) {
           // qDebug() << "Value in QLineEdit changed to" << value;
           if (!this->node()) return;
@@ -572,7 +585,7 @@ class EnumerationUI : public PropertyUI {
     QObject::connect(this, &QObject::destroyed, input, &QObject::deleteLater);
 
     QObject::connect(
-        input, (void (QComboBox::*)(int)) & QComboBox::activated, this,
+        input, (void(QComboBox::*)(int)) & QComboBox::activated, this,
         [this](int index) {
           // qDebug() << "Value in QComboBox changed to" << index;
           if (!this->node()) return;
@@ -687,7 +700,7 @@ class DataTypeUI : public PropertyUIImplBase<vx::types::DataType> {
     }
 
     QObject::connect(
-        input, (void (QComboBox::*)(int)) & QComboBox::activated, this,
+        input, (void(QComboBox::*)(int)) & QComboBox::activated, this,
         [this](int index2) { setValueChecked(indexToType.value(index2)); });
   }
 
@@ -857,6 +870,12 @@ class Point2DUI : public PropertyUIImplBase<vx::types::Point2D> {
   QWidget* widget_;
   bool suppressUpdate = false;
 
+  static float myParseFloat(const QString& str, bool* ok) {
+    QString str2 = str;
+    str2.replace(",", ".");
+    return str2.toFloat(ok);
+  }
+
   Point2DUI(const QSharedPointer<NodeProperty>& property, Node* node)
       : PropertyUIImplBase(property, node) {
     widget_ = new QWidget();
@@ -868,11 +887,11 @@ class Point2DUI : public PropertyUIImplBase<vx::types::Point2D> {
     layout->addWidget(entryY);
 
     QObject::connect(
-        entryX, (void (QLineEdit::*)(const QString&)) & QLineEdit::textEdited,
+        entryX, (void(QLineEdit::*)(const QString&)) & QLineEdit::textEdited,
         this, [this](const QString& value) {
           // qDebug() << "Value in QLineEdit changed to" << value;
           bool ok = false;
-          auto valueF = value.toFloat(&ok);
+          auto valueF = myParseFloat(value, &ok);
           if (!ok) {
             qWarning() << "Could not parse float value";
             return;
@@ -889,11 +908,11 @@ class Point2DUI : public PropertyUIImplBase<vx::types::Point2D> {
 
     // TODO: avoid code duplication?
     QObject::connect(
-        entryY, (void (QLineEdit::*)(const QString&)) & QLineEdit::textEdited,
+        entryY, (void(QLineEdit::*)(const QString&)) & QLineEdit::textEdited,
         this, [this](const QString& value) {
           // qDebug() << "Value in QLineEdit changed to" << value;
           bool ok = false;
-          auto valueF = value.toFloat(&ok);
+          auto valueF = myParseFloat(value, &ok);
           if (!ok) {
             qWarning() << "Could not parse float value";
             return;
@@ -964,7 +983,7 @@ class SizeInteger3DUI : public PropertyUIImplBase<vx::types::SizeInteger3D> {
       QObject::connect(
           entry[i],
           //(void (QSpinBox::*)(int)) & QSpinBox::valueChanged, this,
-          (void (Int64SpinBox::*)(qint64)) & Int64SpinBox::valueChanged, this,
+          (void(Int64SpinBox::*)(qint64)) & Int64SpinBox::valueChanged, this,
           [this, i](int value) {
             // qDebug() << "valueChanged" << i << value;
             if (value < 0) {
@@ -993,6 +1012,7 @@ class SizeInteger3DUI : public PropertyUIImplBase<vx::types::SizeInteger3D> {
   QWidget* widget() override { return widget_; }
 };
 
+// TODO: Don't use QVector3D
 class Box3DAxisAlignedUI
     : public PropertyUIImplBase<vx::types::Box3DAxisAligned> {
  public:
@@ -1015,20 +1035,22 @@ class Box3DAxisAlignedUI
             [this](QVector3D pos) {
               // qDebug() << "min" << pos;
               auto old = getValue();
-              setValueChecked(BoundingBox3D(pos, old.max()));
+              setValueChecked(
+                  BoundingBox3D(vectorCast<double>(toVector(pos)), old.max()));
             });
     connect(posWidgetMax, &ObjectProperties::positionChanged, this,
             [this](QVector3D pos) {
               // qDebug() << "max" << pos;
               auto old = getValue();
-              setValueChecked(BoundingBox3D(old.min(), pos));
+              setValueChecked(
+                  BoundingBox3D(old.min(), vectorCast<double>(toVector(pos))));
             });
   }
 
   void updateUIValue(const BoundingBox3D& value) override {
     // qDebug() << "updateUIValue" << value << suppressUpdate;
-    posWidgetMin->setPosition(value.min());
-    posWidgetMax->setPosition(value.max());
+    posWidgetMin->setPosition(toQVector(vectorCastNarrow<float>(value.min())));
+    posWidgetMax->setPosition(toQVector(vectorCastNarrow<float>(value.max())));
   }
 
   QWidget* widget() override { return widget_; }
@@ -1152,7 +1174,7 @@ class GeometricPrimitiveUI
                        &GeometricPrimitiveUI::updateComboBox);
     }
 
-    QObject::connect(input, (void (QComboBox::*)(int)) & QComboBox::activated,
+    QObject::connect(input, (void(QComboBox::*)(int)) & QComboBox::activated,
                      this, [this](int index) {
                        // qDebug() << "Value in QComboBox changed to" <<
                        // index;
@@ -1249,6 +1271,124 @@ class GeometricPrimitiveUI
   QWidget* widget() override { return input; }
 };
 
+class SurfaceAttributeNameUI
+    : public PropertyUIImplBase<vx::types::SurfaceAttributeName> {
+  QComboBox* input;
+  bool suppressUpdate = false;
+  QSharedPointer<NodeProperty> parentProperty;
+  QList<QString> values;
+
+ public:
+  SurfaceAttributeNameUI(const QSharedPointer<NodeProperty>& property,
+                         Node* node)
+      : PropertyUIImplBase(property, node) {
+    input = new QComboBox();
+    QObject::connect(this, &QObject::destroyed, input, &QObject::deleteLater);
+
+    const auto& json = property->rawJson();
+
+    QString parentPropertyName = json["ParentProperty"].toString();
+    parentProperty = node->prototype()->getProperty(parentPropertyName, false);
+
+    forwardSignalFromPropertyOnReconnect(
+        node, parentProperty, &DataNode::dataChangedFinished, this,
+        &SurfaceAttributeNameUI::updateComboBox);
+
+    QObject::connect(input, (void(QComboBox::*)(int)) & QComboBox::activated,
+                     this, [this](int index) {
+                       // qDebug() << "Value in QComboBox changed to" << index;
+                       auto valueVar = input->itemData(index);
+                       if (valueVar.userType() != qMetaTypeId<QString>()) {
+                         qWarning() << "Got a "
+                                    << QMetaType::typeName(valueVar.userType())
+                                    << " instead of a QString in QComboBox";
+                         return;
+                       }
+                       auto value = valueVar.value<QString>();
+                       suppressUpdate = true;
+                       setValueChecked(value);
+                       suppressUpdate = false;
+                     });
+
+    updateComboBox();
+  }
+
+  void updateUIValue(const QString& currentValue) override {
+    // qDebug() << "updateUIValue" << currentValue << suppressUpdate;
+
+    if (suppressUpdate) return;
+
+    int index = -1;
+    for (int i = 0; i < values.size(); i++) {
+      if (values[i] == currentValue) {
+        index = i;
+        break;
+      }
+    }
+    if (index == -1) {
+      updateComboBox();
+    } else {
+      input->setCurrentIndex(index);
+    }
+  }
+
+  QList<QSharedPointer<SurfaceAttribute>> getAttributes() {
+    try {
+      auto val = this->node()->getNodeProperty(parentProperty);
+
+      auto obj = dynamic_cast<SurfaceNode*>(Node::parseVariantNode(val));
+      if (!obj) return {};
+
+      auto data = obj->surface();
+      if (!data) return {};
+
+      return data->listAttributes();
+    } catch (Exception& e) {
+      qWarning() << "Error in SurfaceAttributeNameUI::getAttributes():"
+                 << e.what();
+      return {};
+    }
+  }
+
+  void updateComboBox() {
+    QString currentValue;
+    try {
+      currentValue = getValue();
+    } catch (Exception& e) {
+      qCritical() << "Error while reading property value:" << e.what();
+      return;
+    }
+
+    // qDebug() << "updateComboBox" << currentValue << suppressUpdate;
+
+    auto attributes = getAttributes();
+
+    int index = -1;
+    input->clear();
+    values.clear();
+    {
+      input->addItem("<None>", QVariant::fromValue<QString>(""));
+      if (currentValue == "") index = values.size();
+      values << "";
+    }
+    for (const auto& attribute : attributes) {
+      input->addItem(attribute->displayName(),
+                     QVariant::fromValue<QString>(attribute->name()));
+      if (attribute->name() == currentValue) index = values.size();
+      values << attribute->name();
+    }
+    if (index == -1) {
+      input->addItem("Other attribute: " + currentValue,
+                     QVariant::fromValue<QString>(currentValue));
+      index = values.size();
+      values << currentValue;
+    }
+    input->setCurrentIndex(index);
+  }
+
+  QWidget* widget() override { return input; }
+};
+
 class TomographyRawDataImageKindUI
     : public PropertyUIImplBase<vx::types::TomographyRawDataImageKind> {
   QComboBox* input;
@@ -1272,7 +1412,7 @@ class TomographyRawDataImageKindUI
         node, parentProperty, &DataNode::dataChangedFinished, this,
         &TomographyRawDataImageKindUI::updateComboBox);
 
-    QObject::connect(input, (void (QComboBox::*)(int)) & QComboBox::activated,
+    QObject::connect(input, (void(QComboBox::*)(int)) & QComboBox::activated,
                      this, [this](int index) {
                        // qDebug() << "Value in QComboBox changed to" << index;
                        auto valueVar = input->itemData(index);
@@ -1399,7 +1539,7 @@ class TomographyRawDataImageListUI
         &TomographyRawDataImageListUI::updateComboBox);
 
     QObject::connect(
-        input, (void (QComboBox::*)(int)) & QComboBox::activated, this,
+        input, (void(QComboBox::*)(int)) & QComboBox::activated, this,
         [this](int index) {
           // qDebug() << "Value in QComboBox changed to" << index;
           auto valueVar = input->itemData(index);
@@ -1703,6 +1843,147 @@ class OutputNodeReferenceUI
     }
   }
 };
+
+class PiecewisePolynomialFunctionUI : public PropertyUI {
+  QSpinBox* input;
+
+ public:
+  PiecewisePolynomialFunctionUI(const QSharedPointer<NodeProperty>& property,
+                                Node* object)
+      : PropertyUI(property, object) {
+    input = new QSpinBox();
+    // TODO: fill these UI functions to display PiecewisePolynomialFunction
+  }
+
+  QWidget* widget() override { return input; }
+};
+
+class ChemicalCompositionUI;
+class ChemicalCompositionEditDialog : public QDialog {
+  QPlainTextEdit* edit;
+  QPushButton* ok;
+  // TODO: Use a QPointer?
+  ChemicalCompositionUI* ui;
+
+ public:
+  ChemicalCompositionEditDialog(ChemicalCompositionUI* ui)
+      : QDialog(vx::voxieRoot().mainWindow()), ui(ui) {
+    this->resize(500 / 96.0 * this->logicalDpiX(),
+                 450 / 96.0 * this->logicalDpiY());
+    QVBoxLayout* layout = new QVBoxLayout();
+    this->setLayout(layout);
+
+    edit = new QPlainTextEdit("", this);
+    layout->addWidget(edit);
+    // edit->setReadOnly(true);
+
+    ok = new QPushButton("Ok");
+    layout->addWidget(ok);
+    QObject::connect(ok, &QPushButton::clicked, this,
+                     &ChemicalCompositionEditDialog::editingDone);
+  }
+  ~ChemicalCompositionEditDialog() {
+    // qDebug() << "~ChemicalCompositionEditDialog()";
+  }
+
+  void editingDone();
+
+  void setJson(const QJsonArray& json) {
+    auto text = QJsonDocument(json).toJson();
+    edit->document()->setPlainText(text);
+  }
+};
+
+class ChemicalCompositionUI
+    : public PropertyUIImplBase<vx::types::ChemicalComposition> {
+  QWidget* widget_;
+  QLineEdit* input;
+  QPushButton* button;
+  QPointer<ChemicalCompositionEditDialog> dialog;
+
+ public:
+  ChemicalCompositionUI(
+      const QSharedPointer<PropertyInstance>& propertyInstance)
+      : PropertyUIImplBase(propertyInstance) {
+    input = new QLineEdit();
+    QObject::connect(this, &QObject::destroyed, input, &QObject::deleteLater);
+
+    button = new QPushButton();
+    // TODO: Icon
+    button->setIcon(QIcon(":/icons/folder-search-result.png"));
+    connect(button, &QPushButton::pressed, this, [=]() {
+      try {
+        // auto comp = ChemicalComposition::parse(this->getValue());
+        // auto json = comp->toJson();
+        auto json = this->getValue();
+        if (!dialog) {
+          dialog = new ChemicalCompositionEditDialog(this);
+          QObject::connect(dialog, &QDialog::finished, dialog,
+                           &QObject::deleteLater);
+        } else {
+          dialog->show();
+          dialog->raise();
+        }
+        dialog->setJson(vx::expectArray(json));
+        dialog->show();
+      } catch (vx::Exception& e) {
+        vx::showErrorMessage("Got exception while show dialog", e);
+      }
+    });
+
+    widget_ = new QWidget();
+    QObject::connect(this, &QObject::destroyed, widget_, &QObject::deleteLater);
+
+    auto layout = new QHBoxLayout();
+    layout->addWidget(input);
+    layout->addWidget(button);
+    widget_->setLayout(layout);
+
+    input->setReadOnly(true);
+  }
+
+  void updateUIValue(const QJsonValue& value) override {
+    if (vx::debug_option::Log_Properties_UI()->enabled())
+      qDebug() << "Property change of" << property()->name() << "to" << value;
+    auto comp = ChemicalComposition::parse(value);
+    this->input->setText(comp->toString());
+  }
+
+  void setValue(const QJsonValue& value) {
+    this->setValueChecked(value);
+    this->updateUIValue(value);
+  }
+
+  QWidget* widget() override { return widget_; }
+};
+
+// TODO
+class QuantityUI : public PropertyUIImplBase<vx::types::Quantity> {
+ public:
+  QLabel* todo;
+
+  QuantityUI(const QSharedPointer<PropertyInstance>& propertyInstance)
+      : PropertyUIImplBase(propertyInstance) {
+    todo = new QLabel("TODO");
+    QObject::connect(this, &QObject::destroyed, todo, &QObject::deleteLater);
+  }
+
+  void updateUIValue(const QString& value) override { (void)value; }
+
+  QWidget* widget() override { return todo; }
+};
+
+void ChemicalCompositionEditDialog::editingDone() {
+  try {
+    auto text = edit->document()->toPlainText();
+    auto json = parseJsonData(text.toUtf8(), "<edit field>");
+    auto comp = ChemicalComposition::parse(json.array());
+    ui->setValue(json.array());
+    this->deleteLater();
+  } catch (vx::Exception& e) {
+    vx::showErrorMessage("Got exception parsing chemical composition", e);
+  }
+}
 }  // namespace
 
 template <typename T>
@@ -1741,6 +2022,7 @@ T parseNotSupported(const QJsonValue& value) {
                       " from JSON not supported");
 }
 
+// TODO: Should this use DBusAsJSON instead?
 template <typename T>
 struct ParseJsonFun;
 
@@ -1878,18 +2160,39 @@ struct ParseJsonFun<QList<T>> {
   }
 };
 
-template <typename T>
-struct ParseJsonFun<std::tuple<T, T>> {
-  static vx::TupleVector<T, 2> parse(const QJsonValue& value) {
+template <typename... T>
+struct ParseJsonFun<std::tuple<T...>> {
+  template <size_t i>
+  static void set(std::tuple<T...>& res, const QJsonArray& array,
+                  std::integral_constant<size_t, i>) {
+    static_assert(i <= sizeof...(T), "i <= sizeof...(T)");
+    static_assert(i > 0, "i > 0");
+
+    set(res, array, std::integral_constant<size_t, i - 1>());
+
+    std::get<i - 1>(res) =
+        parseJson<typename std::tuple_element<i - 1, std::tuple<T...>>::type>(
+            array[i - 1]);
+  }
+
+  static void set(std::tuple<T...>& res, const QJsonArray& array,
+                  std::integral_constant<size_t, 0>) {
+    Q_UNUSED(res);
+    Q_UNUSED(array);
+  }
+
+  static std::tuple<T...> parse(const QJsonValue& value) {
+    auto array = expectArray(value);
+
     if (!value.isArray())
-      throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
-                      "JSON value is not an array");
-    QJsonArray array = value.toArray();
-    if (array.size() != 2)
-      throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
-                      "JSON array does not contain 2 entries");
-    return vx::TupleVector<T, 2>(parseJson<T>(array[0]),
-                                 parseJson<T>(array[1]));
+      if (array.size() != sizeof...(T))
+        throw Exception(
+            "de.uni_stuttgart.Voxie.InvalidJsonType",
+            vx::format("JSON array does not contain {} entries", sizeof...(T)));
+
+    std::tuple<T...> res;
+    set(res, array, std::integral_constant<size_t, sizeof...(T)>());
+    return res;
   }
 };
 
@@ -1952,6 +2255,11 @@ struct ParseJsonFun<QJsonObject> {
 };
 
 template <>
+struct ParseJsonFun<QJsonValue> {
+  static QJsonValue parse(const QJsonValue& value) { return value; }
+};
+
+template <>
 struct ParseJsonFun<std::tuple<QString, QJsonObject>> {
   static std::tuple<QString, QJsonObject> parse(const QJsonValue& value) {
     if (!value.isArray())
@@ -1988,6 +2296,14 @@ QString valueToString(const QVariant& value,
     // Use string conversion specialization
     return StringConversionHelper<T>::toString(value.value<T>());
   }
+}
+
+QString chemicalCompositionToString(const QJsonValue& json) {
+  return vx::ChemicalComposition::parse(json)->toString();
+}
+
+QString chemicalCompositionGetDescription(const QJsonValue& json) {
+  return vx::ChemicalComposition::parse(json)->description();
 }
 
 void verifyEnum(NodeProperty& property, const QString& value) {

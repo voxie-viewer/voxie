@@ -22,6 +22,7 @@
 
 #include "JsonDBus.hpp"
 
+#include <VoxieClient/CastFloatToIntSafe.hpp>
 #include <VoxieClient/DBusUtil.hpp>
 
 #include <QJsonArray>
@@ -41,7 +42,10 @@ QDBusVariant jsonToDBus(const QJsonValue& value) {
     case QJsonValue::Type::Null:
     case QJsonValue::Type::Undefined:
     default:
-      return dbusMakeVariant(QDBusSignature(""));
+      // Because of https://bugreports.qt.io/browse/QTBUG-124919 a signature of
+      // "n" instead of "" is used.
+      // return dbusMakeVariant(QDBusSignature(""));
+      return dbusMakeVariant(QDBusSignature("n"));
 
     case QJsonValue::Type::Array:
       return dbusMakeVariant(jsonToDBus(value.toArray()));
@@ -60,14 +64,12 @@ QDBusVariant jsonToDBus(const QJsonValue& value) {
       if (std::fmod(number, 1.0) != 0.0) {
         // Number is not an integer; store as double
         return dbusMakeVariant(number);
-      } else if (number >= std::numeric_limits<qint64>::min() &&
-                 number <= std::numeric_limits<qint64>::max()) {
+      } else if (auto numberInt = vx::castFloatToIntSafe<qint64>(number)) {
         // Number fits into a signed 64-bit integer
-        return dbusMakeVariant(static_cast<qint64>(number));
-      } else if (number >= std::numeric_limits<quint64>::min() &&
-                 number <= std::numeric_limits<quint64>::max()) {
+        return dbusMakeVariant(numberInt.value());
+      } else if (auto numberUInt = vx::castFloatToIntSafe<quint64>(number)) {
         // Number fits into an unsigned 64-bit integer
-        return dbusMakeVariant(static_cast<quint64>(number));
+        return dbusMakeVariant(numberUInt.value());
       } else {
         // Number is too large; store as double
         return dbusMakeVariant(number);
@@ -97,7 +99,7 @@ QJsonValue dbusToJson(const QDBusVariant& value) {
 
   if (signature == QDBusSignature("g")) {
     auto val = dbusGetVariantValue<QDBusSignature>(value);
-    if (val != QDBusSignature(""))
+    if (val.signature() != "" && val.signature() != "n")
       throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                           "Got unsupported QDBusSignature ('g') value");
     return QJsonValue(QJsonValue::Null);

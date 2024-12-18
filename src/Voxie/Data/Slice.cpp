@@ -22,6 +22,8 @@
 
 #include "Slice.hpp"
 
+#include <Voxie/Gui/ErrorMessage.hpp>
+
 #include <VoxieBackend/Data/PlaneInfo.hpp>
 #include <VoxieBackend/Data/SliceImage.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxel.hpp>
@@ -50,14 +52,9 @@ SliceImage vx::generateSliceImage(VolumeData* data, const vx::PlaneInfo& plane,
   origin += plane.tangent() * sliceArea.x();
   origin += plane.cotangent() * sliceArea.y();
 
-  try {
-    data->extractSlice(origin, plane.rotation, imageSize,
-                       sliceArea.width() / imageSize.width(),
-                       sliceArea.height() / imageSize.height(), interpolation,
-                       img);
-  } catch (vx::Exception& e) {
-    qWarning() << "Extracting slice failed";
-  }
+  data->extractSlice(
+      origin, plane.rotation, imageSize, sliceArea.width() / imageSize.width(),
+      sliceArea.height() / imageSize.height(), interpolation, img);
 
   return img;
 }

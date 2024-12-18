@@ -35,7 +35,10 @@ ViewCenterLayer::ViewCenterLayer(SliceVisualizer* sv) : sv(sv) {
 }
 
 void ViewCenterLayer::render(
-    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters) {
+    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters,
+    bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

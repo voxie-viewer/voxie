@@ -31,14 +31,18 @@
 
 #include <Voxie/Component/HelpCommon.hpp>
 
+#include <Voxie/Gui/ErrorMessage.hpp>
+
 #include <Voxie/Node/NodePrototype.hpp>
+
+#include <VoxieClient/Format.hpp>
 
 using namespace vx;
 using namespace vx::help;
 
 HelpPageGenerator::HelpPageGenerator(
     const QSharedPointer<help::HelpPageRegistry>& registry)
-    : registry(registry), pageTemplate("%1") {
+    : registry(registry), pageTemplate("{0}") {
   QFile templateFile(":/Help/template.html");
   if (templateFile.open(QFile::ReadOnly | QFile::Text)) {
     pageTemplate = QString::fromUtf8(templateFile.readAll());
@@ -70,33 +74,33 @@ static const char* mathHeaderMathJaxCDN = R"(
 */
 
 static const char* mathHeader = R"(
-  <link rel="stylesheet" href="%1katex.min.css">
-  <script type="text/javascript" src="%1katex.min.js">
+  <link rel="stylesheet" href="{0}katex.min.css">
+  <script type="text/javascript" src="{0}katex.min.js">
   </script>
   <script>
-    function renderMath() {
+    function renderMath() {{
       // https://katex.org/docs/options.html
       var elementsInline = document.getElementsByClassName("math_tex_inline");
-      for (let i=0; i<elementsInline.length; i++) {
+      for (let i=0; i<elementsInline.length; i++) {{
         var element = elementsInline[i];
         //console.log(elementsInline[i]);
         var text = element.innerText;
-        katex.render(text, element, {
+        katex.render(text, element, {{
             displayMode: false,
             throwOnError: false
-        });
-      }
+        }});
+      }}
       var elementsBlock = document.getElementsByClassName("math_tex_block");
-      for (let i=0; i<elementsBlock.length; i++) {
+      for (let i=0; i<elementsBlock.length; i++) {{
         var element = elementsBlock[i];
         //console.log(elementsBlock[i]);
         var text = element.innerText;
-        katex.render(text, element, {
+        katex.render(text, element, {{
             displayMode: true,
             throwOnError: false
-        });
-      }
-    }
+        }});
+      }}
+    }}
     window.addEventListener('load', renderMath);
   </script>
 )";
@@ -133,7 +137,12 @@ QSharedPointer<HelpPage> HelpPageGenerator::getHelpPage(
       qWarning() << "HelpPageGenerator: Unknown help prefix" << prefix
                  << "for url" << url;
     } else {
-      page = sources[prefix]->render(suffix);
+      try {
+        page = sources[prefix]->render(suffix);
+      } catch (vx::Exception& e) {
+        vx::showErrorMessage("Got exception while rendering help page " + url,
+                             e);
+      }
     }
   }
 
@@ -279,6 +288,24 @@ HelpPageGenerator::generateHelpPage(
   // qDebug() << doc->renderXml().toUtf8().data();
 
   QString header = "";
+
+  // TODO: Clean up all this code
+  QString simpleCssBase;
+  // TODO: Use fixupUrls instead of useRelativeUrls?
+  if (useRelativeUrls) {
+    simpleCssBase = "voxie:///help/static/lib/simple.css/";
+    // simpleCssBase = "lib/simple.css/";
+  } else {
+    // simpleCssBase = "voxie:///help/static/lib/simple.css/";
+    simpleCssBase =
+        QUrl::fromLocalFile(voxieRoot().directoryManager()->simpleCssPath())
+            .toString() +
+        "/";
+  }
+  if (fixupUrls) simpleCssBase = fixupUrls(simpleCssBase, baseDir);
+  header += vx::format("<link rel=\"stylesheet\" href=\"{}/simple.min.css\">",
+                       simpleCssBase);
+
   if (haveMath) {
     QString katexBase;
     // TODO: Use fixupUrls instead of useRelativeUrls?
@@ -294,11 +321,12 @@ HelpPageGenerator::generateHelpPage(
     }
     if (fixupUrls) katexBase = fixupUrls(katexBase, baseDir);
 
-    header += QString(mathHeader).arg(katexBase);
+    header += vx::format(mathHeader, katexBase);
   }
 
-  renderedHelpPageCache[url] =
-      std::make_tuple(page, pageTemplate.arg(html, header));
+  // TODO: Should probably use vformat()
+  renderedHelpPageCache[url] = std::make_tuple(
+      page, vx::format(pageTemplate.toUtf8().data(), html, header));
   return renderedHelpPageCache[url];
 }
 

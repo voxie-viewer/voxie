@@ -45,7 +45,7 @@ static inline void write(QFile& file, const void* data, int length) {
 }
 
 static inline void write8(QFile& file, quint8 value) { write(file, &value, 1); }
-static inline void write16(QFile& file, quint16 value) {
+[[gnu::unused]] static inline void write16(QFile& file, quint16 value) {
   write(file, &value, 2);
 }
 static inline void write32(QFile& file, quint32 value) {

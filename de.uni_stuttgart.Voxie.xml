@@ -127,7 +127,7 @@
     <!--
         ComponentType:
         
-        The type of the component, e.g. de.uni_stuttgart.Voxie.NodePrototype
+        The type of the component, e.g. de.uni_stuttgart.Voxie.ComponentType.NodePrototype
     -->
     <property access="read" name="ComponentType" type="s" />
 
@@ -198,6 +198,75 @@
     
     <!-- TODO: Remove and provide filename instead? -->
     <property access="read" name="Name" type="s" />
+  </interface>
+
+  <!--
+      de.uni_stuttgart.Voxie.Buffer:
+      @short_description: Shared memory buffer
+
+      A shared memory buffer with a certain type.
+  -->
+  <interface name="de.uni_stuttgart.Voxie.Buffer">
+    <!-- Note: Buffer does not inherit de.uni_stuttgart.Voxie.Data and does not do any change tracking itself -->
+
+    <!--
+        Type:
+
+        The type of the data in the buffer. See [Buffers](voxie:///help/topic/interfaces/buffer) for more information about buffer types.
+    -->
+    <property access="read" name="Type" type="v">
+      <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+    </property>
+
+    <!--
+        OffsetBytes:
+
+        The offset of the first primitive value in bytes.
+    -->
+    <property access="read" name="OffsetBytes" type="x" />
+
+    <!--
+        SizeBytes:
+
+        The size of the buffer in bytes.
+    -->
+    <property access="read" name="SizeBytes" type="t" />
+
+    <!--
+        GetDataReadonly:
+
+        Return the readonly shared memory buffer.
+    -->
+    <method name="GetDataReadonly">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}xva{sv})" />
+    </method>
+
+    <!--
+        GetDataWritable:
+
+        Return the writable shared memory buffer.
+        Note that the update parameter can normally be '/'.
+    -->
+    <method name="GetDataWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}xva{sv})" />
+    </method>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.BufferType">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Component" />
+
+    <property access="read" name="Type" type="v">
+      <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+    </property>
+
+    <property access="read" name="SizeBytes" type="t" />
+
+    <!-- TODO: Add more high-level information about the buffer type? -->
   </interface>
 
   <!-- TODO: Split up interface into this interface and e.g. TomographyRawDataAccessorOperations for metadata stuff etc.? -->
@@ -538,6 +607,7 @@
   </interface>
 
   <interface name="de.uni_stuttgart.Voxie.Operation">
+    <!-- TODO: Should the be a parent interface or should this be a property? -->
     <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Task" />
 
     <property access="read" name="IsFinished" type="b" />
@@ -887,6 +957,7 @@
         - "Properties": A map ('a{sv}') with the properties of the node
         - For data nodes: "Data": A reference ('o') to the data interface or '/' if there is no data.
         - For data nodes: "DataVersion": A reference ('o') to the data version which was the current version when the script was started. When "Data" is '/' this is missing.
+        - For filter and segmentation step nodes: "ExtensionInfo": A map ('a{sv}') which contains information about the extension used to execute the filter or segmentation step. This is empty if the node is not implemented in an extension.
     -->
     <property access="read" name="Parameters" type="a{oa{sv}}" />
 
@@ -972,6 +1043,7 @@
         - "Properties": A map ('a{sv}') with the properties of the node
         - For data nodes: "Data": A reference ('o') to the data interface or '/' if there is no data.
         - For data nodes: "DataVersion": A reference ('o') to the data version which was the current version when the script was started. When "Data" is '/' this is missing.
+        - For filter and segmentation step nodes: "ExtensionInfo": A map ('a{sv}') which contains information about the extension used to execute the filter or segmentation step. This is empty if the node is not implemented in an extension.
     -->
     <property access="read" name="Parameters" type="a{oa{sv}}" />
     <!--
@@ -1042,11 +1114,11 @@
 
     <property access="read" name="Filter" type="a{sv}" />
     <!--
-        FilterAddExtension:
+        FilterForceMatch:
 
         Modify the given filename so that it matches the filter.
     -->
-    <method name="FilterAddExtension">
+    <method name="FilterForceMatch">
       <arg direction="in" name="filename" type="s" />
       <arg direction="out" name="filenameOut" type="s" />
       <arg direction="in" name="options" type="a{sv}" />
@@ -1209,6 +1281,61 @@
       <arg direction="out" name="reason" type="s" />
       <arg direction="out" name="options" type="a{sv}" />
     </signal>
+
+    <!-- TODO: Should ListProperties, GetProperty and SetProperty be in this interface or in some child interface? -->
+    <method name="ListProperties">
+      <arg direction="out" type="ao">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataProperty" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        GetProperty:
+
+        Get a data property value.
+
+        Will throw if the property does not exist or exists but has a different
+        type.
+
+        Valid options:
+        - 'AllowMissing' ('b'): If set to true and the property is missing,
+          return a signature with the value 'x' instead of throwing.
+    -->
+    <method name="GetProperty">
+      <!-- TODO: Is it allowed to pass in another property with the same name and type (but possibly different DisplayName)? Probably yes. -->
+      <arg direction="in" name="property" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataProperty" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="v" />
+    </method>
+
+    <!--
+        SetProperty:
+
+        Set a data property to some value.
+        The type of the property will also be set to the parameter 'property'.
+        If 'value' is a signature with the value 'x', the data property will
+        be removed.
+
+        Valid options:
+        - 'ReplaceMode' ('s'): How to handle already existing keys. Value values are:
+          'de.uni_stuttgart.Voxie.ReplaceMode.Insert': Throw on existing key
+          'de.uni_stuttgart.Voxie.ReplaceMode.InsertOrReplace' (default): Overwrite existing value
+          'de.uni_stuttgart.Voxie.ReplaceMode.ReplaceExisting': Overwrite existing value, throw on missing value
+          'de.uni_stuttgart.Voxie.ReplaceMode.InsertOrSame': Throw on existing but different data
+    -->
+    <method name="SetProperty">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="property" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataProperty" />
+      </arg>
+      <arg direction="in" name="value" type="v" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
   </interface>
 
   <!--
@@ -1311,6 +1438,10 @@
     <property access="read" name="Metadata" type="a{sv}">
       <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
     </property>
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.DataProperty">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Property" />
   </interface>
   
   <interface name="de.uni_stuttgart.Voxie.TomographyRawDataBase">
@@ -1474,6 +1605,211 @@
       <arg direction="out" type="(a{sv}x(sus)(ttt)(xxx)a{sv})" />
     </method>
   </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.VolumeDataBlock">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.VolumeData" />
+
+    <property access="read" name="ArrayShape" type="(ttt)" />
+    <property access="read" name="BlockShape" type="(ttt)" />
+
+    <property access="read" name="GridSpacing" type="(ddd)" />
+
+    <!-- TODO: Remove this? -->
+    <!-- This is ArrayShape / BlockShape, rounded upwards -->
+    <property access="read" name="BlockCount" type="(ttt)" />
+
+    <!-- TODO: Should DecodeBlocks / EncodeBlocks allow decoding / encoding multiple blocks at once? -->
+
+    <method name="DecodeBlocks">
+      <arg direction="in" name="output" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeDataVoxel" />
+      </arg>
+      <arg direction="in" name="updateOutput" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <!-- A list of blocks to be decoded, the (voxel) offsets in output where the decoded data should be written to and the shapes of the blocks. Blocks can have shapes which differ from BlockShape if they are at the end of the volume. The ranges where the data is written to should not overlap. -->
+      <arg direction="in" name="count" type="t" />
+      <arg direction="in" name="blocksBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlock.BlockOffsetEntry" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="false" />
+      </arg>
+      <arg direction="in" name="blocksOffset" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <method name="EncodeBlocks">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="input" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeDataVoxel" />
+      </arg>
+      <!-- A list of blocks to be encoded, the (voxel) offsets in input where the data to be encoded should be read from and the shapes of the blocks. Blocks can have shapes which differ from BlockShape if they are at the end of the volume. There should be no duplicate BlockID entries. -->
+      <arg direction="in" name="count" type="t" />
+      <arg direction="in" name="blocksBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlock.BlockOffsetEntry" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="false" />
+      </arg>
+      <arg direction="in" name="blocksOffset" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
+  
+  <interface name="de.uni_stuttgart.Voxie.VolumeDataBlockJpeg">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.VolumeDataBlock" />
+
+    <property access="read" name="ValueOffset" type="d" />
+    <property access="read" name="ValueScalingFactor" type="d" />
+
+    <property access="read" name="SamplePrecision" type="u" />
+
+    <property access="read" name="HuffmanTableDC" type="aay" />
+    <property access="read" name="HuffmanTableAC" type="aay" />
+
+    <property access="read" name="QuantizationTable" type="aaq" />
+    <!-- TODO: Remove this? -->
+    <property access="read" name="QuantizationTableIs16bit" type="b" />
+
+    <method name="GetCompressedBlockSizes">
+      <arg direction="in" name="count" type="t" />
+      <arg direction="in" name="blockIDsBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlock.BlockID" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="false" />
+      </arg>
+      <arg direction="in" name="blocksOffset" type="t" />
+      <arg direction="in" name="sizesBytesBufferOut" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlockJpeg.BlockSize" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="true" />
+      </arg>
+      <arg direction="in" name="sizesBytesOffset" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        GetCompressedData:
+
+        Get the compressed JPEG data for some blocks.
+
+        This will return the compressed data and the size for each compressed
+        block in dataBuffer and sizesBytesBuffer.
+
+        At most count blocks starting at blockIDsOffset in blockIDsBuffer will
+        be processed. (Less blocks might be processed if there is not enough
+        space in the data output buffer.)
+
+        The data will be written into dataBuffer from dataOffset to at most
+        dataOffset+dataSize.
+
+        The sizes will be written into sizesBytesBuffer starting from
+        sizesBytesOffset to at most sizesBytesOffset+count. If less than count
+        blocks were processed, the size for actualCount+1 blocks will be
+        written into sizeBytesBuffer.
+
+        The call will return the number of blocks written (actualCount) and the
+        number of bytes written (actualBytes). If dataSize was too small for a
+        single block, actualCount and actualBytes will both be 0.
+    -->
+    <method name="GetCompressedData">
+      <arg direction="in" name="count" type="t" />
+      <arg direction="in" name="blockIDsBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlock.BlockID" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="false" />
+      </arg>
+      <arg direction="in" name="blockIDsOffset" type="t" />
+      <arg direction="in" name="dataBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferTypeJson" value="[&quot;primitive&quot;, &quot;uint&quot;, 8, &quot;none&quot;]" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="true" />
+      </arg>
+      <arg direction="in" name="dataOffset" type="t" />
+      <arg direction="in" name="dataSize" type="t" />
+      <arg direction="in" name="sizesBytesBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlockJpeg.BlockSize" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="true" />
+      </arg>
+      <arg direction="in" name="sizesBytesOffset" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="actualCount" type="t" />
+      <arg direction="out" name="actualBytes" type="t" />
+    </method>
+
+    <!--
+        SetCompressedData:
+
+        Set the compressed JPEG data for some blocks.
+
+        This will set the compressed data and the size for each compressed
+        block in dataBuffer and sizesBytesBuffer.
+
+        count blocks starting at blockIDsOffset in blockIDsBuffer will be
+        written.
+
+        The data will be read from dataBuffer starting from dataOffset to
+        dataOffset+dataSize. dataSize must be exactly the sum of the values in
+        sizesBytesBuffer.
+
+        The sizes will be read from sizesBytesBuffer starting from
+        sizesBytesOffset to sizesBytesOffset+count.
+    -->
+    <method name="SetCompressedData">
+      <arg direction="in" name="count" type="t" />
+      <arg direction="in" name="blockIDsBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlock.BlockID" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="false" />
+      </arg>
+      <arg direction="in" name="blockIDsOffset" type="t" />
+      <arg direction="in" name="dataBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferTypeJson" value="[&quot;primitive&quot;, &quot;uint&quot;, 8, &quot;none&quot;]" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="false" />
+      </arg>
+      <arg direction="in" name="dataOffset" type="t" />
+      <arg direction="in" name="dataSize" type="t" />
+      <arg direction="in" name="sizesBytesBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlockJpeg.BlockSize" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="false" />
+      </arg>
+      <arg direction="in" name="sizesBytesOffset" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <method name="CountHuffmanSymbols">
+      <arg direction="in" name="count" type="t" />
+      <arg direction="in" name="blockIDsBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlock.BlockID" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="false" />
+      </arg>
+      <arg direction="in" name="blockIDsOffset" type="t" />
+      <arg direction="in" name="dcSymbolCount" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlockJpeg.HuffmanSymbolCounter" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="true" />
+      </arg>
+      <arg direction="in" name="dcSymbolCountOffset" type="t" />
+      <arg direction="in" name="acSymbolCount" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlockJpeg.HuffmanSymbolCounter" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="true" />
+      </arg>
+      <arg direction="in" name="acSymbolCountOffset" type="t" />
+      <arg direction="in" name="paddingBitCount" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferType" value="de.uni_stuttgart.Voxie.VolumeDataBlockJpeg.HuffmanSymbolCounter" />
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="true" />
+      </arg>
+      <arg direction="in" name="paddingBitCountOffset" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+  </interface>
 
   <interface name="de.uni_stuttgart.Voxie.ContainerData">
     <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
@@ -1509,9 +1845,9 @@
       </arg>
     </method>
 
-    <!-- TODO: Use same parameters as in SeriesData.AddEntry? -->
-    <!-- TODO: Rename to AddElement -->
-    <!-- TODO: Rename to AddEntry or something like that? -->
+    <!-- TODO: Use same parameters as in SeriesData.SetEntry? -->
+    <!-- TODO: Rename to SetElement -->
+    <!-- TODO: Rename to SetEntry or something like that? -->
     <!-- TODO: Also, update parameter should be before key and value parameters -->
     <method name="InsertElement">
       <arg direction="in" name="key" type="s" />
@@ -1526,11 +1862,19 @@
   </interface>
 
   <interface name="de.uni_stuttgart.Voxie.SeriesDimension">
+    <!-- TODO: expose these also?
     <property access="read" name="Name" type="s" />
     <property access="read" name="DisplayName" type="s" />
     <property access="read" name="Type" type="o">
       <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.PropertyType" />
     </property>
+    -->
+
+    <!-- TODO: Allow multiple properties, maybe with one 'main' property for a series dimension? -->
+    <property access="read" name="Property" type="o">
+      <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataProperty" />
+    </property>
+
     <property access="read" name="Length" type="t" />
 
     <!-- TODO: Methods for listing only a subset of the entries? Or add an option to do that? -->
@@ -1582,18 +1926,19 @@
     </method>
 
     <!--
-        AddEntry:
+        SetEntry:
         
         Set entry for some key to some value.
         If 'value' is '/', the entry will be removed.
         
         Valid options:
         - 'ReplaceMode' ('s'): How to handle already existing keys. Value values are:
-          'de.uni_stuttgart.Voxie.ReplaceMode.Insert' (default): Throw on existing key
-          'de.uni_stuttgart.Voxie.ReplaceMode.Set': Overwrite existing value
+          'de.uni_stuttgart.Voxie.ReplaceMode.Insert': Throw on existing key
+          'de.uni_stuttgart.Voxie.ReplaceMode.InsertOrReplace' (default): Overwrite existing value
           'de.uni_stuttgart.Voxie.ReplaceMode.ReplaceExisting': Overwrite existing value, throw on missing value
+          'de.uni_stuttgart.Voxie.ReplaceMode.InsertOrSame': Throw on existing but different data
     -->
-    <method name="AddEntry">
+    <method name="SetEntry">
       <arg direction="in" name="update" type="o">
         <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
       </arg>
@@ -1644,7 +1989,7 @@
       <arg direction="out" name="result" type="b" />
     </method>
   </interface>
-    
+
   <interface name="de.uni_stuttgart.Voxie.GeometricPrimitiveData">
     <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
 
@@ -1710,6 +2055,29 @@
     <property access="read" name="ValueDBusSignatures" type="a{sg}" />
   </interface>
 
+
+  <interface name="de.uni_stuttgart.Voxie.FileData">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
+  </interface>
+
+  <interface name="de.uni_stuttgart.Voxie.FileDataByteStream">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.FileData" />
+
+    <property access="read" name="MediaType" type="s" />
+
+    <!-- Note: The type will always be ("uint", 8, "none") -->
+    <method name="GetContentReadonly">
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(t)(x)a{sv})" />
+    </method>
+    <method name="GetContentWritable">
+      <arg direction="in" name="update" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ExternalDataUpdate" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" type="(a{sv}x(sus)(t)(x)a{sv})" />
+    </method>
+  </interface>
 
   <!-- ****** Node Interfaces ****** -->
 
@@ -1955,10 +2323,14 @@
     -->
     <property access="readwrite" name="VisualizerSize" type="(dd)" />
 
+    <property access="readwrite" name="WindowMode" type="s" />
+
     <property access="readwrite" name="IsAttached" type="b" />
   </interface>
   
   <interface name="de.uni_stuttgart.Voxie.FilterNode">
+    <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Node" />
+
     <!-- TODO: Add PreviewActive, PreviewPoint?
          <property access="read" name="PreviewActive" type="b" />
          <property access="read" name="PreviewPoint" type="(dddd)" />
@@ -2316,6 +2688,22 @@
       </arg>
       <arg direction="in" name="options" type="a{sv}" />
     </method>
+
+    <method name="CreateBuffer">
+      <arg direction="out" name="result" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="offsetBytes" type="x" />
+      <arg direction="in" name="type" type="v">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
     <method name="CreateImage">
       <arg direction="out" type="o">
         <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ImageDataPixel" />
@@ -2419,6 +2807,27 @@
       <arg direction="in" name="options" type="a{sv}" />
     </method>
 
+    <method name="CreateVolumeDataBlockJpeg">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeDataBlockJpeg" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="arrayShape" type="(ttt)" />
+      <arg direction="in" name="blockShape" type="(ttt)" />
+      <arg direction="in" name="volumeOrigin" type="(ddd)" />
+      <arg direction="in" name="gridSpacing" type="(ddd)" />
+      <arg direction="in" name="valueOffset" type="d" />
+      <arg direction="in" name="valueScalingFactor" type="d" />
+      <arg direction="in" name="samplePrecision" type="u" />
+      <arg direction="in" name="huffmanTableDC" type="aay" />
+      <arg direction="in" name="huffmanTableAC" type="aay" />
+      <arg direction="in" name="quantizationTable" type="aaq" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
     <method name="CreateTomographyRawData2DRegular">
       <arg direction="in" name="client" type="o">
         <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
@@ -2461,7 +2870,6 @@
         CreateContainerData:
         
         Create a new ContainerData object.
-       
     -->
     <method name="CreateContainerData">
       <arg direction="out" type="o">
@@ -2476,10 +2884,29 @@
     </method>
 
     <!--
-        CreateSeriesDimension:
+        CreateDataProperty:
         
+        Create a new DataProperty object.
+    -->
+    <method name="CreateDataProperty">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataProperty" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="name" type="s" />
+      <arg direction="in" name="json" type="v">
+        <annotation name="de.uni_stuttgart.Voxie.IsJSONAsDBusVariant" value="true" />
+      </arg>
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!--
+        CreateSeriesDimension:
+
         Create a new SeriesDimension object.
-       
     -->
     <method name="CreateSeriesDimension">
       <arg direction="out" type="o">
@@ -2489,10 +2916,8 @@
       <arg direction="in" name="client" type="o">
         <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
       </arg>
-      <arg direction="in" name="name" type="s" />
-      <arg direction="in" name="displayName" type="s" />
-      <arg direction="in" name="type" type="o">
-        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.PropertyType" />
+      <arg direction="in" name="property" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.DataProperty" />
       </arg>
       <arg direction="in" name="entries" type="v" />
       <arg direction="in" name="options" type="a{sv}" />
@@ -2502,7 +2927,6 @@
         CreateVolumeSeriesData:
         
         Create a new VolumeSeriesData object.
-       
     -->
     <method name="CreateVolumeSeriesData">
       <arg direction="out" type="o">
@@ -2535,7 +2959,25 @@
       </arg>
       <arg direction="in" name="options" type="a{sv}" />
     </method>
-    
+
+    <!--
+        CreateFileDataByteStream:
+
+        Create a new FileDataByteStream object.
+    -->
+    <method name="CreateFileDataByteStream">
+      <arg direction="out" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.FileDataByteStream" />
+        <annotation name="de.uni_stuttgart.Voxie.ReferenceCountChange" value="1" />
+      </arg>
+      <arg direction="in" name="client" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Client" />
+      </arg>
+      <arg direction="in" name="mediaType" type="s" />
+      <arg direction="in" name="lengthBytes" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
     <method name="CreateTomographyRawData2DAccessor">
       <arg direction="out" name="result" type="o">
         <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.TomographyRawData2DAccessor" />
@@ -2623,6 +3065,7 @@
     <property access="read" name="ActiveVisualizer" type="o">
       <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VisualizerNode" />
     </property>
+
     <!--
         SelectedNodes:
         
@@ -2631,6 +3074,7 @@
     <property access="readwrite" name="SelectedNodes" type="ao">
       <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Node" />
     </property>
+
     <!--
         SelectedObjects:
         
@@ -2646,6 +3090,7 @@
     <method name="RaiseWindow">
       <arg direction="in" name="options" type="a{sv}" />
     </method>
+
     <!--
         GetMainWindowID:
         
@@ -2657,8 +3102,14 @@
       <arg direction="out" type="t" />
       <arg direction="in" name="options" type="a{sv}" />
     </method>
+
+    <property access="readwrite" name="MainWindowMode" type="s" />
+    <property access="readwrite" name="MainWindowSize" type="(dd)" />
+
+    <property access="readwrite" name="SidePanelMode" type="s" />
+    <property access="readwrite" name="SidePanelSize" type="d" />
   </interface>
-  
+
   <interface name="de.uni_stuttgart.Voxie.ImageDataPixel">
     <annotation name="de.uni_stuttgart.Voxie.ParentInterface" value="de.uni_stuttgart.Voxie.Data" />
     
@@ -2703,6 +3154,18 @@
         <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.ImageDataPixel" />
       </arg>
       <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
+    <!-- Should only be used for debugging -->
+    <!-- TODO: Move to another interface? -->
+    <method name="DebugFindMatchingSpectrums">
+      <arg direction="in" name="dimension" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.SeriesDimension" />
+      </arg>
+      <arg direction="in" name="start" type="d" />
+      <arg direction="in" name="end" type="d" />
+      <arg direction="in" name="options" type="a{sv}" />
+      <arg direction="out" name="result" type="a(td)" />
     </method>
   </interface>
 

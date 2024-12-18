@@ -42,7 +42,7 @@ class GeometricPrimitiveData;
 
 class GeometricPrimitiveLayer : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(GeometricPrimitiveLayer)
+  VX_REFCOUNTEDOBJECT
 
  public:
   GeometricPrimitiveLayer(SliceVisualizer* sv);
@@ -54,7 +54,8 @@ class GeometricPrimitiveLayer : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 
  public Q_SLOTS:
   /**

@@ -13,6 +13,33 @@
 #include "VoxieClient/DBusProxies.hpp"
 
 /*
+ * Implementation of interface class DeUni_stuttgartVoxieBufferInterface
+ */
+
+DeUni_stuttgartVoxieBufferInterface::DeUni_stuttgartVoxieBufferInterface(
+    const QString& service, const QString& path,
+    const QDBusConnection& connection, QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieBufferInterface::~DeUni_stuttgartVoxieBufferInterface() {}
+
+/*
+ * Implementation of interface class DeUni_stuttgartVoxieBufferTypeInterface
+ */
+
+DeUni_stuttgartVoxieBufferTypeInterface::
+    DeUni_stuttgartVoxieBufferTypeInterface(const QString& service,
+                                            const QString& path,
+                                            const QDBusConnection& connection,
+                                            QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieBufferTypeInterface::
+    ~DeUni_stuttgartVoxieBufferTypeInterface() {}
+
+/*
  * Implementation of interface class DeUni_stuttgartVoxieClientInterface
  */
 
@@ -119,6 +146,21 @@ DeUni_stuttgartVoxieDataObjectInterface::
 
 DeUni_stuttgartVoxieDataObjectInterface::
     ~DeUni_stuttgartVoxieDataObjectInterface() {}
+
+/*
+ * Implementation of interface class DeUni_stuttgartVoxieDataPropertyInterface
+ */
+
+DeUni_stuttgartVoxieDataPropertyInterface::
+    DeUni_stuttgartVoxieDataPropertyInterface(const QString& service,
+                                              const QString& path,
+                                              const QDBusConnection& connection,
+                                              QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieDataPropertyInterface::
+    ~DeUni_stuttgartVoxieDataPropertyInterface() {}
 
 /*
  * Implementation of interface class DeUni_stuttgartVoxieDataVersionInterface
@@ -339,6 +381,34 @@ DeUni_stuttgartVoxieExternalTaskInterface::
 
 DeUni_stuttgartVoxieExternalTaskInterface::
     ~DeUni_stuttgartVoxieExternalTaskInterface() {}
+
+/*
+ * Implementation of interface class DeUni_stuttgartVoxieFileDataInterface
+ */
+
+DeUni_stuttgartVoxieFileDataInterface::DeUni_stuttgartVoxieFileDataInterface(
+    const QString& service, const QString& path,
+    const QDBusConnection& connection, QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieFileDataInterface::
+    ~DeUni_stuttgartVoxieFileDataInterface() {}
+
+/*
+ * Implementation of interface class
+ * DeUni_stuttgartVoxieFileDataByteStreamInterface
+ */
+
+DeUni_stuttgartVoxieFileDataByteStreamInterface::
+    DeUni_stuttgartVoxieFileDataByteStreamInterface(
+        const QString& service, const QString& path,
+        const QDBusConnection& connection, QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieFileDataByteStreamInterface::
+    ~DeUni_stuttgartVoxieFileDataByteStreamInterface() {}
 
 /*
  * Implementation of interface class DeUni_stuttgartVoxieFilterNodeInterface
@@ -893,6 +963,36 @@ DeUni_stuttgartVoxieVolumeDataInterface::
 
 DeUni_stuttgartVoxieVolumeDataInterface::
     ~DeUni_stuttgartVoxieVolumeDataInterface() {}
+
+/*
+ * Implementation of interface class
+ * DeUni_stuttgartVoxieVolumeDataBlockInterface
+ */
+
+DeUni_stuttgartVoxieVolumeDataBlockInterface::
+    DeUni_stuttgartVoxieVolumeDataBlockInterface(
+        const QString& service, const QString& path,
+        const QDBusConnection& connection, QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieVolumeDataBlockInterface::
+    ~DeUni_stuttgartVoxieVolumeDataBlockInterface() {}
+
+/*
+ * Implementation of interface class
+ * DeUni_stuttgartVoxieVolumeDataBlockJpegInterface
+ */
+
+DeUni_stuttgartVoxieVolumeDataBlockJpegInterface::
+    DeUni_stuttgartVoxieVolumeDataBlockJpegInterface(
+        const QString& service, const QString& path,
+        const QDBusConnection& connection, QObject* parent)
+    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection,
+                             parent) {}
+
+DeUni_stuttgartVoxieVolumeDataBlockJpegInterface::
+    ~DeUni_stuttgartVoxieVolumeDataBlockJpegInterface() {}
 
 /*
  * Implementation of interface class

@@ -1,6 +1,7 @@
-if get_option('main').enabled()
-  subdir('cmark')
-endif
+additional_collect_licenses_args += files(
+  '../../lib/katex-0.11.1.sw.json',
+  '../../lib/simple.css.sw.json',
+)
 
 bundeled_python_packages = [
   'funcsigs-1.0.2',

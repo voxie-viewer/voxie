@@ -66,8 +66,7 @@ TomographyRawDataNodeView::TomographyRawDataNodeView(
   form->addRow("Dimension", this->dimension = new QLabel());
 
   form->addRow("Number of Images", this->numberOfImages = new QLabel());
-  form->addRow("Distance Source-Axis",
-               this->distanceSourceAxis = new QLabel());
+  form->addRow("Distance Source-Axis", this->distanceSourceAxis = new QLabel());
   form->addRow("Distance Source-Detector",
                this->distanceSourceDetector = new QLabel());
 

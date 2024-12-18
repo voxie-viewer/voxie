@@ -46,7 +46,7 @@ class EventListCalibration;
 // some abstract superclass
 class ClusteredEventListProvider : public RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ClusteredEventListProvider)
+  VX_REFCOUNTEDOBJECT
 
  public:
   using Size = quint64;

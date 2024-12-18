@@ -31,7 +31,7 @@ class ComponentType;
 
 class VOXIEBACKEND_EXPORT ComponentContainerList : public ComponentContainer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ComponentContainerList)
+  VX_REFCOUNTEDOBJECT
 
   QSharedPointer<const QList<QSharedPointer<ComponentType>>> componentTypes_;
   QList<QSharedPointer<ComponentContainer>> containers_;
@@ -48,7 +48,7 @@ class VOXIEBACKEND_EXPORT ComponentContainerList : public ComponentContainer {
 
   QSharedPointer<vx::Component> getComponent(
       const QSharedPointer<ComponentType>& componentType, const QString& name,
-      bool allowCompatibilityNames) override;
+      bool allowCompatibilityNames, bool allowMissing = false) override;
 
   QSharedPointer<const QList<QSharedPointer<ComponentType>>> componentTypes()
       override {

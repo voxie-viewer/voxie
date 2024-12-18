@@ -134,10 +134,10 @@ void GeometricPrimitiveLayer::drawLine(const QPoint& startPos,
 */
 
 void GeometricPrimitiveLayer::drawPoint(QImage& outputImage,
-                                       SlicePropertiesBase* properties,
-                                       float visibility, QPointF point,
-                                       float distance, std::string name,
-                                       QVector3D vector, bool isSelected) {
+                                        SlicePropertiesBase* properties,
+                                        float visibility, QPointF point,
+                                        float distance, std::string name,
+                                        QVector3D vector, bool isSelected) {
   QPainter painter(&outputImage);
   QPen pen;
   pen.setStyle(Qt::SolidLine);
@@ -212,9 +212,9 @@ void GeometricPrimitiveLayer::redrawPoints(
 }
 
 void GeometricPrimitiveLayer::drawLine(QImage& outputImage,
-                                      SlicePropertiesBase* properties,
-                                      float visibility, QVector3D p1,
-                                      QVector3D p2) {
+                                       SlicePropertiesBase* properties,
+                                       float visibility, QVector3D p1,
+                                       QVector3D p2) {
   PlaneInfo plane(properties->origin(), properties->orientation());
   auto planeArea =
       SliceVisualizer::getCurrentPlaneArea(properties, outputImage.size());
@@ -428,7 +428,10 @@ void GeometricPrimitiveLayer::newVisibility(float newVis) {
 }
 
 void GeometricPrimitiveLayer::render(
-    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters) {
+    QImage& outputImage, const QSharedPointer<vx::ParameterCopy>& parameters,
+    bool isMainImage) {
+  Q_UNUSED(isMainImage);
+
   SlicePropertiesCopy properties(
       parameters->properties()[parameters->mainNodePath()]);
 

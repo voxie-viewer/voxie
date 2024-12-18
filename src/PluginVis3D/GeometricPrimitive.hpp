@@ -35,7 +35,7 @@ class GeometricPrimitivePoint;
 namespace vis3d {
 class GeometricPrimitive : public vx::Object3DNode {
   Q_OBJECT
-  NODE_PROTOTYPE_DECL_SEP(object3d_prop::GeometricPrimitive, GeometricPrimitive)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Object3D.GeometricPrimitive")
 
   // TODO: Should be properties
   QVector4D color;

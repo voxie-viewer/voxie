@@ -29,6 +29,7 @@
 
 #include <VoxieClient/DBusAdaptors.hpp>
 #include <VoxieClient/DBusUtil.hpp>
+#include <VoxieClient/Format.hpp>
 
 #include <Voxie/Component/HelpCommon.hpp>
 
@@ -55,28 +56,30 @@ ExtensionFilterNode::ExtensionFilterNode(
     : FilterNode(prototype), scriptFilename_(scriptFilename) {
   if (!voxieRoot().isHeadless()) debuggerSupportEnabled->show();
 
-  connect(this, &ExtensionFilterNode::error, this,
-          [](const Exception& e, const QSharedPointer<QString>& scriptOutput) {
-            QString message = e.message();
-            if (scriptOutput && *scriptOutput != "") {
-              message += "\n\nScript output:\n";
-              message += *scriptOutput;
-            }
+  connect(
+      this, &ExtensionFilterNode::error, this,
+      [this](const Exception& e, const QSharedPointer<QString>& scriptOutput) {
+        QString message = e.message();
+        if (scriptOutput && *scriptOutput != "") {
+          message += "\n\nScript output:\n";
+          message += *scriptOutput;
+        }
 
-            qWarning() << "Error during filter:" << message;
-            // Delay calling QMessageBox::exec() until later to avoid having a
-            // main loop in the event handler. TODO: This should probably not
-            // use QMessageBox::exec().
-            if (!voxieRoot().isHeadless()) {
-              enqueueOnMainThread([message] {
-                QMessageBox(QMessageBox::Critical,
-                            Root::instance()->mainWindow()->windowTitle(),
-                            QString("Error during filter: %1").arg(message),
-                            QMessageBox::Ok, Root::instance()->mainWindow())
-                    .exec();
-              });
-            }
+        QString msgStr = vx::format("Error during filter {}: {}",
+                                    this->prototype()->name(), message);
+        qWarning() << msgStr.toUtf8().data();
+        // Delay calling QMessageBox::exec() until later to avoid having a
+        // main loop in the event handler. TODO: This should probably not
+        // use QMessageBox::exec().
+        if (!voxieRoot().isHeadless()) {
+          enqueueOnMainThread([msgStr] {
+            QMessageBox(QMessageBox::Critical,
+                        Root::instance()->mainWindow()->windowTitle(), msgStr,
+                        QMessageBox::Ok, Root::instance()->mainWindow())
+                .exec();
           });
+        }
+      });
   // TODO: Also display output of filter script when filter succeeds?
 
   this->setAutomaticDisplayName(prototype->displayName());
@@ -175,6 +178,16 @@ QSharedPointer<RunFilterOperation> ExtensionFilterNode::calculate(
     result["PrototypeName"] = dbusMakeVariant<QString>(prototype->name());
     result["Properties"] =
         dbusMakeVariant<QMap<QString, QDBusVariant>>(propertiesDBus);
+
+    if (parameterCopy->extensionInfo().contains(nodePath)) {
+      auto info = parameterCopy->extensionInfo()[nodePath];
+      QMap<QString, QDBusVariant> infoDBus;
+      for (const auto& name : info.keys()) {
+        infoDBus[name] = dbusMakeVariant<QString>(info[name]);
+      }
+      result["ExtensionInfo"] =
+          dbusMakeVariant<QMap<QString, QDBusVariant>>(infoDBus);
+    }
 
     if (parameterCopy->dataMap().contains(nodePath)) {
       auto info = parameterCopy->getData(nodePath);
@@ -286,6 +299,16 @@ QSharedPointer<RunFilterOperation> ExtensionFilterNode::calculate(
           });
 
   return op;
+}
+
+QMap<QString, QString> ExtensionFilterNode::getExtensionInfo() {
+  auto ext =
+      qSharedPointerDynamicCast<Extension>(this->prototype()->container());
+  if (!ext) {
+    throw Exception("de.uni_stuttgart.Voxie.InternalError",
+                    "extension is nullptr in ExtensionFilterNode");
+  }
+  return ext->getExtensionInfo();
 }
 
 namespace vx {

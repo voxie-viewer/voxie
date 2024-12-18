@@ -27,6 +27,8 @@
 
 #include <Voxie/Node/NodePrototype.hpp>
 
+#include <VoxieClient/Format.hpp>
+
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QVBoxLayout>
 
@@ -71,16 +73,21 @@ void HelpWindow::openHelpForUri(const QString& uri) {
   auto data = pageGenerator.generateHelpPage(uri, false, nullptr);
   // qDebug() << "setHtml" << this->backendView << std::get<0>(data)
   //         << std::get<1>(data).length();
+  this->openHtmlString(
+      uri,
+      std::get<0>(data) ? (std::get<0>(data)->title() + " - Voxie help")
+                        : "Voxie help",
+      std::get<1>(data),
+      std::get<0>(data) ? QUrl::fromLocalFile(std::get<0>(data)->baseFileName())
+                        : QUrl(""));
+}
+
+void HelpWindow::openHtmlString(const QString& uri, const QString& title,
+                                const QString& html, const QUrl& baseUrl) {
   this->lastUri = uri;
   if (this->backendView) {
-    this->backendView->setHtml(
-        std::get<1>(data),
-        std::get<0>(data)
-            ? QUrl::fromLocalFile(std::get<0>(data)->baseFileName())
-            : QUrl(""));
+    this->backendView->setHtml(html, baseUrl);
   }
-  this->setWindowTitle(std::get<0>(data)
-                           ? (std::get<0>(data)->title() + " - Voxie help")
-                           : "Voxie help");
+  this->setWindowTitle(title);
   this->show();
 }

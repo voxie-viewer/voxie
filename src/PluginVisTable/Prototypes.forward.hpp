@@ -3,29 +3,77 @@
 
 #pragma once
 
+#include <VoxieClient/StringConstant.hpp>
+
 namespace vx {
 inline namespace filter_prop {
+static inline auto AutoScaleTableUnitsProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits");
+}
+using AutoScaleTableUnitsProperties_name =
+    decltype(AutoScaleTableUnitsProperties_name_function());
 class AutoScaleTableUnitsPropertiesEntry;
 class AutoScaleTableUnitsPropertiesBase;
 class AutoScaleTableUnitsPropertiesCopy;
 class AutoScaleTableUnitsProperties;
 }  // namespace filter_prop
 inline namespace visualizer_prop {
+static inline auto HistogramProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Visualizer.Histogram");
+}
+using HistogramProperties_name = decltype(HistogramProperties_name_function());
 class HistogramPropertiesEntry;
 class HistogramPropertiesBase;
 class HistogramPropertiesCopy;
 class HistogramProperties;
 }  // namespace visualizer_prop
 inline namespace visualizer_prop {
+static inline auto ScatterPlotProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot");
+}
+using ScatterPlotProperties_name =
+    decltype(ScatterPlotProperties_name_function());
 class ScatterPlotPropertiesEntry;
 class ScatterPlotPropertiesBase;
 class ScatterPlotPropertiesCopy;
 class ScatterPlotProperties;
 }  // namespace visualizer_prop
 inline namespace visualizer_prop {
+static inline auto TableProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Visualizer.Table");
+}
+using TableProperties_name = decltype(TableProperties_name_function());
 class TablePropertiesEntry;
 class TablePropertiesBase;
 class TablePropertiesCopy;
 class TableProperties;
 }  // namespace visualizer_prop
+template <typename S>
+struct PropertiesTypeAlias;
+template <>
+struct PropertiesTypeAlias<
+    ::vx::filter_prop::AutoScaleTableUnitsProperties_name> {
+  using PropertiesType = ::vx::filter_prop::AutoScaleTableUnitsProperties;
+  using PropertiesEntryType =
+      ::vx::filter_prop::AutoScaleTableUnitsPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::visualizer_prop::HistogramProperties_name> {
+  using PropertiesType = ::vx::visualizer_prop::HistogramProperties;
+  using PropertiesEntryType = ::vx::visualizer_prop::HistogramPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::visualizer_prop::ScatterPlotProperties_name> {
+  using PropertiesType = ::vx::visualizer_prop::ScatterPlotProperties;
+  using PropertiesEntryType = ::vx::visualizer_prop::ScatterPlotPropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::visualizer_prop::TableProperties_name> {
+  using PropertiesType = ::vx::visualizer_prop::TableProperties;
+  using PropertiesEntryType = ::vx::visualizer_prop::TablePropertiesEntry;
+};
 }  // namespace vx

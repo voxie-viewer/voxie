@@ -25,9 +25,13 @@
 #include <Voxie/Data/Prototypes.hpp>
 #include <Voxie/Node/NodePrototype.hpp>
 
+VX_NODE_INSTANTIATION(vx::NodeGroup)
+
 using namespace vx;
 
-NodeGroup::NodeGroup() : Node("NodeGroup", getPrototypeSingleton()) {
+NodeGroup::NodeGroup()
+    : Node("NodeGroup", getPrototypeSingleton()),
+      properties(new PropertiesType(this)) {
   setAutomaticDisplayName("NodeGroup");
 }
 
@@ -82,5 +86,3 @@ QList<NodeNodeProperty> NodeGroup::childrenExportedProperties() {
 
   return result;
 }
-
-NODE_PROTOTYPE_IMPL(NodeGroup)

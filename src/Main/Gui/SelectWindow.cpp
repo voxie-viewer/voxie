@@ -199,8 +199,7 @@ QSet<int> SelectWindow::getFilteredNodes(const QString& searchText,
         show = false;
     }
 
-    if (show)
-      res << index;
+    if (show) res << index;
   }
   return res;
 }

@@ -186,8 +186,9 @@ class MouseAction {
     view_->update(origValues);
   }
 
-  virtual void mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast, const vx::Vector<double, 2>& mousePosNow, QMouseEvent* event,
-                              const QSize& windowSize) = 0;
+  virtual void mouseMoveEvent(const vx::Vector<double, 2>& mousePosLast,
+                              const vx::Vector<double, 2>& mousePosNow,
+                              QMouseEvent* event, const QSize& windowSize) = 0;
 
  protected:
   // TODO: Check whether the action was finished / reverted?
@@ -244,7 +245,7 @@ class MouseActionPan : public MouseAction {
     lookAt -= offset;
     this->setLookAt(lookAt);
   }
-  };  // namespace vx
+};  // namespace vx
 
 class MouseActionPanZ : public MouseAction {
  public:
@@ -277,8 +278,7 @@ class MouseActionPanZ : public MouseAction {
     // Invert matrix
     vx::ProjectiveMap<double, 3> projectionViewInv = inverse(projectionView);
     // Invert vector from mouse pos into the direction -1 in Z direction
-    vx::Vector<double, 3> mousePos =
-        toVector(pressPos(), pressWindowSize());
+    vx::Vector<double, 3> mousePos = toVector(pressPos(), pressWindowSize());
     vx::Vector<double, 3> mousePos2 =
         mousePos + vx::Vector<double, 3>(0, 0, -1);
     vx::Vector<double, 3> direction = normalize(
@@ -889,7 +889,7 @@ void View3D::resetView(View3DProperty toReset) {
       qWarning() << "View3D::resetView(): empty bounding box";
     } else {
       auto size = bb.max() - bb.min();
-      auto diag = size.length();
+      auto diag = std::sqrt(squaredNorm(size));
       if ((toReset & View3DProperty::ZoomLog) == View3DProperty::ZoomLog)
         // Set zoom value so that the view size is the same as the diagonal of
         // the bounding box
@@ -898,7 +898,7 @@ void View3D::resetView(View3DProperty toReset) {
         upd.setZoomLog(
             this->limitZoomLog(-std::log(diag / this->viewSizeUnzoomed())));
       if ((toReset & View3DProperty::LookAt) == View3DProperty::LookAt) {
-        auto pos = vectorCast<double>(toVector((bb.max() + bb.min()) / 2));
+        auto pos = (bb.max() + bb.min()) / 2;
         if (resetKeepViewZ) {
           auto orient = this->orientation();
           if ((upd.valid & View3DProperty::Orientation) ==
@@ -911,7 +911,7 @@ void View3D::resetView(View3DProperty toReset) {
             // Make sure z value is inside bounding box
             auto bbView = BoundingBox3D::empty();
             for (const auto& corner : bb.corners())
-              bbView += BoundingBox3D::pointV(inverse(orient).map(corner));
+              bbView += BoundingBox3D::point(inverse(orient).map(corner));
             posView[2] =
                 std::max((double)bbView.min()[2],
                          std::min((double)bbView.max()[2], posView[2]));

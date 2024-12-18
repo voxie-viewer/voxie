@@ -1,0 +1,47 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Create a surface using CadQuery.",
+            "DisplayName": "Create surface using CadQuery",
+            "Name": "de.uni_stuttgart.Voxie.Filter.CreateSurfaceUsingCadQuery",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Filter",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Filter.CreateSurfaceUsingCadQuery.ScriptFileName": {
+                    "DisplayName": "Script filename",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.FileName",
+                    "Patterns": [
+                        "*.py"
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Filter.CreateSurfaceUsingCadQuery.Tolerance": {
+                    "DisplayName": "Tolerance",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0,
+                    "DefaultValue": 0.1
+                },
+                "de.uni_stuttgart.Voxie.Filter.CreateSurfaceUsingCadQuery.AngularTolerance": {
+                    "DisplayName": "Angular tolerance",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0,
+                    "DefaultValue": 0.1
+                },
+                "de.uni_stuttgart.Voxie.Filter.CreateSurfaceUsingCadQuery.Unit": {
+                    "DisplayName": "Unit",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "MinimumValue": 0,
+                    "DefaultValue": 1e-3,
+                    "Unit": [
+                        [ "m", 1 ]
+                    ]
+                },
+                "de.uni_stuttgart.Voxie.Output": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Surface"
+                    ],
+                    "DisplayName": "Output surface",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.OutputNodeReference"
+                }
+            }
+        }
+    ]
+}

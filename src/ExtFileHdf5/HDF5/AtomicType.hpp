@@ -27,30 +27,27 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/DataType.hpp>
 
 namespace HDF5 {
-  class AtomicType : public DataType {
-    void checkType () const;
+class AtomicType : public DataType {
+  void checkType() const;
 
-  public:
-    AtomicType () {
-    }
+ public:
+  AtomicType() {}
 
-    explicit AtomicType (const IdComponent& value) : DataType (value) {
-      checkType ();
-    }
+  explicit AtomicType(const IdComponent& value) : DataType(value) {
+    checkType();
+  }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit AtomicType (hid_t value) : DataType (value) {
-      checkType ();
-    }
-  };
-}
+  // This constructor takes ownership of the object refered to by value
+  explicit AtomicType(hid_t value) : DataType(value) { checkType(); }
+};
+}  // namespace HDF5
 
-#endif // !HDF5_ATOMICTYPE_HPP_INCLUDED
+#endif  // !HDF5_ATOMICTYPE_HPP_INCLUDED

@@ -27,30 +27,27 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/DataType.hpp>
 
 namespace HDF5 {
-  class ReferenceType : public DataType {
-    void checkType () const;
+class ReferenceType : public DataType {
+  void checkType() const;
 
-  public:
-    ReferenceType () {
-    }
+ public:
+  ReferenceType() {}
 
-    explicit ReferenceType (const IdComponent& value) : DataType (value) {
-      checkType ();
-    }
+  explicit ReferenceType(const IdComponent& value) : DataType(value) {
+    checkType();
+  }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit ReferenceType (hid_t value) : DataType (value) {
-      checkType ();
-    }
-  };
-}
+  // This constructor takes ownership of the object refered to by value
+  explicit ReferenceType(hid_t value) : DataType(value) { checkType(); }
+};
+}  // namespace HDF5
 
-#endif // !HDF5_REFERENCETYPE_HPP_INCLUDED
+#endif  // !HDF5_REFERENCETYPE_HPP_INCLUDED

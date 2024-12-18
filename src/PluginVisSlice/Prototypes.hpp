@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Prototypes.forward.hpp"
+
 #include <QtCore/QJsonObject>
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -14,6 +16,8 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+
+class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
 namespace vx {
 #ifndef VOXIE_PROP_DEFINED_CenterPoint
@@ -227,6 +231,15 @@ namespace Prop {
 constexpr vx::PropType::Show2DFilterMask Show2DFilterMask = {};
 }
 #endif
+#ifndef VOXIE_PROP_DEFINED_ShowLegend
+#define VOXIE_PROP_DEFINED_ShowLegend
+namespace PropType {
+class ShowLegend : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::ShowLegend ShowLegend = {};
+}
+#endif
 #ifndef VOXIE_PROP_DEFINED_ShowSliceCenter
 #define VOXIE_PROP_DEFINED_ShowSliceCenter
 namespace PropType {
@@ -332,6 +345,7 @@ class SlicePropertiesEntry : public vx::PropertiesEntryBase {
   SlicePropertiesEntry(vx::PropType::RulerSpacingAutomatic, bool);
   SlicePropertiesEntry(vx::PropType::SegmentationFilter, vx::Node*);
   SlicePropertiesEntry(vx::PropType::Show2DFilterMask, qint64);
+  SlicePropertiesEntry(vx::PropType::ShowLegend, bool);
   SlicePropertiesEntry(vx::PropType::ShowSliceCenter, bool);
   SlicePropertiesEntry(vx::PropType::ShowViewCenter, bool);
   SlicePropertiesEntry(vx::PropType::Surface, QList<vx::Node*>);
@@ -390,6 +404,8 @@ class SlicePropertiesBase {
   virtual QDBusObjectPath segmentationFilterRaw() = 0;
   virtual qint64 show2DFilterMask() = 0;
   virtual qint64 show2DFilterMaskRaw() = 0;
+  virtual bool showLegend() = 0;
+  virtual bool showLegendRaw() = 0;
   virtual bool showSliceCenter() = 0;
   virtual bool showSliceCenterRaw() = 0;
   virtual bool showViewCenter() = 0;
@@ -457,6 +473,8 @@ class SlicePropertiesCopy : public SlicePropertiesBase {
   QDBusObjectPath segmentationFilterRaw() override final;
   qint64 show2DFilterMask() override final;
   qint64 show2DFilterMaskRaw() override final;
+  bool showLegend() override final;
+  bool showLegendRaw() override final;
   bool showSliceCenter() override final;
   bool showSliceCenterRaw() override final;
   bool showViewCenter() override final;
@@ -486,6 +504,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   std::tuple<double, double> centerPointRaw() override final;
   static QSharedPointer<NodeProperty> centerPointProperty();
   static NodePropertyTyped<vx::types::Point2D> centerPointPropertyTyped();
+  NodeNodeProperty centerPointInstance();
   void setCenterPoint(QPointF value);
  Q_SIGNALS:
   void centerPointChanged(QPointF value);
@@ -498,6 +517,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   double verticalSizeRaw() override final;
   static QSharedPointer<NodeProperty> verticalSizeProperty();
   static NodePropertyTyped<vx::types::Float> verticalSizePropertyTyped();
+  NodeNodeProperty verticalSizeInstance();
   void setVerticalSize(double value);
  Q_SIGNALS:
   void verticalSizeChanged(double value);
@@ -511,6 +531,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<NodeProperty> filter2DConfigurationProperty();
   static NodePropertyTyped<vx::types::String>
   filter2DConfigurationPropertyTyped();
+  NodeNodeProperty filter2DConfigurationInstance();
   void setFilter2DConfiguration(QString value);
  Q_SIGNALS:
   void filter2DConfigurationChanged(QString value);
@@ -524,6 +545,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<NodeProperty> geometricPrimitiveProperty();
   static NodePropertyTyped<vx::types::NodeReference>
   geometricPrimitivePropertyTyped();
+  NodeNodeProperty geometricPrimitiveInstance();
   void setGeometricPrimitive(vx::Node* value);
  Q_SIGNALS:
   void geometricPrimitiveChanged(vx::Node* value);
@@ -539,6 +561,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   geometricPrimitiveColorBehindSliceProperty();
   static NodePropertyTyped<vx::types::Color>
   geometricPrimitiveColorBehindSlicePropertyTyped();
+  NodeNodeProperty geometricPrimitiveColorBehindSliceInstance();
   void setGeometricPrimitiveColorBehindSlice(vx::Color value);
  Q_SIGNALS:
   void geometricPrimitiveColorBehindSliceChanged(vx::Color value);
@@ -556,6 +579,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   geometricPrimitiveColorInFrontOfSliceProperty();
   static NodePropertyTyped<vx::types::Color>
   geometricPrimitiveColorInFrontOfSlicePropertyTyped();
+  NodeNodeProperty geometricPrimitiveColorInFrontOfSliceInstance();
   void setGeometricPrimitiveColorInFrontOfSlice(vx::Color value);
  Q_SIGNALS:
   void geometricPrimitiveColorInFrontOfSliceChanged(vx::Color value);
@@ -572,6 +596,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<NodeProperty> geometricPrimitiveColorOnSliceProperty();
   static NodePropertyTyped<vx::types::Color>
   geometricPrimitiveColorOnSlicePropertyTyped();
+  NodeNodeProperty geometricPrimitiveColorOnSliceInstance();
   void setGeometricPrimitiveColorOnSlice(vx::Color value);
  Q_SIGNALS:
   void geometricPrimitiveColorOnSliceChanged(vx::Color value);
@@ -587,6 +612,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   geometricPrimitiveVisibilityDistanceProperty();
   static NodePropertyTyped<vx::types::Float>
   geometricPrimitiveVisibilityDistancePropertyTyped();
+  NodeNodeProperty geometricPrimitiveVisibilityDistanceInstance();
   void setGeometricPrimitiveVisibilityDistance(double value);
  Q_SIGNALS:
   void geometricPrimitiveVisibilityDistanceChanged(double value);
@@ -601,6 +627,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   std::tuple<double, double, double, double> gridColorRaw() override final;
   static QSharedPointer<NodeProperty> gridColorProperty();
   static NodePropertyTyped<vx::types::Color> gridColorPropertyTyped();
+  NodeNodeProperty gridColorInstance();
   void setGridColor(vx::Color value);
  Q_SIGNALS:
   void gridColorChanged(vx::Color value);
@@ -613,6 +640,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   bool gridShowRaw() override final;
   static QSharedPointer<NodeProperty> gridShowProperty();
   static NodePropertyTyped<vx::types::Boolean> gridShowPropertyTyped();
+  NodeNodeProperty gridShowInstance();
   void setGridShow(bool value);
  Q_SIGNALS:
   void gridShowChanged(bool value);
@@ -625,6 +653,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   double gridSpacingRaw() override final;
   static QSharedPointer<NodeProperty> gridSpacingProperty();
   static NodePropertyTyped<vx::types::Float> gridSpacingPropertyTyped();
+  NodeNodeProperty gridSpacingInstance();
   void setGridSpacing(double value);
  Q_SIGNALS:
   void gridSpacingChanged(double value);
@@ -638,6 +667,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<NodeProperty> gridSpacingAutomaticProperty();
   static NodePropertyTyped<vx::types::Boolean>
   gridSpacingAutomaticPropertyTyped();
+  NodeNodeProperty gridSpacingAutomaticInstance();
   void setGridSpacingAutomatic(bool value);
  Q_SIGNALS:
   void gridSpacingAutomaticChanged(bool value);
@@ -650,6 +680,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   QDBusObjectPath infoTableRaw() override final;
   static QSharedPointer<NodeProperty> infoTableProperty();
   static NodePropertyTyped<vx::types::NodeReference> infoTablePropertyTyped();
+  NodeNodeProperty infoTableInstance();
   void setInfoTable(vx::Node* value);
  Q_SIGNALS:
   void infoTableChanged(vx::Node* value);
@@ -662,6 +693,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   QString interpolationRaw() override final;
   static QSharedPointer<NodeProperty> interpolationProperty();
   static NodePropertyTyped<vx::types::Enumeration> interpolationPropertyTyped();
+  NodeNodeProperty interpolationInstance();
   void setInterpolation(QString value);
  Q_SIGNALS:
   void interpolationChanged(QString value);
@@ -675,6 +707,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<NodeProperty> labelContainerProperty();
   static NodePropertyTyped<vx::types::NodeReference>
   labelContainerPropertyTyped();
+  NodeNodeProperty labelContainerInstance();
   void setLabelContainer(vx::Node* value);
  Q_SIGNALS:
   void labelContainerChanged(vx::Node* value);
@@ -687,6 +720,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   QDBusObjectPath planeRaw() override final;
   static QSharedPointer<NodeProperty> planeProperty();
   static NodePropertyTyped<vx::types::NodeReference> planePropertyTyped();
+  NodeNodeProperty planeInstance();
   void setPlane(vx::Node* value);
  Q_SIGNALS:
   void planeChanged(vx::Node* value);
@@ -698,6 +732,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   std::tuple<double, double, double, double> orientationRaw() override final;
   static QSharedPointer<NodeProperty> orientationProperty();
   static NodePropertyTyped<vx::types::Orientation3D> orientationPropertyTyped();
+  NodeNodeProperty orientationInstance();
   void setOrientation(QQuaternion value);
  Q_SIGNALS:
   void orientationChanged(QQuaternion value);
@@ -710,6 +745,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   std::tuple<double, double, double> originRaw() override final;
   static QSharedPointer<NodeProperty> originProperty();
   static NodePropertyTyped<vx::types::Position3D> originPropertyTyped();
+  NodeNodeProperty originInstance();
   void setOrigin(QVector3D value);
  Q_SIGNALS:
   void originChanged(QVector3D value);
@@ -722,6 +758,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   std::tuple<double, double, double, double> rulerColorRaw() override final;
   static QSharedPointer<NodeProperty> rulerColorProperty();
   static NodePropertyTyped<vx::types::Color> rulerColorPropertyTyped();
+  NodeNodeProperty rulerColorInstance();
   void setRulerColor(vx::Color value);
  Q_SIGNALS:
   void rulerColorChanged(vx::Color value);
@@ -734,6 +771,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   bool rulerShowRaw() override final;
   static QSharedPointer<NodeProperty> rulerShowProperty();
   static NodePropertyTyped<vx::types::Boolean> rulerShowPropertyTyped();
+  NodeNodeProperty rulerShowInstance();
   void setRulerShow(bool value);
  Q_SIGNALS:
   void rulerShowChanged(bool value);
@@ -746,6 +784,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   double rulerSpacingRaw() override final;
   static QSharedPointer<NodeProperty> rulerSpacingProperty();
   static NodePropertyTyped<vx::types::Float> rulerSpacingPropertyTyped();
+  NodeNodeProperty rulerSpacingInstance();
   void setRulerSpacing(double value);
  Q_SIGNALS:
   void rulerSpacingChanged(double value);
@@ -759,6 +798,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<NodeProperty> rulerSpacingAutomaticProperty();
   static NodePropertyTyped<vx::types::Boolean>
   rulerSpacingAutomaticPropertyTyped();
+  NodeNodeProperty rulerSpacingAutomaticInstance();
   void setRulerSpacingAutomatic(bool value);
  Q_SIGNALS:
   void rulerSpacingAutomaticChanged(bool value);
@@ -772,6 +812,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<NodeProperty> segmentationFilterProperty();
   static NodePropertyTyped<vx::types::NodeReference>
   segmentationFilterPropertyTyped();
+  NodeNodeProperty segmentationFilterInstance();
   void setSegmentationFilter(vx::Node* value);
  Q_SIGNALS:
   void segmentationFilterChanged(vx::Node* value);
@@ -784,6 +825,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   qint64 show2DFilterMaskRaw() override final;
   static QSharedPointer<NodeProperty> show2DFilterMaskProperty();
   static NodePropertyTyped<vx::types::Int> show2DFilterMaskPropertyTyped();
+  NodeNodeProperty show2DFilterMaskInstance();
   void setShow2DFilterMask(qint64 value);
  Q_SIGNALS:
   void show2DFilterMaskChanged(qint64 value);
@@ -792,10 +834,24 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // Q_PROPERTY(qint64 Show2DFilterMask READ show2DFilterMask WRITE
   // setShow2DFilterMask NOTIFY show2DFilterMaskChanged)
 
+  bool showLegend() override final;
+  bool showLegendRaw() override final;
+  static QSharedPointer<NodeProperty> showLegendProperty();
+  static NodePropertyTyped<vx::types::Boolean> showLegendPropertyTyped();
+  NodeNodeProperty showLegendInstance();
+  void setShowLegend(bool value);
+ Q_SIGNALS:
+  void showLegendChanged(bool value);
+
+ public:
+  // Q_PROPERTY(bool ShowLegend READ showLegend WRITE setShowLegend NOTIFY
+  // showLegendChanged)
+
   bool showSliceCenter() override final;
   bool showSliceCenterRaw() override final;
   static QSharedPointer<NodeProperty> showSliceCenterProperty();
   static NodePropertyTyped<vx::types::Boolean> showSliceCenterPropertyTyped();
+  NodeNodeProperty showSliceCenterInstance();
   void setShowSliceCenter(bool value);
  Q_SIGNALS:
   void showSliceCenterChanged(bool value);
@@ -808,6 +864,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   bool showViewCenterRaw() override final;
   static QSharedPointer<NodeProperty> showViewCenterProperty();
   static NodePropertyTyped<vx::types::Boolean> showViewCenterPropertyTyped();
+  NodeNodeProperty showViewCenterInstance();
   void setShowViewCenter(bool value);
  Q_SIGNALS:
   void showViewCenterChanged(bool value);
@@ -820,6 +877,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   QList<QDBusObjectPath> surfaceRaw() override final;
   static QSharedPointer<NodeProperty> surfaceProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList> surfacePropertyTyped();
+  NodeNodeProperty surfaceInstance();
   void setSurface(QList<vx::Node*> value);
  Q_SIGNALS:
   void surfaceChanged(QList<vx::Node*> value);
@@ -834,6 +892,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<NodeProperty> valueColorMappingProperty();
   static NodePropertyTyped<vx::types::ValueColorMapping>
   valueColorMappingPropertyTyped();
+  NodeNodeProperty valueColorMappingInstance();
   void setValueColorMapping(QList<vx::ColorizerEntry> value);
  Q_SIGNALS:
   void valueColorMappingChanged(QList<vx::ColorizerEntry> value);
@@ -847,6 +906,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   QDBusObjectPath volumeRaw() override final;
   static QSharedPointer<NodeProperty> volumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> volumePropertyTyped();
+  NodeNodeProperty volumeInstance();
   void setVolume(vx::Node* value);
  Q_SIGNALS:
   void volumeChanged(vx::Node* value);
@@ -860,6 +920,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
       override final;
   static QSharedPointer<NodeProperty> volumeGridColorProperty();
   static NodePropertyTyped<vx::types::Color> volumeGridColorPropertyTyped();
+  NodeNodeProperty volumeGridColorInstance();
   void setVolumeGridColor(vx::Color value);
  Q_SIGNALS:
   void volumeGridColorChanged(vx::Color value);
@@ -872,6 +933,7 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   bool volumeGridShowRaw() override final;
   static QSharedPointer<NodeProperty> volumeGridShowProperty();
   static NodePropertyTyped<vx::types::Boolean> volumeGridShowPropertyTyped();
+  NodeNodeProperty volumeGridShowInstance();
   void setVolumeGridShow(bool value);
  Q_SIGNALS:
   void volumeGridShowChanged(bool value);

@@ -43,13 +43,16 @@ class VOXIECORESHARED_EXPORT ParameterCopyBase {
 
   QMap<QDBusObjectPath, QSharedPointer<NodePrototype>> prototypes_;
 
+  QMap<QDBusObjectPath, QMap<QString, QString>> extensionInfo_;
+
  protected:
   // protected constructor to prevent instantiation
   ParameterCopyBase(
       const QDBusObjectPath& mainObjectPath,
       const QMap<QDBusObjectPath,
                  QSharedPointer<const QMap<QString, QVariant>>>& properties,
-      const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes);
+      const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes,
+      const QMap<QDBusObjectPath, QMap<QString, QString>>& extensionInfo);
 
  public:
   ~ParameterCopyBase() {}
@@ -61,6 +64,8 @@ class VOXIECORESHARED_EXPORT ParameterCopyBase {
 
   const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes()
       const;
+
+  const QMap<QDBusObjectPath, QMap<QString, QString>>& extensionInfo() const;
 };
 
 }  // namespace vx

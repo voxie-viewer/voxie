@@ -48,7 +48,7 @@ class SurfaceAttribute;
  */
 class VOXIEBACKEND_EXPORT SurfaceData : public Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(SurfaceData)
+  VX_REFCOUNTEDOBJECT
 
  public:
   SurfaceData();
@@ -68,7 +68,7 @@ class VOXIEBACKEND_EXPORT SurfaceData : public Data {
  */
 class VOXIEBACKEND_EXPORT SurfaceDataTriangleIndexed : public SurfaceData {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(SurfaceDataTriangleIndexed)
+  VX_REFCOUNTEDOBJECT
 
   friend class SurfaceBuilder;
 

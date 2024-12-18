@@ -24,34 +24,35 @@
 #define HDF5_FORWARD_HPP_INCLUDED
 
 namespace HDF5 {
-  class Exception;
-  class ObjectReference;
+class Exception;
+class ObjectReference;
 
-  class IdComponent;
+class IdComponent;
 
-  class Attribute;
-  class File;
-  class DataSpace;
+class Attribute;
+class File;
+class DataSpace;
 
-  class Object;
-  class Group;
-  class DataSet;
+class Object;
+class Group;
+class DataSet;
 
-  class DataType;
-  class AtomicType;
-  class CompoundType;
-  class OpaqueType;
-  class ReferenceType;
+class DataType;
+class AtomicType;
+class CompoundType;
+class OpaqueType;
+class ReferenceType;
 
-  class PropList;
+class PropList;
 
+class MatlabSerializationContext;
+class MatlabDeserializationContext;
+class MatlabSerializationContextHandle;
+template <typename T>
+class MatlabDeserializationContextHandle;
 
-  class MatlabSerializationContext;
-  class MatlabDeserializationContext;
-  class MatlabSerializationContextHandle;
-  template <typename T> class MatlabDeserializationContextHandle;
+template <typename T>
+struct MatlabSerializer;
+}  // namespace HDF5
 
-  template <typename T> struct MatlabSerializer;
-}
-
-#endif // !HDF5_FORWARD_HPP_INCLUDED
+#endif  // !HDF5_FORWARD_HPP_INCLUDED

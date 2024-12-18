@@ -27,44 +27,53 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/Object.hpp>
 
 namespace HDF5 {
-  class Group : public Object {
-    void checkType () const;
+class Group : public Object {
+  void checkType() const;
 
-  public:
-    Group () {
-    }
+ public:
+  Group() {}
 
-    explicit Group (const IdComponent& value) : Object (value) {
-      checkType ();
-    }
+  explicit Group(const IdComponent& value) : Object(value) { checkType(); }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit Group (hid_t value) : Object (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit Group(hid_t value) : Object(value) { checkType(); }
 
-    static Group create (const File& file, GroupCreatePropList gcpl = GroupCreatePropList (), GroupAccessPropList gapl = GroupAccessPropList ());
+  static Group create(const File& file,
+                      GroupCreatePropList gcpl = GroupCreatePropList(),
+                      GroupAccessPropList gapl = GroupAccessPropList());
 
-    Object open (const std::string& name, LinkAccessPropList lapl = LinkAccessPropList ()) const;
-    bool exists (const std::string& name, LinkAccessPropList lapl = LinkAccessPropList ()) const;
+  Object open(const std::string& name,
+              LinkAccessPropList lapl = LinkAccessPropList()) const;
+  bool exists(const std::string& name,
+              LinkAccessPropList lapl = LinkAccessPropList()) const;
 
-    static void copyObject (const Group& srcLoc, const std::string& srcName, const Group& dstLoc, const std::string& dstName, ObjectCreatePropList ocpypl = ObjectCreatePropList (), LinkCreatePropList lcpl = LinkCreatePropList ());
+  static void copyObject(const Group& srcLoc, const std::string& srcName,
+                         const Group& dstLoc, const std::string& dstName,
+                         ObjectCreatePropList ocpypl = ObjectCreatePropList(),
+                         LinkCreatePropList lcpl = LinkCreatePropList());
 
-    ObjectReference getReferenceIfExists (const std::string& name, LinkAccessPropList lapl = LinkAccessPropList ()) const;
+  ObjectReference getReferenceIfExists(
+      const std::string& name,
+      LinkAccessPropList lapl = LinkAccessPropList()) const;
 
-    void link (const std::string& name, const Object& obj, LinkCreatePropList lcpl = LinkCreatePropList (), LinkAccessPropList lapl = LinkAccessPropList ()) const;
-    void linkIfNotNull (const std::string& name, const Object& obj, LinkCreatePropList lcpl = LinkCreatePropList (), LinkAccessPropList lapl = LinkAccessPropList ()) const;
+  void link(const std::string& name, const Object& obj,
+            LinkCreatePropList lcpl = LinkCreatePropList(),
+            LinkAccessPropList lapl = LinkAccessPropList()) const;
+  void linkIfNotNull(const std::string& name, const Object& obj,
+                     LinkCreatePropList lcpl = LinkCreatePropList(),
+                     LinkAccessPropList lapl = LinkAccessPropList()) const;
 
-    std::vector<std::string> list (H5_index_t indexType = H5_INDEX_NAME, H5_iter_order_t order = H5_ITER_INC) const;
-  };
-}
+  std::vector<std::string> list(H5_index_t indexType = H5_INDEX_NAME,
+                                H5_iter_order_t order = H5_ITER_INC) const;
+};
+}  // namespace HDF5
 
-#endif // !HDF5_GROUP_HPP_INCLUDED
+#endif  // !HDF5_GROUP_HPP_INCLUDED

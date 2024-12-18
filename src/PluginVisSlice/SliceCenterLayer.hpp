@@ -28,7 +28,7 @@ class SliceVisualizer;
 
 class SliceCenterLayer : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(SliceCenterLayer)
+  VX_REFCOUNTEDOBJECT
 
  public:
   SliceCenterLayer(SliceVisualizer* sv);
@@ -39,7 +39,8 @@ class SliceCenterLayer : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 
  private:
   SliceVisualizer* sv;

@@ -22,12 +22,17 @@
 
 #include "HDFImporter.hpp"
 
+#include <ExtFileHdf5/BoolHdf5.hpp>
+
 #include <VoxieClient/Array.hpp>
+#include <VoxieClient/Bool8.hpp>
 #include <VoxieClient/DBusAdaptors.hpp>
 #include <VoxieClient/DBusProxies.hpp>
 #include <VoxieClient/JsonDBus.hpp>
 
 #include <VoxieClient/ObjectExport/ExportedObject.hpp>
+
+#include <HDF5/EnumType.hpp>
 
 #include <half.hpp>
 
@@ -38,10 +43,9 @@
 using namespace vx;
 
 // TODO: Move somewhere else?
-// TODO: Also support Float16
-// TODO: Also support Bool8
 struct SupportedHDF5Types
     : vx::DataTypeExtList<
+          vx::DataTypeMeta<vx::BaseType::Float, 16, vx::Endianness::Native>,
           vx::DataTypeMeta<vx::BaseType::Float, 32, vx::Endianness::Native>,
           vx::DataTypeMeta<vx::BaseType::Float, 64, vx::Endianness::Native>,
           vx::DataTypeMeta<vx::BaseType::Int, 8, vx::Endianness::None>,
@@ -51,7 +55,8 @@ struct SupportedHDF5Types
           vx::DataTypeMeta<vx::BaseType::UInt, 8, vx::Endianness::None>,
           vx::DataTypeMeta<vx::BaseType::UInt, 16, vx::Endianness::Native>,
           vx::DataTypeMeta<vx::BaseType::UInt, 32, vx::Endianness::Native>,
-          vx::DataTypeMeta<vx::BaseType::UInt, 64, vx::Endianness::Native> > {};
+          vx::DataTypeMeta<vx::BaseType::UInt, 64, vx::Endianness::Native>,
+          vx::DataTypeMeta<vx::BaseType::Bool, 8, vx::Endianness::None>> {};
 
 // TODO: Move somewhere else?
 template <typename T, size_t N, size_t pos = 0>
@@ -85,75 +90,83 @@ vx::Vector<T, 3> toVector(const Math::DiagMatrix3<T>& m) {
   return {m.m11(), m.m22(), m.m33()};
 }
 
-std::tuple<vx::RefObjWrapper<de::uni_stuttgart::Voxie::Data>,
-           vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>
-static createGenericVolume(
+static std::tuple<vx::RefObjWrapper<de::uni_stuttgart::Voxie::Data>,
+                  vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>
+createGenericVolume(
     vx::DBusClient& dbusClient, HDF5::File file, DataTypeExt typeToUse,
     vx::ClaimedOperation<de::uni_stuttgart::Voxie::ExternalOperationImport>&
         op) {
+  // Note in order to workaround
+  // https://developercommunity.microsoft.com/t/Captured-parameter-not-visible-in-nested/10634637
+  // all captured variable have to be listed explicitly (in particular, op has
+  // to be listed)
   return vx::switchOverDataTypeExt<
       // AllSupportedTypesVolume,
       SupportedHDF5Types,
-      std::tuple<
-          vx::RefObjWrapper<de::uni_stuttgart::Voxie::Data>,
-          vx::RefObjWrapper<de::uni_stuttgart::Voxie::
-                                DataVersion>>>(typeToUse, [&](auto traits) {
-    using Traits = decltype(traits);
-    using Type = typename Traits::Type;
+      std::tuple<vx::RefObjWrapper<de::uni_stuttgart::Voxie::Data>,
+                 vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>>(
+      typeToUse, [&dbusClient, &file, &typeToUse, &op](auto traits) {
+        using Traits = decltype(traits);
+        using Type = typename Traits::Type;
 
-    std::shared_ptr<VolumeGen<Type, true>> volume =
-        HDF5::matlabDeserialize<VolumeGen<Type, true>>(file);
-    Math::Vector3<size_t> size = getSize(*volume);
+        std::shared_ptr<VolumeGen<Type, true>> volume =
+            HDF5::matlabDeserialize<VolumeGen<Type, true>>(file);
+        Math::Vector3<size_t> size = getSize(*volume);
 
-    // read meta data
-    vx::Vector<double, 3> origin(0, 0, 0);
-    if (volume->GridOrigin)
-      origin = vectorCastNarrow<double>(toVector(*volume->GridOrigin));
-    vx::Vector<double, 3> spacing(1, 1, 1);
-    if (volume->GridSpacing)
-      spacing = vectorCastNarrow<double>(toVector(*volume->GridSpacing));
+        // read meta data
+        vx::Vector<double, 3> origin(0, 0, 0);
+        if (volume->GridOrigin)
+          origin = vectorCastNarrow<double>(toVector(*volume->GridOrigin));
+        vx::Vector<double, 3> spacing(1, 1, 1);
+        if (volume->GridSpacing)
+          spacing = vectorCastNarrow<double>(toVector(*volume->GridSpacing));
 
-    // create and fill the voxel data object
-    vx::RefObjWrapper<de::uni_stuttgart::Voxie::VolumeDataVoxel> voxelData(
-        dbusClient,
-        HANDLEDBUSPENDINGREPLY(dbusClient.instance()->CreateVolumeDataVoxel(
-            dbusClient.clientPath(),
-            std::make_tuple(size.x(), size.y(), size.z()), typeToUse.toTuple(),
-            toTuple(origin), toTuple(spacing), vx::emptyOptions())));
-    auto data = voxelData.castUnchecked<de::uni_stuttgart::Voxie::Data>();
-    // VolumeDataVoxel::createVolume(size.x(), size.y(), size.z(),
-    // typeToUse);
+        // create and fill the voxel data object
+        vx::RefObjWrapper<de::uni_stuttgart::Voxie::VolumeDataVoxel> voxelData(
+            dbusClient,
+            HANDLEDBUSPENDINGREPLY(dbusClient.instance()->CreateVolumeDataVoxel(
+                dbusClient.clientPath(),
+                std::make_tuple(size.x(), size.y(), size.z()),
+                typeToUse.toTuple(), toTuple(origin), toTuple(spacing),
+                vx::emptyOptions())));
+        auto data = voxelData.castUnchecked<de::uni_stuttgart::Voxie::Data>();
+        // VolumeDataVoxel::createVolume(size.x(), size.y(), size.z(),
+        // typeToUse);
 
-    vx::RefObjWrapper<de::uni_stuttgart::Voxie::ExternalDataUpdate> update(
-        dbusClient, HANDLEDBUSPENDINGREPLY(data->CreateUpdate(
-                        dbusClient.clientPath(), vx::emptyOptions())));
+        vx::RefObjWrapper<de::uni_stuttgart::Voxie::ExternalDataUpdate> update(
+            dbusClient, HANDLEDBUSPENDINGREPLY(data->CreateUpdate(
+                            dbusClient.clientPath(), vx::emptyOptions())));
 
-    vx::Array3<Type> array(HANDLEDBUSPENDINGREPLY(
-        voxelData->GetDataWritable(update.path(), vx::emptyOptions())));
+        vx::Array3<Type> array(HANDLEDBUSPENDINGREPLY(
+            voxelData->GetDataWritable(update.path(), vx::emptyOptions())));
 
-    size_t shape[3] = {
-        array.template size<0>(),
-        array.template size<1>(),
-        array.template size<2>(),
-    };
-    ptrdiff_t stridesBytes[3] = {
-        array.template strideBytes<0>(),
-        array.template strideBytes<1>(),
-        array.template strideBytes<2>(),
-    };
-    Math::ArrayView<Type, 3> view(array.data(), shape, stridesBytes);
-    loadAndTransformTo<Type>(*volume, view, [&op](size_t pos, size_t count) {
-      op.throwIfCancelled();
-      HANDLEDBUSPENDINGREPLY(
-          op.opGen().SetProgress(1.0 * pos / count, vx::emptyOptions()));
-    });
+        size_t shape[3] = {
+            array.template size<0>(),
+            array.template size<1>(),
+            array.template size<2>(),
+        };
+        ptrdiff_t stridesBytes[3] = {
+            array.template strideBytes<0>(),
+            array.template strideBytes<1>(),
+            array.template strideBytes<2>(),
+        };
+        Math::ArrayView<Type, 3> view(array.data(), shape, stridesBytes);
+        // Using op2 iw a workaround for
+        // https://developercommunity.microsoft.com/t/Captured-parameter-not-visible-in-nested/10634637
+        auto& op2 = op;
+        loadAndTransformTo<Type>(
+            *volume, view, [&op2](size_t pos, size_t count) {
+              op2.throwIfCancelled();
+              HANDLEDBUSPENDINGREPLY(op2.opGen().SetProgress(
+                  1.0 * pos / count, vx::emptyOptions()));
+            });
 
-    vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion> newVersion(
-        dbusClient, HANDLEDBUSPENDINGREPLY(update->Finish(
-                        dbusClient.clientPath(), vx::emptyOptions())));
+        vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion> newVersion(
+            dbusClient, HANDLEDBUSPENDINGREPLY(update->Finish(
+                            dbusClient.clientPath(), vx::emptyOptions())));
 
-    return std::make_tuple(data, newVersion);
-  });
+        return std::make_tuple(data, newVersion);
+      });
 }
 
 // Can throw arbitrary exceptions
@@ -175,13 +188,6 @@ loadVoxelData(
       volume = (HDF5::DataSet)volumeObj;
     typeToUse = convertHDF5TypeToDataType(volume.getDataType());
     // create and fill the voxel data object
-  }
-
-  if (typeToUse ==
-          DataTypeExt(vx::BaseType::Float, 16, vx::Endianness::Native) ||
-      typeToUse == DataTypeExt(vx::BaseType::Bool, 8, vx::Endianness::None)) {
-    qWarning() << "Float16 and Boolean not yet implemented";
-    typeToUse = DataTypeExt(vx::BaseType::Float, 32, vx::Endianness::Native);
   }
 
   return createGenericVolume(dbusClient, file, typeToUse, op);
@@ -228,9 +234,9 @@ import(vx::DBusClient& dbusClient,
 }
 
 class TomographyRawData2DAccessorHDF5 : public RefCountedObject {
-  REFCOUNTEDOBJ_DECL(TomographyRawData2DAccessorHDF5)
+  VX_REFCOUNTEDOBJECT
 
-  DBusClient& dbusClientRef; // TODO: Don't keep a reference here
+  DBusClient& dbusClientRef;  // TODO: Don't keep a reference here
   QDBusConnection my_connection;
   HDF5::File file;
   std::shared_ptr<RawGen<float, true>> raw;
@@ -614,31 +620,31 @@ QString TomographyRawData2DAccessorHDF5::readImages(
         float /*should be float even if half or integer type is used for volume data*/>(
         *raw, data.view(), id);
 
-      vx::switchOverDataTypeExt<AllSupportedTypesRawData,
-                                       void>(outputType, [&](auto traits) {
-        using Traits = decltype(traits);
-        using ValueType = typename Traits::Type;
+      vx::switchOverDataTypeExt<AllSupportedTypesRawData, void>(
+          outputType, [&](auto traits) {
+            using Traits = decltype(traits);
+            using ValueType = typename Traits::Type;
 
-        vx::Array3<ValueType> array(HANDLEDBUSPENDINGREPLY(
-            output.GetDataWritable(update.path(), vx::emptyOptions())));
+            vx::Array3<ValueType> array(HANDLEDBUSPENDINGREPLY(
+                output.GetDataWritable(update.path(), vx::emptyOptions())));
 
-        for (size_t j = 0; j < std::get<0>(regionSize); j++) {
-          for (size_t k = 0; k < std::get<1>(regionSize); k++) {
-            array(std::get<0>(outputRegionStart) + j,
-                  std::get<1>(outputRegionStart) + k, imagePos) =
-                static_cast<ValueType>(data(std::get<0>(inputRegionStart) + j,
-                                            std::get<1>(outputRegionStart) + k,
-                                            0));
-          }
-        }
-      });
+            for (size_t j = 0; j < std::get<0>(regionSize); j++) {
+              for (size_t k = 0; k < std::get<1>(regionSize); k++) {
+                array(std::get<0>(outputRegionStart) + j,
+                      std::get<1>(outputRegionStart) + k, imagePos) =
+                    static_cast<ValueType>(
+                        data(std::get<0>(inputRegionStart) + j,
+                             std::get<1>(outputRegionStart) + k, 0));
+              }
+            }
+          });
 
       imagePos++;
     }
 
     vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion> version(
         dbusClientRef, HANDLEDBUSPENDINGREPLY(update->Finish(
-                        dbusClientRef.clientPath(), vx::emptyOptions())));
+                           dbusClientRef.clientPath(), vx::emptyOptions())));
     return version->versionString();
   } catch (Exception& e) {
     throw;
@@ -683,7 +689,25 @@ DataTypeExt convertHDF5TypeToDataType(HDF5::DataType type) {
           return DataTypeExt(BaseType::Int, 8, Endianness::None);
       }
     }
+  } else if (type.getClass() == H5T_ENUM) {
+    // auto baseType = type.getSuper();
+    auto typeEnum = (HDF5::EnumType)type;
+    // qDebug() << "typeEnum.nMembers()" << typeEnum.nMembers();
+    if (typeEnum.nMembers() == 2) {
+      auto mem0 = typeEnum.memberName(0);
+      auto mem1 = typeEnum.memberName(1);
+      /*
+      qDebug() << "member names" << QString::fromStdString(mem0)
+               << QString::fromStdString(mem1);
+      */
+      // TODO: Allow other enum names for true and false? Would also require
+      // changes in BoolHdf5.cpp (and maybe some way to make sure the "correct"
+      // DataType will be used).
+      if ((mem0 == "FALSE" && mem1 == "TRUE") ||
+          (mem0 == "TRUE" && mem1 == "FALSE"))
+        return DataTypeExt(BaseType::Bool, 8, Endianness::None);
+    }
   }
-  qWarning() << "Unknow HDF5::DataType. Falling back to DataType::Float32.";
+  qWarning() << "Unknown HDF5::DataType. Falling back to DataType::Float32.";
   return DataTypeExt(BaseType::Float, 32, Endianness::Native);
 }

@@ -25,6 +25,7 @@
 #include <Voxie/IVoxie.hpp>
 
 #include <VoxieClient/Exception.hpp>
+#include <VoxieClient/QtUtil.hpp>
 
 #include <QtCore/QDebug>
 
@@ -34,6 +35,8 @@ using namespace vx;
 
 void vx::showErrorMessage(const QString& title, const QString& message,
                           QMessageBox::Icon icon) {
+  vx::checkOnMainThread("vx::showErrorMessage");
+
   QString fullMessage = title + ": " + message;
   qWarning() << fullMessage.toStdString().c_str();
   auto box = new QMessageBox(icon, title, message, QMessageBox::Ok,

@@ -23,15 +23,15 @@
 #include "IdComponent.hpp"
 
 namespace HDF5 {
-  H5I_type_t IdComponent::getType () const {
-    H5I_type_t type = H5Iget_type (handle ());
-    if (type == H5I_BADID)
-      ABORT_MSG ("H5I_type_t returned H5I_BADID");
-    else if (type == H5I_UNINIT)
-      ABORT_MSG ("H5I_type_t returned H5I_UNINIT");
-    else if (type < 0)
-      ABORT_MSG ("H5I_type_t returned negative value");
-    else
-      return type;
-  }
+H5I_type_t IdComponent::getType() const {
+  H5I_type_t type = H5Iget_type(handle());
+  if (type == H5I_BADID)
+    ABORT_MSG("H5I_type_t returned H5I_BADID");
+  else if (type == H5I_UNINIT)
+    ABORT_MSG("H5I_type_t returned H5I_UNINIT");
+  else if (type < 0)
+    ABORT_MSG("H5I_type_t returned negative value");
+  else
+    return type;
 }
+}  // namespace HDF5

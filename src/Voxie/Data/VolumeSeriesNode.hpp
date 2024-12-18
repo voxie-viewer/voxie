@@ -26,7 +26,7 @@
 
 #include <Voxie/MathQt.hpp>
 
-#include <Voxie/Data/PositionInterface.hpp>
+#include <Voxie/Data/MovableDataNode.hpp>
 #include <Voxie/Data/Prototypes.forward.hpp>
 
 #include <Voxie/Node/DataNode.hpp>
@@ -56,21 +56,21 @@ namespace vx {
 class VolumeSeriesData;
 class BoundingBox3D;
 
-class VOXIECORESHARED_EXPORT VolumeSeriesNode : public PositionInterface {
+class VOXIECORESHARED_EXPORT VolumeSeriesNode : public MovableDataNode {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(VolumeSeriesNode)
+  VX_REFCOUNTEDOBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Data.VolumeSeries")
 
  private:
-  VolumeSeriesProperties* properties;
   QSharedPointer<VolumeSeriesData> dataPointer;
 
  public:
-  static QSharedPointer<NodePrototype> getPrototypeSingleton();
-
   explicit VolumeSeriesNode();
   ~VolumeSeriesNode();
 
   QSharedPointer<Data> data() override;
+
+  BoundingBox3D boundingBoxObject() override;
 
  protected:
   void setDataImpl(const QSharedPointer<Data>& data) override;

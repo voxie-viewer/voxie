@@ -34,10 +34,13 @@
 
 #include <Voxie/Gui/EventListNodeView.hpp>
 
+VX_NODE_INSTANTIATION(vx::EventListNode)
+
 using namespace vx;
 
 EventListNode::EventListNode()
-    : DataNode("EventList", getPrototypeSingleton()) {
+    : DataNode("EventList", getPrototypeSingleton()),
+      properties(new PropertiesType(this)) {
   this->addPropertySection(new EventListNodeView(this));
 }
 
@@ -57,5 +60,3 @@ void EventListNode::setDataImpl(const QSharedPointer<Data>& data) {
                         "Not an EventListDataAccessor object");
   data_ = dataCast;
 }
-
-NODE_PROTOTYPE_IMPL_SEP(EventListData, EventListNode)

@@ -7,7 +7,14 @@
             "Patterns": [
                 "*.bd",
                 "*.dd"
-            ]
+            ],
+            "Properties": {
+                "de.uni_stuttgart.Voxie.FileFormat.BAMCT.Raw.WhiteValue": {
+                    "DisplayName": "White value",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0
+                }
+            }
         }
     ]
 }

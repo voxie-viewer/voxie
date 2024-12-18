@@ -284,9 +284,6 @@ void PlaneShader::drawTexture(QSharedPointer<PlaneData> planeData,
   vao.release();
 }
 
-void PlaneShader::updateBuffers(QSharedPointer<PlaneData> planeData) {
-  updateBuffers(planeData, planeData->getBoundingRectangle());
-}
 void PlaneShader::updateBuffers(QSharedPointer<PlaneData> planeData,
                                 const QRectF& bbox) {
   auto vertexBuffer = planeData->getVertexBuffer();

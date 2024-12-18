@@ -24,6 +24,8 @@
 
 #include <Voxie/Voxie.hpp>
 
+#include <VoxieClient/Vector.hpp>
+
 #include <QtCore/QProcess>
 
 #include <QtWidgets/QLabel>
@@ -38,7 +40,7 @@ class ComponentContainer;
 class ExtensionLauncher;
 class Plugin;
 class VisualizerNode;
-enum class VisualizerWindowMode;
+enum class WindowMode;
 class VolumeNode;
 class RawNode;
 class Slice;
@@ -80,6 +82,7 @@ class VOXIECORESHARED_EXPORT IDirectoryManager {
   virtual const QString& docTopicPath() const = 0;
   virtual const QString& licensesPath() const = 0;
   virtual const QString& katexPath() const = 0;
+  virtual const QString& simpleCssPath() const = 0;
 };
 
 class VOXIECORESHARED_EXPORT IVoxie {
@@ -95,7 +98,8 @@ class VOXIECORESHARED_EXPORT IVoxie {
    *
    * Registers and shows a section. Voxie takes ownership of the section.
    */
-  virtual void registerSection(QWidget* section, bool closeable = false) = 0;
+  // TODO: Remove this? Seems to be unused.
+  virtual void registerSection(QWidget* section) = 0;
 
   virtual void registerNode(const QSharedPointer<vx::Node>& obj) = 0;
 
@@ -131,22 +135,25 @@ class VOXIECORESHARED_EXPORT IVoxie {
 
   virtual void handleLink(const QString& url) = 0;
 
-  virtual QVector2D getGraphPosition(vx::Node* obj) = 0;
+  virtual vx::Vector<double, 2> getGraphPosition(vx::Node* obj) = 0;
 
-  virtual void setGraphPosition(vx::Node* obj, const QVector2D& pos) = 0;
+  virtual void setGraphPosition(vx::Node* obj,
+                                const vx::Vector<double, 2>& pos) = 0;
 
-  virtual QVector2D getVisualizerPosition(vx::VisualizerNode* obj) = 0;
+  virtual vx::Vector<double, 2> getVisualizerPosition(
+      vx::VisualizerNode* obj) = 0;
 
   virtual void setVisualizerPosition(vx::VisualizerNode* obj,
-                                     const QVector2D& pos) = 0;
+                                     const vx::Vector<double, 2>& pos) = 0;
 
-  virtual QVector2D getVisualizerSize(vx::VisualizerNode* obj) = 0;
+  virtual vx::Vector<double, 2> getVisualizerSize(vx::VisualizerNode* obj) = 0;
 
   virtual void setVisualizerSize(vx::VisualizerNode* obj,
-                                 const QVector2D& size) = 0;
+                                 const vx::Vector<double, 2>& size) = 0;
 
+  virtual WindowMode getVisualizerWindowMode(vx::VisualizerNode* obj) = 0;
   virtual void setVisualizerWindowMode(vx::VisualizerNode* obj,
-                                       VisualizerWindowMode mode) = 0;
+                                       WindowMode mode) = 0;
 
   virtual bool isAttached(vx::VisualizerNode* obj) = 0;
 
@@ -165,6 +172,15 @@ class VOXIECORESHARED_EXPORT IVoxie {
   virtual void createDataNodeUI(vx::DataNode* obj) = 0;
 
   virtual QSharedPointer<ComponentContainer> components() = 0;
+
+  virtual void openHelpForUri(const QString& uri) = 0;
+  // TODO: Remove?
+  virtual void openMarkdownString(const QString& uri, const QString& title,
+                                  const QString& markdown,
+                                  const QUrl& baseUrl) = 0;
+  // TODO: Remove?
+  virtual void openHtmlString(const QString& uri, const QString& title,
+                              const QString& html, const QUrl& baseUrl) = 0;
 };
 
 void VOXIECORESHARED_EXPORT setVoxieRoot(IVoxie* voxie);

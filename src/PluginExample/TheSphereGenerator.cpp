@@ -35,6 +35,8 @@
 
 #include <math.h>
 
+VX_NODE_INSTANTIATION(TheSphereGenerator)
+
 using namespace vx;
 using namespace vx::io;
 
@@ -124,5 +126,3 @@ QSharedPointer<vx::io::RunFilterOperation> TheSphereGenerator::calculate(
   output->setData(data);
   return operation;
 }
-
-NODE_PROTOTYPE_IMPL(TheSphereGenerator)

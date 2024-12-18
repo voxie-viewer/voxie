@@ -57,7 +57,7 @@ class PropertyAdaptorImpl : public PropertyAdaptor {
 PropertyBase::PropertyBase(
     const QString& propertyName, const QJsonObject& data,
     const QSharedPointer<ComponentContainer>& propertyTypeContainer)
-    : ExportedObject("PropertyBase") {
+    : RefCountedObject("PropertyBase") {
   _name = propertyName;
   auto compatibilityNames = data["CompatibilityNames"].toArray();
   for (const auto& compatName : compatibilityNames)

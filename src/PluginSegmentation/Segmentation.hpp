@@ -58,7 +58,7 @@ enum sliceVisOrientation { XY, XZ, YZ };
 namespace filters {
 
 class Segmentation : public FilterNode, public SegmentationI {
-  NODE_PROTOTYPE_DECL(Segmentation)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Filter.Segmentation")
 
  public:
   Segmentation();
@@ -76,6 +76,8 @@ class Segmentation : public FilterNode, public SegmentationI {
   bool isCreatableChild(NodeKind object) override;
 
  private:
+  // TODO: This does not seem to handle that the slice visualizers can be
+  // destroyed
   SliceVisualizerI* SliceVisualizerXY = nullptr;
   SliceVisualizerI* SliceVisualizerYZ = nullptr;
   SliceVisualizerI* SliceVisualizerXZ = nullptr;
@@ -87,7 +89,6 @@ class Segmentation : public FilterNode, public SegmentationI {
   SegmentationWidget* segmentationWidget;
   StepManager* stepManager = nullptr;
 
-  ContainerNode* labelContainer = nullptr;
   QSharedPointer<TableData> labelTablePointer = QSharedPointer<TableData>();
   vx::VectorSizeT3 lastDimensions = vx::VectorSizeT3(0, 0, 0);
   const QQuaternion rotationXZ =

@@ -96,7 +96,7 @@ def process(instance, cwd, files, options, argOptions):
                     'de.uni_stuttgart.Voxie.Input': voxie.Variant('ao', [obj]),
                     'de.uni_stuttgart.Voxie.Filter.CreateSurface.Threshold': voxie.Variant('d', threshold),
                 })
-            if 'slice' in options and 'de.uni_stuttgart.Voxie.VolumeData' in interfaces:
+            if 'slice' in options and ('de.uni_stuttgart.Voxie.VolumeData' in interfaces or 'de.uni_stuttgart.Voxie.VolumeSeriesData' in interfaces):
                 instance.GetPrototype('de.uni_stuttgart.Voxie.Visualizer.Slice').CreateObject({
                     'de.uni_stuttgart.Voxie.Visualizer.Slice.Volume': voxie.Variant('o', obj),
                 })

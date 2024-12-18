@@ -174,6 +174,16 @@ QSharedPointer<OperationResult> ExtensionSegmentationStep::calculate(
     result["Properties"] =
         dbusMakeVariant<QMap<QString, QDBusVariant>>(propertiesDBus);
 
+    if (parameterCopy->extensionInfo().contains(nodePath)) {
+      auto info = parameterCopy->extensionInfo()[nodePath];
+      QMap<QString, QDBusVariant> infoDBus;
+      for (const auto& name : info.keys()) {
+        infoDBus[name] = dbusMakeVariant<QString>(info[name]);
+      }
+      result["ExtensionInfo"] =
+          dbusMakeVariant<QMap<QString, QDBusVariant>>(infoDBus);
+    }
+
     if (parameterCopy->dataMap().contains(nodePath)) {
       auto info = parameterCopy->getData(nodePath);
       if (!info.data()) {
@@ -230,6 +240,16 @@ QSharedPointer<OperationResult> ExtensionSegmentationStep::calculate(
   auto opRes = OperationResult::create(op);
 
   return opRes;
+}
+
+QMap<QString, QString> ExtensionSegmentationStep::getExtensionInfo() {
+  auto ext =
+      qSharedPointerDynamicCast<Extension>(this->prototype()->container());
+  if (!ext) {
+    throw Exception("de.uni_stuttgart.Voxie.InternalError",
+                    "extension is nullptr in ExtensionSegmentationStep");
+  }
+  return ext->getExtensionInfo();
 }
 
 QString ExtensionSegmentationStep::getInfoString() { return this->infoString; }

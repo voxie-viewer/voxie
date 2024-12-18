@@ -33,37 +33,38 @@
 #include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_volatile.hpp>
 
-#include <boost/type_traits/alignment_of.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
+#include <boost/type_traits/alignment_of.hpp>
 
 namespace Core {
-  namespace Type {
-    std::string getName (const std::type_info& info);
+namespace Type {
+std::string getName(const std::type_info& info);
 
-    template <typename T> inline std::string getName () {
-      std::string result = getName (typeid (T));
-      if (boost::is_const<T>::value)
-        result += " const";
-      if (boost::is_volatile<T>::value)
-        result += " volatile";
-      return result;
-    }
-
-    // Return the offset of a pointer-to-member
-    // Might cause problems for types with a vtable pointer (in particular for
-    // types with virtual inheritance)
-    template <typename C, typename V>
-    NVCC_HOST_DEVICE static inline size_t getOffset (V C::* ptr) {
-      static_assert (std::is_standard_layout<C>::value, "C is not a standard layout type");
-      // This works, but is not portable
-      // return ((char*) &(((C*) 0)->*ptr)) - ((char*) 0);
-
-      // This should be more or less portable. The compiler should optimize this
-      // to the above form
-      typename boost::aligned_storage<sizeof (V), boost::alignment_of<V>::value>::type val;
-      return ((char*) &(((C*) &val)->*ptr)) - ((char*) &val);
-    }
-  }
+template <typename T>
+inline std::string getName() {
+  std::string result = getName(typeid(T));
+  if (boost::is_const<T>::value) result += " const";
+  if (boost::is_volatile<T>::value) result += " volatile";
+  return result;
 }
 
-#endif // !CORE_TYPE_HPP_INCLUDED
+// Return the offset of a pointer-to-member
+// Might cause problems for types with a vtable pointer (in particular for
+// types with virtual inheritance)
+template <typename C, typename V>
+NVCC_HOST_DEVICE static inline size_t getOffset(V C::*ptr) {
+  static_assert(std::is_standard_layout<C>::value,
+                "C is not a standard layout type");
+  // This works, but is not portable
+  // return ((char*) &(((C*) 0)->*ptr)) - ((char*) 0);
+
+  // This should be more or less portable. The compiler should optimize this
+  // to the above form
+  typename boost::aligned_storage<sizeof(V),
+                                  boost::alignment_of<V>::value>::type val;
+  return ((char*)&(((C*)&val)->*ptr)) - ((char*)&val);
+}
+}  // namespace Type
+}  // namespace Core
+
+#endif  // !CORE_TYPE_HPP_INCLUDED

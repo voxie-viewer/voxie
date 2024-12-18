@@ -12,7 +12,7 @@
             "Properties": {
                 "de.uni_stuttgart.Voxie.ContainerNode": {
                     "AllowedNodePrototypes": [
-                        "de.uni_stuttgart.Voxie.Data.ContainerNode"
+                        "de.uni_stuttgart.Voxie.Data.Container"
                     ],
                     "RequiredTags": [],
                     "DisplayName": "ContainerNode",

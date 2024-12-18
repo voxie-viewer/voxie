@@ -21,16 +21,25 @@
  */
 
 #pragma once
+
+#include <Voxie/DebugOptions.hpp>
+
 #include <Voxie/Data/ContainerData.hpp>
 #include <Voxie/Data/LabelViewModel.hpp>
 #include <Voxie/Data/TableData.hpp>
+
 #include <Voxie/Node/SegmentationStep.hpp>
+
 #include <VoxieBackend/Data/DataType.hpp>
 #include <VoxieBackend/Data/PlaneInfo.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxel.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxelInst.hpp>
 #include <VoxieBackend/IO/Operation.hpp>
+
 #include <VoxieClient/QtUtil.hpp>
+#include <VoxieClient/RunParallel.hpp>
+#include <VoxieClient/Task.hpp>
+
 #include <set>
 
 namespace vx {
@@ -55,6 +64,7 @@ void inline clearBit(SegmentationType& data, SegmentationType pos) {
 // color palette used for segmentation label coloring
 extern QList<QColor> defaultColorPalette;
 
+// TODO: Update documentation
 /**
  * @brief Calls iterateAllVoxels for the labelVolume. Converts VolumeData to
  * VolumeDataInstance assuming SegmentationType as datatype. Creates inner
@@ -64,24 +74,22 @@ extern QList<QColor> defaultColorPalette;
  * @param containerData compound of segmentation containing labelTable &
  * labelVolume
  */
-template <typename Functor>
+template <typename F>
 void inline iterateAllLabelVolumeVoxels(
-    Functor voxelFunc, QSharedPointer<ContainerData> containerData,
-    QSharedPointer<vx::io::Operation> op, bool emitFinished = true) {
+    const QSharedPointer<ContainerData>& containerData,
+    const QSharedPointer<DataUpdate>& containerDataUpdate, Task* task,
+    CancellationToken* cancellationToken, const F& f) {
   // cast output to VolumeDataVoxelInst SegmentationType as we know its type
-
   QSharedPointer<VolumeDataVoxelInst<SegmentationType>> compoundVoxelDataInst =
       qSharedPointerDynamicCast<VolumeDataVoxelInst<SegmentationType>>(
           containerData->getElement("labelVolume"));
 
-  auto outerUpdate = containerData->createUpdate();
   auto update = compoundVoxelDataInst->createUpdate(
-      {{containerData->getPath(), outerUpdate}});
+      {{containerData->getPath(), containerDataUpdate}});
 
-  iterateAllVoxels(voxelFunc, compoundVoxelDataInst, op, emitFinished);
+  iterateAllVoxels(compoundVoxelDataInst, update, task, cancellationToken, f);
 
   update->finish({});
-  outerUpdate->finish({});
 }
 
 /**
@@ -136,10 +144,19 @@ void inline iterateAllPassedVoxels(
     return;
   }
 
+  if (vx::debug_option::Log_Segmentation_IterateVoxels()->get())
+    qDebug() << "iterateAllPassedVoxels start";
+  QElapsedTimer timer;
+  timer.start();
+
   for (auto voxelIndex : voxelIndexes) {
     voxelFunc(std::get<0>(voxelIndex), std::get<1>(voxelIndex),
               std::get<2>(voxelIndex), labelDataIn);
   }
+
+  if (vx::debug_option::Log_Segmentation_IterateVoxels()->get())
+    qDebug() << "iterateAllPassedVoxels end, took" << timer.elapsed() << "ms";
+
   if (emitFinished) executeOnMainThread([op, result]() { op->finish(result); });
 }
 
@@ -151,30 +168,104 @@ void inline iterateAllPassedVoxels(
  * voxel
  * @param labelDataIn volume data on which the voxel function shall be performed
  */
-template <typename Functor>
-void inline iterateAllVoxels(
-    Functor voxelFunc,
-    QSharedPointer<VolumeDataVoxelInst<SegmentationType>> labelDataIn,
-    QSharedPointer<vx::io::Operation> op, bool emitFinished = true) {
-  auto result = createQSharedPointer<vx::io::Operation::ResultSuccess>();
-  const vx::VectorSizeT3& labelDim = labelDataIn->getDimensions();
+template <typename F, typename T>
+void inline iterateAllVoxels(const QSharedPointer<VolumeDataVoxelInst<T>>& data,
+                             const QSharedPointer<DataUpdate>& dataUpdate,
+                             Task* task, CancellationToken* cancellationToken,
+                             const F& f) {
+  const vx::VectorSizeT3& labelDim = data->getDimensions();
 
-  if (!labelDataIn) {
+  if (dataUpdate->data() != data)
+    throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
+                        "iterateAllVoxels(): dataUpdate->data() != data");
+
+  if (!data) {
     qWarning() << "Segmentation::iterateAllVoxels(): Null pointer in input";
     return;
   }
 
-  for (size_t x = 0; x < labelDim.x; x++) {
-    for (size_t y = 0; y < labelDim.y; y++) {
-      op->throwIfCancelled();
+  if (vx::debug_option::Log_Segmentation_IterateVoxels()->get())
+    qDebug() << "iterateAllVoxels start";
+  QElapsedTimer timer;
+  timer.start();
+
+  // qDebug() << labelDim.x << labelDim.y << labelDim.z
+  //          << (void*)data->getData();
+  if (0) {
+    // Sequential
+    // Run prepare function
+    f([&](const auto& f2) {
       for (size_t z = 0; z < labelDim.z; z++) {
-        voxelFunc(x, y, z, labelDataIn);
+        if (cancellationToken) cancellationToken->throwIfCancelled();
+        for (size_t y = 0; y < labelDim.y; y++) {
+          for (size_t x = 0; x < labelDim.x; x++) {
+            f2(x, y, z, data);
+          }
+        }
+        if (task) task->setProgress(1.0f * z / labelDim.z);
       }
-    }
-    op->updateProgress(1.0f * x / labelDim.x);
+    });
+  } else {
+    // Parallel
+    runParallelDynamicPrepare(task, cancellationToken, labelDim.z,
+                              [&](const auto& cb) {
+                                // This code will run for each thread
+                                // Run caller's prepare function
+                                f([&](const auto& f2) {
+                                  // Loop over all z values
+                                  cb([&](size_t z) {
+                                    if (cancellationToken)
+                                      cancellationToken->throwIfCancelled();
+                                    for (size_t y = 0; y < labelDim.y; y++) {
+                                      for (size_t x = 0; x < labelDim.x; x++) {
+                                        f2(x, y, z, data);
+                                      }
+                                    }
+                                  });
+                                });
+                              });
   }
-  if (emitFinished) executeOnMainThread([op, result]() { op->finish(result); });
+
+  if (vx::debug_option::Log_Segmentation_IterateVoxels()->get())
+    qDebug() << "iterateAllVoxels end, took" << timer.elapsed() << "ms";
 }
+
+class LabelChangeTracker {
+  // TODO: Use QMap or array?
+  QMap<qint64, qint64> changeMap;
+  qint64 selected = 0;
+
+ public:
+  // TODO: Pass label volume + update to ctor?
+  LabelChangeTracker();
+  ~LabelChangeTracker();
+
+  // Note: Nothing here is safe for multithreading
+
+  const QMap<qint64, qint64>& getChanges() const;
+  qint64 getSelectedChange() const;
+
+  void mergeChangesFrom(const LabelChangeTracker& other);
+
+  void set(
+      const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>& labelData,
+      size_t x, size_t y, size_t z, SegmentationType newValue,
+      bool isSelected) {
+    auto oldValue = labelData->getVoxel(x, y, z);
+    bool wasSelected = getBit(oldValue, segmentationShift);
+    clearBit(oldValue, segmentationShift);
+
+    SegmentationType newVoxelValue = newValue;
+    if (isSelected) setBit(newVoxelValue, segmentationShift);
+    labelData->setVoxel(x, y, z, newVoxelValue);
+
+    if (oldValue != 0) changeMap[oldValue]--;
+    if (newValue != 0) changeMap[newValue]++;
+
+    if (wasSelected) selected--;
+    if (isSelected) selected++;
+  }
+};
 
 QList<voxel_index> inline getVoxelListFromSet(std::set<voxel_index> input) {
   QList<voxel_index> returnList;
@@ -197,7 +288,7 @@ QList<voxel_index> inline getVoxelListFromSet(std::set<voxel_index> input) {
  * old values, false: new values override existing values in table
  */
 void inline updateStatistics(QSharedPointer<ContainerData> containerData,
-                             QMap<qint64, qint64>& labelVoxelChangeMap,
+                             const QMap<qint64, qint64>& labelVoxelChangeMap,
                              bool isCumulative = true) {
   auto outerUpdate = containerData->createUpdate();
 
@@ -236,6 +327,11 @@ void inline updateStatistics(QSharedPointer<ContainerData> containerData,
   }
   update->finish({});
   outerUpdate->finish({});
+}
+// TODO: Reuse outerUpdate
+void inline updateStatistics(const QSharedPointer<ContainerData>& containerData,
+                             const LabelChangeTracker& tracker) {
+  updateStatistics(containerData, tracker.getChanges(), true);
 }
 
 /**
@@ -388,5 +484,10 @@ class IndexCalculator {
    */
   QList<voxel_index> getFoundVoxels();
 };
+
+// TODO: Avoid need for this by making Task a parent class of Operation
+// TODO: Move somewhere else?
+void forwardProgressFromTaskToOperation(Task* task,
+                                        vx::io::Operation* operation);
 
 }  // namespace vx

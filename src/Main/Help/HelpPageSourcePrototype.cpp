@@ -115,7 +115,7 @@ class HelpPageSourcePrototype : public HelpPageSource {
 
     // Parse markdown document
     // https://github.com/commonmark/commonmark-spec/blob/master/CommonMark.dtd
-    auto rootNode = vx::cmark::Node::parseDocument(markdownSource);
+    auto rootNode = vx::cmark::parseDocumentWithExtensions(markdownSource);
 
     // Move all nodes from rootNode to doc
     doc->appendAllChildrenOf(rootNode);

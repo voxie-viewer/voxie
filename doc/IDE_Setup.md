@@ -62,7 +62,7 @@ The content of "tasks.json" should be:
         {
             "type": "shell",
             "label": "Build Voxie (debug)",
-            "command": "${workspaceFolder}/tools/build.sh",
+            "command": "${workspaceFolder}/tools/build",
             "args": [
                 "--debug"
             ],

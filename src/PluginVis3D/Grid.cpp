@@ -26,9 +26,13 @@
 #include <PluginVis3D/Grid3DWidget.hpp>
 #include <PluginVis3D/Prototypes.hpp>
 
+#include <Voxie/MathQt.hpp>
+
 #include <Voxie/Node/NodePrototype.hpp>
 
 #include <Voxie/Vis/OpenGLWidget.hpp>
+
+VX_NODE_INSTANTIATION(vx::vis3d::Grid)
 
 using namespace vx;
 using namespace vx::visualization;
@@ -87,7 +91,9 @@ void Grid::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
   auto preferedLength = context.pixelSize() * 30;
   auto bb = context.boundingBox();
   OpenGLDrawUtils::PrimitiveBuffer buffer;
-  this->grid3D->drawGrid(buffer, bb.min(), bb.max(), preferedLength);
+  this->grid3D->drawGrid(buffer, toQVector(vectorCastNarrow<float>(bb.min())),
+                         toQVector(vectorCastNarrow<float>(bb.max())),
+                         preferedLength);
 
   psg->functions.glEnable(GL_BLEND);
   psg->functions.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -101,5 +107,3 @@ BoundingBox3D Grid::getBoundingBox() {
   // The grid 3D object does not influence the bounding box
   return BoundingBox3D::empty();
 }
-
-NODE_PROTOTYPE_IMPL(Grid)

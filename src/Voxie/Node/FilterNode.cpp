@@ -311,7 +311,8 @@ QSharedPointer<vx::io::RunFilterOperation> FilterNode::run(
         this->runParameters = createQSharedPointer<WeakParameterCopy>(
             this->runParameters->mainNodePath(),
             this->runParameters->properties(),
-            this->runParameters->prototypes(), newDataMap);
+            this->runParameters->prototypes(),
+            this->runParameters->extensionInfo(), newDataMap);
       });
 
   return op;
@@ -325,6 +326,8 @@ bool FilterNode::needsRecalculation() {
   if (!currentParams || !runParameters) return true;
   return *currentParams != *runParameters;
 }
+
+QMap<QString, QString> FilterNode::getExtensionInfo() { return {}; }
 
 void FilterNode::triggerAutomaticFilterRun() {
   if (this->automaticFilterRunRunning) {

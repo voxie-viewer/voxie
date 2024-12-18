@@ -29,7 +29,7 @@
 namespace vx {
 class VOXIEBACKEND_EXPORT DynamicObject : public vx::RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(DynamicObject)
+  VX_REFCOUNTEDOBJECT
 
  public:
   DynamicObject(const QString& name);

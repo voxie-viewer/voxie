@@ -61,11 +61,11 @@ EXE="$VOXIE_BUILD_SRC/Main/voxie"
 if [ "$1" = "--build" ]; then
     shift
     echo "Building voxie..."
-    "$POS/tools/build.sh" $BUILD_FLAGS
+    "$POS/tools/build" $BUILD_FLAGS
     echo "Building voxie finished."
 elif [ ! -f "$EXE" ]; then
     echo "Could not find $EXE" >&2
-    echo "Run 'tools/build.sh' or './voxie.sh --build' to build voxie" >&2
+    echo "Run 'tools/build' or './voxie.sh --build' to build voxie" >&2
     exit 1
 fi
 

@@ -26,6 +26,11 @@
 
 #include <VoxieClient/ObjectExport/Client.hpp>
 
+#include <VoxieBackend/Data/DataProperty.hpp>
+#include <VoxieBackend/Data/ReplaceMode.hpp>
+
+#include <VoxieBackend/Property/PropertyType.hpp>
+
 #include <VoxieBackend/IO/Exporter.hpp>
 
 #include <VoxieClient/DBusAdaptors.hpp>
@@ -102,6 +107,74 @@ class DataAdaptorImpl : public DataAdaptor {
     } catch (Exception& e) {
       e.handle(object);
       return ExportedObject::getPath(nullptr);
+    }
+  }
+
+  QList<QDBusObjectPath> ListProperties(
+      const QMap<QString, QDBusVariant>& options) override {
+    try {
+      ExportedObject::checkOptions(options);
+
+      QList<QDBusObjectPath> res;
+      for (const auto& property : object->listProperties())
+        res << ExportedObject::getPath(property);
+
+      return res;
+    } catch (Exception& e) {
+      return e.handle(object);
+    }
+  }
+
+  QDBusVariant GetProperty(
+      const QDBusObjectPath& property,
+      const QMap<QString, QDBusVariant>& options) override {
+    try {
+      ExportedObject::checkOptions(options, "AllowMissing");
+
+      auto propertyObj = DataProperty::lookup(property);
+
+      auto allowMissing = ExportedObject::getOptionValueOrDefault<bool>(
+          options, "AllowMissing", false);
+
+      auto valueRaw = object->getProperty(propertyObj, allowMissing);
+
+      if (valueRaw.isValid()) {
+        return propertyObj->type()->rawToDBus(valueRaw);
+      } else {
+        // https://bugreports.qt.io/browse/QTBUG-124919
+        // return dbusMakeVariant<QDBusSignature>(QDBusSignature(""));
+        return dbusMakeVariant<QDBusSignature>(QDBusSignature("n"));
+      }
+    } catch (Exception& e) {
+      return e.handle(object);
+    }
+  }
+
+  void SetProperty(const QDBusObjectPath& update,
+                   const QDBusObjectPath& property, const QDBusVariant& value,
+                   const QMap<QString, QDBusVariant>& options) override {
+    try {
+      ExportedObject::checkOptions(options, "ReplaceMode");
+
+      auto updateObj = DataUpdate::lookup(update);
+      auto propertyObj = DataProperty::lookup(property);
+
+      auto replaceModeStr = ExportedObject::getOptionValueOrDefault<QString>(
+          options, "ReplaceMode", "de.uni_stuttgart.Voxie.ReplaceMode.Insert");
+      auto replaceMode = parseReplaceMode(replaceModeStr);
+
+      QVariant valueRaw;
+      if (dbusGetVariantSignature(value) != QDBusSignature("g") ||
+          (dbusGetVariantValue<QDBusSignature>(value).signature() != "" &&
+           dbusGetVariantValue<QDBusSignature>(value).signature() != "n")) {
+        valueRaw = propertyObj->type()->dbusToRaw(value);
+      } else {
+        valueRaw = QVariant();  // Use invalid QVariant to remove value
+      }
+
+      object->setProperty(updateObj, propertyObj, valueRaw, replaceMode);
+    } catch (Exception& e) {
+      e.handle(object);
     }
   }
 };
@@ -272,6 +345,98 @@ void Data::removeContainer(const QDBusObjectPath& path) {
     } else {
       info.refCount = info.refCount - 1;
     }
+  }
+}
+
+QList<QSharedPointer<DataProperty>> Data::listProperties() {
+  vx::checkOnMainThread("Data::listProperties");
+
+  QList<QSharedPointer<DataProperty>> res;
+  for (const auto& entry : this->dataProperties.values()) res << entry.property;
+  return res;
+}
+
+QVariant Data::getProperty(const QSharedPointer<DataProperty>& property,
+                           bool allowMissing) {
+  vx::checkOnMainThread("Data::getProperty");
+
+  QString key = property->name();
+
+  if (!this->dataProperties.contains(key)) {
+    if (allowMissing) return QVariant();
+    throw vx::Exception("de.uni_stuttgart.Voxie.KeyNotFound",
+                        "Failed to look up data property");
+  }
+  const auto& val = this->dataProperties[key];
+
+  if (!val.value.isValid())
+    throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
+                        "Got invalid data property value");
+
+  if (val.property != property) {
+    // TODO: Consider similar data property objects the same to some extend?
+    throw vx::Exception("de.uni_stuttgart.Voxie.DifferentPropertyDefinition",
+                        "Data property has different definition");
+  }
+
+  return val.value;
+}
+
+void Data::setProperty(const QSharedPointer<DataUpdate>& update,
+                       const QSharedPointer<DataProperty>& property,
+                       const QVariant& value, ReplaceMode replaceMode) {
+  vx::checkOnMainThread("Data::setProperty");
+
+  update->validateCanUpdate(this);
+
+  // TODO: Consider similar data property objects the same to some extend?
+
+  QString key = property->name();
+
+  bool haveNewData = value.isValid();
+
+  // Check data
+  if (haveNewData) property->type()->verifyValueWithoutProperty(value);
+
+  bool contains = this->dataProperties.contains(key);
+
+  switch (replaceMode) {
+    case ReplaceMode::Insert: {
+      if (contains)
+        throw vx::Exception("de.uni_stuttgart.Voxie.DuplicateKey",
+                            "Attempting to insert duplicate data property");
+      break;
+    }
+    case ReplaceMode::InsertOrReplace: {
+      break;
+    }
+    case ReplaceMode::ReplaceExisting: {
+      if (!contains)
+        throw vx::Exception("de.uni_stuttgart.Voxie.KeyNotFound",
+                            "Failed to look up key to replace");
+      break;
+    }
+    case ReplaceMode::InsertOrSame: {
+      if (contains) {
+        const auto& oldValue = this->dataProperties[key];
+        if (oldValue.property != property || oldValue.value != value)
+          throw vx::Exception("de.uni_stuttgart.Voxie.DuplicateKey",
+                              "Attempting to insert duplicate data property "
+                              "with different definition or data");
+        // No need to continue if data is the same
+        return;
+      }
+      break;
+    }
+  }
+
+  if (haveNewData) {
+    DataPropertyValue val;
+    val.property = property;
+    val.value = value;
+    this->dataProperties[key] = val;
+  } else {
+    this->dataProperties.remove(key);
   }
 }
 
@@ -500,6 +665,15 @@ QSharedPointer<DataVersion> DataUpdate::finish(const QJsonObject& metadata) {
 bool DataUpdate::running() {
   QMutexLocker locker(&this->data()->lock);
   return this->running_;
+}
+
+void DataUpdate::validateCanUpdate(Data* data) {
+  if (this->data().data() != data)
+    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
+                        "Given DataUpdate is for another object");
+  if (!this->running())
+    throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
+                        "Given DataUpdate is already finished");
 }
 
 DataContainer::DataContainer(vx::ExportedObject* self) : self(self) {}

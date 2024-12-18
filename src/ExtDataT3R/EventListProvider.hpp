@@ -38,7 +38,7 @@ namespace t3r {
 
 class EventListProvider : public RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(EventListProvider)
+  VX_REFCOUNTEDOBJECT
 
  public:
   struct Stream {

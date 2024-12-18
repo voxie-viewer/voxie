@@ -30,7 +30,7 @@ class SliceVisualizer;
 
 class SurfaceVisualizerTool : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(SurfaceVisualizerTool)
+  VX_REFCOUNTEDOBJECT
 
  public:
   SurfaceVisualizerTool(SliceVisualizer* sv);
@@ -41,7 +41,8 @@ class SurfaceVisualizerTool : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 
  private:
   void drawLineOnImage(QImage& img, QPointF p1, QPointF p2);

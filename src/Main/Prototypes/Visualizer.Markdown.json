@@ -1,0 +1,25 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Display markdown data",
+            "DisplayName": "Markdown visualizer",
+            "Name": "de.uni_stuttgart.Voxie.Visualizer.Markdown",
+            "CompatibilityNames": [
+                "de.uni_stuttgart.Voxie.MarkdownVisualizer"
+            ],
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "TroveClassifiers": [
+                "Development Status :: 5 - Production/Stable"
+            ],
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.Markdown.File": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.File"
+                    ],
+                    "DisplayName": "File",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                }
+            }
+        }
+    ]
+}

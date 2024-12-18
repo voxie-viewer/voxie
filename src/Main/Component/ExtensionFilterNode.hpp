@@ -36,7 +36,7 @@ class PropertyBase;
 
 class ExtensionFilterNode : public FilterNode {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ExtensionFilterNode)
+  VX_REFCOUNTEDOBJECT
 
   QString scriptFilename_;
 
@@ -46,6 +46,8 @@ class ExtensionFilterNode : public FilterNode {
   ~ExtensionFilterNode();
 
   const QString& scriptFilename() const { return scriptFilename_; }
+
+  QMap<QString, QString> getExtensionInfo() override;
 
  private:
   QSharedPointer<vx::io::RunFilterOperation> calculate(
@@ -58,7 +60,7 @@ class ExtensionFilterNode : public FilterNode {
 class ExternalOperationRunFilterAdaptorImpl;
 class ExternalOperationRunFilter : public ExternalOperation {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ExternalOperationRunFilter)
+  VX_REFCOUNTEDOBJECT
 
   friend class ExternalOperationRunFilterAdaptorImpl;
 
@@ -84,7 +86,8 @@ class ExternalOperationRunFilter : public ExternalOperation {
       const QSharedPointer<vx::io::RunFilterOperation>& operation,
       const QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>& parameters,
       const QSharedPointer<QList<QSharedPointer<vx::ExportedObject>>>&
-      references, bool isAutomaticFilterRun);
+          references,
+      bool isAutomaticFilterRun);
   ~ExternalOperationRunFilter() override;
 
   const QSharedPointer<vx::io::RunFilterOperation>& operation() const {

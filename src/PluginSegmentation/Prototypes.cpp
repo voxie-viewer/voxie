@@ -3,12 +3,20 @@
 
 #include "Prototypes.hpp"
 
+#include <Voxie/Node/NodeNodeProperty.hpp>
 #include <Voxie/Node/NodePrototype.hpp>
 #include <Voxie/Node/PropertyValueConvertDBus.hpp>
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
 namespace vx {
 inline namespace filter_prop {
 SegmentationPropertiesEntry::~SegmentationPropertiesEntry() {}
+SegmentationPropertiesEntry::SegmentationPropertiesEntry(
+    vx::PropType::InitialSegmentation, vx::Node* value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation",
+          QVariant::fromValue<QDBusObjectPath>(
+              vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
+                  value_))) {}
 SegmentationPropertiesEntry::SegmentationPropertiesEntry(vx::PropType::Input,
                                                          vx::Node* value_)
     : vx::PropertiesEntryBase(
@@ -34,6 +42,11 @@ SegmentationPropertiesBase::~SegmentationPropertiesBase() {}
 SegmentationPropertiesCopy::SegmentationPropertiesCopy(
     const QSharedPointer<const QMap<QString, QVariant>>& properties)
     : _properties(properties) {}
+QDBusObjectPath SegmentationPropertiesCopy::initialSegmentationRaw() {
+  return vx::Node::parseVariant<QDBusObjectPath>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation"]);
+}
 QDBusObjectPath SegmentationPropertiesCopy::inputRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
       (*_properties)["de.uni_stuttgart.Voxie.Filter.Segmentation.Input"]);
@@ -66,58 +79,101 @@ static const char _prototype_Segmentation_[] = {
     34,  58,  32,  123, 34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
     116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,  105,
     108, 116, 101, 114, 46,  83,  101, 103, 109, 101, 110, 116, 97,  116, 105,
-    111, 110, 46,  73,  110, 112, 117, 116, 34,  58,  32,  123, 34,  65,  108,
-    108, 111, 119, 101, 100, 78,  111, 100, 101, 80,  114, 111, 116, 111, 116,
-    121, 112, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105,
-    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
-    101, 46,  68,  97,  116, 97,  46,  86,  111, 108, 117, 109, 101, 34,  93,
-    44,  32,  34,  67,  97,  108, 108, 83,  101, 116, 79,  114, 100, 101, 114,
-    34,  58,  32,  49,  48,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121,
-    78,  97,  109, 101, 34,  58,  32,  34,  73,  110, 112, 117, 116, 32,  86,
-    111, 108, 117, 109, 101, 34,  44,  32,  34,  78,  97,  109, 101, 34,  58,
-    32,  34,  86,  111, 108, 117, 109, 101, 34,  44,  32,  34,  84,  121, 112,
-    101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
-    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114,
-    111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  78,  111, 100, 101,
-    82,  101, 102, 101, 114, 101, 110, 99,  101, 34,  125, 44,  32,  34,  100,
-    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
-    46,  86,  111, 120, 105, 101, 46,  70,  105, 108, 116, 101, 114, 46,  83,
-    101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 46,  79,  117, 116,
-    112, 117, 116, 34,  58,  32,  123, 34,  65,  108, 108, 111, 119, 101, 100,
-    78,  111, 100, 101, 80,  114, 111, 116, 111, 116, 121, 112, 101, 115, 34,
-    58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
-    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116,
-    97,  46,  67,  111, 110, 116, 97,  105, 110, 101, 114, 78,  111, 100, 101,
+    111, 110, 46,  73,  110, 105, 116, 105, 97,  108, 83,  101, 103, 109, 101,
+    110, 116, 97,  116, 105, 111, 110, 34,  58,  32,  123, 34,  65,  108, 108,
+    111, 119, 101, 100, 78,  111, 100, 101, 80,  114, 111, 116, 111, 116, 121,
+    112, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,
+    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
+    46,  68,  97,  116, 97,  46,  67,  111, 110, 116, 97,  105, 110, 101, 114,
     34,  93,  44,  32,  34,  67,  97,  108, 108, 83,  101, 116, 79,  114, 100,
-    101, 114, 34,  58,  32,  45,  49,  48,  44,  32,  34,  68,  105, 115, 112,
-    108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  79,  117, 116, 112,
-    117, 116, 32,  86,  111, 108, 117, 109, 101, 34,  44,  32,  34,  84,  121,
-    112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
-    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
-    114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  79,  117, 116,
-    112, 117, 116, 78,  111, 100, 101, 82,  101, 102, 101, 114, 101, 110, 99,
+    101, 114, 34,  58,  32,  45,  53,  44,  32,  34,  68,  105, 115, 112, 108,
+    97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  73,  110, 105, 116, 105,
+    97,  108, 32,  115, 101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110,
+    34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121,
+    112, 101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101, 110, 99,
     101, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
     117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  70,
     105, 108, 116, 101, 114, 46,  83,  101, 103, 109, 101, 110, 116, 97,  116,
-    105, 111, 110, 46,  83,  116, 101, 112, 76,  105, 115, 116, 34,  58,  32,
-    123, 34,  67,  97,  108, 108, 83,  101, 116, 79,  114, 100, 101, 114, 34,
-    58,  32,  45,  49,  48,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121,
-    78,  97,  109, 101, 34,  58,  32,  34,  83,  116, 101, 112, 32,  108, 105,
-    115, 116, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100,
-    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
-    46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121,
-    84,  121, 112, 101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101,
-    110, 99,  101, 76,  105, 115, 116, 34,  125, 125, 44,  32,  34,  84,  114,
-    111, 118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,
-    58,  32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116,
-    32,  83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  52,  32,  45,  32,
-    66,  101, 116, 97,  34,  93,  125, 0};
+    105, 111, 110, 46,  73,  110, 112, 117, 116, 34,  58,  32,  123, 34,  65,
+    108, 108, 111, 119, 101, 100, 78,  111, 100, 101, 80,  114, 111, 116, 111,
+    116, 121, 112, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110,
+    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
+    105, 101, 46,  68,  97,  116, 97,  46,  86,  111, 108, 117, 109, 101, 34,
+    93,  44,  32,  34,  67,  97,  108, 108, 83,  101, 116, 79,  114, 100, 101,
+    114, 34,  58,  32,  49,  48,  44,  32,  34,  68,  105, 115, 112, 108, 97,
+    121, 78,  97,  109, 101, 34,  58,  32,  34,  73,  110, 112, 117, 116, 32,
+    86,  111, 108, 117, 109, 101, 34,  44,  32,  34,  84,  121, 112, 101, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112,
+    101, 114, 116, 121, 84,  121, 112, 101, 46,  78,  111, 100, 101, 82,  101,
+    102, 101, 114, 101, 110, 99,  101, 34,  125, 44,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  70,  105, 108, 116, 101, 114, 46,  83,  101, 103,
+    109, 101, 110, 116, 97,  116, 105, 111, 110, 46,  79,  117, 116, 112, 117,
+    116, 34,  58,  32,  123, 34,  65,  108, 108, 111, 119, 101, 100, 78,  111,
+    100, 101, 80,  114, 111, 116, 111, 116, 121, 112, 101, 115, 34,  58,  32,
+    91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116, 97,  46,
+    67,  111, 110, 116, 97,  105, 110, 101, 114, 34,  93,  44,  32,  34,  67,
+    97,  108, 108, 83,  101, 116, 79,  114, 100, 101, 114, 34,  58,  32,  45,
+    49,  48,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109,
+    101, 34,  58,  32,  34,  79,  117, 116, 112, 117, 116, 32,  86,  111, 108,
+    117, 109, 101, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,
+    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
+    116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116,
+    121, 84,  121, 112, 101, 46,  79,  117, 116, 112, 117, 116, 78,  111, 100,
+    101, 82,  101, 102, 101, 114, 101, 110, 99,  101, 34,  125, 44,  32,  34,
+    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
+    116, 46,  86,  111, 120, 105, 101, 46,  70,  105, 108, 116, 101, 114, 46,
+    83,  101, 103, 109, 101, 110, 116, 97,  116, 105, 111, 110, 46,  83,  116,
+    101, 112, 76,  105, 115, 116, 34,  58,  32,  123, 34,  67,  97,  108, 108,
+    83,  101, 116, 79,  114, 100, 101, 114, 34,  58,  32,  45,  49,  48,  44,
+    32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,
+    32,  34,  83,  116, 101, 112, 32,  108, 105, 115, 116, 34,  44,  32,  34,
+    84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
+    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
+    46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  78,
+    111, 100, 101, 82,  101, 102, 101, 114, 101, 110, 99,  101, 76,  105, 115,
+    116, 34,  125, 125, 44,  32,  34,  84,  114, 111, 118, 101, 67,  108, 97,
+    115, 115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,  34,  68,  101,
+    118, 101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116, 97,  116, 117,
+    115, 32,  58,  58,  32,  52,  32,  45,  32,  66,  101, 116, 97,  34,  93,
+    125, 0};
 const char* SegmentationProperties::_getPrototypeJson() {
   return _prototype_Segmentation_;
 }
 
 SegmentationProperties::~SegmentationProperties() {}
 
+vx::Node* SegmentationProperties::initialSegmentation() {
+  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
+      _node->getNodePropertyTyped<QDBusObjectPath>(
+          "de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation"));
+}
+QDBusObjectPath SegmentationProperties::initialSegmentationRaw() {
+  return _node->getNodePropertyTyped<QDBusObjectPath>(
+      "de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation");
+}
+QSharedPointer<NodeProperty>
+SegmentationProperties::initialSegmentationProperty() {
+  return SegmentationProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+SegmentationProperties::initialSegmentationPropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(
+      initialSegmentationProperty());
+}
+NodeNodeProperty SegmentationProperties::initialSegmentationInstance() {
+  return NodeNodeProperty(_node, initialSegmentationProperty());
+}
+void SegmentationProperties::setInitialSegmentation(vx::Node* value) {
+  _node->setNodePropertyTyped<QDBusObjectPath>(
+      "de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation",
+      vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(value));
+}
 vx::Node* SegmentationProperties::input() {
   return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
       _node->getNodePropertyTyped<QDBusObjectPath>(
@@ -134,6 +190,9 @@ QSharedPointer<NodeProperty> SegmentationProperties::inputProperty() {
 NodePropertyTyped<vx::types::NodeReference>
 SegmentationProperties::inputPropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(inputProperty());
+}
+NodeNodeProperty SegmentationProperties::inputInstance() {
+  return NodeNodeProperty(_node, inputProperty());
 }
 void SegmentationProperties::setInput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -157,6 +216,9 @@ NodePropertyTyped<vx::types::OutputNodeReference>
 SegmentationProperties::outputPropertyTyped() {
   return NodePropertyTyped<vx::types::OutputNodeReference>(outputProperty());
 }
+NodeNodeProperty SegmentationProperties::outputInstance() {
+  return NodeNodeProperty(_node, outputProperty());
+}
 void SegmentationProperties::setOutput(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
       "de.uni_stuttgart.Voxie.Filter.Segmentation.Output",
@@ -179,6 +241,9 @@ NodePropertyTyped<vx::types::NodeReferenceList>
 SegmentationProperties::stepListPropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReferenceList>(stepListProperty());
 }
+NodeNodeProperty SegmentationProperties::stepListInstance() {
+  return NodeNodeProperty(_node, stepListProperty());
+}
 void SegmentationProperties::setStepList(QList<vx::Node*> value) {
   _node->setNodePropertyTyped<QList<QDBusObjectPath>>(
       "de.uni_stuttgart.Voxie.Filter.Segmentation.StepList",
@@ -188,6 +253,28 @@ void SegmentationProperties::setStepList(QList<vx::Node*> value) {
 SegmentationProperties::SegmentationProperties(vx::Node* parent)
     : QObject(parent) {
   this->_node = parent;
+  auto _prop_InitialSegmentation = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_InitialSegmentation](
+          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+        if (property != _prop_InitialSegmentation) return;
+        vx::Node* valueCasted;
+        try {
+          valueCasted =
+              vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
+                  Node::parseVariant<QDBusObjectPath>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Filter.Segmentation."
+                         "InitialSegmentation\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->initialSegmentationChanged(valueCasted);
+      });
   auto _prop_Input = this->_node->prototype()->getProperty(
       "de.uni_stuttgart.Voxie.Filter.Segmentation.Input", false);
   QObject::connect(
@@ -339,6 +426,9 @@ NodePropertyTyped<vx::types::Int>
 AssignmentStepProperties::labelIDPropertyTyped() {
   return NodePropertyTyped<vx::types::Int>(labelIDProperty());
 }
+NodeNodeProperty AssignmentStepProperties::labelIDInstance() {
+  return NodeNodeProperty(_node, labelIDProperty());
+}
 void AssignmentStepProperties::setLabelID(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
       "de.uni_stuttgart.Voxie.SegmentationStep.AssignmentStep.LabelID",
@@ -375,7 +465,7 @@ inline namespace segmentationstep_prop {
 BrushSelectionStepPropertiesEntry::~BrushSelectionStepPropertiesEntry() {}
 BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     vx::PropType::BrushEraseCentersWithRadius,
-    QList<std::tuple<QVector3D, double>> value_)
+    QList<std::tuple<vx::Vector<double, 3>, double>> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "BrushEraseCentersWithRadius",
@@ -383,10 +473,11 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
               QList<std::tuple<std::tuple<double, double, double>, double>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<std::tuple<double, double, double>, double>>,
-                  QList<std::tuple<QVector3D, double>>>::toRaw(value_))) {}
+                  QList<std::tuple<vx::Vector<double, 3>, double>>>::
+                  toRaw(value_))) {}
 BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     vx::PropType::BrushSelectCentersWithRadius,
-    QList<std::tuple<QVector3D, double>> value_)
+    QList<std::tuple<vx::Vector<double, 3>, double>> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "BrushSelectCentersWithRadius",
@@ -394,7 +485,8 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
               QList<std::tuple<std::tuple<double, double, double>, double>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<std::tuple<double, double, double>, double>>,
-                  QList<std::tuple<QVector3D, double>>>::toRaw(value_))) {}
+                  QList<std::tuple<vx::Vector<double, 3>, double>>>::
+                  toRaw(value_))) {}
 BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     vx::PropType::PlaneOrientation, QQuaternion value_)
     : vx::PropertiesEntryBase(
@@ -441,11 +533,11 @@ BrushSelectionStepPropertiesBase::~BrushSelectionStepPropertiesBase() {}
 BrushSelectionStepPropertiesCopy::BrushSelectionStepPropertiesCopy(
     const QSharedPointer<const QMap<QString, QVariant>>& properties)
     : _properties(properties) {}
-QList<std::tuple<QVector3D, double>>
+QList<std::tuple<vx::Vector<double, 3>, double>>
 BrushSelectionStepPropertiesCopy::brushEraseCentersWithRadius() {
   return vx::PropertyValueConvertRaw<
       QList<std::tuple<std::tuple<double, double, double>, double>>,
-      QList<std::tuple<QVector3D, double>>>::
+      QList<std::tuple<vx::Vector<double, 3>, double>>>::
       fromRaw(vx::Node::parseVariant<
               QList<std::tuple<std::tuple<double, double, double>, double>>>(
           (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
@@ -458,11 +550,11 @@ BrushSelectionStepPropertiesCopy::brushEraseCentersWithRadiusRaw() {
       (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
                      "BrushSelectionStep.BrushEraseCentersWithRadius"]);
 }
-QList<std::tuple<QVector3D, double>>
+QList<std::tuple<vx::Vector<double, 3>, double>>
 BrushSelectionStepPropertiesCopy::brushSelectCentersWithRadius() {
   return vx::PropertyValueConvertRaw<
       QList<std::tuple<std::tuple<double, double, double>, double>>,
-      QList<std::tuple<QVector3D, double>>>::
+      QList<std::tuple<vx::Vector<double, 3>, double>>>::
       fromRaw(vx::Node::parseVariant<
               QList<std::tuple<std::tuple<double, double, double>, double>>>(
           (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
@@ -662,11 +754,11 @@ const char* BrushSelectionStepProperties::_getPrototypeJson() {
 
 BrushSelectionStepProperties::~BrushSelectionStepProperties() {}
 
-QList<std::tuple<QVector3D, double>>
+QList<std::tuple<vx::Vector<double, 3>, double>>
 BrushSelectionStepProperties::brushEraseCentersWithRadius() {
   return vx::PropertyValueConvertRaw<
       QList<std::tuple<std::tuple<double, double, double>, double>>,
-      QList<std::tuple<QVector3D, double>>>::
+      QList<std::tuple<vx::Vector<double, 3>, double>>>::
       fromRaw(_node->getNodePropertyTyped<
               QList<std::tuple<std::tuple<double, double, double>, double>>>(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
@@ -691,21 +783,25 @@ BrushSelectionStepProperties::brushEraseCentersWithRadiusPropertyTyped() {
   return NodePropertyTyped<vx::types::ListPosition3DDoubleTuple>(
       brushEraseCentersWithRadiusProperty());
 }
+NodeNodeProperty
+BrushSelectionStepProperties::brushEraseCentersWithRadiusInstance() {
+  return NodeNodeProperty(_node, brushEraseCentersWithRadiusProperty());
+}
 void BrushSelectionStepProperties::setBrushEraseCentersWithRadius(
-    QList<std::tuple<QVector3D, double>> value) {
+    QList<std::tuple<vx::Vector<double, 3>, double>> value) {
   _node->setNodePropertyTyped<
       QList<std::tuple<std::tuple<double, double, double>, double>>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
       "BrushEraseCentersWithRadius",
       vx::PropertyValueConvertRaw<
           QList<std::tuple<std::tuple<double, double, double>, double>>,
-          QList<std::tuple<QVector3D, double>>>::toRaw(value));
+          QList<std::tuple<vx::Vector<double, 3>, double>>>::toRaw(value));
 }
-QList<std::tuple<QVector3D, double>>
+QList<std::tuple<vx::Vector<double, 3>, double>>
 BrushSelectionStepProperties::brushSelectCentersWithRadius() {
   return vx::PropertyValueConvertRaw<
       QList<std::tuple<std::tuple<double, double, double>, double>>,
-      QList<std::tuple<QVector3D, double>>>::
+      QList<std::tuple<vx::Vector<double, 3>, double>>>::
       fromRaw(_node->getNodePropertyTyped<
               QList<std::tuple<std::tuple<double, double, double>, double>>>(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
@@ -730,15 +826,19 @@ BrushSelectionStepProperties::brushSelectCentersWithRadiusPropertyTyped() {
   return NodePropertyTyped<vx::types::ListPosition3DDoubleTuple>(
       brushSelectCentersWithRadiusProperty());
 }
+NodeNodeProperty
+BrushSelectionStepProperties::brushSelectCentersWithRadiusInstance() {
+  return NodeNodeProperty(_node, brushSelectCentersWithRadiusProperty());
+}
 void BrushSelectionStepProperties::setBrushSelectCentersWithRadius(
-    QList<std::tuple<QVector3D, double>> value) {
+    QList<std::tuple<vx::Vector<double, 3>, double>> value) {
   _node->setNodePropertyTyped<
       QList<std::tuple<std::tuple<double, double, double>, double>>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
       "BrushSelectCentersWithRadius",
       vx::PropertyValueConvertRaw<
           QList<std::tuple<std::tuple<double, double, double>, double>>,
-          QList<std::tuple<QVector3D, double>>>::toRaw(value));
+          QList<std::tuple<vx::Vector<double, 3>, double>>>::toRaw(value));
 }
 QQuaternion BrushSelectionStepProperties::planeOrientation() {
   return vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
@@ -766,6 +866,9 @@ NodePropertyTyped<vx::types::Orientation3D>
 BrushSelectionStepProperties::planeOrientationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(
       planeOrientationProperty());
+}
+NodeNodeProperty BrushSelectionStepProperties::planeOrientationInstance() {
+  return NodeNodeProperty(_node, planeOrientationProperty());
 }
 void BrushSelectionStepProperties::setPlaneOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -795,6 +898,9 @@ BrushSelectionStepProperties::planeOriginProperty() {
 NodePropertyTyped<vx::types::Position3D>
 BrushSelectionStepProperties::planeOriginPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(planeOriginProperty());
+}
+NodeNodeProperty BrushSelectionStepProperties::planeOriginInstance() {
+  return NodeNodeProperty(_node, planeOriginProperty());
 }
 void BrushSelectionStepProperties::setPlaneOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -829,6 +935,9 @@ BrushSelectionStepProperties::volumeOrientationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(
       volumeOrientationProperty());
 }
+NodeNodeProperty BrushSelectionStepProperties::volumeOrientationInstance() {
+  return NodeNodeProperty(_node, volumeOrientationProperty());
+}
 void BrushSelectionStepProperties::setVolumeOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
@@ -859,6 +968,9 @@ NodePropertyTyped<vx::types::Position3D>
 BrushSelectionStepProperties::volumeOriginPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(volumeOriginProperty());
 }
+NodeNodeProperty BrushSelectionStepProperties::volumeOriginInstance() {
+  return NodeNodeProperty(_node, volumeOriginProperty());
+}
 void BrushSelectionStepProperties::setVolumeOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.VolumeOrigin",
@@ -886,6 +998,9 @@ NodePropertyTyped<vx::types::Position3D>
 BrushSelectionStepProperties::voxelSizePropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(voxelSizeProperty());
 }
+NodeNodeProperty BrushSelectionStepProperties::voxelSizeInstance() {
+  return NodeNodeProperty(_node, voxelSizeProperty());
+}
 void BrushSelectionStepProperties::setVoxelSize(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep.VoxelSize",
@@ -905,11 +1020,11 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
       [this, _prop_BrushEraseCentersWithRadius](
           const QSharedPointer<NodeProperty>& property, const QVariant& value) {
         if (property != _prop_BrushEraseCentersWithRadius) return;
-        QList<std::tuple<QVector3D, double>> valueCasted;
+        QList<std::tuple<vx::Vector<double, 3>, double>> valueCasted;
         try {
           valueCasted = vx::PropertyValueConvertRaw<
               QList<std::tuple<std::tuple<double, double, double>, double>>,
-              QList<std::tuple<QVector3D, double>>>::
+              QList<std::tuple<vx::Vector<double, 3>, double>>>::
               fromRaw(
                   Node::parseVariant<QList<
                       std::tuple<std::tuple<double, double, double>, double>>>(
@@ -934,11 +1049,11 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
       [this, _prop_BrushSelectCentersWithRadius](
           const QSharedPointer<NodeProperty>& property, const QVariant& value) {
         if (property != _prop_BrushSelectCentersWithRadius) return;
-        QList<std::tuple<QVector3D, double>> valueCasted;
+        QList<std::tuple<vx::Vector<double, 3>, double>> valueCasted;
         try {
           valueCasted = vx::PropertyValueConvertRaw<
               QList<std::tuple<std::tuple<double, double, double>, double>>,
-              QList<std::tuple<QVector3D, double>>>::
+              QList<std::tuple<vx::Vector<double, 3>, double>>>::
               fromRaw(
                   Node::parseVariant<QList<
                       std::tuple<std::tuple<double, double, double>, double>>>(
@@ -1104,14 +1219,14 @@ LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
-    vx::PropType::PolygonNodes, QList<QVector3D> value_)
+    vx::PropType::PolygonNodes, QList<vx::Vector<double, 3>> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
           "PolygonNodes",
           QVariant::fromValue<QList<std::tuple<double, double, double>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double, double, double>>,
-                  QList<QVector3D>>::toRaw(value_))) {}
+                  QList<vx::Vector<double, 3>>>::toRaw(value_))) {}
 LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
     vx::PropType::VolumeOrientation, QQuaternion value_)
     : vx::PropertiesEntryBase(
@@ -1168,9 +1283,9 @@ LassoSelectionStepPropertiesCopy::planeOriginRaw() {
       (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
                      "LassoSelectionStep.PlaneOrigin"]);
 }
-QList<QVector3D> LassoSelectionStepPropertiesCopy::polygonNodes() {
+QList<vx::Vector<double, 3>> LassoSelectionStepPropertiesCopy::polygonNodes() {
   return vx::PropertyValueConvertRaw<QList<std::tuple<double, double, double>>,
-                                     QList<QVector3D>>::
+                                     QList<vx::Vector<double, 3>>>::
       fromRaw(vx::Node::parseVariant<QList<std::tuple<double, double, double>>>(
           (*_properties)["de.uni_stuttgart.Voxie.SegmentationStep."
                          "LassoSelectionStep.PolygonNodes"]));
@@ -1347,6 +1462,9 @@ LassoSelectionStepProperties::planeOrientationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(
       planeOrientationProperty());
 }
+NodeNodeProperty LassoSelectionStepProperties::planeOrientationInstance() {
+  return NodeNodeProperty(_node, planeOrientationProperty());
+}
 void LassoSelectionStepProperties::setPlaneOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
@@ -1376,15 +1494,18 @@ NodePropertyTyped<vx::types::Position3D>
 LassoSelectionStepProperties::planeOriginPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(planeOriginProperty());
 }
+NodeNodeProperty LassoSelectionStepProperties::planeOriginInstance() {
+  return NodeNodeProperty(_node, planeOriginProperty());
+}
 void LassoSelectionStepProperties::setPlaneOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.PlaneOrigin",
       vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                   QVector3D>::toRaw(value));
 }
-QList<QVector3D> LassoSelectionStepProperties::polygonNodes() {
+QList<vx::Vector<double, 3>> LassoSelectionStepProperties::polygonNodes() {
   return vx::PropertyValueConvertRaw<QList<std::tuple<double, double, double>>,
-                                     QList<QVector3D>>::
+                                     QList<vx::Vector<double, 3>>>::
       fromRaw(
           _node
               ->getNodePropertyTyped<QList<std::tuple<double, double, double>>>(
@@ -1407,11 +1528,15 @@ NodePropertyTyped<vx::types::ListPosition3D>
 LassoSelectionStepProperties::polygonNodesPropertyTyped() {
   return NodePropertyTyped<vx::types::ListPosition3D>(polygonNodesProperty());
 }
-void LassoSelectionStepProperties::setPolygonNodes(QList<QVector3D> value) {
+NodeNodeProperty LassoSelectionStepProperties::polygonNodesInstance() {
+  return NodeNodeProperty(_node, polygonNodesProperty());
+}
+void LassoSelectionStepProperties::setPolygonNodes(
+    QList<vx::Vector<double, 3>> value) {
   _node->setNodePropertyTyped<QList<std::tuple<double, double, double>>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.PolygonNodes",
       vx::PropertyValueConvertRaw<QList<std::tuple<double, double, double>>,
-                                  QList<QVector3D>>::toRaw(value));
+                                  QList<vx::Vector<double, 3>>>::toRaw(value));
 }
 QQuaternion LassoSelectionStepProperties::volumeOrientation() {
   return vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
@@ -1439,6 +1564,9 @@ NodePropertyTyped<vx::types::Orientation3D>
 LassoSelectionStepProperties::volumeOrientationPropertyTyped() {
   return NodePropertyTyped<vx::types::Orientation3D>(
       volumeOrientationProperty());
+}
+NodeNodeProperty LassoSelectionStepProperties::volumeOrientationInstance() {
+  return NodeNodeProperty(_node, volumeOrientationProperty());
 }
 void LassoSelectionStepProperties::setVolumeOrientation(QQuaternion value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
@@ -1470,6 +1598,9 @@ NodePropertyTyped<vx::types::Position3D>
 LassoSelectionStepProperties::volumeOriginPropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(volumeOriginProperty());
 }
+NodeNodeProperty LassoSelectionStepProperties::volumeOriginInstance() {
+  return NodeNodeProperty(_node, volumeOriginProperty());
+}
 void LassoSelectionStepProperties::setVolumeOrigin(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep.VolumeOrigin",
@@ -1496,6 +1627,9 @@ QSharedPointer<NodeProperty> LassoSelectionStepProperties::voxelSizeProperty() {
 NodePropertyTyped<vx::types::Position3D>
 LassoSelectionStepProperties::voxelSizePropertyTyped() {
   return NodePropertyTyped<vx::types::Position3D>(voxelSizeProperty());
+}
+NodeNodeProperty LassoSelectionStepProperties::voxelSizeInstance() {
+  return NodeNodeProperty(_node, voxelSizeProperty());
 }
 void LassoSelectionStepProperties::setVoxelSize(QVector3D value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double>>(
@@ -1565,10 +1699,11 @@ LassoSelectionStepProperties::LassoSelectionStepProperties(vx::Node* parent)
       [this, _prop_PolygonNodes](const QSharedPointer<NodeProperty>& property,
                                  const QVariant& value) {
         if (property != _prop_PolygonNodes) return;
-        QList<QVector3D> valueCasted;
+        QList<vx::Vector<double, 3>> valueCasted;
         try {
           valueCasted = vx::PropertyValueConvertRaw<
-              QList<std::tuple<double, double, double>>, QList<QVector3D>>::
+              QList<std::tuple<double, double, double>>,
+              QList<vx::Vector<double, 3>>>::
               fromRaw(
                   Node::parseVariant<QList<std::tuple<double, double, double>>>(
                       value));
@@ -1746,6 +1881,9 @@ QSharedPointer<NodeProperty> ManualSelectionStepProperties::labelIdsProperty() {
 NodePropertyTyped<vx::types::IntList>
 ManualSelectionStepProperties::labelIdsPropertyTyped() {
   return NodePropertyTyped<vx::types::IntList>(labelIdsProperty());
+}
+NodeNodeProperty ManualSelectionStepProperties::labelIdsInstance() {
+  return NodeNodeProperty(_node, labelIdsProperty());
 }
 void ManualSelectionStepProperties::setLabelIds(QList<qint64> value) {
   _node->setNodePropertyTyped<QList<qint64>>(
@@ -2043,6 +2181,9 @@ QSharedPointer<NodeProperty> MetaStepProperties::colorProperty() {
 NodePropertyTyped<vx::types::Color> MetaStepProperties::colorPropertyTyped() {
   return NodePropertyTyped<vx::types::Color>(colorProperty());
 }
+NodeNodeProperty MetaStepProperties::colorInstance() {
+  return NodeNodeProperty(_node, colorProperty());
+}
 void MetaStepProperties::setColor(vx::Color value) {
   _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Color",
@@ -2066,6 +2207,9 @@ NodePropertyTyped<vx::types::String>
 MetaStepProperties::descriptionPropertyTyped() {
   return NodePropertyTyped<vx::types::String>(descriptionProperty());
 }
+NodeNodeProperty MetaStepProperties::descriptionInstance() {
+  return NodeNodeProperty(_node, descriptionProperty());
+}
 void MetaStepProperties::setDescription(QString value) {
   _node->setNodePropertyTyped<QString>(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Description",
@@ -2086,6 +2230,9 @@ QSharedPointer<NodeProperty> MetaStepProperties::labelIDProperty() {
 }
 NodePropertyTyped<vx::types::Int> MetaStepProperties::labelIDPropertyTyped() {
   return NodePropertyTyped<vx::types::Int>(labelIDProperty());
+}
+NodeNodeProperty MetaStepProperties::labelIDInstance() {
+  return NodeNodeProperty(_node, labelIDProperty());
 }
 void MetaStepProperties::setLabelID(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -2110,6 +2257,9 @@ NodePropertyTyped<vx::types::Enumeration>
 MetaStepProperties::modificationKindPropertyTyped() {
   return NodePropertyTyped<vx::types::Enumeration>(modificationKindProperty());
 }
+NodeNodeProperty MetaStepProperties::modificationKindInstance() {
+  return NodeNodeProperty(_node, modificationKindProperty());
+}
 void MetaStepProperties::setModificationKind(QString value) {
   _node->setNodePropertyTyped<QString>(
       "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.ModificationKind",
@@ -2130,6 +2280,9 @@ QSharedPointer<NodeProperty> MetaStepProperties::nameProperty() {
 }
 NodePropertyTyped<vx::types::String> MetaStepProperties::namePropertyTyped() {
   return NodePropertyTyped<vx::types::String>(nameProperty());
+}
+NodeNodeProperty MetaStepProperties::nameInstance() {
+  return NodeNodeProperty(_node, nameProperty());
 }
 void MetaStepProperties::setName(QString value) {
   _node->setNodePropertyTyped<QString>(
@@ -2152,6 +2305,9 @@ QSharedPointer<NodeProperty> MetaStepProperties::visibilityProperty() {
 NodePropertyTyped<vx::types::Boolean>
 MetaStepProperties::visibilityPropertyTyped() {
   return NodePropertyTyped<vx::types::Boolean>(visibilityProperty());
+}
+NodeNodeProperty MetaStepProperties::visibilityInstance() {
+  return NodeNodeProperty(_node, visibilityProperty());
 }
 void MetaStepProperties::setVisibility(bool value) {
   _node->setNodePropertyTyped<bool>(
@@ -2450,6 +2606,9 @@ MultiThresholdStepProperties::thresholdListPropertyTyped() {
   return NodePropertyTyped<vx::types::ThresholdLabelMapping>(
       thresholdListProperty());
 }
+NodeNodeProperty MultiThresholdStepProperties::thresholdListInstance() {
+  return NodeNodeProperty(_node, thresholdListProperty());
+}
 void MultiThresholdStepProperties::setThresholdList(
     QList<
         std::tuple<double, std::tuple<double, double, double, double>, qint64>>
@@ -2481,6 +2640,9 @@ QSharedPointer<NodeProperty> MultiThresholdStepProperties::volumeProperty() {
 NodePropertyTyped<vx::types::NodeReference>
 MultiThresholdStepProperties::volumePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(volumeProperty());
+}
+NodeNodeProperty MultiThresholdStepProperties::volumeInstance() {
+  return NodeNodeProperty(_node, volumeProperty());
 }
 void MultiThresholdStepProperties::setVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(
@@ -2632,6 +2794,9 @@ NodePropertyTyped<vx::types::IntList>
 RemoveLabelStepProperties::labelIDsPropertyTyped() {
   return NodePropertyTyped<vx::types::IntList>(labelIDsProperty());
 }
+NodeNodeProperty RemoveLabelStepProperties::labelIDsInstance() {
+  return NodeNodeProperty(_node, labelIDsProperty());
+}
 void RemoveLabelStepProperties::setLabelIDs(QList<qint64> value) {
   _node->setNodePropertyTyped<QList<qint64>>(
       "de.uni_stuttgart.Voxie.SegmentationStep.RemoveLabelStep.LabelIDs",
@@ -2749,6 +2914,9 @@ QSharedPointer<NodeProperty> SubtractStepProperties::labelIdProperty() {
 NodePropertyTyped<vx::types::Int>
 SubtractStepProperties::labelIdPropertyTyped() {
   return NodePropertyTyped<vx::types::Int>(labelIdProperty());
+}
+NodeNodeProperty SubtractStepProperties::labelIdInstance() {
+  return NodeNodeProperty(_node, labelIdProperty());
 }
 void SubtractStepProperties::setLabelId(qint64 value) {
   _node->setNodePropertyTyped<qint64>(
@@ -2944,6 +3112,9 @@ NodePropertyTyped<vx::types::Float>
 ThresholdSelectionStepProperties::lowerThresholdPropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(lowerThresholdProperty());
 }
+NodeNodeProperty ThresholdSelectionStepProperties::lowerThresholdInstance() {
+  return NodeNodeProperty(_node, lowerThresholdProperty());
+}
 void ThresholdSelectionStepProperties::setLowerThreshold(double value) {
   _node->setNodePropertyTyped<double>(
       "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep."
@@ -2972,6 +3143,9 @@ NodePropertyTyped<vx::types::Float>
 ThresholdSelectionStepProperties::upperThresholdPropertyTyped() {
   return NodePropertyTyped<vx::types::Float>(upperThresholdProperty());
 }
+NodeNodeProperty ThresholdSelectionStepProperties::upperThresholdInstance() {
+  return NodeNodeProperty(_node, upperThresholdProperty());
+}
 void ThresholdSelectionStepProperties::setUpperThreshold(double value) {
   _node->setNodePropertyTyped<double>(
       "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep."
@@ -2997,6 +3171,9 @@ ThresholdSelectionStepProperties::volumeProperty() {
 NodePropertyTyped<vx::types::NodeReference>
 ThresholdSelectionStepProperties::volumePropertyTyped() {
   return NodePropertyTyped<vx::types::NodeReference>(volumeProperty());
+}
+NodeNodeProperty ThresholdSelectionStepProperties::volumeInstance() {
+  return NodeNodeProperty(_node, volumeProperty());
 }
 void ThresholdSelectionStepProperties::setVolume(vx::Node* value) {
   _node->setNodePropertyTyped<QDBusObjectPath>(

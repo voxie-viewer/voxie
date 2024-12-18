@@ -47,7 +47,7 @@ QList<QSharedPointer<vx::Component>> ComponentContainerList::listComponents(
 
 QSharedPointer<vx::Component> ComponentContainerList::getComponent(
     const QSharedPointer<ComponentType>& componentType, const QString& name,
-    bool allowCompatibilityNames) {
+    bool allowCompatibilityNames, bool allowMissing) {
   QSharedPointer<Component> result;
 
   for (const auto& container : containers_) {
@@ -66,7 +66,7 @@ QSharedPointer<vx::Component> ComponentContainerList::getComponent(
       result = component;
     }
   }
-  if (!result)
+  if (!result && !allowMissing)
     throw Exception("de.uni_stuttgart.Voxie.ComponentNotFound",
                     "Could not find component '" + name + "' with type '" +
                         componentType->name() + "'");

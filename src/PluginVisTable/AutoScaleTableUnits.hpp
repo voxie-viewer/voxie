@@ -42,7 +42,7 @@ namespace filters {
  * the number of decimal places needed to display them.
  */
 class AutoScaleTableUnits : public FilterNode {
-  NODE_PROTOTYPE_DECL(AutoScaleTableUnits)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits")
 
  public:
   AutoScaleTableUnits();

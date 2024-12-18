@@ -45,7 +45,9 @@ class VolumeNode;
  * are met.
  */
 class ThresholdSelectionStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(ThresholdSelectionStep)
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep")
+
  private:
   ThresholdSelectionWidget* thresholdSelection;
 

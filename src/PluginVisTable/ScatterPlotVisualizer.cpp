@@ -59,6 +59,8 @@
 
 #include <cmath>
 
+VX_NODE_INSTANTIATION(ScatterPlotVisualizer)
+
 using namespace vx;
 using namespace vx::visualization;
 
@@ -458,5 +460,3 @@ void ScatterPlotVisualizer::PointCache::updateHistogramProvider(
       HistogramProvider::DefaultBucketCount, points,
       [](const Point& point) { return point.colorValue; });
 }
-
-NODE_PROTOTYPE_IMPL_2(ScatterPlot, Visualizer)

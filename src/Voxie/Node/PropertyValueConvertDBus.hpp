@@ -60,4 +60,11 @@ struct VOXIECORESHARED_EXPORT
   static std::tuple<QString, QJsonObject> toRaw(
       const std::tuple<QString, QMap<QString, QDBusVariant>>& dbus);
 };
+
+template <>
+struct VOXIECORESHARED_EXPORT
+    PropertyValueConvertDBus<QJsonValue, QDBusVariant> {
+  static QDBusVariant fromRaw(const QJsonValue& raw);
+  static QJsonValue toRaw(const QDBusVariant& dbus);
+};
 }  // namespace vx

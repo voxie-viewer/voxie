@@ -41,6 +41,8 @@
 #include "ColorizeSurfaceFromAttribute.hpp"
 #include "ColorizeSurfaceFromAttributeOperation.hpp"
 
+VX_NODE_INSTANTIATION(vx::filters::ColorizeSurfaceFromAttribute)
+
 using namespace vx::filters;
 using namespace vx;
 using namespace vx::io;
@@ -53,6 +55,9 @@ ColorizeSurfaceFromAttribute::ColorizeSurfaceFromAttribute()
   qRegisterMetaType<QSharedPointer<RunFilterOperation>>();
 
   this->setAutomaticDisplayName("Colorize Surface From Attribute");
+
+  // TODO: Use de.uni_stuttgart.Voxie.PropertyType.SurfaceAttributeName instead
+  // of attributeSelector
 
   PropertySection* propertySection = new PropertySection();
   attributeSelector = new QComboBox();
@@ -286,5 +291,3 @@ void ColorizeSurfaceFromAttribute::updateOutputSurface(
 
   operation->emitFinished();
 }
-
-NODE_PROTOTYPE_IMPL(ColorizeSurfaceFromAttribute)

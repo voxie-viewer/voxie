@@ -79,6 +79,11 @@ class InstanceAdaptorImpl : public InstanceAdaptor {
   QList<QDBusObjectPath> ListObjects(
       const QMap<QString, QDBusVariant>& options) override;
 
+  QDBusObjectPath CreateBuffer(
+      const QDBusObjectPath& client, qint64 offsetBytes,
+      const QDBusVariant& type,
+      const QMap<QString, QDBusVariant>& options) override;
+
   QDBusObjectPath CreateImage(
       const QDBusObjectPath& client, const vx::TupleVector<quint64, 2>& size,
       quint64 componentCount,
@@ -96,6 +101,18 @@ class InstanceAdaptorImpl : public InstanceAdaptor {
       const std::tuple<QString, quint32, QString>& dataType,
       const vx::TupleVector<double, 3>& gridOrigin,
       const vx::TupleVector<double, 3>& gridSpacing,
+      const QMap<QString, QDBusVariant>& options) override;
+
+  QDBusObjectPath CreateVolumeDataBlockJpeg(
+      const QDBusObjectPath& client,
+      const std::tuple<quint64, quint64, quint64>& arrayShape,
+      const std::tuple<quint64, quint64, quint64>& blockShape,
+      const std::tuple<double, double, double>& volumeOrigin,
+      const std::tuple<double, double, double>& gridSpacing, double valueOffset,
+      double valueScalingFactor, uint samplePrecision,
+      const QList<QByteArray>& huffmanTableDC,
+      const QList<QByteArray>& huffmanTableAC,
+      const QList<QList<quint16>>& quantizationTable,
       const QMap<QString, QDBusVariant>& options) override;
 
   QDBusObjectPath CreateTomographyRawData2DRegular(
@@ -138,15 +155,23 @@ class InstanceAdaptorImpl : public InstanceAdaptor {
       const vx::TupleVector<double, 3>& volumeSize,
       const QMap<QString, QDBusVariant>& options) override;
 
-  QDBusObjectPath CreateSeriesDimension(
+  QDBusObjectPath CreateDataProperty(
       const QDBusObjectPath& client, const QString& name,
-      const QString& displayName, const QDBusObjectPath& type,
+      const QDBusVariant& json,
+      const QMap<QString, QDBusVariant>& options) override;
+
+  QDBusObjectPath CreateSeriesDimension(
+      const QDBusObjectPath& client, const QDBusObjectPath& property,
       const QDBusVariant& entries,
       const QMap<QString, QDBusVariant>& options) override;
 
   QDBusObjectPath CreateGeometricPrimitiveData(
       const QDBusObjectPath& client,
       const QMap<QString, QDBusVariant>& options) override;
+
+  QDBusObjectPath CreateFileDataByteStream(
+      const QDBusObjectPath& client, const QString& mediaType,
+      quint64 lengthBytes, const QMap<QString, QDBusVariant>& options) override;
 
   void Quit(const QMap<QString, QDBusVariant>& options) override;
 

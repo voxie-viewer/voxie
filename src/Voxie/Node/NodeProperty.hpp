@@ -193,6 +193,7 @@ connectionPriorityToString(PropertyConnectionPriority priority);
 
 class VOXIECORESHARED_EXPORT NodeProperty : public vx::PropertyBase {
   Q_OBJECT
+  VX_REFCOUNTEDOBJECT
 
   bool isCustomStorage_;
   bool isCustomUI_;

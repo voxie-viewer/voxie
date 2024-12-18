@@ -43,12 +43,14 @@ namespace vx {
  * calculated.
  */
 class LassoSelectionStep : public SegmentationStep {
-  NODE_PROTOTYPE_DECL(LassoSelectionStep)
+  VX_NODE_IMPLEMENTATION(
+      "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep")
+
  private:
   void initializeCustomUIPropSections() override;
 
  public:
-  LassoSelectionStep(QList<QVector3D> nodes, QVector3D volumeOrigin,
+  LassoSelectionStep(QList<vx::Vector<double, 3>> nodes, QVector3D volumeOrigin,
                      QQuaternion volumeOrientation, QVector3D voxelSize,
                      PlaneInfo plane);
   LassoSelectionStep(const LassoSelectionStep& oldStep);
@@ -79,7 +81,7 @@ class LassoSelectionStep : public SegmentationStep {
 
   void onVoxelOpFinished(bool status) override;
 
-  void setProperties(QList<QVector3D> nodes, QVector3D volumeOrigin,
+  void setProperties(QList<vx::Vector<double, 3>> nodes, QVector3D volumeOrigin,
                      QQuaternion volumeOrientation, QVector3D voxelSize,
                      QVector3D planeOrigin, QQuaternion planeOrientation);
 
@@ -98,7 +100,7 @@ class LassoSelectionStep : public SegmentationStep {
  */
 class LassoCalculator : public IndexCalculator {
  public:
-  LassoCalculator(QList<QVector3D> nodes,
+  LassoCalculator(QList<vx::Vector<double, 3>> nodes,
                   QSharedPointer<VolumeDataVoxel> originalVolume,
                   QVector3D planeOrigin, QQuaternion planeOrientation);
   ~LassoCalculator() {}

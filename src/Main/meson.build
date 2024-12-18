@@ -132,6 +132,7 @@ moc_files = qt5.preprocess(
     #'DebugOptions.hpp',
     'Instance.hpp',
     #'MetatypeRegistration.hpp',
+    'Prototypes.hpp',
     'Root.hpp',
     'Utilities.hpp',
 
@@ -152,6 +153,8 @@ moc_files = qt5.preprocess(
     #'Gui/GraphNode.hpp',
     'Gui/GraphWidget.hpp',
     'Gui/HelpWindow.hpp',
+    'Gui/HorizontalScrollArea.hpp',
+    'Gui/NodeSection.hpp',
     'Gui/OpenFileDialog.hpp',
     #'Gui/PosRotValid.hpp',
     'Gui/ScriptConsole.hpp',
@@ -186,6 +189,8 @@ moc_files = qt5.preprocess(
     #'Help/HelpPageSourceIndex.hpp',
     #'Help/HelpPageSourcePrototype.hpp',
     #'Help/HelpPageSourceTopic.hpp',
+
+    'Vis/MarkdownVisualizer.hpp',
   ],
   include_directories : [ project_incdir ],
   dependencies : qt5_dep_moc,
@@ -203,6 +208,7 @@ main = executable(
     'Instance.cpp',
     'Main.cpp',
     'MetatypeRegistration.cpp',
+    'Prototypes.cpp',
     'Root.cpp',
     'Utilities.cpp',
 
@@ -222,6 +228,8 @@ main = executable(
     'Gui/GraphNode.cpp',
     'Gui/GraphWidget.cpp',
     'Gui/HelpWindow.cpp',
+    'Gui/HorizontalScrollArea.cpp',
+    'Gui/NodeSection.cpp',
     'Gui/OpenFileDialog.cpp',
     'Gui/PosRotValid.cpp',
     'Gui/ScriptConsole.cpp',
@@ -258,6 +266,8 @@ main = executable(
     'Help/HelpPageSourcePrototype.cpp',
     'Help/HelpPageSourceTopic.cpp',
 
+    'Vis/MarkdownVisualizer.cpp',
+
     additional_main_sources,
     git_revision,
     git_revision_describe,
@@ -265,7 +275,6 @@ main = executable(
   include_directories : [
     project_incdir,
     opencl_incdir,
-    cmark_incdir,
   ],
   implicit_include_directories : false,
   cpp_args: [
@@ -274,9 +283,9 @@ main = executable(
   dependencies : [
     qt5_dep,
     libvoxie_dep,
+    cmark,
   ],
   link_with : [
-    cmark,
     gitVersionLibrary,
   ],
   link_args : [

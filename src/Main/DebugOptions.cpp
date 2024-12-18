@@ -5,12 +5,17 @@
 
 namespace vx {
 namespace debug_option_impl {
+vx::DebugOptionBool CMark_VerifyNodeDeepClone_option(
+    "CMark.VerifyNodeDeepClone");
 vx::DebugOptionBool Log_FocusChanges_option("Log.FocusChanges");
 vx::DebugOptionBool Log_HelpPageCache_option("Log.HelpPageCache");
 vx::DebugOptionBool Log_QtEvents_option("Log.QtEvents");
 }  // namespace debug_option_impl
 }  // namespace vx
 
+vx::DebugOptionBool* vx::debug_option::CMark_VerifyNodeDeepClone() {
+  return &vx::debug_option_impl::CMark_VerifyNodeDeepClone_option;
+}
 vx::DebugOptionBool* vx::debug_option::Log_FocusChanges() {
   return &vx::debug_option_impl::Log_FocusChanges_option;
 }
@@ -23,6 +28,7 @@ vx::DebugOptionBool* vx::debug_option::Log_QtEvents() {
 
 QList<vx::DebugOption*> vx::getMainDebugOptions() {
   return {
+      vx::debug_option::CMark_VerifyNodeDeepClone(),
       vx::debug_option::Log_FocusChanges(),
       vx::debug_option::Log_HelpPageCache(),
       vx::debug_option::Log_QtEvents(),

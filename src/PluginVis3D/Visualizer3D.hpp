@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <PluginVis3D/Prototypes.forward.hpp>
 #include <PluginVis3D/Visualizer3DView.hpp>
 
 #include <PluginVis3D/Data/AxisFilter.hpp>
@@ -52,8 +53,7 @@
  */
 class Visualizer3D : public vx::VisualizerNode {
   Q_OBJECT
-
-  View3DProperties* properties;
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Visualizer.View3D")
 
   Visualizer3DView* view;
   PlanePropertiesUi* planeWidget;
@@ -80,8 +80,6 @@ class Visualizer3D : public vx::VisualizerNode {
   bool movePlane;
 
  public:
-  FACTORY_VISUALIZERMODULE_HPP(Isosurface)
-
   explicit Visualizer3D();
 
   QWidget* mainView() override { return view; }

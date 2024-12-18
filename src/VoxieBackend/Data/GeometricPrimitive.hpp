@@ -24,6 +24,8 @@
 
 #include <VoxieBackend/VoxieBackend.hpp>
 
+#include <VoxieClient/Vector.hpp>
+
 #include <QtCore/QSharedPointer>
 #include <QtCore/QString>
 
@@ -54,10 +56,13 @@ class VOXIEBACKEND_EXPORT GeometricPrimitive {
 };
 
 class VOXIEBACKEND_EXPORT GeometricPrimitivePoint : public GeometricPrimitive {
-  QVector3D position_;
+  vx::Vector<double, 3> position_;
 
  public:
+  // TODO: Remove
   GeometricPrimitivePoint(const QString& name, const QVector3D& position);
+  GeometricPrimitivePoint(const QString& name,
+                          const vx::Vector<double, 3>& position);
   ~GeometricPrimitivePoint() override;
 
   QSharedPointer<GeometricPrimitive> withName(const QString& name) override;
@@ -66,7 +71,9 @@ class VOXIEBACKEND_EXPORT GeometricPrimitivePoint : public GeometricPrimitive {
 
   QMap<QString, QDBusVariant> primitiveValues() override;
 
-  const QVector3D& position() const { return position_; }
+  const vx::Vector<double, 3> positionVec() const { return position_; }
+  // TODO: Remove, replace with positionVec()
+  QVector3D position() const;
 
   static QSharedPointer<GeometricPrimitive> create(
       const QString& name, const QMap<QString, QDBusVariant>& primitiveValues);

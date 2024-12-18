@@ -34,6 +34,8 @@
 
 #include "Voxie/Data/ContainerData.hpp"
 
+#include <VoxieClient/Format.hpp>
+
 using namespace vx;
 
 SegmentationWidget::SegmentationWidget(LabelViewModel* labelViewModel,
@@ -274,8 +276,10 @@ SegmentationWidget::SegmentationWidget(LabelViewModel* labelViewModel,
   hoverInfo->setColumnStretch(1, 1);
   hoveredVoxelValue = new QLabel("Voxel value: ");
   hoveredVoxelLabel = new QLabel("Voxel label: ");
+  hoveredSelectedLabel = new QLabel("Selected: ");
   hoverInfo->addWidget(hoveredVoxelValue);
   hoverInfo->addWidget(hoveredVoxelLabel);
+  hoverInfo->addWidget(hoveredSelectedLabel);
   mainVBox->addLayout(hoverInfo);
   mainVBox->addSpacing(10);
 
@@ -503,9 +507,12 @@ void SegmentationWidget::setActiveSelectionInfo(bool incremental,
       QString("Percentage: %1").arg(percentage));
 }
 
-void SegmentationWidget::setHoverInfo(double voxelValue, QString voxelLabel) {
+void SegmentationWidget::setHoverInfo(double voxelValue, QString voxelLabel,
+                                      bool selected) {
   this->hoveredVoxelValue->setText(QString("Voxel value: %1").arg(voxelValue));
   this->hoveredVoxelLabel->setText(QString("Voxel label: %1").arg(voxelLabel));
+  this->hoveredSelectedLabel->setText(
+      vx::format("Selected: {}", selected ? "yes" : "no"));
 }
 
 int SegmentationWidget::addLabel() {

@@ -23,17 +23,15 @@
 #include "Exception.hpp"
 
 namespace HDF5 {
-  Exception::Exception (const std::string& methodName) : methodName_ (methodName) {
-  }
+Exception::Exception(const std::string& methodName) : methodName_(methodName) {}
 
-  Exception::~Exception () throw () {
-  }
+Exception::~Exception() throw() {}
 
-  std::string Exception::message () const {
-    return "An error occured in " + methodName ();
-  }
-
-  NORETURN Exception::error (const char* methodName) {
-    throw Exception (methodName);
-  }
+std::string Exception::message() const {
+  return "An error occured in " + methodName();
 }
+
+NORETURN Exception::error(const char* methodName) {
+  throw Exception(methodName);
+}
+}  // namespace HDF5

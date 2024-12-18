@@ -5,16 +5,54 @@
 
 namespace vx {
 namespace debug_option_impl {
+vx::DebugOptionBool ExtractSlice_UseMultiThreading_option(
+    "ExtractSlice.UseMultiThreading", true);
+vx::DebugOptionBool ExtractSlice_UseStaticScheduling_option(
+    "ExtractSlice.UseStaticScheduling");
+vx::DebugOptionBool Log_BlockCache_Statistics_option(
+    "Log.BlockCache.Statistics");
+vx::DebugOptionBool Log_BlockJpeg_option("Log.BlockJpeg");
+vx::DebugOptionBool Log_BufferType_option("Log.BufferType");
+vx::DebugOptionBool Log_ExtractSliceTime_option("Log.ExtractSliceTime");
+vx::DebugOptionBool Log_OperationRegistry_option("Log.OperationRegistry");
 vx::DebugOptionBool Log_SurfaceBoundingBox_option("Log.SurfaceBoundingBox");
-}
+}  // namespace debug_option_impl
 }  // namespace vx
 
+vx::DebugOptionBool* vx::debug_option::ExtractSlice_UseMultiThreading() {
+  return &vx::debug_option_impl::ExtractSlice_UseMultiThreading_option;
+}
+vx::DebugOptionBool* vx::debug_option::ExtractSlice_UseStaticScheduling() {
+  return &vx::debug_option_impl::ExtractSlice_UseStaticScheduling_option;
+}
+vx::DebugOptionBool* vx::debug_option::Log_BlockCache_Statistics() {
+  return &vx::debug_option_impl::Log_BlockCache_Statistics_option;
+}
+vx::DebugOptionBool* vx::debug_option::Log_BlockJpeg() {
+  return &vx::debug_option_impl::Log_BlockJpeg_option;
+}
+vx::DebugOptionBool* vx::debug_option::Log_BufferType() {
+  return &vx::debug_option_impl::Log_BufferType_option;
+}
+vx::DebugOptionBool* vx::debug_option::Log_ExtractSliceTime() {
+  return &vx::debug_option_impl::Log_ExtractSliceTime_option;
+}
+vx::DebugOptionBool* vx::debug_option::Log_OperationRegistry() {
+  return &vx::debug_option_impl::Log_OperationRegistry_option;
+}
 vx::DebugOptionBool* vx::debug_option::Log_SurfaceBoundingBox() {
   return &vx::debug_option_impl::Log_SurfaceBoundingBox_option;
 }
 
 QList<vx::DebugOption*> vx::getVoxieBackendDebugOptions() {
   return {
+      vx::debug_option::ExtractSlice_UseMultiThreading(),
+      vx::debug_option::ExtractSlice_UseStaticScheduling(),
+      vx::debug_option::Log_BlockCache_Statistics(),
+      vx::debug_option::Log_BlockJpeg(),
+      vx::debug_option::Log_BufferType(),
+      vx::debug_option::Log_ExtractSliceTime(),
+      vx::debug_option::Log_OperationRegistry(),
       vx::debug_option::Log_SurfaceBoundingBox(),
   };
 }

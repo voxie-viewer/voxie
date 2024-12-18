@@ -67,11 +67,64 @@ void DebugOptionBool::setValueString(const QString& value) {
     qWarning() << "Invalid value for debug option" << name() << ":" << value;
 }
 
-QDBusSignature DebugOptionBool::dbusSignature() { return QDBusSignature("b"); }
+QDBusSignature DebugOptionBool::dbusSignature() {
+  return vx::dbusGetSignature<bool>();
+}
 
 QDBusVariant DebugOptionBool::getValueDBus() {
   return vx::dbusMakeVariant<bool>(get());
 }
 void DebugOptionBool::setValueDBus(const QDBusVariant& value) {
   set(vx::dbusGetVariantValue<bool>(value));
+}
+
+void DebugOptionFloat::set(double value) {
+  vx::checkOnMainThread("DebugOptionFloat::set()");
+  double old = valueAtomic.load();
+  if (old == value) return;
+  valueAtomic.store(value);
+
+  for (const auto& handler : changeHandlers) {
+    // TODO: Clean up deleted objects?
+    if (std::get<0>(handler)) (*std::get<1>(handler))(value);
+  }
+}
+
+void DebugOptionFloat::registerAndCallChangeHandler(
+    QObject* obj, std::function<void(double)>&& fun) {
+  vx::checkOnMainThread("DebugOptionFloat::registerAndCallChangeHandler()");
+
+  auto data = std::make_tuple(
+      QPointer<QObject>(obj),
+      createQSharedPointer<std::function<void(double)>>(std::move(fun)));
+
+  changeHandlers << data;
+
+  (*std::get<1>(data))(get());
+}
+
+void DebugOptionFloat::setValueStringEmpty() {
+  // TODO: ?
+  qWarning() << "Setting empty string for float debug option " << this->name();
+}
+void DebugOptionFloat::setValueString(const QString& value) {
+  bool ok = false;
+  double parsedValue = value.toDouble(&ok);
+  if (!ok) {
+    qWarning() << "Invalid value for float debug option" << this->name() << ":"
+               << value;
+  } else {
+    set(parsedValue);
+  }
+}
+
+QDBusSignature DebugOptionFloat::dbusSignature() {
+  return vx::dbusGetSignature<double>();
+}
+
+QDBusVariant DebugOptionFloat::getValueDBus() {
+  return vx::dbusMakeVariant<double>(get());
+}
+void DebugOptionFloat::setValueDBus(const QDBusVariant& value) {
+  set(vx::dbusGetVariantValue<double>(value));
 }

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Prototypes.forward.hpp"
+
 #include <QtCore/QJsonObject>
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -14,6 +16,8 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+
+class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
 namespace vx {
 #ifndef VOXIE_PROP_DEFINED_CenterPoint
@@ -192,6 +196,7 @@ class TomographyRawDataProperties : public QObject,
   std::tuple<double, double> centerPointRaw() override final;
   static QSharedPointer<NodeProperty> centerPointProperty();
   static NodePropertyTyped<vx::types::Point2D> centerPointPropertyTyped();
+  NodeNodeProperty centerPointInstance();
   void setCenterPoint(QPointF value);
  Q_SIGNALS:
   void centerPointChanged(QPointF value);
@@ -204,6 +209,7 @@ class TomographyRawDataProperties : public QObject,
   double verticalSizeRaw() override final;
   static QSharedPointer<NodeProperty> verticalSizeProperty();
   static NodePropertyTyped<vx::types::Float> verticalSizePropertyTyped();
+  NodeNodeProperty verticalSizeInstance();
   void setVerticalSize(double value);
  Q_SIGNALS:
   void verticalSizeChanged(double value);
@@ -216,6 +222,7 @@ class TomographyRawDataProperties : public QObject,
   qint64 currentImageRaw() override final;
   static QSharedPointer<NodeProperty> currentImageProperty();
   static NodePropertyTyped<vx::types::Int> currentImagePropertyTyped();
+  NodeNodeProperty currentImageInstance();
   void setCurrentImage(qint64 value);
  Q_SIGNALS:
   void currentImageChanged(qint64 value);
@@ -229,6 +236,7 @@ class TomographyRawDataProperties : public QObject,
   static QSharedPointer<NodeProperty> currentImageListProperty();
   static NodePropertyTyped<vx::types::TomographyRawDataImageList>
   currentImageListPropertyTyped();
+  NodeNodeProperty currentImageListInstance();
   void setCurrentImageList(std::tuple<QString, QJsonObject> value);
  Q_SIGNALS:
   void currentImageListChanged(std::tuple<QString, QJsonObject> value);
@@ -242,6 +250,7 @@ class TomographyRawDataProperties : public QObject,
   static QSharedPointer<NodeProperty> imageKindProperty();
   static NodePropertyTyped<vx::types::TomographyRawDataImageKind>
   imageKindPropertyTyped();
+  NodeNodeProperty imageKindInstance();
   void setImageKind(QJsonObject value);
  Q_SIGNALS:
   void imageKindChanged(QJsonObject value);
@@ -254,6 +263,7 @@ class TomographyRawDataProperties : public QObject,
   double imagesPerSecondRaw() override final;
   static QSharedPointer<NodeProperty> imagesPerSecondProperty();
   static NodePropertyTyped<vx::types::Float> imagesPerSecondPropertyTyped();
+  NodeNodeProperty imagesPerSecondInstance();
   void setImagesPerSecond(double value);
  Q_SIGNALS:
   void imagesPerSecondChanged(double value);
@@ -266,6 +276,7 @@ class TomographyRawDataProperties : public QObject,
   QString interpolationRaw() override final;
   static QSharedPointer<NodeProperty> interpolationProperty();
   static NodePropertyTyped<vx::types::Enumeration> interpolationPropertyTyped();
+  NodeNodeProperty interpolationInstance();
   void setInterpolation(QString value);
  Q_SIGNALS:
   void interpolationChanged(QString value);
@@ -278,6 +289,7 @@ class TomographyRawDataProperties : public QObject,
   QDBusObjectPath rawDataRaw() override final;
   static QSharedPointer<NodeProperty> rawDataProperty();
   static NodePropertyTyped<vx::types::NodeReference> rawDataPropertyTyped();
+  NodeNodeProperty rawDataInstance();
   void setRawData(vx::Node* value);
  Q_SIGNALS:
   void rawDataChanged(vx::Node* value);
@@ -292,6 +304,7 @@ class TomographyRawDataProperties : public QObject,
   static QSharedPointer<NodeProperty> valueColorMappingProperty();
   static NodePropertyTyped<vx::types::ValueColorMapping>
   valueColorMappingPropertyTyped();
+  NodeNodeProperty valueColorMappingInstance();
   void setValueColorMapping(QList<vx::ColorizerEntry> value);
  Q_SIGNALS:
   void valueColorMappingChanged(QList<vx::ColorizerEntry> value);
@@ -305,6 +318,7 @@ class TomographyRawDataProperties : public QObject,
   bool waitForImagesRaw() override final;
   static QSharedPointer<NodeProperty> waitForImagesProperty();
   static NodePropertyTyped<vx::types::Boolean> waitForImagesPropertyTyped();
+  NodeNodeProperty waitForImagesInstance();
   void setWaitForImages(bool value);
  Q_SIGNALS:
   void waitForImagesChanged(bool value);

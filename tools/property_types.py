@@ -70,40 +70,43 @@ dbusToQtTypeAll = {
 
 
 def dbusToCppRawType(sig):
-    sig = dbus.Signature(sig)
+    try:
+        sig = dbus.Signature(sig)
+    except ValueError as e:
+        raise Exception('Failed to parse signature {!r}: {}'.format(sig, e))
     if len(list(sig)) != 1:
         raise Exception('Expected a single complete type')
-    if sig[0] == 'y':
+    if sig == 'y':
         return 'quint8'
-    if sig[0] == 'b':
+    if sig == 'b':
         return 'bool'
-    if sig[0] == 'n':
+    if sig == 'n':
         return 'qint16'
-    if sig[0] == 'q':
+    if sig == 'q':
         return 'quint16'
-    if sig[0] == 'i':
+    if sig == 'i':
         return 'qint32'
-    if sig[0] == 'u':
+    if sig == 'u':
         return 'quint32'
-    if sig[0] == 'x':
+    if sig == 'x':
         return 'qint64'
-    if sig[0] == 't':
+    if sig == 't':
         return 'quint64'
-    if sig[0] == 'd':
+    if sig == 'd':
         return 'double'
-    if sig[0] == 'h':
+    if sig == 'h':
         return 'QDBusUnixFileDescriptor'
-    if sig[0] == 's':
+    if sig == 's':
         return 'QString'
-    if sig[0] == 'o':
+    if sig == 'o':
         return 'QDBusObjectPath'
-    if sig[0] == 'g':
+    if sig == 'g':
         return 'QDBusSignature'
-    if sig[0] == 'v':
+    if sig == 'v':
         return 'QDBusVariant'
-    if sig[0] == 'ay':
+    if sig == 'ay':
         return 'QByteArray'
-    if sig[0] == 'as':
+    if sig == 'as':
         return 'QStringList'
     if sig[0] == '(':
         elems = list(dbus.Signature(sig[1:-1]))
@@ -135,8 +138,10 @@ def dbusGetComponentTypes(sig):
         raise Exception('Expected a single complete type')
     simple = ['y', 'b', 'n', 'q', 'i', 'u',
               'x', 't', 'd', 'h', 's', 'o', 'g', 'v']
-    # TODO: Add ay and as?
     if sig in simple:
+        return []
+    # This types are handled differently in QDBus
+    if sig in ['as', 'ay']:
         return []
     if sig[0] == '(':
         return list(dbus.Signature(sig[1:-1]))
@@ -283,6 +288,13 @@ types = {
         # No comparison?
     },
 
+    'de.uni_stuttgart.Voxie.PropertyType.SurfaceAttributeName': {
+        'DisplayName': 'Surface attribute name',
+        'DBusSignature': 's',
+        'DefaultValueExpression': '""',
+        'CompareFunction': 'defaultValueCompare',
+    },
+
     'de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageKind': {
         'DisplayName': 'Tomography raw data image kind',
         'DBusSignature': 'a{sv}',
@@ -351,7 +363,7 @@ types = {
     'de.uni_stuttgart.Voxie.PropertyType.ListPosition3DDoubleTuple': {
         'DisplayName': 'List with (3DPosition, double) tuples',
         'DBusSignature': 'a((ddd)d)',
-        'QtType': 'QList<std::tuple<QVector3D, double>>',
+        'QtType': 'QList<std::tuple<vx::Vector<double, 3>, double>>',
         'DefaultValueExpression': 'QList<std::tuple<vx::TupleVector<double, 3>, double>>()',
         'JSONParseFunction': None,
         # No comparison
@@ -361,7 +373,7 @@ types = {
     'de.uni_stuttgart.Voxie.PropertyType.ListPosition3D': {
         'DisplayName': 'Position3D List',
         'DBusSignature': 'a(ddd)',
-        'QtType': 'QList<QVector3D>',
+        'QtType': 'QList<vx::Vector<double, 3>>',
         'DefaultValueExpression': 'QList<vx::TupleVector<double, 3>>()',
         'JSONParseFunction': None,
         # No comparison
@@ -408,6 +420,43 @@ types = {
     #     'DefaultValueExpression': 'QList<std::tuple<double, vx::TupleVector<double, 4>, qint32>>{std::make_tuple(NAN, vx::TupleVector<double, 4>(0, 0, 0, 0), 0), std::make_tuple(0, vx::TupleVector<double, 4>(0, 0, 0, 1), 0), std::make_tuple(1, vx::TupleVector<double, 4>(1, 1, 1, 1), 0)}',
     #     'JSONParseFunction': None,
     # },
+
+    # A piecewise polynomial function (or distribution), see doc/topic/property-types/piecewise-polynomial-function.md
+    'de.uni_stuttgart.Voxie.PropertyType.PiecewisePolynomialFunction': {
+        'DisplayName': 'Piecewise polynomial function',
+        'DBusSignature': '(a(d(dd))aad)',
+        'QtType': 'vx::PiecewisePolynomialFunction',
+        # 'DefaultValueExpression': '{{}, {{0}}}', # Does not work on Ubuntu 16.04
+        # TODO: Use JSON data for default expressions?
+        'DefaultValueExpression': 'std::make_tuple(QList<std::tuple<double, std::tuple<double, double>>>(), QList<QList<double>>{QList<double>{0}})',
+        'VerifyFunctionSimple': 'vx::PiecewisePolynomialFunction::parse',
+        # No comparison
+    },
+
+    # The chemical composition of a material, see doc/topic/property-types/chemical-composition.md
+    'de.uni_stuttgart.Voxie.PropertyType.ChemicalComposition': {
+        'DisplayName': 'Chemical composition',
+        'DBusSignature': 'v',
+        'RawType': 'QJsonValue',
+        'QtType': 'QJsonValue',
+        'DefaultValueExpression': 'QJsonArray{"molecule", QJsonArray{}}',
+        'VerifyFunctionSimple': 'vx::ChemicalComposition::parse',
+        # No comparison
+        'ToString': 'chemicalCompositionToString',
+        'GetDescription': 'chemicalCompositionGetDescription',
+        'SimpleUI': True,
+    },
+
+    # The kind of a (physical) quantity, see doc/topic/property-types/quantity.md
+    'de.uni_stuttgart.Voxie.PropertyType.Quantity': {
+        'DisplayName': 'Quantity',
+        'DBusSignature': 's',
+        'DefaultValueExpression': '""',
+        'CompareFunction': 'defaultValueCompare',
+        # TODO: Add a verify function?
+        # 'VerifyFunctionSimple': 'vx::Quantity::parse',
+        'SimpleUI': True,
+    },
 }
 
 for key in types:

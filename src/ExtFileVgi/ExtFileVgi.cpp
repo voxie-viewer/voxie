@@ -512,6 +512,13 @@ int main(int argc, char* argv[]) {
         dbusClient, QDBusObjectPath(operationPath));
 
     op.forwardExc([&]() {
+      // get properties
+      auto properties = op.op().properties();
+
+      auto defaultLengthUnit = vx::dbusGetVariantValue<QString>(
+          properties
+              ["de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit"]);
+
       auto vgi = VgiFile::parse(filename);
       auto vp = vgi->firstVolumePrimitive;
       auto vol = vp->volume;
@@ -538,12 +545,28 @@ int main(int argc, char* argv[]) {
 
       auto unit = vp->unit;
       double unitFactor;
-      if (unit == "m")
+      if (unit == "m") {
         unitFactor = 1;
-      else if (unit == "mm")
+      } else if (unit == "mm") {
         unitFactor = 1e-3;
-      else
+      } else if (unit == "units") {
+        if (defaultLengthUnit ==
+            "de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit.Unset") {
+          error("Unit set to 'units' and no default unit given");
+        } else if (defaultLengthUnit ==
+                   "de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit."
+                   "m") {
+          unitFactor = 1;
+        } else if (defaultLengthUnit ==
+                   "de.uni_stuttgart.Voxie.FileFormat.Vgi.DefaultLengthUnit."
+                   "mm") {
+          unitFactor = 1e-3;
+        } else {
+          error("Unknown value for DefaultLengthUnit: " + defaultLengthUnit);
+        }
+      } else {
         error("Unknown unit: " + unit);
+      }
 
       QVector3D gridSpacing(vp->resolution[0], vp->resolution[1],
                             vp->resolution[2]);

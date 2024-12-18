@@ -138,6 +138,16 @@ class MapTest : public QObject {
                         concatColumns(vx::identityMatrix<double, 3>(),
                                       vx::Matrix<double, 3, 1>::zero())) <
             1e-20);
+
+    vx::HmgVector<int, 3> hmgVector1 = {{1, 3, 3}, 9};
+    auto hmgVector1Trans = vx::createTranslation(hmgVector1);
+    vx::Matrix<int, 4, 4> hmgVector1TransRef = {
+        {1, 0, 0, 1},
+        {0, 1, 0, 3},
+        {0, 0, 1, 3},
+        {0, 0, 0, 9},
+    };
+    QVERIFY(hmgVector1Trans.projectiveMatrix() == hmgVector1TransRef);
   }
 
   void testProj() {

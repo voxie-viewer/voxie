@@ -48,9 +48,8 @@ class TableData;
  */
 class VOXIECORESHARED_EXPORT TableNode : public DataNode {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(TableNode)
-
-  NODE_PROTOTYPE_DECL_DATA(Table)
+  VX_REFCOUNTEDOBJECT
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Data.Table")
 
  public:
   TableNode();

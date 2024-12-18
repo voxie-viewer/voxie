@@ -88,7 +88,7 @@ textIgnoreFiles = [
     'src/ExtFilePly/tinyply.h',
     'src/ExtFilterMarchingCubes33_by_DVega/MC33_LookUpTable.h',
     'src/ExtFilterMarchingCubes33_by_DVega/marchingcubes33.cpp',
-    'src/VoxieBackend/lib/CL/cl-patched.hpp',
+    'src/VoxieBackend/OpenCL/opencl-patched.hpp',
 ]
 
 for file in allFiles:

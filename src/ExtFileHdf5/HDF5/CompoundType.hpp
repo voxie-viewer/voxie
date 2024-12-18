@@ -27,39 +27,37 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
 #include <HDF5/DataType.hpp>
 
 namespace HDF5 {
-  class CompoundType : public DataType {
-    void checkType () const;
+class CompoundType : public DataType {
+  void checkType() const;
 
-  public:
-    CompoundType () {
-    }
+ public:
+  CompoundType() {}
 
-    explicit CompoundType (const IdComponent& value) : DataType (value) {
-      checkType ();
-    }
+  explicit CompoundType(const IdComponent& value) : DataType(value) {
+    checkType();
+  }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit CompoundType (hid_t value) : DataType (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit CompoundType(hid_t value) : DataType(value) { checkType(); }
 
-    static CompoundType create (size_t size);
+  static CompoundType create(size_t size);
 
-    void insert (const std::string& name, size_t offset, const DataType& field) const;
+  void insert(const std::string& name, size_t offset,
+              const DataType& field) const;
 
-    size_t nMembers () const;
-    std::string memberName (size_t i) const;
-    size_t memberOffset (size_t i) const;
-    DataType memberType (size_t i) const;
-  };
-}
+  size_t nMembers() const;
+  std::string memberName(size_t i) const;
+  size_t memberOffset(size_t i) const;
+  DataType memberType(size_t i) const;
+};
+}  // namespace HDF5
 
-#endif // !HDF5_COMPOUNDTYPE_HPP_INCLUDED
+#endif  // !HDF5_COMPOUNDTYPE_HPP_INCLUDED

@@ -34,7 +34,7 @@
 namespace vx {
 class VOXIEBACKEND_EXPORT VolumeStructureVoxel : public vx::VolumeStructure {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(VolumeStructureVoxel)
+  VX_REFCOUNTEDOBJECT
 
   VectorSizeT3 arrayShape_;
 

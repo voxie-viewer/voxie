@@ -32,10 +32,12 @@
 #include <QtCore/QMutex>
 
 namespace vx {
+enum class ReplaceMode : uint32_t;
 class Data;
 class DataUpdate;
 class DataVersion;
 class DataContainer;
+class DataProperty;
 class SharedMemory;
 template <typename T>
 class SharedFunPtr;
@@ -50,7 +52,7 @@ class Exporter;
  */
 class VOXIEBACKEND_EXPORT Data : public vx::DynamicObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(Data)
+  VX_REFCOUNTEDOBJECT
 
   friend class DataUpdate;
   friend class DataContainer;
@@ -87,6 +89,13 @@ class VOXIEBACKEND_EXPORT Data : public vx::DynamicObject {
   void addContainer(ExportedObject* container);
   void removeContainer(const QDBusObjectPath& path);
 
+  struct DataPropertyValue {
+    QSharedPointer<DataProperty> property;
+    QVariant value;
+  };
+  // May only be accessed from the main thread (without lock)
+  QMap<QString, DataPropertyValue> dataProperties;
+
  protected:
   void initialize() override;
 
@@ -110,6 +119,15 @@ class VOXIEBACKEND_EXPORT Data : public vx::DynamicObject {
    */
   virtual QList<QSharedPointer<SharedMemory>> getSharedMemorySections() = 0;
 
+  QList<QSharedPointer<DataProperty>> listProperties();
+
+  QVariant getProperty(const QSharedPointer<DataProperty>& property,
+                       bool allowMissing = false);
+
+  void setProperty(const QSharedPointer<DataUpdate>& update,
+                   const QSharedPointer<DataProperty>& property,
+                   const QVariant& value, ReplaceMode replaceMode);
+
  Q_SIGNALS:
   /**
    * @param newVersion The new data version
@@ -127,7 +145,7 @@ class VOXIEBACKEND_EXPORT Data : public vx::DynamicObject {
 // only contain the Data member and not really be useful).
 class VOXIEBACKEND_EXPORT DataUpdate : public vx::RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(DataUpdate)
+  VX_REFCOUNTEDOBJECT
 
   struct FinishPreventer {};
   struct UpdateInfo {
@@ -164,11 +182,21 @@ class VOXIEBACKEND_EXPORT DataUpdate : public vx::RefCountedObject {
   QSharedPointer<DataVersion> finish(const QJsonObject& metadata);
 
   bool running();
+
+  // Throws an exception if this is not running or is for an object other than
+  // data.
+  // TODO: Distinguish between updates for normal data and for data properties
+  // and pass a parameter here, so that validateCanUpdate() can check whether
+  // the update is correct.
+  void validateCanUpdate(Data* data);
+  void validateCanUpdate(const QSharedPointer<Data>& data) {
+    this->validateCanUpdate(data.data());
+  }
 };
 
 class VOXIEBACKEND_EXPORT DataVersion : public vx::RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(DataVersion)
+  VX_REFCOUNTEDOBJECT
 
   friend class Data;
 

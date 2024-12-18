@@ -22,6 +22,8 @@
 
 #include "SeriesDimension.hpp"
 
+#include <VoxieBackend/Data/DataProperty.hpp>
+
 #include <VoxieBackend/Property/PropertyType.hpp>
 
 #include <VoxieClient/DBusAdaptors.hpp>
@@ -36,9 +38,35 @@ class SeriesDimensionAdaptorImpl : public SeriesDimensionAdaptor {
       : SeriesDimensionAdaptor(object), object(object) {}
   ~SeriesDimensionAdaptorImpl() override {}
 
+  /*
   QString displayName() const override {
     try {
-      return object->displayName();
+      return object->property()->displayName();
+    } catch (Exception& e) {
+      return e.handle(object);
+    }
+  }
+
+  QString name() const override {
+    try {
+      return object->property()->name();
+    } catch (Exception& e) {
+      return e.handle(object);
+    }
+  }
+
+  QDBusObjectPath type() const override {
+    try {
+      return ExportedObject::getPath(object->property()->type());
+    } catch (Exception& e) {
+      return e.handle(object);
+    }
+  }
+  */
+
+  QDBusObjectPath property() const override {
+    try {
+      return ExportedObject::getPath(object->property());
     } catch (Exception& e) {
       return e.handle(object);
     }
@@ -52,28 +80,12 @@ class SeriesDimensionAdaptorImpl : public SeriesDimensionAdaptor {
     }
   }
 
-  QString name() const override {
-    try {
-      return object->name();
-    } catch (Exception& e) {
-      return e.handle(object);
-    }
-  }
-
-  QDBusObjectPath type() const override {
-    try {
-      return ExportedObject::getPath(object->type());
-    } catch (Exception& e) {
-      return e.handle(object);
-    }
-  }
-
   QDBusVariant ListEntries(
       const QMap<QString, QDBusVariant>& options) override {
     try {
       ExportedObject::checkOptions(options);
 
-      return object->type()->rawToDBusList(object->entries());
+      return object->property()->type()->rawToDBusList(object->entries());
     } catch (Exception& e) {
       return e.handle(object);
     }
@@ -84,7 +96,8 @@ class SeriesDimensionAdaptorImpl : public SeriesDimensionAdaptor {
     try {
       ExportedObject::checkOptions(options);
 
-      return object->type()->rawToDBus(object->getEntryValue(entryKey));
+      return object->property()->type()->rawToDBus(
+          object->getEntryValue(entryKey));
     } catch (Exception& e) {
       return e.handle(object);
     }
@@ -96,7 +109,7 @@ class SeriesDimensionAdaptorImpl : public SeriesDimensionAdaptor {
       ExportedObject::checkOptions(options);
 
       return object->lookupEntryByValueOrInvalid(
-          object->type()->dbusToRaw(entryValue));
+          object->property()->type()->dbusToRaw(entryValue));
     } catch (Exception& e) {
       return e.handle(object);
     }
@@ -105,23 +118,20 @@ class SeriesDimensionAdaptorImpl : public SeriesDimensionAdaptor {
 }  // namespace
 }  // namespace vx
 
-vx::SeriesDimension::SeriesDimension(const QString& name,
-                                     const QString& displayName,
-                                     const QSharedPointer<PropertyType>& type,
-                                     const QList<QVariant>& entries)
+vx::SeriesDimension::SeriesDimension(
+    const QSharedPointer<DataProperty>& property,
+    const QList<QVariant>& entries)
     : RefCountedObject("SeriesDimension"),
-      name_(name),
-      displayName_(displayName),
-      type_(type),
+      property_(property),
       entries_(entries) {
   new SeriesDimensionAdaptorImpl(this);
 
-  if (!type)
+  if (!property)
     throw vx::Exception("de.uni_stuttgart.Voxie.InvalidArgument",
-                        "type is nullptr");
+                        "property is nullptr");
 
   for (const auto& entry : entries) {
-    type->verifyValueWithoutProperty(entry);
+    property->type()->verifyValueWithoutProperty(entry);
   }
 }
 

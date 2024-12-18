@@ -22,6 +22,7 @@
 
 #include "ExportedObject.hpp"
 
+#include <VoxieClient/Format.hpp>
 #include <VoxieClient/ObjectExport/BusManager.hpp>
 
 #include <cstdint>
@@ -34,6 +35,10 @@
 
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>
+
+#ifndef _MSC_VER
+#include <cxxabi.h>
+#endif
 
 using namespace vx;
 
@@ -175,4 +180,70 @@ QSharedPointer<RefCountedObject> RefCountedObject::tryLookupObject(
   auto it = references.find(path);
   if (it == references.end()) return QSharedPointer<RefCountedObject>();
   return it->toStrongRef();
+}
+
+// TODO: Move somewhere else?
+namespace {
+struct free_deleter {
+  void operator()(void* p) const { std::free(p); }
+};
+
+QString demangleName(const char* mangled_name) {
+#ifndef _MSC_VER
+  size_t len;
+  int status;
+  std::unique_ptr<char, free_deleter> demangled(
+      abi::__cxa_demangle(mangled_name, NULL, &len, &status));
+  if (status == 0)
+    return demangled.get();
+  else if (status == -2)
+    return vx::format("<unable to demangle: {}>", mangled_name);
+  else if (status == -1)
+    return vx::format("<unable to demangle (memory allocation failed): {}>",
+                      mangled_name);
+  else if (status == -3)
+    return vx::format("<unable to demangle (invalid argument): {}>",
+                      mangled_name);
+  else
+    return vx::format("<unable to demangle (status {}): {}>", status,
+                      mangled_name);
+#else
+  return mangled_name;
+#endif
+}
+}  // namespace
+
+// TODO: Move somewhere else?
+static QString getClassName(const std::type_info& typeinfo,
+                            const QMetaObject* metaObject) {
+  // Note: metaObject can be incorrect if the type does not have a Q_OBJECT
+  // declaration
+  // return vx::format("{} / {}", demangleName(typeinfo.name()),
+  //                   metaObject ? metaObject->className() : "<nullptr>");
+  Q_UNUSED(metaObject);
+  return demangleName(typeinfo.name());
+}
+static QString getClassName(const std::type_info& typeinfo,
+                            int pointerMetaType) {
+  const QMetaObject* metaObject = nullptr;
+  if (QMetaType::typeFlags(pointerMetaType))
+    metaObject = QMetaType::metaObjectForType(pointerMetaType);
+  return getClassName(typeinfo, metaObject);
+}
+static QString getClassNameForObj(QObject* obj) {
+  if (!obj) return "nullptr";
+  return getClassName(typeid(*obj), obj->metaObject());
+}
+
+void RefCountedObject::lookupFailedIncorrectTypeImpl(
+    const std::type_info& expected, int expectedPointerMetaTypeId,
+    const char* parameterName) {
+  QString message =
+      vx::format("Got unexpected argument type{}{}: Expected {}, got {}",
+                 parameterName ? " for parameter " : "",
+                 parameterName ? parameterName : "",
+                 getClassName(expected, expectedPointerMetaTypeId),
+                 getClassNameForObj(this));
+
+  throw vx::Exception("de.uni_stuttgart.Voxie.InvalidObjectType", message);
 }

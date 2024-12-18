@@ -27,50 +27,57 @@
 
 #include <HDF5/Forward.hpp>
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
+#include <Core/Util.hpp>
 
 #include <hdf5.h>
 
+#include <HDF5/DataSpace.hpp>  // Needed for default constructor
 #include <HDF5/Object.hpp>
-#include <HDF5/DataSpace.hpp> // Needed for default constructor
-#include <HDF5/PropLists.hpp> // Needed for default constructors
+#include <HDF5/PropLists.hpp>  // Needed for default constructors
 
 namespace HDF5 {
-  // Returns a new DataSetAccessPropList with the external file prefix set to "${ORIGIN}"
-  DataSetAccessPropList setEFilePrefix (const DataSetAccessPropList& list = DataSetAccessPropList ());
+// Returns a new DataSetAccessPropList with the external file prefix set to "${ORIGIN}"
+DataSetAccessPropList setEFilePrefix(
+    const DataSetAccessPropList& list = DataSetAccessPropList());
 
-  class DataSet : public Object {
-    void checkType () const;
+class DataSet : public Object {
+  void checkType() const;
 
-  public:
-    DataSet () {
-    }
+ public:
+  DataSet() {}
 
-    explicit DataSet (const IdComponent& value) : Object (value) {
-      checkType ();
-    }
+  explicit DataSet(const IdComponent& value) : Object(value) { checkType(); }
 
-    // This constructor takes ownership of the object refered to by value
-    explicit DataSet (hid_t value) : Object (value) {
-      checkType ();
-    }
+  // This constructor takes ownership of the object refered to by value
+  explicit DataSet(hid_t value) : Object(value) { checkType(); }
 
-    static DataSet create (const File& file, const DataType& type, const DataSpace& space, const DataSetCreatePropList& dcpl = DataSetCreatePropList (), const DataSetAccessPropList& dapl = DataSetAccessPropList ());
+  static DataSet create(
+      const File& file, const DataType& type, const DataSpace& space,
+      const DataSetCreatePropList& dcpl = DataSetCreatePropList(),
+      const DataSetAccessPropList& dapl = DataSetAccessPropList());
 
-    void read (void* buf, const HDF5::DataType& memType, const HDF5::DataSpace& memSpace = HDF5::DataSpace (), const HDF5::DataSpace& fileSpace = HDF5::DataSpace (), DataTransferPropList xfpl = DataTransferPropList ()) const;
-    void write (const void* buf, const HDF5::DataType& memType, const HDF5::DataSpace& memSpace = HDF5::DataSpace (), const HDF5::DataSpace& fileSpace = HDF5::DataSpace (), DataTransferPropList xfpl = DataTransferPropList ()) const;
+  void read(void* buf, const HDF5::DataType& memType,
+            const HDF5::DataSpace& memSpace = HDF5::DataSpace(),
+            const HDF5::DataSpace& fileSpace = HDF5::DataSpace(),
+            DataTransferPropList xfpl = DataTransferPropList()) const;
+  void write(const void* buf, const HDF5::DataType& memType,
+             const HDF5::DataSpace& memSpace = HDF5::DataSpace(),
+             const HDF5::DataSpace& fileSpace = HDF5::DataSpace(),
+             DataTransferPropList xfpl = DataTransferPropList()) const;
 
-    DataSpace getSpace () const;
-    DataType getDataType () const;
+  DataSpace getSpace() const;
+  DataType getDataType() const;
 
-    static void vlenReclaim (void* buf, const DataType& type, const DataSpace& space, DataTransferPropList xfpl = DataTransferPropList ());
+  static void vlenReclaim(void* buf, const DataType& type,
+                          const DataSpace& space,
+                          DataTransferPropList xfpl = DataTransferPropList());
 
-    DataSetAccessPropList accessPropList () const;
-    DataSetCreatePropList createPropList () const;
+  DataSetAccessPropList accessPropList() const;
+  DataSetCreatePropList createPropList() const;
 
-    uint64_t getOffset () const;
-  };
-}
+  uint64_t getOffset() const;
+};
+}  // namespace HDF5
 
-#endif // !HDF5_DATASET_HPP_INCLUDED
+#endif  // !HDF5_DATASET_HPP_INCLUDED

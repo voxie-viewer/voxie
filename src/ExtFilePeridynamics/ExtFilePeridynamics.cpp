@@ -101,10 +101,8 @@ static void exportFile(const QCommandLineParser& parser) {
     QString filename = op.op().filename();
     auto inputDataPath = op.op().data();
 
-    auto volumeData =
-        makeSharedQObject<de::uni_stuttgart::Voxie::VolumeData>(
-            dbusClient.uniqueName(), inputDataPath.path(),
-            dbusClient.connection());
+    auto volumeData = makeSharedQObject<de::uni_stuttgart::Voxie::VolumeData>(
+        dbusClient.uniqueName(), inputDataPath.path(), dbusClient.connection());
     auto voxelData =
         makeSharedQObject<de::uni_stuttgart::Voxie::VolumeDataVoxel>(
             dbusClient.uniqueName(), inputDataPath.path(),

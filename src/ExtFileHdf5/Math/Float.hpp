@@ -33,4 +33,4 @@ typedef std::complex<float> cfloat;
 typedef std::complex<double> cdouble;
 typedef std::complex<ldouble> cldouble;
 
-#endif // !MATH_FLOAT_HPP_INCLUDED
+#endif  // !MATH_FLOAT_HPP_INCLUDED

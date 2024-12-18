@@ -295,35 +295,58 @@ class DataSourceImageArchive(DataSource):
         return (self.ia.info[z]['Width'], self.ia.info[z]['Height'])
 
 
-class DataSourceZippedImages(DataSource):
-    def __init__(self, filename, data, *, array_shape, data_type):
-        throwOnUnexpectedMember(data, 'JSON object "DataSource"', ('DataFilename', 'StorageOrder', 'ValueOffset', 'ValueScalingFactor', 'ImageFilePattern', 'FirstImageIndex'))
+# TODO: Use multi-threading for this class? Can be useful if the zip file uses compression and/or the image file is compressed.
+class DataSourceImageList(DataSource):
+    def __init__(self, filename, data, *, array_shape, data_type, additional_members):
+        throwOnUnexpectedMember(data, 'JSON object "DataSource"', ('StorageOrder', 'ValueOffset', 'ValueScalingFactor', 'ImageFilePattern', 'ImageFileNames', 'FirstImageIndex') + additional_members)
 
-        global zipfile
         global PIL
-        import zipfile
         import PIL.Image
 
-        dataFilename = str(data['DataFilename'])
+        # Allow opening large images
+        PIL.Image.MAX_IMAGE_PIXELS = None
+
         if 'StorageOrder' in data:
             self.storageOrder = [int(data['StorageOrder'][i]) for i in range(3)]
         else:
             self.storageOrder = [1, 2, 3]
 
-        self.image_file_pattern = str(data['ImageFilePattern'])
         self.first_image_index = int(data['FirstImageIndex'])
+
+        if 'ImageFilePattern' in data:
+            self.image_file_pattern = str(data['ImageFilePattern'])
+        else:
+            self.image_file_pattern = None
+        if 'ImageFileNames' in data:
+            explicit_image_file_names = data['ImageFileNames']
+            if type(explicit_image_file_names) != dict:
+                raise Exception('type(explicit_image_file_names) != dict')
+            self.explicit_image_file_names = {}
+            for key_str in explicit_image_file_names:
+                key = int(key_str)
+                if str(key) != key_str:
+                    raise Exception('str(key) != key_str')
+                if key < 0:
+                    raise Exception('key < 0')
+
+                value = str(explicit_image_file_names[key_str])
+
+                if key in self.explicit_image_file_names:
+                    raise Exception('key in self.explicit_image_file_names')
+                self.explicit_image_file_names[key] = value
+        else:
+            self.explicit_image_file_names = None
+        if self.image_file_pattern is None and self.explicit_image_file_names is None:
+            raise Exception('Neither ImageFilePattern nor ImageFileNames is given')
 
         self.valueOffset = data.get('ValueOffset')
         self.valueScalingFactor = data.get('ValueScalingFactor')
-
-        rawDataFilename = os.path.join(os.path.dirname(filename), dataFilename)
 
         # print (data_type)
         # print (array_shape)
         # print (gridSpacing)
         # print (volumeOrigin)
         # print (self.storageOrder)
-        # print (rawDataFilename)
 
         self.diskSize = [NotInitialized, NotInitialized, NotInitialized]
         for resDim in range(3):
@@ -336,12 +359,12 @@ class DataSourceZippedImages(DataSource):
             self.diskSize[aso - 1] = array_shape[resDim]
 
         if self.diskSize[2] is None:
-            raise Exception('ZippedImages files required the number of images')
+            raise Exception('ZippedImages and ImageStack files required the number of images')
 
         # TODO: Allow this? (Would require a new get_image_size_disk_coord() implementation to get the image size, this probably would mean decompressing the image just to get the size)
         for dim in array_shape:
             if dim is None:
-                raise Exception('DenseBinaryFile requires ArrayShape/ImageShape values')
+                raise Exception('ZippedImages and ImageStack files require ArrayShape/ImageShape values')
 
         if data_type is not None:
             # TODO: Create wrapper function in voxie namespace for this
@@ -360,34 +383,25 @@ class DataSourceZippedImages(DataSource):
             self.memType = None
             self.memDtype = None
 
-        # Open the actual file
-        success = False
-        self.file = zipfile.ZipFile(rawDataFilename, 'r')
-        try:
-            self.all_filenames = set(self.file.namelist())
-            self.filenames = {}
-            # print(self.all_filenames)
-
-            for z in range(self.diskSize[2]):
-                i = self.first_image_index + z
+        self.filenames = {}
+        for z in range(self.diskSize[2]):
+            i = self.first_image_index + z
+            if self.explicit_image_file_names is not None and i in self.explicit_image_file_names:
+                fn = self.explicit_image_file_names[i]
+            elif self.image_file_pattern is not None:
                 fn = self.image_file_pattern.format(i)
-                if fn not in self.all_filenames:
-                    raise Exception('Cannot find file {!r} in zip file {!r}'.format(fn, rawDataFilename))
-                self.filenames[z] = fn
-
-            success = True
-        finally:
-            if not success:
-                self.file.close()
-
-    def __exit__(self, type, value, traceback):
-        self.file.close()
-        return False
+            else:
+                raise Exception('Index {} is not in ImageFileNames but ImageFilePattern is not given'.format(i))
+            self.filenames[z] = fn
 
     def read_image_disk_coord(self, z):
         # TODO: Avoid memory allocations here?
-        with self.file.open(self.filenames[z], 'r') as file:
-            img = np.array(PIL.Image.open(file))
+        image_filename = self.filenames[z]
+        try:
+            with self.open_image_file(image_filename) as file:
+                img = np.array(PIL.Image.open(file))
+        except Exception as e:
+            raise Exception('Error while reading image {} from {!r}: {}'.format(z, image_filename, e)) from e
 
         # Sanity checks
         if self.diskSize[0] is not None and img.shape[0] != self.diskSize[0]:
@@ -409,6 +423,51 @@ class DataSourceZippedImages(DataSource):
         return img
 
 
+class DataSourceZippedImages(DataSourceImageList):
+    def __init__(self, filename, data, *, array_shape, data_type):
+        super().__init__(filename, data, array_shape=array_shape, data_type=data_type, additional_members=('DataFilename',))
+
+        global zipfile
+        import zipfile
+
+        dataFilename = str(data['DataFilename'])
+        rawDataFilename = os.path.join(os.path.dirname(filename), dataFilename)
+
+        # Open the actual file
+        success = False
+        self.file = zipfile.ZipFile(rawDataFilename, 'r')
+        try:
+            self.all_filenames = set(self.file.namelist())
+            # print(self.all_filenames)
+
+            for fn in self.filenames.values():
+                if fn not in self.all_filenames:
+                    raise Exception('Cannot find file {!r} in zip file {!r}'.format(fn, rawDataFilename))
+
+            success = True
+        finally:
+            if not success:
+                self.file.close()
+
+    def __exit__(self, type, value, traceback):
+        self.file.close()
+        return False
+
+    def open_image_file(self, image_filename):
+        return self.file.open(image_filename, 'r')
+
+
+class DataSourceImageStack(DataSourceImageList):
+    def __init__(self, filename, data, *, array_shape, data_type):
+        super().__init__(filename, data, array_shape=array_shape, data_type=data_type, additional_members=())
+
+        self.filename = filename
+
+    def open_image_file(self, image_filename):
+        image_filename = os.path.join(os.path.dirname(self.filename), image_filename)
+        return open(image_filename, 'rb')
+
+
 def get(filename, data_source_type, data_source, *, array_shape, data_type):
     if type(data_source_type) != str:
         raise Exception('type(data_source_type) != str')
@@ -421,5 +480,7 @@ def get(filename, data_source_type, data_source, *, array_shape, data_type):
         return DataSourceImageArchive(filename, data_source, array_shape=array_shape, data_type=data_type)
     elif data_source_type == 'ZippedImages':
         return DataSourceZippedImages(filename, data_source, array_shape=array_shape, data_type=data_type)
+    elif data_source_type == 'ImageStack':
+        return DataSourceImageStack(filename, data_source, array_shape=array_shape, data_type=data_type)
     else:
         raise Exception('Unknown DataSourceType: %s' % (repr(data_source_type)))

@@ -30,10 +30,16 @@ namespace vx {
 enum class ReplaceMode : uint32_t {
   // Add new value, throw if key already exists
   Insert,
+
   // Add or replace value
-  Set,
+  InsertOrReplace,
+
   // Replace an existing value, throw if key does not exist
   ReplaceExisting,
+
+  // Add new value, keep value if key already exists and value is the same,
+  // throw otherwise
+  InsertOrSame,
 };
 ReplaceMode parseReplaceMode(const QString& s);
 }  // namespace vx

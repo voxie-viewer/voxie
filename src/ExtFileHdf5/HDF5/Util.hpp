@@ -25,20 +25,24 @@
 
 // Some utility methods
 
-#include <Core/Util.hpp>
 #include <Core/Assert.hpp>
-#include <HDF5/Type.hpp>
+#include <Core/Util.hpp>
+#include <HDF5/Attribute.hpp>
+#include <HDF5/DataSpace.hpp>
 #include <HDF5/File.hpp>
 #include <HDF5/Object.hpp>
-#include <HDF5/DataSpace.hpp>
-#include <HDF5/Attribute.hpp>
+#include <HDF5/Type.hpp>
 
 namespace HDF5 {
-  template <typename T> inline void writeScalarAttribute (const HDF5::Object& obj, const std::string& name, const T& value) {
-    obj.createAttribute (name, getH5Type<T> (), HDF5::DataSpace::create (H5S_SCALAR)).write (&value, getH5Type<T> ());
-  }
-
-  void writeAttribute (const HDF5::Object& obj, const std::string& name, const std::string& value);
+template <typename T>
+inline void writeScalarAttribute(const HDF5::Object& obj,
+                                 const std::string& name, const T& value) {
+  obj.createAttribute(name, getH5Type<T>(), HDF5::DataSpace::create(H5S_SCALAR))
+      .write(&value, getH5Type<T>());
 }
 
-#endif // !HDF5_UTIL_HPP_INCLUDED
+void writeAttribute(const HDF5::Object& obj, const std::string& name,
+                    const std::string& value);
+}  // namespace HDF5
+
+#endif  // !HDF5_UTIL_HPP_INCLUDED

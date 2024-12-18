@@ -37,6 +37,7 @@
 
 #include <QtGui/QKeyEvent>
 
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QToolTip>
 
 using namespace vx::gui;
@@ -173,7 +174,29 @@ void GraphWidget::addNode(vx::Node* obj) {
 
     map[obj] = node;
 
+    // TODO: Should Node provide more signals e.g. for teardown?
+    connect(obj, &Node::stateChanged, this, [this, obj](Node::State newState) {
+      // qDebug() << "Node::stateChanged" << Node::stateToString(newState);
+      if (newState != Node::State::Teardown &&
+          newState != Node::State::Destroyed)
+        return;
+      // TODO: Currently this code is run twice, avoid this?
+
+      // qDebug() << "GraphWidget: Remove" << obj;
+      // Note: Currently a node can be selected multiple times. Prevent this?
+      for (;;) {
+        bool isSelected = false;
+        for (const auto& node2 : selectedNodes_)
+          if (node2 == obj) isSelected = true;
+        if (!isSelected) break;
+        qDebug() << "GraphWidget: Deselecting destroyed node" << obj;
+        this->deselectNode(obj);
+      }
+    });
+
     connect(obj, &QObject::destroyed, this, [this, obj] {
+      // TODO: Should this also be done earlier, before obj is half-destroyed?
+
       for (Edge* edge : edges()) {
         if (edge->sourceNode()->modelNode() == obj ||
             edge->destNode()->modelNode() == obj) {
@@ -494,12 +517,7 @@ void GraphWidget::addNode(vx::Node* obj) {
   }
 }
 
-/*following code is new added by meng, and also conresponding in hpp file*/
-GraphWidget::~GraphWidget() {
-  if (this->root != nullptr) {
-    this->root->deleteLater();
-  }
-}
+GraphWidget::~GraphWidget() {}
 
 void GraphWidget::graphNodeActivated(vx::gui::GraphNode* node) {
   if (node->modelNode()->nodeKind() == NodeKind::NodeGroup) {
@@ -604,7 +622,31 @@ void GraphWidget::keyPressEvent(QKeyEvent* event) {
   }
 }
 
+// TODO: Implement selection of multiple nodes by dragging a box with the left
+// mouse button?
+
+void GraphWidget::mousePressEvent(QMouseEvent* ev) {
+  // Note: If a mouse button (e.g. left) would be used for drag scrolling plus
+  // some other function, the clickIsHandled field would have to be used here.
+  if (ev->button() == Qt::MiddleButton && !this->dragScroll) {
+    // this->setDragMode(QGraphicsView::ScrollHandDrag);
+    this->dragScrollOriginalCursor = this->viewport()->cursor();
+    this->dragScroll = true;
+    this->viewport()->setCursor(Qt::ClosedHandCursor);
+  }
+
+  QGraphicsView::mousePressEvent(ev);
+}
+
 void GraphWidget::mouseMoveEvent(QMouseEvent* pEvent) {
+  if (this->dragScroll) {
+    QPointF delta = pEvent->localPos() - lastMousePos;
+    auto hBar = this->horizontalScrollBar();
+    auto vBar = this->verticalScrollBar();
+    hBar->setValue(hBar->value() - delta.x());
+    vBar->setValue(vBar->value() - delta.y());
+  }
+
   QPointF MousePos = this->mapToScene(pEvent->pos());
 
   if (hoverInputDot && hoverInputDot->property().property) {
@@ -650,6 +692,19 @@ void GraphWidget::mouseMoveEvent(QMouseEvent* pEvent) {
 
   Q_EMIT mousePosChanged(MousePos.toPoint());
   QGraphicsView::mouseMoveEvent(pEvent);
+
+  lastMousePos = pEvent->localPos();
+}
+
+void GraphWidget::mouseReleaseEvent(QMouseEvent* ev) {
+  if (ev->button() == Qt::MiddleButton && this->dragScroll) {
+    // this->setDragMode(QGraphicsView::NoDrag);
+    this->viewport()->setCursor(this->dragScrollOriginalCursor);
+    this->dragScroll = false;
+    this->dragScrollOriginalCursor = QCursor();
+  }
+
+  QGraphicsView::mouseReleaseEvent(ev);
 }
 
 void GraphWidget::requestContextMenu(QPoint pos) {
@@ -682,7 +737,8 @@ void GraphWidget::timerEvent(QTimerEvent* event) {
 }
 
 void GraphWidget::wheelEvent(QWheelEvent* event) {
-  scaleViewLog(event->delta() / 240.0);
+  // qDebug() << event->delta() << event->angleDelta();
+  scaleViewLog(event->angleDelta().y() / 240.0);
 }
 
 void GraphWidget::drawBackground(QPainter* painter, const QRectF& rect) {
@@ -817,9 +873,16 @@ void GraphWidget::reorderNodes() {
     currentLayerY += spacingY;
   }
 
-  // Adapt scrollable area to new graph size
-  myScene->setSceneRect(-widestLayer * spacingX * 0.5 - 80, -50,
-                        widestLayer * spacingX, spacingY * currentLayer + 50);
+  if (0) {
+    // Note: Doing the will mean the scene rectangle will no longer be updated,
+    // unless reorderNodes() gets called again.
+    // This should only be done if setSceneRect() will be called again if any
+    // nodes are added or moved.
+
+    // Adapt scrollable area to new graph size
+    myScene->setSceneRect(-widestLayer * spacingX * 0.5 - 80, -50,
+                          widestLayer * spacingX, spacingY * currentLayer + 50);
+  }
 }
 
 int GraphWidget::getMedian(GraphNode* node, QList<QList<GraphNode*>> nodes,
@@ -852,14 +915,22 @@ void GraphWidget::setAutoReorder(bool enabled) {
   if (enabled) reorderNodes();
 }
 
-void GraphWidget::selectNode(vx::Node* obj) {
-  selectedNodes_.append(obj);
+void GraphWidget::selectNode(vx::Node* node) {
+  // TODO: Which states are valid here?
+  if (node->state() != Node::State::Setup &&
+      node->state() != Node::State::Normal) {
+    qWarning() << "Attempting to select Node which is in state"
+               << Node::stateToString(node->state());
+    return;
+  }
+
+  selectedNodes_.append(node);
   Q_EMIT selectionChanged(selectedNodes_);
   update();
 }
 
-void GraphWidget::deselectNode(vx::Node* obj) {
-  selectedNodes_.removeOne(obj);
+void GraphWidget::deselectNode(vx::Node* node) {
+  selectedNodes_.removeOne(node);
   Q_EMIT selectionChanged(selectedNodes_);
   update();
 }
@@ -871,6 +942,16 @@ void GraphWidget::clearSelectedNodes() {
 }
 
 void GraphWidget::setSelectedNodes(QList<Node*> list) {
+  for (const auto& node : list) {
+    // TODO: Which states are valid here?
+    if (node->state() != Node::State::Setup &&
+        node->state() != Node::State::Normal) {
+      qWarning() << "Attempting to select Node which is in state"
+                 << Node::stateToString(node->state());
+      return;
+    }
+  }
+
   this->selectedNodes_ = list;
   Q_EMIT selectionChanged(selectedNodes_);
   update();
@@ -894,6 +975,9 @@ void GraphWidget::deleteSelectedNodes() {
   for (Node* node : selectedNodes()) {
     node->destroy();
   }
+
+  // TODO: All of this should not be needed because destroying the object should
+  // do all this. Test this.
 
   for (Edge* edge : edges()) {
     if (selectedNodes().contains(edge->sourceNode()->modelNode()) ||

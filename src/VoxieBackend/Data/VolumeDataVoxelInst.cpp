@@ -92,7 +92,7 @@ class CoordinatedTransformWorker : public QRunnable {
 
 template <class T>
 VolumeDataVoxelInst<T>::VolumeDataVoxelInst(
-    const vx::Vector<size_t, 3> arrayShape, DataType dataType,
+    const vx::Vector<size_t, 3>& arrayShape, DataType dataType,
     const vx::Vector<double, 3>& gridOrigin,
     const vx::Vector<double, 3>& gridSpacing)
     : VolumeDataVoxel(arrayShape, dataType, gridOrigin, gridSpacing) {
@@ -137,15 +137,15 @@ void VolumeDataVoxelInst<T>::transformCoordinateSingledThreaded(
 
 static inline qint64 castToInt(qreal f, bool* overflow) {
   f = std::floor(f);
-  // TODO: There are rounding errors during the conversion from qint64 to float,
-  // so that e.g. 9223372036854775807 is converted incorrectly.
-  if (f < std::numeric_limits<qint64>::min() ||
-      f > std::numeric_limits<qint64>::max()) {
+  auto res = castFloatToIntSafe<qint64>(f);
+  if (!res.has_value()) {
     if (overflow) *overflow = true;
     return 0;
   }
-  return (qint64)f;
+  return res.value();
 }
+
+// TODO: Replace code with VoxelAccessor?
 
 // TODO: Warning suppressed
 #pragma GCC diagnostic push
@@ -222,6 +222,12 @@ GenericVoxel
 VolumeDataVoxelInst<GenericVoxel>::VolumeDataVoxelInst::getVoxelMetric(
     QVector3D position, InterpolationMethod method) {
   return this->getVoxelMetric(position.x(), position.y(), position.z(), method);
+}
+
+template <class GenericVoxel>
+GenericVoxel VolumeDataVoxelInst<GenericVoxel>::getVoxelMetric(
+    const vx::Vector<double, 3>& position, vx::InterpolationMethod method) {
+  return this->getVoxelMetric(position[0], position[1], position[2], method);
 }
 
 template <class T>
@@ -369,8 +375,42 @@ void VolumeDataVoxelInst<T>::updateClImage() {
   }
 }
 
+template <typename T>
+vx::Array3<T> VolumeDataVoxelInst<T>::getBlock(
+    const vx::Vector<size_t, 3> offset, const vx::Vector<size_t, 3> size) {
+  for (size_t dim = 0; dim < 3; dim++) {
+    if (offset[dim] + size[dim] < offset[dim])
+      throw vx::Exception("de.uni_stuttgart.Voxie.Overflow",
+                          "Overflow while calculating coordinate");
+    if (offset[dim] + size[dim] > arrayShape()[dim])
+      throw vx::Exception("de.uni_stuttgart.Voxie.InvalidArgument",
+                          "Block coordinates out of range");
+  }
+
+  T* ptr = this->getData() + offset[0] +
+           offset[1] * this->arrayShape().template access<0>() +
+           offset[2] * this->arrayShape().template access<0>() *
+               this->arrayShape().template access<1>();
+  vx::Vector<ptrdiff_t, 3> strides = {
+      sizeof(T),
+      vx::checked_cast<ptrdiff_t>(sizeof(T) *
+                                  this->arrayShape().template access<0>()),
+      vx::checked_cast<ptrdiff_t>(sizeof(T) *
+                                  this->arrayShape().template access<0>() *
+                                  this->arrayShape().template access<1>()),
+  };
+
+  return Array3<T>(ptr, size.asArray(), strides.asArray(), this->thisShared());
+}
+
+template <typename T>
+vx::Array3<void> VolumeDataVoxelInst<T>::getBlockVoid(
+    const vx::Vector<size_t, 3> offset, const vx::Vector<size_t, 3> size) {
+  return Array3<void>(getBlock(offset, size));
+}
+
 QSharedPointer<VolumeDataVoxel> VolumeDataVoxel::createVolume(
-    const vx::Vector<size_t, 3> arrayShape, DataType dataTypeInput,
+    const vx::Vector<size_t, 3>& arrayShape, DataType dataTypeInput,
     const vx::Vector<double, 3>& gridOrigin,
     const vx::Vector<double, 3>& gridSpacing) {
   return switchOverDataType<VolumeDataVoxel::SupportedTypes,

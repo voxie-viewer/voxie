@@ -35,32 +35,40 @@
 #include <string>
 
 namespace Core {
-  namespace Intern {
-    NORETURN assertionFailure (const char* file, int line, const char* condition, const std::string& additionalMessage = "");
-  }
-
-#define ASSERT_STR(condition, conditionStr) do {                        \
-    if (!(condition)) {                                                 \
-      ::Core::Intern::assertionFailure (__FILE__, __LINE__, conditionStr); \
-    }                                                                   \
-  } while (0)
-#define ASSERT(condition) ASSERT_STR (condition, #condition)
-
-#define ASSERT_STR_MSG(condition, conditionStr, additionalMessage) do { \
-    if (!(condition)) {                                                 \
-      ::Core::Intern::assertionFailure (__FILE__, __LINE__, conditionStr, additionalMessage); \
-    }                                                                   \
-  } while (0)
-#define ASSERT_MSG(condition, additionalMessage) ASSERT_STR_MSG (condition, #condition, additionalMessage)
-
-#define ABORT() do {                                                    \
-    ::Core::Intern::assertionFailure (__FILE__, __LINE__, NULL);     \
-  } while (0)
-
-#define ABORT_MSG(additionalMessage) do {                               \
-    ::Core::Intern::assertionFailure (__FILE__, __LINE__, NULL, additionalMessage); \
-  } while (0)
-
+namespace Intern {
+NORETURN assertionFailure(const char* file, int line, const char* condition,
+                          const std::string& additionalMessage = "");
 }
 
-#endif // !CORE_ASSERT_HPP_INCLUDED
+#define ASSERT_STR(condition, conditionStr)                               \
+  do {                                                                    \
+    if (!(condition)) {                                                   \
+      ::Core::Intern::assertionFailure(__FILE__, __LINE__, conditionStr); \
+    }                                                                     \
+  } while (0)
+#define ASSERT(condition) ASSERT_STR(condition, #condition)
+
+#define ASSERT_STR_MSG(condition, conditionStr, additionalMessage)       \
+  do {                                                                   \
+    if (!(condition)) {                                                  \
+      ::Core::Intern::assertionFailure(__FILE__, __LINE__, conditionStr, \
+                                       additionalMessage);               \
+    }                                                                    \
+  } while (0)
+#define ASSERT_MSG(condition, additionalMessage) \
+  ASSERT_STR_MSG(condition, #condition, additionalMessage)
+
+#define ABORT()                                                 \
+  do {                                                          \
+    ::Core::Intern::assertionFailure(__FILE__, __LINE__, NULL); \
+  } while (0)
+
+#define ABORT_MSG(additionalMessage)                           \
+  do {                                                         \
+    ::Core::Intern::assertionFailure(__FILE__, __LINE__, NULL, \
+                                     additionalMessage);       \
+  } while (0)
+
+}  // namespace Core
+
+#endif  // !CORE_ASSERT_HPP_INCLUDED

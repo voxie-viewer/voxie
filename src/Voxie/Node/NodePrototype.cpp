@@ -160,7 +160,7 @@ void NodePrototype::createHelper(QSharedPointer<Node> node,
     if (!vx::voxieRoot().isHeadless()) {
       vx::voxieRoot().setGraphPosition(
           node.data(),
-          toQtVector(ExportedObject::getOptionValue<TupleVector<double, 2>>(
+          toVector(ExportedObject::getOptionValue<TupleVector<double, 2>>(
               options, "GraphPosition")));
     }
   }
@@ -329,7 +329,7 @@ class NodePrototypeImplementation : public NodePrototype {
       QList<vx::SharedFunPtr<void(const QSharedPointer<vx::NodePrototype>&)>>
           finishActions;
       for (const auto& key : properties.keys())
-        this->nodeProperties_.append(makeSharedQObject<NodeProperty>(
+        this->nodeProperties_.append(NodeProperty::create(
             key, properties[key].toObject(), haveCustomNodeClassConstructor,
             components, finishActions, resolveActions2));
       // TODO: Clean up parameters for NodeProperty constructor?

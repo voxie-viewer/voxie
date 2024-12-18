@@ -39,8 +39,7 @@ class EventListDataAccessor;
  */
 class VOXIECORESHARED_EXPORT EventListNode : public DataNode {
   Q_OBJECT
-
-  NODE_PROTOTYPE_DECL_SEP(data_prop::EventListData, EventListNode)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Data.EventListData")
 
   QSharedPointer<EventListDataAccessor> data_;
 

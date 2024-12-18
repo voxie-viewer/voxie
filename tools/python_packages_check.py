@@ -38,7 +38,7 @@ tags = [
     {
         'python_tag': 'cp39',
         'abi_tag': 'cp39',
-        'platform_tags': ['macosx_10_9_x86_64', 'macosx_10_10_x86_64'],
+        'platform_tags': ['macosx_10_9_x86_64', 'macosx_10_10_x86_64', 'macosx_10_13_x86_64'],
     },
 ]
 

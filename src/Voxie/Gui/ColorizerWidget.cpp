@@ -104,7 +104,8 @@ ColorizerWidget::ColorizerWidget(QWidget* parent) : QWidget(parent) {
   currentValueInput->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   currentValueInput->setMinimum(-std::numeric_limits<double>::infinity());
   currentValueInput->setMaximum(std::numeric_limits<double>::infinity());
-  currentValueInput->setDecimals(3);
+  // TODO: Use UnitSpinBox here?
+  currentValueInput->setDecimals(6);
   toolbarTop->addWidget(currentValueInput);
 
   toolbarTop->addSeparator();

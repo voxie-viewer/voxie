@@ -29,6 +29,7 @@ struct VectorSizeT3;
 class Color;
 class ColorizerEntry;
 class BoundingBox3D;
+class PiecewisePolynomialFunction;
 enum class DataType;
 template <typename T, std::size_t dim>
 class Vector;

@@ -31,7 +31,7 @@ class GeometricPrimitive;
 
 class VOXIEBACKEND_EXPORT GeometricPrimitiveData : public Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(GeometricPrimitiveData)
+  VX_REFCOUNTEDOBJECT
 
  private:
   QMap<quint64, QSharedPointer<GeometricPrimitive>> primitives_;

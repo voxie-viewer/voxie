@@ -197,12 +197,7 @@ class SurfaceDataTriangleIndexedAdaptorImpl
       ExportedObject::checkOptions(options);
 
       auto updateObj = vx::DataUpdate::lookup(update);
-      if (updateObj->data().data() != object)
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is for another object");
-      if (!updateObj->running())
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is already finished");
+      updateObj->validateCanUpdate(object);
 
       if (!object->trianglesWritable())
         throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
@@ -240,12 +235,7 @@ class SurfaceDataTriangleIndexedAdaptorImpl
       ExportedObject::checkOptions(options);
 
       auto updateObj = vx::DataUpdate::lookup(update);
-      if (updateObj->data().data() != object)
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is for another object");
-      if (!updateObj->running())
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is already finished");
+      updateObj->validateCanUpdate(object);
 
       return getVertices(true).toDBus();
     } catch (Exception& e) {
@@ -279,12 +269,7 @@ class SurfaceDataTriangleIndexedAdaptorImpl
       ExportedObject::checkOptions(options);
 
       auto updateObj = vx::DataUpdate::lookup(update);
-      if (updateObj->data().data() != object)
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is for another object");
-      if (!updateObj->running())
-        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOperation",
-                            "Given DataUpdate is already finished");
+      updateObj->validateCanUpdate(object);
 
       return getAttribute(name, true).toDBus();
     } catch (Exception& e) {

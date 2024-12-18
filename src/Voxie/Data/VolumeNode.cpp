@@ -47,16 +47,18 @@
 #include <QtCore/QThreadPool>
 #include <QtCore/QUuid>
 
+VX_NODE_INSTANTIATION(vx::VolumeNode)
+
 using namespace vx;
 using namespace vx::internal;
 
 VolumeNode::VolumeNode()
-    : PositionInterface("VolumeNode", getPrototypeSingleton()),
+    : MovableDataNode("VolumeNode", getPrototypeSingleton()),
       properties(new VolumeProperties(this)) {
-  connect(this, &PositionInterface::adjustedPositionChanged, this, [this]() {
+  connect(this, &MovableDataNode::adjustedPositionChanged, this, [this]() {
     this->emitCustomPropertyChanged(this->properties->translationProperty());
   });
-  connect(this, &PositionInterface::adjustedRotationChanged, this, [this]() {
+  connect(this, &MovableDataNode::adjustedRotationChanged, this, [this]() {
     this->emitCustomPropertyChanged(this->properties->rotationProperty());
   });
 
@@ -67,7 +69,7 @@ VolumeNode::VolumeNode()
 
   // TODO: This should only be triggered if the bounding box actually changes
   QObject::connect(this, &DataNode::dataChangedFinished, this,
-                   &VolumeNode::boundingBoxChanged);
+                   &MovableDataNode::boundingBoxObjectChanged);
 
   // TODO: This should be created with a nullptr volumeData, but there probably
   // are some null checks missing somewhere
@@ -96,7 +98,8 @@ void VolumeNode::setVolumeData(const QSharedPointer<VolumeData>& data) {
 }
 
 // TODO: Shouldn't this consider properties->translation() /
-// properties->rotationChanged()?
+// properties->rotationChanged()? Probably not (because these values are in the
+// object coordinate system), but clarify that.
 QVector3D VolumeNode::origin() const {
   auto data = this->volumeData();
   if (data)
@@ -105,15 +108,9 @@ QVector3D VolumeNode::origin() const {
     return QVector3D(0, 0, 0);
 }
 
+// TODO: Remove this?
 QQuaternion VolumeNode::orientation() const {
   return this->properties->rotation();
-}
-
-AffineMap<double, 3UL, 3UL> VolumeNode::getObjectToGlobalTrafo() {
-  auto trans = mapCast<double>(createTranslation(toVector(origin())));
-  AffineMap<double, 3, 3> rot = rotationCast<double>(toRotation(orientation()));
-
-  return trans * rot;
 }
 
 // TODO: Shouldn't this consider properties->translation() /
@@ -128,12 +125,9 @@ QVector3D VolumeNode::size() const {
 
 float VolumeNode::diagonalSize() const { return size().length(); }
 
-// TODO: Shouldn't this consider properties->translation() /
-// properties->rotationChanged()?
-BoundingBox3D VolumeNode::boundingBox() {
-  // TODO: consider adjustedPosition and adjustedRotation
-  return BoundingBox3D::point(origin()) +
-         BoundingBox3D::point(origin() + size());
+BoundingBox3D VolumeNode::boundingBoxObject() {
+  return BoundingBox3D::point(vectorCast<double>(toVector(origin()))) +
+         BoundingBox3D::point(vectorCast<double>(toVector(origin() + size())));
 }
 
 /*
@@ -150,5 +144,3 @@ float VolumeNode::voxelSize() const {
 // TODO: Shouldn't this consider properties->translation() /
 // properties->rotationChanged()?
 QVector3D VolumeNode::volumeCenter() const { return origin() + size() / 2; }
-
-NODE_PROTOTYPE_IMPL_2(Volume, Node)

@@ -51,6 +51,10 @@ class GraphWidget : public QGraphicsView {
 
   vx::Root* root;
 
+  QPointF lastMousePos = QPointF();
+  bool dragScroll = false;
+  QCursor dragScrollOriginalCursor;
+
  public:
   GraphWidget(vx::Root* root, vx::gui::SidePanel* sidePanel,
               QWidget* parent = 0);
@@ -137,11 +141,15 @@ class GraphWidget : public QGraphicsView {
    */
   void setCurrentNodeGroup(NodeGroup* nodeGroup);
 
+  void mousePressEvent(QMouseEvent* pEvent) override;
+
   /**
    * @brief mouseMoveEvent called when the mouse position changed
    * @param pEvent
    */
   void mouseMoveEvent(QMouseEvent* pEvent) override;
+
+  void mouseReleaseEvent(QMouseEvent* pEvent) override;
 
   /**
    * @brief requestContextMenu signals the sidebar to display the context menu

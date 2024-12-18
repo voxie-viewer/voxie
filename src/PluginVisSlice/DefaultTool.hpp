@@ -46,19 +46,23 @@ class DefaultTool : public Visualizer2DTool {
  public Q_SLOTS:
   void activateTool() override;
   void deactivateTool() override;
-  void toolMousePressEvent(QMouseEvent* ev) override;
-  void toolMouseReleaseEvent(QMouseEvent* ev) override;
-  void toolMouseMoveEvent(QMouseEvent* ev) override;
+  void toolMousePressEvent(QMouseEvent* ev,
+                           const vx::Vector<double, 2>& pixelPos) override;
+  void toolMouseReleaseEvent(QMouseEvent* ev,
+                             const vx::Vector<double, 2>& pixelPos) override;
+  void toolMouseMoveEvent(QMouseEvent* ev,
+                          const vx::Vector<double, 2>& pixelPos) override;
   void toolKeyPressEvent(QKeyEvent* ev) override;
   void toolKeyReleaseEvent(QKeyEvent* ev) override;
-  void toolWheelEvent(QWheelEvent* ev) override;
+  void toolWheelEvent(QWheelEvent* ev,
+                      const vx::Vector<double, 2>& pixelPos) override;
 
  private:
   /**
    * @brief savePoint converts this point to a 3D point and saves it
    * @param point
    */
-  void savePoint(QPointF point);
+  void savePoint(const vx::Vector<double, 2>& pixelPos);
 
  private:
   SliceVisualizer* sv;

@@ -75,18 +75,57 @@ endif
 
 # OpenCL
 add_project_arguments('-DCL_USE_DEPRECATED_OPENCL_1_1_APIS', language : 'cpp')
-opencl_incdir = include_directories('../lib/opencl-headers-2.1')
+# opencl_incdir = include_directories('../lib/opencl-headers-2.1')
+opencl_incdir = include_directories('../lib/OpenCL-Headers')
 
 # cmark
-add_project_arguments('-DCMARK_STATIC_DEFINE', language : 'cpp')
-cmark_incdir = include_directories(['../lib/cmark/src', 'lib/cmark'])
-# LIBS += -lcmark
+if get_option('main').enabled()
+  if get_option('use_cmark_gfm')
+    if get_option('cmark_gfm_path') != ''
+      cmark_gfm_path = get_option('cmark_gfm_path')
+      cmark_gfm = declare_dependency(
+        include_directories : include_directories(cmark_gfm_path + '/include'),
+        link_args : [
+          # '-L' + join_paths(meson.current_source_dir(), cmark_gfm_path) + '/lib',
+          # '-lcmark-gfm', '-lcmark-gfm-extensions',
+          join_paths(meson.current_source_dir(), cmark_gfm_path) + '/lib/libcmark-gfm.a',
+          join_paths(meson.current_source_dir(), cmark_gfm_path) + '/lib/libcmark-gfm-extensions.a',
+        ],
+      )
+    else
+      if get_option('use_system_cmark_gfm')
+        cmark_gfm = dependency('libcmark-gfm', static : true, allow_fallback : false)
+      else
+        cmark_gfm_proj = subproject('cmark-gfm', default_options : 'default_library=static')
+        cmark_gfm = cmark_gfm_proj.get_variable('cmark_gfm_dep')
+        # cmark_license_fn = fs.parent(cmark_gfm_proj.get_variable('cmark_gfm_lib').path()) + '/COPYING'
+        additional_collect_licenses_args += [
+          '../subprojects/cmark-gfm.sw.json',
+        ]
+      endif
+    endif
+    cmark = declare_dependency(dependencies : cmark_gfm, compile_args : ['-DVX_CMARK_USE_GFM=1'])
+  else
+    if get_option('use_system_cmark')
+      cmark_lib = dependency('libcmark', static : true, allow_fallback : false)
+      cmark = declare_dependency(dependencies : cmark_lib, compile_args : ['-DVX_CMARK_USE_GFM=0'])
+    else
+      error('use_system_cmark is set to false')
+    endif
+  endif
+endif
 
-# cmark
+# valgrind
 valgrind_incdir = include_directories(['../lib/valgrind'])
 
 # half precision library
 half_dep = declare_dependency(include_directories : include_directories('../lib/half-2.1.0/include')).as_system('system') # Suppress -Wundef warnings in half.hpp
+
+# fmt library
+fmt_dep = declare_dependency(include_directories : include_directories('../lib/fmt/include'))
+additional_collect_licenses_args += files(
+  '../lib/fmt.sw.json',
+)
 
 qt5 = import('qt5')
 if not is_variable('additional_project_incdirs')
@@ -186,6 +225,9 @@ if get_option('plugins').enabled()
   subdir('PluginFilter2D')
   subdir('PluginExample')
   subdir('PluginSegmentation')
+  if get_option('libjpeg').enabled() or get_option('libjpeg12').enabled()
+    subdir('PluginJpegLibjpeg')
+  endif
 endif
 
 if get_option('ext').enabled()

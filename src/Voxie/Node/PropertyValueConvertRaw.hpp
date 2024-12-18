@@ -36,6 +36,7 @@ enum class DataType;
 template <typename T, std::size_t dim>
 class Vector;
 class BoundingBox3D;
+class PiecewisePolynomialFunction;
 
 template <typename Raw, typename Cooked>
 // Must not be marked with VOXIECORESHARED_EXPORT because it
@@ -97,20 +98,21 @@ struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
 
 template <>
 struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
-    QList<vx::TupleVector<double, 3>>, QList<QVector3D>> {
-  static QList<QVector3D> fromRaw(const QList<vx::TupleVector<double, 3>>& raw);
+    QList<vx::TupleVector<double, 3>>, QList<vx::Vector<double, 3>>> {
+  static QList<vx::Vector<double, 3>> fromRaw(
+      const QList<vx::TupleVector<double, 3>>& raw);
   static QList<vx::TupleVector<double, 3>> toRaw(
-      const QList<QVector3D>& cooked);
+      const QList<vx::Vector<double, 3>>& cooked);
 };
 
 template <>
 struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
     QList<std::tuple<vx::TupleVector<double, 3>, double>>,
-    QList<std::tuple<QVector3D, double>>> {
-  static QList<std::tuple<QVector3D, double>> fromRaw(
+    QList<std::tuple<vx::Vector<double, 3>, double>>> {
+  static QList<std::tuple<vx::Vector<double, 3>, double>> fromRaw(
       const QList<std::tuple<vx::TupleVector<double, 3>, double>>& raw);
   static QList<std::tuple<vx::TupleVector<double, 3>, double>> toRaw(
-      const QList<std::tuple<QVector3D, double>>& cooked);
+      const QList<std::tuple<vx::Vector<double, 3>, double>>& cooked);
 };
 
 template <>
@@ -144,5 +146,18 @@ struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
       const std::tuple<TupleVector<double, 3>, TupleVector<double, 3>>& raw);
   static std::tuple<TupleVector<double, 3>, TupleVector<double, 3>> toRaw(
       const BoundingBox3D& cooked);
+};
+
+template <>
+struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
+    std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+               QList<QList<double>>>,
+    PiecewisePolynomialFunction> {
+  static PiecewisePolynomialFunction fromRaw(
+      const std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                       QList<QList<double>>>& raw);
+  static std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                    QList<QList<double>>>
+  toRaw(const PiecewisePolynomialFunction& cooked);
 };
 }  // namespace vx

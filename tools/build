@@ -29,7 +29,8 @@ import shutil
 
 
 def main():
-    base = os.path.join(os.path.dirname(__file__), '..') + '/'
+    # os.path.absname is required before python 3.9
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..') + '/'
 
     options = {}
 
@@ -40,7 +41,15 @@ def main():
     options['help_browser'] = 'enabled'
     options['hdf5'] = 'enabled'
     options['lapack'] = 'enabled'
+    options['libjpeg'] = 'enabled'
+    options['libjpeg12'] = 'disabled'
+    options['libjpeg_path'] = ''
+    options['libjpeg12_path'] = ''
     options['intern'] = 'enabled'
+    options['use_cmark_gfm'] = 'true'
+    options['use_system_cmark'] = 'true'
+    options['use_system_cmark_gfm'] = 'true'
+    options['cmark_gfm_path'] = ''
 
     options['lib'] = 'enabled'
     options['libvoxieclient'] = 'enabled'
@@ -76,18 +85,36 @@ def main():
             ninja_flags += ['-v']
         elif arg.startswith('--hdf5-path='):
             options['hdf5_path'] = arg[len('--hdf5-path='):]
+        elif arg.startswith('--cmark-gfm-path='):
+            options['cmark_gfm_path'] = arg[len('--cmark_gfm-path='):]
         elif arg.startswith('--additional-licenses-file='):
             if options['additional_licenses_file'] != '':
                 raise Exception('Got multiple --additional-licenses-file= options')
             options['additional_licenses_file'] = arg[len('--additional-licenses-file='):]
-        elif arg == '--disable-help-browser':
-            options['help_browser'] = 'disabled'
-        elif arg == '--disable-hdf5':
-            options['hdf5'] = 'disabled'
-        elif arg == '--disable-lapack':
-            options['lapack'] = 'disabled'
-        elif arg == '--no-intern':
-            options['intern'] = 'disabled'
+        elif arg.startswith('--disable-'):
+            name = arg[len('--disable-'):].replace('-', '_')
+            if name not in options:
+                raise Exception('Unknown meson option {!r} for {!r}'.format(name, arg))
+            options[name] = 'disabled'
+        elif arg.startswith('--enable-'):
+            name = arg[len('--enable-'):].replace('-', '_')
+            if name not in options:
+                raise Exception('Unknown meson option {!r} for {!r}'.format(name, arg))
+            options[name] = 'enabled'
+        elif arg.startswith('--libjpeg-path='):
+            options['libjpeg_path'] = arg[len('--libjpeg_path='):]
+        elif arg.startswith('--libjpeg12-path='):
+            options['libjpeg12_path'] = arg[len('--libjpeg12_path='):]
+        elif arg.startswith('--no-'):
+            name = arg[len('--no-'):].replace('-', '_')
+            if name not in options:
+                raise Exception('Unknown meson option {!r} for {!r}'.format(name, arg))
+            if options[name] in ['enabled', 'disabled']:
+                options[name] = 'disabled'
+            elif options[name] in ['true', 'false']:
+                options[name] = 'false'
+            else:
+                raise Exception('Unknown default value for meson option {!r} for {!r}: {!r}'.format(name, arg, options[name]))
         elif arg == '--only-lib':
             options['libvoxie'] = 'disabled'
             options['main'] = 'disabled'
@@ -139,9 +166,14 @@ def main():
                     val = str(val)
                 old_options[entry['name']] = val
     changed_options = {}
+    new_options = set()
     for key in options:
         if key not in old_options or options[key] != old_options[key]:
             changed_options[key] = options[key]
+        if key not in old_options:
+            new_options.add(key)
+    if len(new_options):
+        print('New options: ' + repr(new_options), flush=True)
     if len(changed_options):
         print('Options changed: ' + repr(changed_options), flush=True)
 
@@ -153,7 +185,9 @@ def main():
     source_dir = base
 
     if os.path.exists('build.ninja'):
-        if len(changed_options):
+        if len(new_options):
+            subprocess.run([meson, 'setup', '--reconfigure'] + meson_opt_args, check=True)
+        elif len(changed_options):
             subprocess.run([meson, 'configure'] + meson_opt_args, check=True)
     else:
         subprocess.run([meson, 'setup', source_dir, '.'] + meson_opt_args, check=True)

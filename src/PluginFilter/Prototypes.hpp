@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Prototypes.forward.hpp"
+
 #include <QtCore/QJsonObject>
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -14,6 +16,8 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+
+class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
 namespace vx {
 #ifndef VOXIE_PROP_DEFINED_Algorithm
@@ -152,6 +156,7 @@ class ColorizeLabeledSurfaceProperties
   static QSharedPointer<NodeProperty> inputColorizerProperty();
   static NodePropertyTyped<vx::types::ValueColorMapping>
   inputColorizerPropertyTyped();
+  NodeNodeProperty inputColorizerInstance();
   void setInputColorizer(QList<vx::ColorizerEntry> value);
  Q_SIGNALS:
   void inputColorizerChanged(QList<vx::ColorizerEntry> value);
@@ -165,6 +170,7 @@ class ColorizeLabeledSurfaceProperties
   static QSharedPointer<NodeProperty> inputSurfaceProperty();
   static NodePropertyTyped<vx::types::NodeReference>
   inputSurfacePropertyTyped();
+  NodeNodeProperty inputSurfaceInstance();
   void setInputSurface(vx::Node* value);
  Q_SIGNALS:
   void inputSurfaceChanged(vx::Node* value);
@@ -177,6 +183,7 @@ class ColorizeLabeledSurfaceProperties
   QDBusObjectPath inputTableRaw() override final;
   static QSharedPointer<NodeProperty> inputTableProperty();
   static NodePropertyTyped<vx::types::NodeReference> inputTablePropertyTyped();
+  NodeNodeProperty inputTableInstance();
   void setInputTable(vx::Node* value);
  Q_SIGNALS:
   void inputTableChanged(vx::Node* value);
@@ -190,6 +197,7 @@ class ColorizeLabeledSurfaceProperties
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
   outputPropertyTyped();
+  NodeNodeProperty outputInstance();
   void setOutput(vx::Node* value);
  Q_SIGNALS:
   void outputChanged(vx::Node* value);
@@ -254,6 +262,7 @@ class ColorizeSurfaceFromAttributeProperties
   static QSharedPointer<NodeProperty> inputColorizerProperty();
   static NodePropertyTyped<vx::types::ValueColorMapping>
   inputColorizerPropertyTyped();
+  NodeNodeProperty inputColorizerInstance();
   void setInputColorizer(QList<vx::ColorizerEntry> value);
  Q_SIGNALS:
   void inputColorizerChanged(QList<vx::ColorizerEntry> value);
@@ -267,6 +276,7 @@ class ColorizeSurfaceFromAttributeProperties
   static QSharedPointer<NodeProperty> inputSurfaceProperty();
   static NodePropertyTyped<vx::types::NodeReference>
   inputSurfacePropertyTyped();
+  NodeNodeProperty inputSurfaceInstance();
   void setInputSurface(vx::Node* value);
  Q_SIGNALS:
   void inputSurfaceChanged(vx::Node* value);
@@ -280,6 +290,7 @@ class ColorizeSurfaceFromAttributeProperties
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
   outputPropertyTyped();
+  NodeNodeProperty outputInstance();
   void setOutput(vx::Node* value);
  Q_SIGNALS:
   void outputChanged(vx::Node* value);
@@ -342,6 +353,7 @@ class CreateSurfaceProperties : public QObject,
   QString algorithmRaw() override final;
   static QSharedPointer<NodeProperty> algorithmProperty();
   static NodePropertyTyped<vx::types::String> algorithmPropertyTyped();
+  NodeNodeProperty algorithmInstance();
   void setAlgorithm(QString value);
  Q_SIGNALS:
   void algorithmChanged(QString value);
@@ -354,6 +366,7 @@ class CreateSurfaceProperties : public QObject,
   QDBusObjectPath inputVolumeRaw() override final;
   static QSharedPointer<NodeProperty> inputVolumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> inputVolumePropertyTyped();
+  NodeNodeProperty inputVolumeInstance();
   void setInputVolume(vx::Node* value);
  Q_SIGNALS:
   void inputVolumeChanged(vx::Node* value);
@@ -366,6 +379,7 @@ class CreateSurfaceProperties : public QObject,
   QDBusObjectPath labelVolumeRaw() override final;
   static QSharedPointer<NodeProperty> labelVolumeProperty();
   static NodePropertyTyped<vx::types::NodeReference> labelVolumePropertyTyped();
+  NodeNodeProperty labelVolumeInstance();
   void setLabelVolume(vx::Node* value);
  Q_SIGNALS:
   void labelVolumeChanged(vx::Node* value);
@@ -378,6 +392,7 @@ class CreateSurfaceProperties : public QObject,
   double thresholdRaw() override final;
   static QSharedPointer<NodeProperty> thresholdProperty();
   static NodePropertyTyped<vx::types::Float> thresholdPropertyTyped();
+  NodeNodeProperty thresholdInstance();
   void setThreshold(double value);
  Q_SIGNALS:
   void thresholdChanged(double value);
@@ -391,6 +406,7 @@ class CreateSurfaceProperties : public QObject,
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
   outputPropertyTyped();
+  NodeNodeProperty outputInstance();
   void setOutput(vx::Node* value);
  Q_SIGNALS:
   void outputChanged(vx::Node* value);
@@ -439,6 +455,7 @@ class TableFilterProperties : public QObject, public TableFilterPropertiesBase {
   QList<QDBusObjectPath> inputRaw() override final;
   static QSharedPointer<NodeProperty> inputProperty();
   static NodePropertyTyped<vx::types::NodeReferenceList> inputPropertyTyped();
+  NodeNodeProperty inputInstance();
   void setInput(QList<vx::Node*> value);
  Q_SIGNALS:
   void inputChanged(QList<vx::Node*> value);
@@ -452,6 +469,7 @@ class TableFilterProperties : public QObject, public TableFilterPropertiesBase {
   static QSharedPointer<NodeProperty> outputProperty();
   static NodePropertyTyped<vx::types::OutputNodeReference>
   outputPropertyTyped();
+  NodeNodeProperty outputInstance();
   void setOutput(vx::Node* value);
  Q_SIGNALS:
   void outputChanged(vx::Node* value);

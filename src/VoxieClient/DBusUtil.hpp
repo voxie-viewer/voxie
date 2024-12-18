@@ -117,7 +117,12 @@ TYPE("g", QDBusSignature, QDBusSignature, BasicType)
 TYPE("v", QDBusVariant, QDBusVariant, VariantType)
 
 TYPE("ay", QByteArray, QByteArray, BasicType)
-TYPE("as", QStringList, QStringList, ArrayType)
+
+// Note: ty has to be QList<QString> and not QStringList, otherwise getting a
+// QList<QString> from a DBus variant will fail with "Unexpected DBus variant,
+// expected a complex type (QDBusArgument),got QStringList" TYPE("as",
+// QStringList, QStringList, ArrayType)
+TYPE("as", QStringList, QList<QString>, ArrayType)
 #undef TYPE
 
 template <typename T>
@@ -278,4 +283,26 @@ inline QDBusVariant dbusMakeVariant(const T& value) {
   arg << value;
   return QDBusVariant(QVariant::fromValue(arg));
 }
+
+/*
+This code would turn a segmentation fault into an error "[Warning]
+QDBusConnection: error: could not send reply message to service "": Marshalling
+failed: Invalid signature passed in arguments"
+See https://bugreports.qt.io/browse/QTBUG-124919
+
+template <>
+inline QDBusVariant dbusMakeVariant<QDBusSignature>(
+  const QDBusSignature& value) {
+return QDBusVariant(QVariant::fromValue(value));
+}
+*/
+
+VOXIECLIENT_EXPORT QList<quint8> fromByteArray(const QByteArray& data);
+VOXIECLIENT_EXPORT QByteArray toByteArray(const QList<quint8>& data);
+
+VOXIECLIENT_EXPORT QList<QList<quint8>> fromByteArray(
+    const QList<QByteArray>& data);
+VOXIECLIENT_EXPORT QList<QByteArray> toByteArray(
+    const QList<QList<quint8>>& data);
+
 }  // namespace vx

@@ -295,6 +295,21 @@ inline Vector<T, dim> elementwiseProduct(const Vector<T, dim>& v1,
   return result;
 }
 
+template <typename T, std::size_t dim,
+          typename AllowNonDivisionRing = std::false_type>
+inline Vector<T, dim> elementwiseDivision(
+    const Vector<T, dim>& v1, const Vector<T, dim>& v2,
+    AllowNonDivisionRing = AllowNonDivisionRing()) {
+  static_assert(
+      vx::RingTraits<T>::isDivisionRing || AllowNonDivisionRing::value,
+      "elementwiseDivision cannot be used for vector module over non-division "
+      "ring");
+
+  Vector<T, dim> ret;
+  for (size_t i = 0; i < dim; i++) ret[i] = v1[i] / v2[i];
+  return ret;
+}
+
 template <typename T, std::size_t dim1, std::size_t dim2>
 static Vector<T, dim1 + dim2> concat(const Vector<T, dim1>& b1,
                                      const Vector<T, dim2>& b2) {

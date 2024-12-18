@@ -31,7 +31,7 @@ class SliceVisualizer;
 
 class SelectionLayer : public Layer {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(SelectionLayer)
+  VX_REFCOUNTEDOBJECT
 
  public:
   SelectionLayer(SliceVisualizer* sv);
@@ -41,5 +41,6 @@ class SelectionLayer : public Layer {
   }
 
   void render(QImage& outputImage,
-              const QSharedPointer<vx::ParameterCopy>& parameters) override;
+              const QSharedPointer<vx::ParameterCopy>& parameters,
+              bool isMainImage) override;
 };

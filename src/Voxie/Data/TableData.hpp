@@ -67,7 +67,7 @@ class VOXIECORESHARED_EXPORT TableRow {
 
 class VOXIECORESHARED_EXPORT TableData : public Data {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(TableData)
+  VX_REFCOUNTEDOBJECT
 
  private:
   // read-only

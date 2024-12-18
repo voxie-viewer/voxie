@@ -38,8 +38,7 @@
 namespace vx {
 class VOXIECORESHARED_EXPORT PlaneNode : public PropertyNode {
   Q_OBJECT
-
-  NODE_PROTOTYPE_DECL_SEP(property_prop::Plane, PlaneNode)
+  VX_NODE_IMPLEMENTATION("de.uni_stuttgart.Voxie.Property.Plane")
 
   /*
   QLineEdit* positionEditX;

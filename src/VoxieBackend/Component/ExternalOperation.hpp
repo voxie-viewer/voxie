@@ -48,7 +48,7 @@ class Exception;
 class ExternalOperationAdaptorImpl;
 class VOXIEBACKEND_EXPORT ExternalOperation : public vx::RefCountedObject {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ExternalOperation)
+  VX_REFCOUNTEDOBJECT
 
   friend class ExternalOperationAdaptorImpl;
 
@@ -111,7 +111,7 @@ class VOXIEBACKEND_EXPORT ExternalOperation : public vx::RefCountedObject {
 class ExternalOperationImportAdaptorImpl;
 class VOXIEBACKEND_EXPORT ExternalOperationImport : public ExternalOperation {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ExternalOperationImport)
+  VX_REFCOUNTEDOBJECT
 
   friend class ExternalOperationImportAdaptorImpl;
 
@@ -139,7 +139,7 @@ class VOXIEBACKEND_EXPORT ExternalOperationImport : public ExternalOperation {
 
 class VOXIEBACKEND_EXPORT ExternalOperationExport : public ExternalOperation {
   Q_OBJECT
-  REFCOUNTEDOBJ_DECL(ExternalOperationExport)
+  VX_REFCOUNTEDOBJECT
 
   friend class ExternalOperationExportAdaptorImpl;
 

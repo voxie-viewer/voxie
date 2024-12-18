@@ -60,15 +60,17 @@ template <typename Type>
 using DataTypeTraitsByType = typename DataTypeTraitsByTypeImpl<Type>::Traits;
 template <DataType dt>
 using DataTypeTraitsByEnum = DataTypeTraits<dt>;
-#define DECL(en, ty)                                       \
-  template <>                                              \
-  struct DataTypeTraits<vx::DataType::en> {                \
-    static constexpr vx::DataType dataType = DataType::en; \
-    using Type = ty;                                       \
-  };                                                       \
-  template <>                                              \
-  struct DataTypeTraitsByTypeImpl<ty> {                    \
-    using Traits = DataTypeTraits<vx::DataType::en>;       \
+// TODO: DataTypeTraits<...>::dataType needs a definition before C++17
+#define DECL(en, ty)                                           \
+  template <>                                                  \
+  struct DataTypeTraits<vx::DataType::en> {                    \
+    static constexpr vx::DataType dataType = DataType::en;     \
+    static vx::DataType getDataType() { return DataType::en; } \
+    using Type = ty;                                           \
+  };                                                           \
+  template <>                                                  \
+  struct DataTypeTraitsByTypeImpl<ty> {                        \
+    using Traits = DataTypeTraits<vx::DataType::en>;           \
   };
 #else  // DataTypeTraits uses type parameter
 template <typename Type>
@@ -79,15 +81,17 @@ template <typename Type>
 using DataTypeTraitsByType = DataTypeTraits<Type>;
 template <DataType dt>
 using DataTypeTraitsByEnum = typename DataTypeTraitsByEnumImpl<dt>::Traits;
-#define DECL(en, ty)                                       \
-  template <>                                              \
-  struct DataTypeTraits<ty> {                              \
-    static constexpr vx::DataType dataType = DataType::en; \
-    using Type = ty;                                       \
-  };                                                       \
-  template <>                                              \
-  struct DataTypeTraitsByEnumImpl<vx::DataType::en> {      \
-    using Traits = DataTypeTraits<ty>;                     \
+// TODO: DataTypeTraits<...>::dataType needs a definition before C++17
+#define DECL(en, ty)                                           \
+  template <>                                                  \
+  struct DataTypeTraits<ty> {                                  \
+    static constexpr vx::DataType dataType = DataType::en;     \
+    static vx::DataType getDataType() { return DataType::en; } \
+    using Type = ty;                                           \
+  };                                                           \
+  template <>                                                  \
+  struct DataTypeTraitsByEnumImpl<vx::DataType::en> {          \
+    using Traits = DataTypeTraits<ty>;                         \
   };
 #endif
 

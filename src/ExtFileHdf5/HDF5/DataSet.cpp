@@ -25,74 +25,96 @@
 #include <Core/CheckedCast.hpp>
 #include <Core/StaticCache.hpp>
 
-#include <HDF5/DataType.hpp>
 #include <HDF5/DataSpace.hpp>
+#include <HDF5/DataType.hpp>
 #include <HDF5/File.hpp>
 
 namespace HDF5 {
-  static void setEFilePrefixValue (UNUSED const DataSetAccessPropList& dapl) {
-    //#if H5_VERSION_GE (1, 10, 0) || (H5_VERSION_GE (1, 8, 17) && H5_VERS_MINOR == 8)
-#if H5_VERSION_GE (1, 10, 0) // Do not set property for version 1.8.17 because H5Rdereference() does not allow passing a dapl
-    Exception::check ("H5Pset_efile_prefix", H5Pset_efile_prefix (dapl.handle (), "${ORIGIN}"));
+static void setEFilePrefixValue(UNUSED const DataSetAccessPropList& dapl) {
+  //#if H5_VERSION_GE (1, 10, 0) || (H5_VERSION_GE (1, 8, 17) && H5_VERS_MINOR == 8)
+#if H5_VERSION_GE( \
+    1, 10,         \
+    0)  // Do not set property for version 1.8.17 because H5Rdereference() does not allow passing a dapl
+  Exception::check("H5Pset_efile_prefix",
+                   H5Pset_efile_prefix(dapl.handle(), "${ORIGIN}"));
 #endif
-  }
-
-  static DataSetAccessPropList createEFilePrefixPList () {
-    DataSetAccessPropList dapl = DataSetAccessPropList::create ();
-    setEFilePrefixValue (dapl);
-    return dapl;
-  }
-
-  DataSetAccessPropList setEFilePrefix (const DataSetAccessPropList& list) {
-    if (!list.isValid())
-      return Core::staticCache([] { return createEFilePrefixPList(); });
-
-    DataSetAccessPropList copy = (DataSetAccessPropList) list.copy ();
-    setEFilePrefixValue (copy);
-    return copy;
-  }
-
-  void DataSet::checkType () const {
-    if (!isValid ())
-      return;
-    if (getType () != H5I_DATASET)
-      ABORT_MSG ("Not a dataset");
-  }
-
-  DataSet DataSet::create (const File& file, const DataType& type, const DataSpace& space, const DataSetCreatePropList& dcpl, const DataSetAccessPropList& dapl) {
-    return DataSet (Exception::check ("H5Dcreate_anon", H5Dcreate_anon (file.handle (), type.handle (), space.handle (), dcpl.handleOrDefault (), dapl.handleOrDefault ())));
-  }
-
-  void DataSet::read (void* buf, const HDF5::DataType& memType, const HDF5::DataSpace& memSpace, const HDF5::DataSpace& fileSpace, DataTransferPropList xfpl) const {
-    Exception::check ("H5Dread", H5Dread (handle (), memType.handle (), memSpace.handleOrAll (), fileSpace.handleOrAll (), xfpl.handleOrDefault (), buf));
-  }
-  
-  void DataSet::write (const void* buf, const HDF5::DataType& memType, const HDF5::DataSpace& memSpace, const HDF5::DataSpace& fileSpace, DataTransferPropList xfpl) const {
-    Exception::check ("H5Dwrite", H5Dwrite (handle (), memType.handle (), memSpace.handleOrAll (), fileSpace.handleOrAll (), xfpl.handleOrDefault (), buf));
-  }
-  
-  DataSpace DataSet::getSpace () const {
-    return DataSpace (Exception::check ("H5Dget_space", H5Dget_space (handle ())));
-  }
-  DataType DataSet::getDataType () const {
-    return DataType (Exception::check ("H5Dget_type", H5Dget_type (handle ())));
-  }
-
-  void DataSet::vlenReclaim (void* buf, const DataType& type, const DataSpace& space, DataTransferPropList xfpl) {
-    Exception::check ("H5Dvlen_reclaim", H5Dvlen_reclaim (type.handle (), space.handle (), xfpl.handleOrDefault (), buf));
-  }
-
-  DataSetAccessPropList DataSet::accessPropList () const {
-    return DataSetAccessPropList (Exception::check ("H5Dget_access_plist", H5Dget_access_plist (handle ())));
-  }
-  DataSetCreatePropList DataSet::createPropList () const {
-    return DataSetCreatePropList (Exception::check ("H5Dget_create_plist", H5Dget_create_plist (handle ())));
-  }
-
-  uint64_t DataSet::getOffset () const {
-    haddr_t offset = H5Dget_offset (handle ());
-    if (offset == HADDR_UNDEF)
-      Exception::error ("H5Dget_offset");
-    return Core::checked_cast<uint64_t> (offset);
-  }
 }
+
+static DataSetAccessPropList createEFilePrefixPList() {
+  DataSetAccessPropList dapl = DataSetAccessPropList::create();
+  setEFilePrefixValue(dapl);
+  return dapl;
+}
+
+DataSetAccessPropList setEFilePrefix(const DataSetAccessPropList& list) {
+  if (!list.isValid())
+    return Core::staticCache([] { return createEFilePrefixPList(); });
+
+  DataSetAccessPropList copy = (DataSetAccessPropList)list.copy();
+  setEFilePrefixValue(copy);
+  return copy;
+}
+
+void DataSet::checkType() const {
+  if (!isValid()) return;
+  if (getType() != H5I_DATASET) ABORT_MSG("Not a dataset");
+}
+
+DataSet DataSet::create(const File& file, const DataType& type,
+                        const DataSpace& space,
+                        const DataSetCreatePropList& dcpl,
+                        const DataSetAccessPropList& dapl) {
+  return DataSet(Exception::check(
+      "H5Dcreate_anon",
+      H5Dcreate_anon(file.handle(), type.handle(), space.handle(),
+                     dcpl.handleOrDefault(), dapl.handleOrDefault())));
+}
+
+void DataSet::read(void* buf, const HDF5::DataType& memType,
+                   const HDF5::DataSpace& memSpace,
+                   const HDF5::DataSpace& fileSpace,
+                   DataTransferPropList xfpl) const {
+  Exception::check(
+      "H5Dread", H5Dread(handle(), memType.handle(), memSpace.handleOrAll(),
+                         fileSpace.handleOrAll(), xfpl.handleOrDefault(), buf));
+}
+
+void DataSet::write(const void* buf, const HDF5::DataType& memType,
+                    const HDF5::DataSpace& memSpace,
+                    const HDF5::DataSpace& fileSpace,
+                    DataTransferPropList xfpl) const {
+  Exception::check(
+      "H5Dwrite",
+      H5Dwrite(handle(), memType.handle(), memSpace.handleOrAll(),
+               fileSpace.handleOrAll(), xfpl.handleOrDefault(), buf));
+}
+
+DataSpace DataSet::getSpace() const {
+  return DataSpace(Exception::check("H5Dget_space", H5Dget_space(handle())));
+}
+DataType DataSet::getDataType() const {
+  return DataType(Exception::check("H5Dget_type", H5Dget_type(handle())));
+}
+
+void DataSet::vlenReclaim(void* buf, const DataType& type,
+                          const DataSpace& space, DataTransferPropList xfpl) {
+  Exception::check("H5Dvlen_reclaim",
+                   H5Dvlen_reclaim(type.handle(), space.handle(),
+                                   xfpl.handleOrDefault(), buf));
+}
+
+DataSetAccessPropList DataSet::accessPropList() const {
+  return DataSetAccessPropList(
+      Exception::check("H5Dget_access_plist", H5Dget_access_plist(handle())));
+}
+DataSetCreatePropList DataSet::createPropList() const {
+  return DataSetCreatePropList(
+      Exception::check("H5Dget_create_plist", H5Dget_create_plist(handle())));
+}
+
+uint64_t DataSet::getOffset() const {
+  haddr_t offset = H5Dget_offset(handle());
+  if (offset == HADDR_UNDEF) Exception::error("H5Dget_offset");
+  return Core::checked_cast<uint64_t>(offset);
+}
+}  // namespace HDF5
