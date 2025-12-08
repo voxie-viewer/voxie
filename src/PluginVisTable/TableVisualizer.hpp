@@ -74,8 +74,8 @@ class TableVisualizer : public vx::visualization::SimpleVisualizer {
 
   vx::SharedFunPtr<RenderFunction> getRenderFunction() override;
 
-  QVariant getNodePropertyCustom(QString key) override;
-  void setNodePropertyCustom(QString key, QVariant value) override;
+  vx::Any getNodePropertyCustom(QString key) override;
+  void setNodePropertyCustom(QString key, vx::Any value) override;
 
   QWidget* mainView() override;
 

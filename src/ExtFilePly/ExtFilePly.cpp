@@ -550,7 +550,7 @@ static void import(const QCommandLineParser& parser) {
         });
       }
 
-      srf2_version = createQSharedPointer<
+      srf2_version = vx::createQSharedPointer<
           vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
           dbusClient,
           HANDLEDBUSPENDINGREPLY(update->Finish(

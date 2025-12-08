@@ -117,12 +117,18 @@ Visualizer3D::Visualizer3D()
     // The SignalMapper lets us call a function with arguments when a button
     // is pressed
     QSignalMapper* signalMapper = new QSignalMapper(this);
-    connect(frontViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-    connect(backViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-    connect(rightViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-    connect(leftViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-    connect(topViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
-    connect(bottomViewButton, SIGNAL(pressed()), signalMapper, SLOT(map()));
+    connect(frontViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(backViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(rightViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(leftViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(topViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(bottomViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
 
     // Mapping the view angle arguments to the buttons
     signalMapper->setMapping(frontViewButton, "front");
@@ -132,8 +138,10 @@ Visualizer3D::Visualizer3D()
     signalMapper->setMapping(topViewButton, "top");
     signalMapper->setMapping(bottomViewButton, "bottom");
 
-    connect(signalMapper, SIGNAL(mapped(QString)), this,
-            SLOT(handleViewChange(QString)));
+    connect(signalMapper,
+            static_cast<void (QSignalMapper::*)(const QString&)>(
+                &QSignalMapper::mapped),
+            this, &Visualizer3D::handleViewChange);
 
     controlLayout->addWidget(frontViewButton, 1, 0);
     controlLayout->addWidget(rightViewButton, 1, 1);
@@ -142,7 +150,7 @@ Visualizer3D::Visualizer3D()
     controlLayout->addWidget(leftViewButton, 2, 1);
     controlLayout->addWidget(bottomViewButton, 2, 2);
 
-    QPushButton* resetButton = new QPushButton("Reset zoom");
+    QPushButton* resetButton = new QPushButton("Reset zoom / pos");
     resetButton->setToolTip(
         "Reset zoom and position to show everything (Home, Numpad 0)");
     QObject::connect(resetButton, &QPushButton::clicked, this, [this]() {

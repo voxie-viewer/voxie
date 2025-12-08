@@ -32,6 +32,8 @@ import typing
 import base64
 import math
 
+import voxie.data_types
+
 # See https://bamresearch.github.io/aRTist-handbook/bamct_file_format.html
 
 bamFields = [
@@ -288,7 +290,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
         else:
             raise Exception('Got unknown data byte order {!r}'.format(endian))
 
-        dtype_str = voxie.buffer.endianMap[dataType[2]] + voxie.buffer.typeNameMap[dataType[0]] + str(int(dataType[1]) // 8)
+        dtype_str = voxie.data_types.endianness_to_numpy[dataType[2]] + voxie.data_types.base_type_to_numpy[dataType[0]] + str(int(dataType[1]) // 8)
         dtype = np.dtype(dtype_str)
 
         dataType2 = (dataType[0], dataType[1], 'native')

@@ -17,6 +17,9 @@ qt5_dep = dependency('qt5', modules : qt_modules, include_type : 'system')
 qt5_dep_moc = dependency('qt5', modules : qt_modules)
 
 moc_files = qt5.preprocess(
+  qresources : [
+    'Shaders.qrc',
+  ],
   ui_files : [
     'Gui/ObjectProperties.ui',
     'Gui/PointList.ui',
@@ -69,6 +72,7 @@ moc_files = qt5.preprocess(
     #'Data/ContainerNode.hpp',
     'Data/TableColumnListView.hpp',
     'Data/TableData.hpp',
+    #'Data/TensorComponent.hpp',
     'Data/VolumeNode.hpp',
     'Data/VolumeSeriesNode.hpp',
     'Data/LabelViewModel.hpp',
@@ -201,6 +205,7 @@ voxie = shared_library(
     'Data/ContainerNode.cpp',
     'Data/TableColumnListView.cpp',
     'Data/TableData.cpp',
+    'Data/TensorComponent.cpp',
     'Data/VolumeNode.cpp',
     'Data/VolumeSeriesNode.cpp',
     'Data/LabelViewModel.cpp',

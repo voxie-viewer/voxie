@@ -75,6 +75,8 @@ void main() {
     fragmentColorBack = colorBackside;
   }
 
+    // TODO: Is this correct? Shouldn't this use ", 0" because the normal is a
+    // direction vector?
   fragmentNormal = (M * vec4(vertexNormal, 1)).xyz;
   fragmentPosition = (M * vec4(vertexPosition_modelspace, 1)).xyz;
 }

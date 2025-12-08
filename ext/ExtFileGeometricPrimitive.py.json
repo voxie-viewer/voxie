@@ -18,7 +18,8 @@
             "DisplayName": "Voxie geometric primitive JSON",
             "Description": "Load geometric primitive data from JSON files",
             "Patterns": [
-                "*.vxgmpr.json"
+                "*.vxgmpr.json",
+                "*.vxgmpr"
             ]
         }
     ]

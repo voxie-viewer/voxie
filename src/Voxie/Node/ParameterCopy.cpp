@@ -60,7 +60,7 @@ QSharedPointer<ParameterCopy> ParameterCopy::getParameters(Node* mainNode) {
 
 QSharedPointer<ParameterCopy> ParameterCopy::getParameters(QList<Node*> nodes,
                                                            Node* mainNode) {
-  QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, QVariant>>>
+  QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>
       properties;
   QMap<QDBusObjectPath, QSharedPointer<NodePrototype>> prototypes;
   QMap<QDBusObjectPath, DataInfo> dataMap;
@@ -74,7 +74,7 @@ QSharedPointer<ParameterCopy> ParameterCopy::getParameters(QList<Node*> nodes,
     if (done.contains(obj)) continue;
     done.insert(obj);
 
-    auto propertiesObj = createQSharedPointer<QMap<QString, QVariant>>();
+    auto propertiesObj = createQSharedPointer<QMap<QString, vx::Any>>();
 
     properties.insert(obj->getPath(), propertiesObj);
     prototypes.insert(obj->getPath(), obj->prototype());

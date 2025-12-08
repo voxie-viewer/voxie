@@ -37,9 +37,9 @@
 
 #include <VoxieBackend/IO/OperationResult.hpp>
 
-#include <Voxie/Data/VolumeNode.hpp>
+#include <Voxie/DebugOptions.hpp>
 
-#include <Voxie/Gui/NodeNameLineEdit.hpp>
+#include <Voxie/Data/VolumeNode.hpp>
 
 #include <Voxie/Node/FilterNode.hpp>
 #include <Voxie/Node/ParameterCopy.hpp>
@@ -120,13 +120,9 @@ FilterNode::FilterNode(const QSharedPointer<NodePrototype>& prototype)
 
   auto mainVBoxLayout = new QVBoxLayout();
 
-  // TODO: Unify this between different node kinds
-  auto nameLayout = new QHBoxLayout();
-  mainVBoxLayout->addLayout(nameLayout);
-  auto nameLabel = new QLabel("Node name");
-  nameLayout->addWidget(nameLabel);
-  auto nameEdit = new NodeNameLineEdit(this);
-  nameLayout->addWidget(nameEdit);
+  this->debuggerSupportEnabled = new QCheckBox("Enable debugger support");
+  mainVBoxLayout->addWidget(this->debuggerSupportEnabled);
+  this->debuggerSupportEnabled->hide();
 
   auto CalculateButtonLayout = new QHBoxLayout();
   mainVBoxLayout->addLayout(CalculateButtonLayout);
@@ -140,28 +136,12 @@ FilterNode::FilterNode(const QSharedPointer<NodePrototype>& prototype)
   this->stopProcessButton->setEnabled(false);
   CalculateButtonLayout->addWidget(this->stopProcessButton);
 
-  this->mainPropertyWidget = new QWidget();
-
   this->displayLabel = new QLabel();
   voxieRoot().connectLinkHandler(this->displayLabel);
-  mainVBoxLayout->insertWidget(1, displayLabel);
+  mainVBoxLayout->addWidget(displayLabel);
 
-  this->sourceCodeButton = new QLabel();
-  mainVBoxLayout->insertWidget(2, this->sourceCodeButton);
-  voxieRoot().connectLinkHandler(this->sourceCodeButton);
-  this->sourceCodeButton->setText(
-      "<a href=\"" +
-      vx::help::uriForPrototype(this->prototype()).toHtmlEscaped() +
-      "\">Help</a>");
-
-  this->debuggerSupportEnabled = new QCheckBox("Enable debugger support");
-  mainVBoxLayout->insertWidget(3, this->debuggerSupportEnabled);
-  this->debuggerSupportEnabled->hide();
-
-  this->mainPropertyWidget->setWindowTitle("");
-  this->connect(this, &Node::displayNameChanged, this, [this](QString newName) {
-    this->mainPropertyWidget->setWindowTitle(newName);
-  });
+  this->mainPropertyWidget = new QWidget();
+  this->mainPropertyWidget->setWindowTitle("Filter");
   this->mainPropertyWidget->setLayout(mainVBoxLayout);
   this->addPropertySection(this->mainPropertyWidget);
 
@@ -177,9 +157,8 @@ FilterNode::FilterNode(const QSharedPointer<NodePrototype>& prototype)
       }
     }
   });
-  // TODO: This probably should call run() instead of calculate()
   connect(this->calculateButton, &QPushButton::released, this,
-          [this]() { this->calculate(); });
+          [this]() { this->run(); });
   connect(this, &Node::parentChanged, this,
           &FilterNode::displayLabelParentChildChanged);
   connect(this, &Node::childChanged, this,
@@ -190,7 +169,7 @@ FilterNode::FilterNode(const QSharedPointer<NodePrototype>& prototype)
   for (const auto& dep : deps) {
     connect(this, &Node::propertyChanged, this,
             [this, dep](const QSharedPointer<NodeProperty>& property,
-                        const QVariant& value) {
+                        const vx::Any& value) {
               Q_UNUSED(value);
               if (property != dep) return;
               updateCalculateButtonState();
@@ -281,38 +260,83 @@ QSharedPointer<vx::io::RunFilterOperation> FilterNode::run(
   // create a copy of the current parameters that we will use to later know if
   // parameters changed and that we can also pass to the calculate() method for
   // the filter to use
-  runParameters = ParameterCopy::getParameters(this)->createWeakCopy();
+  auto currentRunParameters =
+      ParameterCopy::getParameters(this)->createWeakCopy();
+
+  // Should this set runParameters to nullptr? Should not be needed because any
+  // change to the data should be visible because of data change tracking.
+  // this->runParameters = QSharedPointer<WeakParameterCopy>();
+
+  if (vx::debug_option::Log_FilterChangeTracking()->get())
+    qDebug() << "Starting filter run for" << this->getPath().path();
 
   QSharedPointer<vx::io::RunFilterOperation> op =
       this->calculate(isAutomaticFilterRun);
 
   op->onFinished(
-      this,
-      [this](const QSharedPointer<vx::io::Operation::ResultError>& result) {
+      this, [this, currentRunParameters](
+                const QSharedPointer<vx::io::Operation::ResultError>& result) {
         // If filter failed, force rerun next time.
+        // TODO: In many cases (e.g. isosurface extraction) cancelling the
+        // filter will be considered success (but should be considered failure).
         if (result) {
+          // This probably should not be needed because the change to the data
+          // version should trigger a re-run anyway (if anything has changed).
           this->runParameters = QSharedPointer<WeakParameterCopy>();
+          if (vx::debug_option::Log_FilterChangeTracking()->get())
+            qDebug() << "Changed runParameters of" << this->getPath().path()
+                     << "to nullptr";
           return;
         }
 
-        QMap<QDBusObjectPath, WeakParameterCopy::WeakDataInfo> newDataMap =
-            this->runParameters->dataMap();
-
         auto newParams = ParameterCopy::getParameters(this)->createWeakCopy();
+
+        QMap<QDBusObjectPath, WeakParameterCopy::WeakDataInfo> newDataMap =
+            currentRunParameters->dataMap();
+        QMap<QDBusObjectPath, QSharedPointer<NodePrototype>> newPrototypes =
+            currentRunParameters->prototypes();
+        QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>
+            newProperties = currentRunParameters->properties();
+        if (!newProperties.value(currentRunParameters->mainNodePath())) {
+          qCritical() << "Cannot find mainNodePath in properties";
+          return;
+        }
+        QMap<QString, vx::Any> newSelfProperties =
+            *newProperties[currentRunParameters->mainNodePath()];
 
         for (auto& property : prototype()->nodeProperties()) {
           // skip properties that are not output references
           if (!property->isReference() || !property->isOutputReference())
             continue;
+
+          // Copy value of output property
+          newSelfProperties[property->name()] =
+              (*newParams->properties()[currentRunParameters->mainNodePath()])
+                  [property->name()];
+
           auto objPath = this->getNodePropertyTyped<QDBusObjectPath>(property);
+
+          // Copy data for output property node
           newDataMap.insert(objPath, newParams->dataMap()[objPath]);
+
+          // Copy properties for output properties node
+          newProperties[objPath] = newParams->properties()[objPath];
+
+          // Copy prototypes for output properties node
+          newPrototypes[objPath] = newParams->prototypes()[objPath];
+
+          // TODO: Need to do anything for extensionInfo?
         }
 
+        newProperties[currentRunParameters->mainNodePath()] =
+            createQSharedPointer<QMap<QString, vx::Any>>(newSelfProperties);
+
         this->runParameters = createQSharedPointer<WeakParameterCopy>(
-            this->runParameters->mainNodePath(),
-            this->runParameters->properties(),
-            this->runParameters->prototypes(),
-            this->runParameters->extensionInfo(), newDataMap);
+            currentRunParameters->mainNodePath(), newProperties, newPrototypes,
+            currentRunParameters->extensionInfo(), newDataMap);
+        if (vx::debug_option::Log_FilterChangeTracking()->get())
+          qDebug() << "Changed runParameters of" << this->getPath().path()
+                   << "to" << currentRunParameters->toString();
       });
 
   return op;
@@ -322,9 +346,25 @@ bool FilterNode::needsRecalculation() {
   QSharedPointer<WeakParameterCopy> currentParams =
       ParameterCopy::getParameters(this)->createWeakCopy();
 
-  if (currentParams == runParameters) return false;
-  if (!currentParams || !runParameters) return true;
-  return *currentParams != *runParameters;
+  if (vx::debug_option::Log_FilterChangeTracking()->get())
+    qDebug() << "FilterNode::needsRecalculation: last ="
+             << (runParameters ? runParameters->toString() : "nullptr")
+             << ", current = "
+             << (currentParams ? currentParams->toString() : "nullptr");
+  if (currentParams == runParameters) {
+    if (vx::debug_option::Log_FilterChangeTracking()->get())
+      qDebug() << "FilterNode::needsRecalculation: false because of identity";
+    return false;
+  }
+  if (!currentParams || !runParameters) {
+    if (vx::debug_option::Log_FilterChangeTracking()->get())
+      qDebug() << "FilterNode::needsRecalculation: true because of null value";
+    return true;
+  }
+  bool res = *currentParams != *runParameters;
+  if (vx::debug_option::Log_FilterChangeTracking()->get())
+    qDebug() << "FilterNode::needsRecalculation: Result:" << res;
+  return res;
 }
 
 QMap<QString, QString> FilterNode::getExtensionInfo() { return {}; }

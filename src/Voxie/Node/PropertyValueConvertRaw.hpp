@@ -37,6 +37,7 @@ template <typename T, std::size_t dim>
 class Vector;
 class BoundingBox3D;
 class PiecewisePolynomialFunction;
+class TensorComponent;
 
 template <typename Raw, typename Cooked>
 // Must not be marked with VOXIECORESHARED_EXPORT because it
@@ -159,5 +160,14 @@ struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
   static std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
                     QList<QList<double>>>
   toRaw(const PiecewisePolynomialFunction& cooked);
+};
+
+template <>
+struct VOXIECORESHARED_EXPORT PropertyValueConvertRaw<
+    std::tuple<QList<quint32>, QList<quint32>>, TensorComponent> {
+  static TensorComponent fromRaw(
+      const std::tuple<QList<quint32>, QList<quint32>>& raw);
+  static std::tuple<QList<quint32>, QList<quint32>> toRaw(
+      const TensorComponent& cooked);
 };
 }  // namespace vx

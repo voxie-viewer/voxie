@@ -61,6 +61,11 @@ VolumeSeriesNode::VolumeSeriesNode()
     this->emitCustomPropertyChanged(this->properties->rotationProperty());
   });
 
+  QObject::connect(properties, &VolumeSeriesProperties::rotationChanged, this,
+                   &MovableDataNode::rotationChanged);
+  QObject::connect(properties, &VolumeSeriesProperties::translationChanged,
+                   this, &MovableDataNode::translationChanged);
+
   // TODO: This should only be triggered if the bounding box actually changes
   QObject::connect(this, &DataNode::dataChangedFinished, this,
                    &MovableDataNode::boundingBoxObjectChanged);

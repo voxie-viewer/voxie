@@ -103,8 +103,7 @@ void BrushSelectionTool::toolMouseMoveEvent(
     QMouseEvent* ev, const vx::Vector<double, 2>& pixelPos) {
   Q_UNUSED(ev);
 
-  if (!this->mousePressed)
-    return;
+  if (!this->mousePressed) return;
 
   auto distance = manhattanLength(pixelPos - this->startPosPixel);
   // if (distance >= 1) {

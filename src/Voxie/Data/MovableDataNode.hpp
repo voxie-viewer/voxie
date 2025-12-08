@@ -77,8 +77,8 @@ class VOXIECORESHARED_EXPORT MovableDataNode : public DataNode {
   QVector3D getAdjustedPosition() { return adjustedPosition; }
   QQuaternion getAdjustedRotation() { return adjustedRotation; }
 
-  QVariant getNodePropertyCustom(QString key) override;
-  void setNodePropertyCustom(QString key, QVariant value) override;
+  vx::Any getNodePropertyCustom(QString key) override;
+  void setNodePropertyCustom(QString key, vx::Any value) override;
 
   /**
    * @brief Calculates 3D object coordinate [m] to global 3D coordinate [m]
@@ -126,6 +126,19 @@ class VOXIECORESHARED_EXPORT MovableDataNode : public DataNode {
 
   void boundingBoxObjectChanged();
   void boundingBoxGlobalChanged();
+
+  // Forwarded from properties
+  // TODO: This are currently needed for
+  // forwardSignalFromPropertyNodeOnReconnect(), but probably
+  // forwardSignalFromPropertyNodeOnReconnect() should be changed to allow
+  // forwarding property changed events directly (then it also could pass to
+  // value for the OnReconnect() variant). Probably there also should be some
+  // template magic so that one doesn't have to pass both the getter and the
+  // changed handler for both properties.
+  // TODO: This mostly overlaps with adjustedPositionChanged and
+  // adjustedRotationChanged
+  void rotationChanged(QQuaternion value);
+  void translationChanged(QVector3D value);
 };
 
 namespace internal {

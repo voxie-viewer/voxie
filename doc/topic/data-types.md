@@ -27,7 +27,7 @@ Can be one of the following values:
 - `little`: Only valid if the number of bits is not 8, indicates little endian.
 - `big`: Only valid if the number of bits is not 8, indicates big endian.
 - `native`: In some contexts (e.g. when creating a new volume), `native` can
-  be used to indicate the computers native endianness.
+  be used to indicate the system's native endianness.
 
 DBus
 ----

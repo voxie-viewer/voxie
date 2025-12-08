@@ -268,7 +268,7 @@ inline T dbusGetVariantValue(const QDBusVariant& variant) {
 }
 
 // Note: The returned QDBusVariant cannot be passed to dbusGetVariantValue(), it
-// only can be send over DBus. The reason for this is that it contains a
+// only can be sent over DBus. The reason for this is that it contains a
 // 'marshalling' QDBusArgument, while dbusGetVariantValue can only deal with
 // 'demarshalling' QDBusArguments. Turning a 'marshalling' QDBusArguments into a
 // 'demarshalling' one seems to be quite difficult (probably would require

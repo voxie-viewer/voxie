@@ -28,6 +28,8 @@
 
 #include <VoxieBackend/DBus/DynamicObject.hpp>
 
+#include <VoxieClient/Any.hpp>
+
 #include <QtCore/QJsonObject>
 #include <QtCore/QMutex>
 
@@ -91,7 +93,7 @@ class VOXIEBACKEND_EXPORT Data : public vx::DynamicObject {
 
   struct DataPropertyValue {
     QSharedPointer<DataProperty> property;
-    QVariant value;
+    vx::Any value;
   };
   // May only be accessed from the main thread (without lock)
   QMap<QString, DataPropertyValue> dataProperties;
@@ -121,12 +123,12 @@ class VOXIEBACKEND_EXPORT Data : public vx::DynamicObject {
 
   QList<QSharedPointer<DataProperty>> listProperties();
 
-  QVariant getProperty(const QSharedPointer<DataProperty>& property,
-                       bool allowMissing = false);
+  vx::Any getProperty(const QSharedPointer<DataProperty>& property,
+                      bool allowMissing = false);
 
   void setProperty(const QSharedPointer<DataUpdate>& update,
                    const QSharedPointer<DataProperty>& property,
-                   const QVariant& value, ReplaceMode replaceMode);
+                   const vx::Any& value, ReplaceMode replaceMode);
 
  Q_SIGNALS:
   /**

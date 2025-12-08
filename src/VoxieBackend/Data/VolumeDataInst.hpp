@@ -23,6 +23,7 @@
 #pragma once
 
 #include <VoxieBackend/Data/VolumeData.hpp>
+#include <VoxieBackend/Data/VolumeDataBlock.hpp>
 #include <VoxieBackend/Data/VolumeDataVoxelInst.hpp>
 
 #ifdef VOLUME_DATA_INST_ADDITIONAL_INCLUDE
@@ -33,6 +34,10 @@ namespace vx {
 template <typename Callback>
 inline void VolumeData::withVolumeType(const Callback& callback) {
   if (auto ptr = dynamic_cast<VolumeDataVoxel*>(this)) {
+    callback(ptr->thisShared());
+    return;
+  }
+  if (auto ptr = dynamic_cast<VolumeDataBlock*>(this)) {
     callback(ptr->thisShared());
     return;
   }

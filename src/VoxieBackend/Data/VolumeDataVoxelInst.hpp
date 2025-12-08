@@ -97,6 +97,22 @@ class VOXIEBACKEND_EXPORT VolumeDataVoxelInst : public vx::VolumeDataVoxel {
         qSharedPointerDynamicCast<VolumeDataVoxelInst>(thisShared()));
   }
 
+  template <typename AccessorType, typename F>
+  void withInterpolatedAccessor(vx::InterpolationMethod interpolationMethod,
+                                const F& f) {
+    static_assert(std::is_same<AccessorType, float>::value,
+                  "AccessorType must be float");
+
+    auto accessor = this->accessor();
+
+    // TODO: Allow AccessorType to be something other than float.
+    // If this is not float, what should be used here? Also convert to float for
+    // nearest?
+    auto accessorConv = vx::convertedVoxelAccessor<float>(accessor);
+
+    vx::withInterpolation(accessorConv, interpolationMethod, f);
+  }
+
   /**
    * @brief Transform all voxels of the data set inplace.
    * @param f The function that transforms the voxels.

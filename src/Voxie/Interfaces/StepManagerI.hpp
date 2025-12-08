@@ -74,6 +74,6 @@ class VOXIECORESHARED_EXPORT StepManagerI {
    * @param value new value that shall be assigned to the key
    */
   virtual void createMetaStep(qlonglong labelID, QString key,
-                              QVariant value) = 0;
+                              vx::Any value) = 0;
 };
 }  // namespace vx

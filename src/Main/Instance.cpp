@@ -700,7 +700,7 @@ QDBusObjectPath InstanceAdaptorImpl::CreateDataProperty(
 
     // TODO: Check whether this type is allowed here?
 
-    auto dataProperty = DataProperty::create(
+    auto dataProperty = DataProperty::getOrCreate(
         name, expectObject(dbusToJson(json)), vx::voxieRoot().components());
 
     clientPtr->incRefCount(dataProperty);
@@ -725,7 +725,9 @@ QDBusObjectPath InstanceAdaptorImpl::CreateSeriesDimension(
 
     auto propertyObj = DataProperty::lookup(property);
 
-    QList<QVariant> entriesRaw = propertyObj->type()->dbusToRawList(entries);
+    QList<vx::Any> entriesRaw = propertyObj->type()->dbusToRawList(entries);
+
+    // TODO: Use getOrCreate, similar to CreateDataProperty()?
 
     auto seriesDimension = SeriesDimension::create(propertyObj, entriesRaw);
 

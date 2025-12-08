@@ -41,6 +41,18 @@ class GridPropertiesCopy;
 class GridProperties;
 }  // namespace object3d_prop
 inline namespace object3d_prop {
+static inline auto LineVisualizerProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer");
+}
+using LineVisualizerProperties_name =
+    decltype(LineVisualizerProperties_name_function());
+class LineVisualizerPropertiesEntry;
+class LineVisualizerPropertiesBase;
+class LineVisualizerPropertiesCopy;
+class LineVisualizerProperties;
+}  // namespace object3d_prop
+inline namespace object3d_prop {
 static inline auto PlaneProperties_name_function() {
   return VX_GET_STRING_CONSTANT_VALUE("de.uni_stuttgart.Voxie.Object3D.Plane");
 }
@@ -60,6 +72,18 @@ class SurfacePropertiesEntry;
 class SurfacePropertiesBase;
 class SurfacePropertiesCopy;
 class SurfaceProperties;
+}  // namespace object3d_prop
+inline namespace object3d_prop {
+static inline auto VectorFieldProperties_name_function() {
+  return VX_GET_STRING_CONSTANT_VALUE(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField");
+}
+using VectorFieldProperties_name =
+    decltype(VectorFieldProperties_name_function());
+class VectorFieldPropertiesEntry;
+class VectorFieldPropertiesBase;
+class VectorFieldPropertiesCopy;
+class VectorFieldProperties;
 }  // namespace object3d_prop
 inline namespace visualizer_prop {
 static inline auto View3DProperties_name_function() {
@@ -104,6 +128,12 @@ struct PropertiesTypeAlias<::vx::object3d_prop::GridProperties_name> {
   using PropertiesEntryType = ::vx::object3d_prop::GridPropertiesEntry;
 };
 template <>
+struct PropertiesTypeAlias<::vx::object3d_prop::LineVisualizerProperties_name> {
+  using PropertiesType = ::vx::object3d_prop::LineVisualizerProperties;
+  using PropertiesEntryType =
+      ::vx::object3d_prop::LineVisualizerPropertiesEntry;
+};
+template <>
 struct PropertiesTypeAlias<::vx::object3d_prop::PlaneProperties_name> {
   using PropertiesType = ::vx::object3d_prop::PlaneProperties;
   using PropertiesEntryType = ::vx::object3d_prop::PlanePropertiesEntry;
@@ -112,6 +142,11 @@ template <>
 struct PropertiesTypeAlias<::vx::object3d_prop::SurfaceProperties_name> {
   using PropertiesType = ::vx::object3d_prop::SurfaceProperties;
   using PropertiesEntryType = ::vx::object3d_prop::SurfacePropertiesEntry;
+};
+template <>
+struct PropertiesTypeAlias<::vx::object3d_prop::VectorFieldProperties_name> {
+  using PropertiesType = ::vx::object3d_prop::VectorFieldProperties;
+  using PropertiesEntryType = ::vx::object3d_prop::VectorFieldPropertiesEntry;
 };
 template <>
 struct PropertiesTypeAlias<::vx::visualizer_prop::View3DProperties_name> {

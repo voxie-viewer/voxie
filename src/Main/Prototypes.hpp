@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -43,11 +44,11 @@ class MarkdownPropertiesBase {
   virtual QDBusObjectPath fileRaw() = 0;
 };
 class MarkdownPropertiesCopy : public MarkdownPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   MarkdownPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QDBusObjectPath fileRaw() override final;
 };
 class MarkdownProperties : public QObject, public MarkdownPropertiesBase {

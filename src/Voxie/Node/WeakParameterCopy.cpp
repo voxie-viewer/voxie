@@ -22,6 +22,14 @@
 
 #include "WeakParameterCopy.hpp"
 
+#include <QtCore/QDebug>
+
+#include <VoxieClient/Format.hpp>
+
+#include <Voxie/Node/NodePrototype.hpp>
+
+#include <VoxieBackend/Data/Data.hpp>
+
 using namespace vx;
 
 WeakParameterCopy::WeakDataInfo::WeakDataInfo(
@@ -50,28 +58,6 @@ bool WeakParameterCopy::operator==(const WeakParameterCopy& other) const {
     return false;
   }
 
-  // iterate over the keys of one map and check if all of them are in the
-  // other map too. If they are, check that the values of the keys are equal
-  // too
-  for (auto key : this->properties().keys()) {
-    if (!other.properties().contains(key)) {
-      return false;
-    }
-
-    // compare sizes of the inner maps
-    if (this->properties()[key]->size() != other.properties()[key]->size()) {
-      return false;
-    }
-
-    // compare the inner maps' keys' values
-    for (auto innerKey : this->properties()[key]->keys()) {
-      if ((*this->properties()[key])[innerKey] !=
-          (*other.properties()[key])[innerKey]) {
-        return false;
-      }
-    }
-  }
-
   // if the two maps don't contain the same amount of items they can't be
   // equal
   if (this->prototypes().size() != other.prototypes().size()) {
@@ -87,6 +73,41 @@ bool WeakParameterCopy::operator==(const WeakParameterCopy& other) const {
 
     if (this->prototypes()[key] != other.prototypes()[key]) {
       return false;
+    }
+  }
+
+  // iterate over the keys of one map and check if all of them are in the
+  // other map too. If they are, check that the values of the keys are equal
+  // too
+  for (auto key : this->properties().keys()) {
+    if (!other.properties().contains(key)) {
+      return false;
+    }
+
+    // compare sizes of the inner maps
+    if (this->properties()[key]->size() != other.properties()[key]->size()) {
+      return false;
+    }
+
+    auto thisPrototype = this->prototypes()[key];
+    auto otherPrototype = other.prototypes()[key];
+    if (!thisPrototype || !otherPrototype) {
+      qWarning()
+          << "Failed to look up prototype in WeakParameterCopy::operator==()";
+      return false;
+    }
+
+    // compare the inner maps' keys' values
+    for (auto innerKey : this->properties()[key]->keys()) {
+      auto thisType = thisPrototype->getProperty(innerKey, false)->type();
+      auto otherType = otherPrototype->getProperty(innerKey, false)->type();
+
+      // Type of property changed (Can this happend?
+      if (thisType != otherType) return false;
+
+      if (!thisType->equals((*this->properties()[key])[innerKey],
+                            (*other.properties()[key])[innerKey]))
+        return false;
     }
   }
 
@@ -142,4 +163,60 @@ WeakParameterCopy::WeakDataInfo WeakParameterCopy::getData(
         "WeakParameterCopy::getData(): Cannot find key: " + key.path());
   return dataMap().value(
       key, WeakDataInfo(QSharedPointer<Data>(), QSharedPointer<DataVersion>()));
+}
+
+static QString myToString(const WeakParameterCopy::WeakDataInfo& info) {
+  auto data = info.data().lock();
+  return vx::format("({}, {})", data ? data->getPath().path() : "nullptr",
+                    info.version()->versionString());
+}
+
+static QString myToString(const vx::Any& var) {
+  // TODO: Call type()->valueToString()?
+  // TODO: Provide generic toString() for vx::Any?
+  // return "vx::Any(" + vx::toString(var.type()) + ")";
+  return vx::toString(var);
+}
+
+// TODO: Move this somewhere else?
+template <typename K, typename V>
+static QString myToString(const QMap<K, V>& map) {
+  QString res = "{";
+  bool empty = true;
+  for (const auto& key : map.keys()) {
+    if (!empty) res += ", ";
+    res += myToString(key);
+    res += ": ";
+    res += myToString(map[key]);
+    empty = false;
+  }
+  res += "}";
+  return res;
+}
+
+static QString myToString(const QDBusObjectPath& path) { return path.path(); }
+
+static QString myToString(const QSharedPointer<NodePrototype>& prototype) {
+  return prototype->name();
+}
+
+template <typename T>
+static QString myToString(const QSharedPointer<T>& ptr) {
+  return myToString(*ptr);
+}
+
+static QString myToString(const QString& s) { return s; }
+
+QString WeakParameterCopy::toString() const {
+  QString propertiesStr = myToString(this->properties());
+
+  QString prototypesStr = myToString(this->prototypes());
+
+  QString extensionInfoStr = myToString(this->extensionInfo());
+
+  QString dataMapStr = myToString(this->dataMap());
+
+  return vx::format("WeakParameterCopy({}, {}, {}, {}, {}",
+                    this->mainNodePath().path(), propertiesStr, prototypesStr,
+                    extensionInfoStr, dataMapStr);
 }

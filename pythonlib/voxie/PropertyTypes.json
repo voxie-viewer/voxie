@@ -10,6 +10,7 @@
   },
   "de.uni_stuttgart.Voxie.PropertyType.ChemicalComposition": {
     "DBusSignature": "v",
+    "DBusVariantStyle": "de.uni_stuttgart.Voxie.DBusVariantStyle.JSON",
     "DisplayName": "Chemical composition",
     "GetDescription": "chemicalCompositionGetDescription",
     "RawType": "QJsonValue",
@@ -91,7 +92,9 @@
   },
   "de.uni_stuttgart.Voxie.PropertyType.PiecewisePolynomialFunction": {
     "DBusSignature": "(a(d(dd))aad)",
-    "DisplayName": "Piecewise polynomial function"
+    "DisplayName": "Piecewise polynomial function",
+    "GetDescription": "piecewisePolynomialFunctionGetDescription",
+    "ToString": "piecewisePolynomialFunctionToString"
   },
   "de.uni_stuttgart.Voxie.PropertyType.Point2D": {
     "DBusSignature": "(dd)",
@@ -107,6 +110,12 @@
     "DisplayName": "Quantity",
     "SimpleUI": true
   },
+  "de.uni_stuttgart.Voxie.PropertyType.SeriesEntrySelection": {
+    "DBusSignature": "a{sv}",
+    "DBusVariantStyle": "de.uni_stuttgart.Voxie.DBusVariantStyle.DBusVariant",
+    "DisplayName": "Series entry",
+    "SupportQVariant": false
+  },
   "de.uni_stuttgart.Voxie.PropertyType.SizeInteger3D": {
     "DBusSignature": "(ttt)",
     "DisplayName": "Size (integer)"
@@ -121,17 +130,25 @@
     "DBusSignature": "s",
     "DisplayName": "Surface attribute name"
   },
+  "de.uni_stuttgart.Voxie.PropertyType.TensorComponent": {
+    "CompareFunction": "defaultValueCompare",
+    "DBusSignature": "(auau)",
+    "DisplayName": "Tensor component",
+    "SimpleUI": true
+  },
   "de.uni_stuttgart.Voxie.PropertyType.ThresholdLabelMapping": {
     "DBusSignature": "a(d(dddd)x)",
     "DisplayName": "ThresholdLabelMapping"
   },
   "de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageKind": {
     "DBusSignature": "a{sv}",
+    "DBusVariantStyle": "de.uni_stuttgart.Voxie.DBusVariantStyle.JSON",
     "DisplayName": "Tomography raw data image kind",
     "RawType": "QJsonObject"
   },
   "de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageList": {
     "DBusSignature": "(sa{sv})",
+    "DBusVariantStyle": "de.uni_stuttgart.Voxie.DBusVariantStyle.JSON",
     "DisplayName": "Tomography raw data image list",
     "RawType": "std::tuple<QString, QJsonObject>"
   },

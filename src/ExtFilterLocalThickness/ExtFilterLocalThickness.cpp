@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
             "de.uni_stuttgart.Voxie.Filter.LocalThickness.Method.Heuristic") {
           filter.compute(inputVolume, volumeData, op);
         }
-        volume_version = createQSharedPointer<
+        volume_version = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(update->Finish(

@@ -43,6 +43,9 @@ namespace vx {
 class FloatImage;
 class VolumeStructure;
 
+template <typename T>
+class Array1;
+
 /**
  * The VolumeData class is the base class for storing a 3 dimensional dataset
  * (image).
@@ -97,12 +100,21 @@ class VOXIEBACKEND_EXPORT VolumeData : public Data {
   // type.
   virtual DataType getDataType() = 0;
 
+  // TODO: Move out of VolumeData class?
+  // throws Exception
+  virtual void extractLine(const vx::Vector<double, 3>& startPoint,
+                           const vx::Vector<double, 3>& endPoint,
+                           InterpolationMethod interpolationMethod,
+                           // TODO: Allow different types?
+                           vx::Array1<float>& outputValues, size_t offset,
+                           size_t count);
+
   // throws Exception
   virtual void extractSlice(const QVector3D& origin,
                             const QQuaternion& rotation,
                             const QSize& outputSize, double pixelSizeX,
                             double pixelSizeY,
-                            InterpolationMethod interpolation,
+                            InterpolationMethod interpolationMethod,
                             FloatImage& outputImage) = 0;
 
   /**

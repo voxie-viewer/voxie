@@ -31,49 +31,7 @@
 #include <functional>
 #include <type_traits>
 
-// QList::toStdVector() was deprecated in Qt 5.14, but in many cases using this
-// is much easier than calling the std::vector constructor with two arguments.
-template <typename T>
-std::vector<T> toStdVector(const QVector<T>& vector) {
-  return std::vector<T>(vector.begin(), vector.end());
-}
-template <typename T>
-std::vector<T> toStdVector(const QList<T>& list) {
-  return std::vector<T>(list.begin(), list.end());
-}
-
-// QVector::fromStdVector() was deprecated in Qt 5.14, but the replacement is
-// not available before Qt 5.14.
-template <typename T>
-QVector<T> toQVector(const std::vector<T>& vector) {
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-  return QVector<T>::fromStdVector(vector);
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-}
-template <typename T>
-QList<T> toQList(const std::vector<T>& vector) {
-  return toQVector(vector).toList();
-}
-
-// QSet::fromList() was deprecated in Qt 5.14, but the replacement is
-// not available before Qt 5.14.
-template <typename T>
-QSet<T> toQSet(const QList<T>& list) {
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-  return QSet<T>::fromList(list);
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-}
-
+namespace vx {
 template <typename T, typename... U>
 static inline QSharedPointer<T> createQSharedPointer(U&&... par) {
   // Creating a QSharedPointer for a QObject with a default deallocator is
@@ -89,7 +47,6 @@ static inline QSharedPointer<T> createQSharedPointer(U&&... par) {
   return QSharedPointer<T>(new T(std::forward<U>(par)...));
 }
 
-namespace vx {
 class RefCountedObject;
 
 /**

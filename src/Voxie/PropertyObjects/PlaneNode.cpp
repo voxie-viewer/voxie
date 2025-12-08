@@ -219,13 +219,13 @@ void PlaneNode::setOrigin(QVector3D origin) {
 }
 
 // TODO: replace this by a property managed by the Node class?
-QVariant PlaneNode::getNodePropertyCustom(QString key) {
+vx::Any PlaneNode::getNodePropertyCustom(QString key) {
   if (key == "de.uni_stuttgart.Voxie.Property.Plane.Origin") {
-    return QVariant::fromValue(
+    return vx::make_any<vx::TupleVector<double, 3>>(
         PropertyValueConvertRaw<vx::TupleVector<double, 3>, QVector3D>::toRaw(
             this->plane()->origin));
   } else if (key == "de.uni_stuttgart.Voxie.Property.Plane.Orientation") {
-    return QVariant::fromValue(
+    return vx::make_any<vx::TupleVector<double, 4>>(
         PropertyValueConvertRaw<vx::TupleVector<double, 4>, QQuaternion>::toRaw(
             this->plane()->rotation));
   } else {
@@ -233,7 +233,7 @@ QVariant PlaneNode::getNodePropertyCustom(QString key) {
   }
 }
 
-void PlaneNode::setNodePropertyCustom(QString key, QVariant value) {
+void PlaneNode::setNodePropertyCustom(QString key, vx::Any value) {
   if (key == "de.uni_stuttgart.Voxie.Property.Plane.Origin") {
     setOrigin(
         PropertyValueConvertRaw<vx::TupleVector<double, 3>, QVector3D>::fromRaw(

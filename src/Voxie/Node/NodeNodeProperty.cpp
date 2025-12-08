@@ -29,19 +29,19 @@ NodeNodeProperty::~NodeNodeProperty() {}
 QSharedPointer<PropertyType> NodeNodeProperty::type() const {
   return property->type();
 }
-QVariant NodeNodeProperty::get() const {
+vx::Any NodeNodeProperty::get() const {
   return node->getNodeProperty(property);
 }
-void NodeNodeProperty::set(const QVariant& value) const {
+void NodeNodeProperty::set(const vx::Any& value) const {
   node->setNodeProperty(property, value);
 }
 QMetaObject::Connection NodeNodeProperty::connectChanged(
-    QObject* obj, std::function<void(const QVariant&)>&& callback) const {
+    QObject* obj, std::function<void(const vx::Any&)>&& callback) const {
   // TODO: Avoid listening to all property changes
   return QObject::connect(
       this->node, &vx::Node::propertyChanged, obj,
       [prop = this->property, callback](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != prop) return;
         callback(value);
       });

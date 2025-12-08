@@ -34,7 +34,7 @@ SegmentationStep::SegmentationStep(
 }
 
 QSharedPointer<SegmentationStep> SegmentationStep::clone(bool registerNode) {
-  QMap<QString, QVariant> map = QMap<QString, QVariant>();
+  QMap<QString, vx::Any> map = QMap<QString, vx::Any>();
   for (const auto& property : this->prototype()->nodeProperties())
     map[property->name()] = this->getNodeProperty(property);
 
@@ -67,7 +67,7 @@ void SegmentationStep::initializeRunStepButton() {
   for (const auto& dep : deps) {
     connect(this, &Node::propertyChanged, this,
             [this, dep](const QSharedPointer<NodeProperty>& property,
-                        const QVariant& value) {
+                        const vx::Any& value) {
               Q_UNUSED(value);
               if (property != dep) return;
               this->updateRunStepButtonState();

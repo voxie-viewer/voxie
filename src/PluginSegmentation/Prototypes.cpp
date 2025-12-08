@@ -14,33 +14,33 @@ SegmentationPropertiesEntry::SegmentationPropertiesEntry(
     vx::PropType::InitialSegmentation, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.Segmentation.InitialSegmentation",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 SegmentationPropertiesEntry::SegmentationPropertiesEntry(vx::PropType::Input,
                                                          vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.Segmentation.Input",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 SegmentationPropertiesEntry::SegmentationPropertiesEntry(vx::PropType::Output,
                                                          vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.Segmentation.Output",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 SegmentationPropertiesEntry::SegmentationPropertiesEntry(
     vx::PropType::StepList, QList<vx::Node*> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.Segmentation.StepList",
-          QVariant::fromValue<QList<QDBusObjectPath>>(
+          vx::make_any<QList<QDBusObjectPath>>(
               vx::PropertyValueConvertRaw<QList<QDBusObjectPath>,
                                           QList<vx::Node*>>::toRaw(value_))) {}
 SegmentationPropertiesBase::~SegmentationPropertiesBase() {}
 SegmentationPropertiesCopy::SegmentationPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QDBusObjectPath SegmentationPropertiesCopy::initialSegmentationRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -258,7 +258,7 @@ SegmentationProperties::SegmentationProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_InitialSegmentation](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_InitialSegmentation) return;
         vx::Node* valueCasted;
         try {
@@ -280,7 +280,7 @@ SegmentationProperties::SegmentationProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Input](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Input) return;
         vx::Node* valueCasted;
         try {
@@ -301,7 +301,7 @@ SegmentationProperties::SegmentationProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Output](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Output) return;
         vx::Node* valueCasted;
         try {
@@ -323,7 +323,7 @@ SegmentationProperties::SegmentationProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_StepList](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_StepList) return;
         QList<vx::Node*> valueCasted;
         try {
@@ -349,11 +349,11 @@ AssignmentStepPropertiesEntry::AssignmentStepPropertiesEntry(
     vx::PropType::LabelID, qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.AssignmentStep.LabelID",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 AssignmentStepPropertiesBase::~AssignmentStepPropertiesBase() {}
 AssignmentStepPropertiesCopy::AssignmentStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 qint64 AssignmentStepPropertiesCopy::labelID() {
   return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
@@ -442,7 +442,7 @@ AssignmentStepProperties::AssignmentStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LabelID](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_LabelID) return;
         qint64 valueCasted;
         try {
@@ -469,7 +469,7 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "BrushEraseCentersWithRadius",
-          QVariant::fromValue<
+          vx::make_any<
               QList<std::tuple<std::tuple<double, double, double>, double>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<std::tuple<double, double, double>, double>>,
@@ -481,7 +481,7 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "BrushSelectCentersWithRadius",
-          QVariant::fromValue<
+          vx::make_any<
               QList<std::tuple<std::tuple<double, double, double>, double>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<std::tuple<double, double, double>, double>>,
@@ -492,7 +492,7 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "PlaneOrientation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -501,7 +501,7 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "PlaneOrigin",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
@@ -509,7 +509,7 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "VolumeOrientation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -518,7 +518,7 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "VolumeOrigin",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
@@ -526,12 +526,12 @@ BrushSelectionStepPropertiesEntry::BrushSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.BrushSelectionStep."
           "VoxelSize",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 BrushSelectionStepPropertiesBase::~BrushSelectionStepPropertiesBase() {}
 BrushSelectionStepPropertiesCopy::BrushSelectionStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<std::tuple<vx::Vector<double, 3>, double>>
 BrushSelectionStepPropertiesCopy::brushEraseCentersWithRadius() {
@@ -1018,7 +1018,7 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_BrushEraseCentersWithRadius](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_BrushEraseCentersWithRadius) return;
         QList<std::tuple<vx::Vector<double, 3>, double>> valueCasted;
         try {
@@ -1047,7 +1047,7 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_BrushSelectCentersWithRadius](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_BrushSelectCentersWithRadius) return;
         QList<std::tuple<vx::Vector<double, 3>, double>> valueCasted;
         try {
@@ -1075,7 +1075,7 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_PlaneOrientation](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_PlaneOrientation) return;
         QQuaternion valueCasted;
         try {
@@ -1099,7 +1099,7 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_PlaneOrigin](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_PlaneOrigin) return;
         QVector3D valueCasted;
         try {
@@ -1126,7 +1126,7 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_VolumeOrientation](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_VolumeOrientation) return;
         QQuaternion valueCasted;
         try {
@@ -1150,7 +1150,7 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_VolumeOrigin](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_VolumeOrigin) return;
         QVector3D valueCasted;
         try {
@@ -1176,7 +1176,7 @@ BrushSelectionStepProperties::BrushSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_VoxelSize](const QSharedPointer<NodeProperty>& property,
-                              const QVariant& value) {
+                              const vx::Any& value) {
         if (property != _prop_VoxelSize) return;
         QVector3D valueCasted;
         try {
@@ -1206,7 +1206,7 @@ LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
           "PlaneOrientation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -1215,7 +1215,7 @@ LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
           "PlaneOrigin",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
@@ -1223,7 +1223,7 @@ LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
           "PolygonNodes",
-          QVariant::fromValue<QList<std::tuple<double, double, double>>>(
+          vx::make_any<QList<std::tuple<double, double, double>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double, double, double>>,
                   QList<vx::Vector<double, 3>>>::toRaw(value_))) {}
@@ -1232,7 +1232,7 @@ LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
           "VolumeOrientation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -1241,7 +1241,7 @@ LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
           "VolumeOrigin",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
@@ -1249,12 +1249,12 @@ LassoSelectionStepPropertiesEntry::LassoSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.LassoSelectionStep."
           "VoxelSize",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 LassoSelectionStepPropertiesBase::~LassoSelectionStepPropertiesBase() {}
 LassoSelectionStepPropertiesCopy::LassoSelectionStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QQuaternion LassoSelectionStepPropertiesCopy::planeOrientation() {
   return vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
@@ -1647,7 +1647,7 @@ LassoSelectionStepProperties::LassoSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_PlaneOrientation](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_PlaneOrientation) return;
         QQuaternion valueCasted;
         try {
@@ -1671,7 +1671,7 @@ LassoSelectionStepProperties::LassoSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_PlaneOrigin](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_PlaneOrigin) return;
         QVector3D valueCasted;
         try {
@@ -1697,7 +1697,7 @@ LassoSelectionStepProperties::LassoSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_PolygonNodes](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_PolygonNodes) return;
         QList<vx::Vector<double, 3>> valueCasted;
         try {
@@ -1724,7 +1724,7 @@ LassoSelectionStepProperties::LassoSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_VolumeOrientation](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_VolumeOrientation) return;
         QQuaternion valueCasted;
         try {
@@ -1748,7 +1748,7 @@ LassoSelectionStepProperties::LassoSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_VolumeOrigin](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_VolumeOrigin) return;
         QVector3D valueCasted;
         try {
@@ -1774,7 +1774,7 @@ LassoSelectionStepProperties::LassoSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_VoxelSize](const QSharedPointer<NodeProperty>& property,
-                              const QVariant& value) {
+                              const vx::Any& value) {
         if (property != _prop_VoxelSize) return;
         QVector3D valueCasted;
         try {
@@ -1804,12 +1804,12 @@ ManualSelectionStepPropertiesEntry::ManualSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.ManualSelectionStep."
           "LabelIds",
-          QVariant::fromValue<QList<qint64>>(
+          vx::make_any<QList<qint64>>(
               vx::PropertyValueConvertRaw<QList<qint64>, QList<qint64>>::toRaw(
                   value_))) {}
 ManualSelectionStepPropertiesBase::~ManualSelectionStepPropertiesBase() {}
 ManualSelectionStepPropertiesCopy::ManualSelectionStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<qint64> ManualSelectionStepPropertiesCopy::labelIds() {
   return vx::PropertyValueConvertRaw<QList<qint64>, QList<qint64>>::fromRaw(
@@ -1899,7 +1899,7 @@ ManualSelectionStepProperties::ManualSelectionStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LabelIds](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_LabelIds) return;
         QList<qint64> valueCasted;
         try {
@@ -1925,7 +1925,7 @@ MetaStepPropertiesEntry::MetaStepPropertiesEntry(vx::PropType::Color,
                                                  vx::Color value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Color",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   vx::Color>::toRaw(value_))) {}
@@ -1933,35 +1933,35 @@ MetaStepPropertiesEntry::MetaStepPropertiesEntry(vx::PropType::Description,
                                                  QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Description",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 MetaStepPropertiesEntry::MetaStepPropertiesEntry(vx::PropType::LabelID,
                                                  qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.LabelID",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 MetaStepPropertiesEntry::MetaStepPropertiesEntry(vx::PropType::ModificationKind,
                                                  QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.ModificationKind",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 MetaStepPropertiesEntry::MetaStepPropertiesEntry(vx::PropType::Name,
                                                  QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Name",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 MetaStepPropertiesEntry::MetaStepPropertiesEntry(vx::PropType::Visibility,
                                                  bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.MetaStep.Visibility",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 MetaStepPropertiesBase::~MetaStepPropertiesBase() {}
 MetaStepPropertiesCopy::MetaStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 vx::Color MetaStepPropertiesCopy::color() {
   return vx::PropertyValueConvertRaw<
@@ -2321,7 +2321,7 @@ MetaStepProperties::MetaStepProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Color](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Color) return;
         vx::Color valueCasted;
         try {
@@ -2344,7 +2344,7 @@ MetaStepProperties::MetaStepProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Description](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_Description) return;
         QString valueCasted;
         try {
@@ -2365,7 +2365,7 @@ MetaStepProperties::MetaStepProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LabelID](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_LabelID) return;
         qint64 valueCasted;
         try {
@@ -2387,7 +2387,7 @@ MetaStepProperties::MetaStepProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ModificationKind](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_ModificationKind) return;
         QString valueCasted;
         try {
@@ -2408,7 +2408,7 @@ MetaStepProperties::MetaStepProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Name](const QSharedPointer<NodeProperty>& property,
-                         const QVariant& value) {
+                         const vx::Any& value) {
         if (property != _prop_Name) return;
         QString valueCasted;
         try {
@@ -2429,7 +2429,7 @@ MetaStepProperties::MetaStepProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Visibility](const QSharedPointer<NodeProperty>& property,
-                               const QVariant& value) {
+                               const vx::Any& value) {
         if (property != _prop_Visibility) return;
         bool valueCasted;
         try {
@@ -2458,7 +2458,7 @@ MultiThresholdStepPropertiesEntry::MultiThresholdStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep."
           "ThresholdList",
-          QVariant::fromValue<QList<std::tuple<
+          vx::make_any<QList<std::tuple<
               double, std::tuple<double, double, double, double>, qint64>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double,
@@ -2471,12 +2471,12 @@ MultiThresholdStepPropertiesEntry::MultiThresholdStepPropertiesEntry(
     vx::PropType::Volume, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.MultiThresholdStep.Volume",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 MultiThresholdStepPropertiesBase::~MultiThresholdStepPropertiesBase() {}
 MultiThresholdStepPropertiesCopy::MultiThresholdStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<std::tuple<double, std::tuple<double, double, double, double>, qint64>>
 MultiThresholdStepPropertiesCopy::thresholdList() {
@@ -2659,7 +2659,7 @@ MultiThresholdStepProperties::MultiThresholdStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ThresholdList](const QSharedPointer<NodeProperty>& property,
-                                  const QVariant& value) {
+                                  const vx::Any& value) {
         if (property != _prop_ThresholdList) return;
         QList<std::tuple<double, std::tuple<double, double, double, double>,
                          qint64>>
@@ -2690,7 +2690,7 @@ MultiThresholdStepProperties::MultiThresholdStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Volume](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Volume) return;
         vx::Node* valueCasted;
         try {
@@ -2716,12 +2716,12 @@ RemoveLabelStepPropertiesEntry::RemoveLabelStepPropertiesEntry(
     vx::PropType::LabelIDs, QList<qint64> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.RemoveLabelStep.LabelIDs",
-          QVariant::fromValue<QList<qint64>>(
+          vx::make_any<QList<qint64>>(
               vx::PropertyValueConvertRaw<QList<qint64>, QList<qint64>>::toRaw(
                   value_))) {}
 RemoveLabelStepPropertiesBase::~RemoveLabelStepPropertiesBase() {}
 RemoveLabelStepPropertiesCopy::RemoveLabelStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<qint64> RemoveLabelStepPropertiesCopy::labelIDs() {
   return vx::PropertyValueConvertRaw<QList<qint64>, QList<qint64>>::fromRaw(
@@ -2811,7 +2811,7 @@ RemoveLabelStepProperties::RemoveLabelStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LabelIDs](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_LabelIDs) return;
         QList<qint64> valueCasted;
         try {
@@ -2837,11 +2837,11 @@ SubtractStepPropertiesEntry::SubtractStepPropertiesEntry(vx::PropType::LabelId,
                                                          qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.SubtractStep.LabelId",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 SubtractStepPropertiesBase::~SubtractStepPropertiesBase() {}
 SubtractStepPropertiesCopy::SubtractStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 qint64 SubtractStepPropertiesCopy::labelId() {
   return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
@@ -2931,7 +2931,7 @@ SubtractStepProperties::SubtractStepProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LabelId](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_LabelId) return;
         qint64 valueCasted;
         try {
@@ -2958,26 +2958,26 @@ ThresholdSelectionStepPropertiesEntry::ThresholdSelectionStepPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep."
           "LowerThreshold",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 ThresholdSelectionStepPropertiesEntry::ThresholdSelectionStepPropertiesEntry(
     vx::PropType::UpperThreshold, double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep."
           "UpperThreshold",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 ThresholdSelectionStepPropertiesEntry::ThresholdSelectionStepPropertiesEntry(
     vx::PropType::Volume, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.SegmentationStep.ThresholdSelectionStep."
           "Volume",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 ThresholdSelectionStepPropertiesBase::~ThresholdSelectionStepPropertiesBase() {}
 ThresholdSelectionStepPropertiesCopy::ThresholdSelectionStepPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 double ThresholdSelectionStepPropertiesCopy::lowerThreshold() {
   return vx::PropertyValueConvertRaw<double, double>::fromRaw(
@@ -3191,7 +3191,7 @@ ThresholdSelectionStepProperties::ThresholdSelectionStepProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LowerThreshold](const QSharedPointer<NodeProperty>& property,
-                                   const QVariant& value) {
+                                   const vx::Any& value) {
         if (property != _prop_LowerThreshold) return;
         double valueCasted;
         try {
@@ -3214,7 +3214,7 @@ ThresholdSelectionStepProperties::ThresholdSelectionStepProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_UpperThreshold](const QSharedPointer<NodeProperty>& property,
-                                   const QVariant& value) {
+                                   const vx::Any& value) {
         if (property != _prop_UpperThreshold) return;
         double valueCasted;
         try {
@@ -3236,7 +3236,7 @@ ThresholdSelectionStepProperties::ThresholdSelectionStepProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Volume](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Volume) return;
         vx::Node* valueCasted;
         try {

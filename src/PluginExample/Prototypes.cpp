@@ -14,24 +14,24 @@ TheSphereGeneratorPropertiesEntry::TheSphereGeneratorPropertiesEntry(
     vx::PropType::Seed, qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Seed",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 TheSphereGeneratorPropertiesEntry::TheSphereGeneratorPropertiesEntry(
     vx::PropType::Size, qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Example.Filter.TheSphereGenerator.Size",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 TheSphereGeneratorPropertiesEntry::TheSphereGeneratorPropertiesEntry(
     vx::PropType::Output, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Output",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 TheSphereGeneratorPropertiesBase::~TheSphereGeneratorPropertiesBase() {}
 TheSphereGeneratorPropertiesCopy::TheSphereGeneratorPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 qint64 TheSphereGeneratorPropertiesCopy::seed() {
   return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
@@ -227,7 +227,7 @@ TheSphereGeneratorProperties::TheSphereGeneratorProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Seed](const QSharedPointer<NodeProperty>& property,
-                         const QVariant& value) {
+                         const vx::Any& value) {
         if (property != _prop_Seed) return;
         qint64 valueCasted;
         try {
@@ -248,7 +248,7 @@ TheSphereGeneratorProperties::TheSphereGeneratorProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Size](const QSharedPointer<NodeProperty>& property,
-                         const QVariant& value) {
+                         const vx::Any& value) {
         if (property != _prop_Size) return;
         qint64 valueCasted;
         try {
@@ -269,7 +269,7 @@ TheSphereGeneratorProperties::TheSphereGeneratorProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Output](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Output) return;
         vx::Node* valueCasted;
         try {
@@ -291,7 +291,7 @@ inline namespace visualizer_prop {
 RandomChartPropertiesEntry::~RandomChartPropertiesEntry() {}
 RandomChartPropertiesBase::~RandomChartPropertiesBase() {}
 RandomChartPropertiesCopy::RandomChartPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_RandomChart_[] = {
     123, 34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121,

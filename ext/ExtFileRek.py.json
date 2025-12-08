@@ -1,4 +1,14 @@
 {
+    "Importer": [
+        {
+            "Name": "de.uni_stuttgart.Voxie.FileFormat.TomographyRawData.Rek.Import",
+            "DisplayName": "FhG/Werth REK file format",
+            "Description": "Load volume data from REK files",
+            "Patterns": [
+                "*.rek"
+            ]
+        }
+    ],
     "Exporter": [
         {
             "Name": "de.uni_stuttgart.Voxie.FileFormat.TomographyRawData.Rek.Export",

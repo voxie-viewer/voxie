@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -102,11 +103,11 @@ class FitPlanePropertiesBase {
   virtual QDBusObjectPath surfaceRaw() = 0;
 };
 class FitPlanePropertiesCopy : public FitPlanePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   FitPlanePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QDBusObjectPath geometricPrimitiveRaw() override final;
   double maximumDistance() override final;
   double maximumDistanceRaw() override final;

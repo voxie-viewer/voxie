@@ -21,3 +21,10 @@
  */
 
 #include "VoxelAccessor.hpp"
+
+#include <VoxieClient/Exception.hpp>
+
+void vx::withInterpolation_invalidInterpolationMethod() {
+  throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
+                      "Invalid interpolation method");
+}

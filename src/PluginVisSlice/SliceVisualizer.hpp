@@ -86,6 +86,18 @@ class InfoWidget;
 class MultivariateDataWidget;
 class ImageLayer;
 
+class SliceClickAction : public QObject {
+  Q_OBJECT
+
+ public:
+  SliceClickAction(QObject* parent = nullptr);
+  ~SliceClickAction() override;
+
+ Q_SIGNALS:
+  void click(QMouseEvent* e, const vx::Vector<double, 2>& planePos,
+             const vx::Vector<double, 3>& pos3D);
+};
+
 class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   Q_OBJECT
   VX_NODE_IMPLEMENTATION_PUB("de.uni_stuttgart.Voxie.Visualizer.Slice")
@@ -114,6 +126,8 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   // sidebar widgets
   ImagePaintWidget* _imageDisplayingWidget;
   vx::visualization::FilterChain2DWidget* _filterChain2DWidget;
+
+  QWidget* control3DSettings;
 
   QWidget* histogramBox;
   QRadioButton* sliceRadioButton;
@@ -281,7 +295,18 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
    */
   Visualizer2DTool* currentTool() { return _tools.at(_currentTool); }
 
+  // Set the action for a normal click on a slice
+  void setClickAction(SliceClickAction* action);
+  // Remove the action if the current action is actionToRemove, ignore otherwise
+  void removeClickAction(SliceClickAction* actionToRemove);
+  SliceClickAction* currentClickAction();
+
+ Q_SIGNALS:
+  void currentClickActionChanged(SliceClickAction* newAction);
+
  private:
+  QPointer<SliceClickAction> currentClickAction_;
+
   /**
    * Add an image to the draw stack.
    * @param self pointer to the object the image is associated with
@@ -411,8 +436,8 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
   // Set both rotation and origin
   void setPlaneInfo(const vx::PlaneInfo& plane, bool adjustCenterPoint);
 
-  QVariant getNodePropertyCustom(QString key) override;
-  void setNodePropertyCustom(QString key, QVariant value) override;
+  vx::Any getNodePropertyCustom(QString key) override;
+  void setNodePropertyCustom(QString key, vx::Any value) override;
 
   QSharedPointer<QObject> getPropertyUIData(QString propertyName) override;
 
@@ -470,6 +495,7 @@ class SliceVisualizer : public vx::VisualizerNode, public vx::SliceVisualizerI {
  Q_SIGNALS:
   // for data flow
   void signalBaseImageChanged(QImage baseImage);
+  // TODO: Is this used anywhere?
   void signalRequestSliceImageUpdate();
   void resized();
   void signalRequestHistogram(vx::SliceImage& image);

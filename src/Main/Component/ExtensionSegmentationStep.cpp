@@ -137,7 +137,7 @@ QSharedPointer<OperationResult> ExtensionSegmentationStep::calculate(
       continue;
     }
 
-    QMap<QString, QVariant> properties;
+    QMap<QString, vx::Any> properties;
     QList<Node*> inputs;
     QMap<QString, QDBusVariant> options;
     auto obj = type->create(properties, inputs, options);

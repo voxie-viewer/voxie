@@ -275,7 +275,7 @@ QSharedPointer<PropertyConditionIsEmpty> PropertyConditionIsEmpty::parseChild(
 }
 
 PropertyConditionHasValue::PropertyConditionHasValue(
-    const QWeakPointer<NodeProperty>& property, const QList<QVariant>& values)
+    const QWeakPointer<NodeProperty>& property, const QList<vx::Any>& values)
     : property_(property), values_(values) {}
 PropertyConditionHasValue::~PropertyConditionHasValue() {}
 bool PropertyConditionHasValue::evaluate(vx::Node* obj) {
@@ -289,8 +289,7 @@ bool PropertyConditionHasValue::evaluate(vx::Node* obj) {
   // qDebug() << "Eval" << this->values().count();
   for (const auto& val : this->values()) {
     // qDebug() << "Compare" << val << value;
-    if (val == value)  // TODO implement different equality?
-      return true;
+    if (prop->type()->equals(val, value)) return true;
   }
   return false;
 }
@@ -336,7 +335,7 @@ QSharedPointer<PropertyConditionHasValue> PropertyConditionHasValue::parseChild(
                         "Unable to find property with name '" + propName +
                             "' in prototype '" + prototype->name() + "'");
   // auto prop = properties[propName];
-  QList<QVariant> values;
+  QList<vx::Any> values;
   for (const auto& value : json["Values"].toArray()) {
     values << prop->type()->parseJson(value);
   }

@@ -1,0 +1,13 @@
+{
+    "Type": "de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol",
+    "VolumeType": "Voxel",
+    "DataType": [ "uint", 8, "none" ],
+    "ArrayShape": [ 2, 3, 4 ],
+    "GridSpacing": [ 1.5, 2.5, 3.5 ],
+    "VolumeOrigin": [ -10.5, -20.5, -30.5 ],
+    "DataSourceType": "ImageStack",
+    "DataSource": {
+        "FirstImageIndex": 1,
+        "ImageFilePattern": "images/testarray_24_{:04}.tif"
+    }
+}

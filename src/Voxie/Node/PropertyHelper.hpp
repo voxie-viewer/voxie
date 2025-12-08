@@ -239,7 +239,7 @@ class ForwardSignalFromPropertyHelper : public QObject {
 
     QObject::connect(node, &Node::propertyChanged, this,
                      [this](const QSharedPointer<NodeProperty>& property2,
-                            const QVariant& value2) {
+                            const vx::Any& value2) {
                        // TODO: somehow only register for this property?
                        if (property2 != this->property) return;
                        auto newValue = Node::parseVariantNode(value2);

@@ -80,7 +80,7 @@ void TableViewWidget::updateTable(QSharedPointer<TableData> tableData) {
     for (int j = 0; j < columns.size(); j++) {
       const auto& column = tableData->columns()[j];
       auto valRaw = row.data()[j];
-      QString str = column.type()->valueToString(valRaw);
+      QString str = column.type()->valueToStringQVariant(valRaw);
       auto item = new SortableItem(str, column.type(), valRaw);
       item->setFlags(item->flags() & ~Qt::ItemIsEditable);
       this->setItem(i, j, item);
@@ -130,7 +130,8 @@ bool TableViewWidget::SortableItem::operator<(
         return false;
       } else {
         try {
-          return type->compare(this->sortData, sortableOther->sortData) < 0;
+          return type->compareQVariant(this->sortData,
+                                       sortableOther->sortData) < 0;
         } catch (Exception& e) {
           qWarning() << "TableViewWidget::SortableItem::operator<: Error while "
                         "comparing values: "

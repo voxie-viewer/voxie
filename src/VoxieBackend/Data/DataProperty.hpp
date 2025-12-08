@@ -37,6 +37,11 @@ class VOXIEBACKEND_EXPORT DataProperty : public vx::PropertyBase {
       const QSharedPointer<ComponentContainer>& propertyTypeContainer);
   ~DataProperty();
 
+  // TODO: Pass type as pointer?
+  static QSharedPointer<DataProperty> getOrCreate(
+      const QString& name, const QJsonObject& data,
+      const QSharedPointer<ComponentContainer>& propertyTypeContainer);
+
   QJsonValue toJson() override;
 };
 }  // namespace vx

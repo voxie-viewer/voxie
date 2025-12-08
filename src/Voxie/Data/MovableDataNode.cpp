@@ -107,21 +107,21 @@ void MovableDataNode::objectRotationRequested() {
   Q_EMIT adjustedRotationChanged(this, getAdjustedRotation());
 }
 
-QVariant MovableDataNode::getNodePropertyCustom(QString key) {
+vx::Any MovableDataNode::getNodePropertyCustom(QString key) {
   // TODO: Rename properties to MoveableDataNode
   if (key == "de.uni_stuttgart.Voxie.MovableDataNode.Translation") {
-    return QVariant::fromValue(
+    return vx::make_any<vx::TupleVector<double, 3>>(
         PropertyValueConvertRaw<vx::TupleVector<double, 3>, QVector3D>::toRaw(
             getAdjustedPosition()));
   } else if (key == "de.uni_stuttgart.Voxie.MovableDataNode.Rotation") {
-    return QVariant::fromValue(
+    return vx::make_any<vx::TupleVector<double, 4>>(
         PropertyValueConvertRaw<vx::TupleVector<double, 4>, QQuaternion>::toRaw(
             getAdjustedRotation()));
   } else {
     return DataNode::getNodePropertyCustom(key);
   }
 }
-void MovableDataNode::setNodePropertyCustom(QString key, QVariant value) {
+void MovableDataNode::setNodePropertyCustom(QString key, vx::Any value) {
   if (key == "de.uni_stuttgart.Voxie.MovableDataNode.Translation") {
     adjustPosition(
         PropertyValueConvertRaw<vx::TupleVector<double, 3>, QVector3D>::fromRaw(

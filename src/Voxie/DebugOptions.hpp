@@ -9,6 +9,7 @@
 
 namespace vx {
 namespace debug_option {
+VOXIECORESHARED_EXPORT vx::DebugOptionBool* Log_FilterChangeTracking();
 VOXIECORESHARED_EXPORT vx::DebugOptionBool* Log_HighDPI();
 VOXIECORESHARED_EXPORT vx::DebugOptionBool* Log_NodeNameLineEdit();
 VOXIECORESHARED_EXPORT vx::DebugOptionBool* Log_Properties_UI();
@@ -22,6 +23,8 @@ VOXIECORESHARED_EXPORT vx::DebugOptionBool* Log_Vis3D_MouseTracking();
 VOXIECORESHARED_EXPORT vx::DebugOptionBool* Log_VisSlice_BrushSelection();
 VOXIECORESHARED_EXPORT vx::DebugOptionBool*
 Log_Workaround_CoalesceOpenGLResize();
+VOXIECORESHARED_EXPORT vx::DebugOptionFloat*
+SeriesEntrySelection_SlideshowTime();
 VOXIECORESHARED_EXPORT vx::DebugOptionFloat*
 VisSlice_BrushSelection_MinDistance();
 VOXIECORESHARED_EXPORT vx::DebugOptionBool* Workaround_CoalesceOpenGLResize();

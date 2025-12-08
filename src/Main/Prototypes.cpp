@@ -14,12 +14,12 @@ MarkdownPropertiesEntry::MarkdownPropertiesEntry(vx::PropType::File,
                                                  vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Markdown.File",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 MarkdownPropertiesBase::~MarkdownPropertiesBase() {}
 MarkdownPropertiesCopy::MarkdownPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QDBusObjectPath MarkdownPropertiesCopy::fileRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -101,7 +101,7 @@ MarkdownProperties::MarkdownProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_File](const QSharedPointer<NodeProperty>& property,
-                         const QVariant& value) {
+                         const vx::Any& value) {
         if (property != _prop_File) return;
         vx::Node* valueCasted;
         try {

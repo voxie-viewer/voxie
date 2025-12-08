@@ -146,13 +146,13 @@ SelectWindow::SelectWindow(
     }
   }
 
-  filterNodes();
+  int firstShown = filterNodes();
 
   connect(this->listView, &QListWidget::currentItemChanged, this,
           &SelectWindow::updateDescription);
 
   // Select the first row to prevent undefined behaviour.
-  this->listView->setCurrentRow(0);
+  if (firstShown >= 0) this->listView->setCurrentRow(firstShown);
 
   // show the description of the first row
   this->updateDescription();
@@ -160,7 +160,7 @@ SelectWindow::SelectWindow(
   this->show();
 }
 
-void SelectWindow::filterNodes() {
+int SelectWindow::filterNodes() {
   QSet<int> shown = getFilteredNodes(this->searchBox->text(),
                                      this->showNonApplicableBox->isChecked(),
                                      this->showNonStableBox->isChecked());
@@ -171,15 +171,19 @@ void SelectWindow::filterNodes() {
 
   this->listView->setCurrentItem(nullptr);
 
+  int firstShown = -1;
   for (int index = this->listView->count() - 1; 0 <= index; index--) {
     auto item = this->listView->item(index);
     if (shown.contains(index)) {
       this->listView->setRowHidden(index, false);
       this->listView->setCurrentItem(item);
+      firstShown = index;
     } else {
       this->listView->setRowHidden(index, true);
     }
   }
+
+  return firstShown;
 }
 
 QSet<int> SelectWindow::getFilteredNodes(const QString& searchText,
@@ -268,7 +272,7 @@ void SelectWindow::addNewNode() {
     if (!nodeprototype)
       throw Exception("de.uni_stuttgart.Voxie.Error",
                       "nodeprototype is nullptr");
-    auto node = nodeprototype->create(QMap<QString, QVariant>(), QList<Node*>(),
+    auto node = nodeprototype->create(QMap<QString, vx::Any>(), QList<Node*>(),
                                       QMap<QString, QDBusVariant>());
 
     node->setParentNodeGroup(

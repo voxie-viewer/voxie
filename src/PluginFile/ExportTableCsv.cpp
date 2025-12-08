@@ -64,7 +64,8 @@ static void saveCsvToFile(TableData* data, QFile& file) {
       if (i > 0) {
         output << ",";
       }
-      output << escapeCsvField(column.type()->valueToString(row.data()[i]));
+      output << escapeCsvField(
+          column.type()->valueToStringQVariant(row.data()[i]));
     }
     output << "\n";
   }

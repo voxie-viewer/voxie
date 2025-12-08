@@ -80,6 +80,11 @@ GeometricPrimitiveLayer::GeometricPrimitiveLayer(SliceVisualizer* sv) : sv(sv) {
   QObject::connect(this->sv->properties,
                    &SliceProperties::geometricPrimitiveColorBehindSliceChanged,
                    this, &GeometricPrimitiveLayer::triggerRedraw);
+
+  // Redraw ShowDescriptions is toggled
+  QObject::connect(this->sv->properties,
+                   &SliceProperties::geometricPrimitiveShowDescriptionsChanged,
+                   this, &GeometricPrimitiveLayer::triggerRedraw);
 }
 
 /*
@@ -166,7 +171,8 @@ void GeometricPrimitiveLayer::drawPoint(QImage& outputImage,
   painter.drawLine(upperleft, lowerright);
   painter.drawLine(upperright, lowerleft);
 
-  if (distance > -visibility && distance < visibility) {
+  if (properties->geometricPrimitiveShowDescriptions() &&
+      distance > -visibility && distance < visibility) {
     std::string info = "";
     info += name;
     info += " ( ";

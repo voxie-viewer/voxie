@@ -34,7 +34,7 @@ using namespace vx;
 
 ParameterCopyBase::ParameterCopyBase(
     const QDBusObjectPath& mainNodePath,
-    const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, QVariant>>>&
+    const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>&
         properties,
     const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes,
     const QMap<QDBusObjectPath, QMap<QString, QString>>& extensionInfo)
@@ -47,7 +47,7 @@ const QDBusObjectPath& ParameterCopyBase::mainNodePath() const {
   return mainNodePath_;
 }
 
-const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, QVariant>>>&
+const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>&
 ParameterCopyBase::properties() const {
   return properties_;
 }

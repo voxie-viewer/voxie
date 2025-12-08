@@ -116,7 +116,6 @@ class VOXIECORESHARED_EXPORT FilterNode : public vx::Node {
   QSharedPointer<WeakParameterCopy> runParameters;
 
  protected:
-  QLabel* sourceCodeButton = nullptr;
   QCheckBox* debuggerSupportEnabled = nullptr;
 
  private:

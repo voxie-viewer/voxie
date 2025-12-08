@@ -32,6 +32,7 @@ class MultivariateData_Widget;
 
 class ImageLayer;
 class Layer;
+class SliceClickAction;
 
 /**
  * This class is the main multivariate data class.
@@ -68,6 +69,8 @@ class MultivariateDataWidget : public QWidget {
   ActiveMode activeMode;
   SliceVisualizer* sv;
   Ui::MultivariateData_Widget* ui;
+
+  SliceClickAction* getSpectrumClick;
 
   // overview data for reset
   OverviewStrategyOption overviewStrategy;
@@ -183,6 +186,8 @@ class MultivariateDataWidget : public QWidget {
    * @param ActiveMode act: mode within this action is occurred
    */
   void LineEdit_TextChanged(QLineEdit* lEdit, float* thisValue, ActiveMode act);
+
+  void showSpectrumForPoint(const vx::Vector<double, 3>& pos3D);
 
  public Q_SLOTS:
 

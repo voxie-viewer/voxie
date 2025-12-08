@@ -46,8 +46,8 @@ class TableFilter : public FilterNode {
  public:
   TableFilter();
 
-  virtual QVariant getNodePropertyCustom(QString key) override;
-  virtual void setNodePropertyCustom(QString key, QVariant value) override;
+  virtual vx::Any getNodePropertyCustom(QString key) override;
+  virtual void setNodePropertyCustom(QString key, vx::Any value) override;
 
  private:
   int idCounter;

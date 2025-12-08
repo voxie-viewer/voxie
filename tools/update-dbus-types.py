@@ -97,6 +97,13 @@ with open(typeListFilename + '.new', 'w') as typeList, open(typeListHeaderFilena
             typeListHeader.write('Q_DECLARE_METATYPE(' + qtType + ')\n')
             typeList.write('qDBusRegisterMetaType<' + qtType + '>();\n')
 
+            # qtType2 = property_types.dbusToCppRawType(type, useVoxieTypes=True)
+            # qtType2 = dbus_xml.escapeQtType(qtType2)
+            # if qtType != qtType2:
+            #     typeListHeader.write('Q_DECLARE_METATYPE(' + qtType2 + ')\n')
+            #     # typeList.write('qDBusRegisterMetaType<' + qtType2 + '>();\n')
+            #     typeList.write('qRegisterMetaType<' + qtType2 + '>();\n')
+
     typeList.write('}\n')
 
 codegen_utils.formatAndRename(typeListFilename)

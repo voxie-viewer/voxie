@@ -21,55 +21,17 @@ import dbus
 # THE SOFTWARE.
 #
 
-# Mapping of the DBus signature to the corresponding Qt type (must be bijective because QtDBus cannot manage multiple Qt types which are mapped to the same DBus signature, or multiple DBus signatures mapped to the same Qt type either)
-# TODO: This probably can be automatically generated now (see dbusToCppRawType())
-dbusToQtType = {
-    '(bs)': 'std::tuple<bool, QString>',
-    '(dd)': 'vx::TupleVector<double, 2>',
-    '(ddd)': 'vx::TupleVector<double, 3>',
-    '((ddd)(ddd))': 'vx::TupleVector<vx::TupleVector<double, 3>, 2>',
-    '(dddd)': 'vx::TupleVector<double, 4>',
-    '((ddd)(dddd))': 'std::tuple<vx::TupleVector<double, 3>, vx::TupleVector<double, 4>>',
-    '(tt)': 'vx::TupleVector<quint64, 2>',
-    '(ttt)': 'vx::TupleVector<quint64, 3>',
-    'ai': 'QList<int>',
-    '(st)': 'std::tuple<QString, quint64>',
-    'a{ot}': 'QMap<QDBusObjectPath, quint64>',
-    'a{sv}': 'QMap<QString, QDBusVariant>',
-    'a{sg}': 'QMap<QString, QDBusSignature>',
-    'aa{sv}': 'QList<QMap<QString, QDBusVariant>>',
-    # '(so)': 'vx::Tuple_String_ObjectPath',
-    '(so)': 'std::tuple<QString, QDBusObjectPath>',
-    '(sus)': 'std::tuple<QString, quint32, QString>',
-    # '(a{sv}x(sus)(t)(x)a{sv})': 'vx::Array1Info',
-    # '(a{sv}x(sus)(tt)(xx)a{sv})': 'vx::Array2Info',
-    # '(a{sv}x(sus)(ttt)(xxx)a{sv})': 'vx::Array3Info',
-    '(a{sv}x(sus)(t)(x)a{sv})': 'std::tuple<QMap<QString, QDBusVariant>, qint64, std::tuple<QString, quint32, QString>, std::tuple<quint64>, std::tuple<qint64>, QMap<QString, QDBusVariant>>',
-    '(a{sv}x(sus)(tt)(xx)a{sv})': 'std::tuple<QMap<QString, QDBusVariant>, qint64, std::tuple<QString, quint32, QString>, std::tuple<quint64, quint64>, std::tuple<qint64, qint64>, QMap<QString, QDBusVariant>>',
-    '(a{sv}x(sus)(ttt)(xxx)a{sv})': 'std::tuple<QMap<QString, QDBusVariant>, qint64, std::tuple<QString, quint32, QString>, std::tuple<quint64, quint64, quint64>, std::tuple<qint64, qint64, qint64>, QMap<QString, QDBusVariant>>',
-    'a{sa{sv}}': 'QMap<QString, QMap<QString, QDBusVariant>>',
-    'a{oa{sv}}': 'QMap<QDBusObjectPath, QMap<QString, QDBusVariant>>',
-    'av': 'QList<QDBusVariant>',  # Seems to be ignored
-    'a(tav)': 'QList<std::tuple<quint64, QList<QDBusVariant>>>',
-    'a(tosa{sv}a{sv})': 'QList<std::tuple<quint64, QDBusObjectPath, QString, QMap<QString, QDBusVariant>, QMap<QString, QDBusVariant>>>',
-    'a(sosa{sv}a{sv})': 'QList<std::tuple<QString, QDBusObjectPath, QString, QMap<QString, QDBusVariant>, QMap<QString, QDBusVariant>>>',
-    'a(sst(sus)sa{sv}a{sv})': 'QList<std::tuple<QString, QString, quint64, std::tuple<QString, quint32, QString>, QString, QMap<QString, QDBusVariant>, QMap<QString, QDBusVariant>>>',
-    'a(s(sus)sa{sv}a{sv})': 'QList<std::tuple<QString, std::tuple<QString, quint32, QString>, QString, QMap<QString, QDBusVariant>, QMap<QString, QDBusVariant>>>',
-}
 
-# Same as dbusToQtType but with QtDBus builtin types
-dbusToQtTypeAll = {
-    **dbusToQtType,
-    'd': 'double',
-    'x': 'qlonglong',
-    's': 'QString',
-    'b': 'bool',
-    'o': 'QDBusObjectPath',
-    'ao': 'QList<QDBusObjectPath>',
-}
+# TODO: Document and clean up the different types used for properties
+# DBusType: The type used by Qt for the DBus values
+# DBusTypeVoxie: Same as DBusType, but with vx::DBusVariant for variants
+# RawType: The type used for storing the value internally
+# QtType: The type used for working with the value
+# TODO: Try to merge DBusType and DBusTypeVoxie (might work by providing DBus serialization / deserialization for vx::DBusVariant) and DBusTypeVoxie and RawType (by disallowing setting RawType)?
 
 
-def dbusToCppRawType(sig):
+# TODO: Set useVoxieTypes to True in more cases?
+def dbusToCppRawType(sig, useVoxieTypes=False):
     try:
         sig = dbus.Signature(sig)
     except ValueError as e:
@@ -103,7 +65,10 @@ def dbusToCppRawType(sig):
     if sig == 'g':
         return 'QDBusSignature'
     if sig == 'v':
-        return 'QDBusVariant'
+        if useVoxieTypes:
+            return 'vx::DBusVariant'
+        else:
+            return 'QDBusVariant'
     if sig == 'ay':
         return 'QByteArray'
     if sig == 'as':
@@ -117,18 +82,18 @@ def dbusToCppRawType(sig):
                 res += ', '
                 if elems[i] != elems[0]:
                     isAllSame = False
-            res += dbusToCppRawType(elems[i])
+            res += dbusToCppRawType(elems[i], useVoxieTypes=useVoxieTypes)
         res += '>'
         if isAllSame and len(elems) > 1 and False:
-            return 'vx::TupleVector<%s, %d>' % (dbusToCppRawType(elems[0]), len(elems))
+            return 'vx::TupleVector<%s, %d>' % (dbusToCppRawType(elems[0], useVoxieTypes=useVoxieTypes), len(elems))
         return res
     if sig[0:2] == 'a{' and sig[-1] == '}':
         elems = list(dbus.Signature(sig[2:-1]))
         if len(elems) != 2:
             raise Exception('Expected exactly two complete types in map entry')
-        return 'QMap<' + dbusToCppRawType(elems[0]) + ', ' + dbusToCppRawType(elems[1]) + '>'
+        return 'QMap<' + dbusToCppRawType(elems[0], useVoxieTypes=useVoxieTypes) + ', ' + dbusToCppRawType(elems[1], useVoxieTypes=useVoxieTypes) + '>'
     if sig[0] == 'a':
-        return 'QList<' + dbusToCppRawType(sig[1:]) + '>'
+        return 'QList<' + dbusToCppRawType(sig[1:], useVoxieTypes=useVoxieTypes) + '>'
     raise Exception('Unknown DBus signature: ' + repr(sig))
 
 
@@ -160,11 +125,11 @@ types = {
         # 'ShortName': 'Float', # Default to suffix of Name
         'DisplayName': 'Floating point number',
         'DBusSignature': 'd',
-        # 'QtType': 'double', # Qt type which represents the property normally. Defaults to dbusToQtTypeAll[DBusSignature]
-        # 'RawType: 'double', # Qt type which represents the property internally. Defaults to dbusToQtTypeAll[DBusSignature]. Should normally not be needed.
-        # Must be of type dbusToQtTypeAll[DBusSignature]. # TODO: should this be of type QtType instead?
+        # 'QtType': 'double', # Qt type which represents the property normally. Defaults to Qt mapping of DBus type with voxie types.
+        # 'RawType: 'double', # Qt type which represents the property internally. Defaults to Qt mapping of DBus type with voxie types. Should normally not be needed. Will cause problems with SeriesEntrySelection if set (because SeriesEntrySelection will assume that raw and DBus type are mostly equivalent).
+        # Must be of type RawType. # TODO: should this be of type QtType instead?
         'DefaultValueExpression': '0.0',
-        # 'JSONParseFunction': 'ParseJsonFun<double>::parse', # A function which returns a  dbusToQtTypeAll[DBusSignature]. # TODO: should this return a QtType instead? Probably not.
+        # 'JSONParseFunction': 'ParseJsonFun<double>::parse', # A function which returns a RawType value. # TODO: should this return a QtType instead? Probably not.
         'CompareFunction': 'defaultValueCompare',  # A function which will get two values and should return -1, 0 or 1 depending on the ordering of the values
     },
 
@@ -298,6 +263,7 @@ types = {
     'de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageKind': {
         'DisplayName': 'Tomography raw data image kind',
         'DBusSignature': 'a{sv}',
+        'DBusVariantStyle': 'de.uni_stuttgart.Voxie.DBusVariantStyle.JSON',
         'RawType': 'QJsonObject',
         'QtType': 'QJsonObject',
         'DefaultValueExpression': 'QJsonObject{}',
@@ -307,6 +273,7 @@ types = {
     'de.uni_stuttgart.Voxie.PropertyType.TomographyRawDataImageList': {
         'DisplayName': 'Tomography raw data image list',
         'DBusSignature': '(sa{sv})',
+        'DBusVariantStyle': 'de.uni_stuttgart.Voxie.DBusVariantStyle.JSON',
         'RawType': 'std::tuple<QString, QJsonObject>',
         'QtType': 'std::tuple<QString, QJsonObject>',
         'DefaultValueExpression': 'std::make_tuple("", QJsonObject{})',
@@ -431,12 +398,15 @@ types = {
         'DefaultValueExpression': 'std::make_tuple(QList<std::tuple<double, std::tuple<double, double>>>(), QList<QList<double>>{QList<double>{0}})',
         'VerifyFunctionSimple': 'vx::PiecewisePolynomialFunction::parse',
         # No comparison
+        'ToString': 'piecewisePolynomialFunctionToString',
+        'GetDescription': 'piecewisePolynomialFunctionGetDescription',
     },
 
     # The chemical composition of a material, see doc/topic/property-types/chemical-composition.md
     'de.uni_stuttgart.Voxie.PropertyType.ChemicalComposition': {
         'DisplayName': 'Chemical composition',
         'DBusSignature': 'v',
+        'DBusVariantStyle': 'de.uni_stuttgart.Voxie.DBusVariantStyle.JSON',
         'RawType': 'QJsonValue',
         'QtType': 'QJsonValue',
         'DefaultValueExpression': 'QJsonArray{"molecule", QJsonArray{}}',
@@ -456,6 +426,40 @@ types = {
         # TODO: Add a verify function?
         # 'VerifyFunctionSimple': 'vx::Quantity::parse',
         'SimpleUI': True,
+    },
+
+    # Specifies a component of a tensor, see doc/topic/property-types/tensor-component.md
+    # TODO: How should a symmetric tensor be specified? By providing additional information about the symmetry in the SeriesDimension or DataProperty data? <https://en.wikipedia.org/wiki/Symmetric_tensor> / <https://en.wikipedia.org/wiki/Antisymmetric_tensor>
+    # TODO: Indicate whether the quantity is a polar vector or a pseudo vector somehow? <https://en.wikipedia.org/wiki/Pseudovector>
+    'de.uni_stuttgart.Voxie.PropertyType.TensorComponent': {
+        'DisplayName': 'Tensor component',
+        'DBusSignature': '(auau)',
+        'QtType': 'vx::TensorComponent',
+        'DefaultValueExpression': 'std::make_tuple(QList<quint32>(), QList<quint32>())',
+        # 'DefaultValueExpression': 'TensorComponent::scalar()',
+        'CompareFunction': 'defaultValueCompare',
+        # TODO: Is this needed?
+        'VerifyFunctionSimple': 'vx::TensorComponent::parse',
+        'SimpleUI': True,
+    },
+
+    # Selects a volume in a VolumeSeries (contains one value for each series dimension)
+    # TODO: Allow ignoring certain dimensions (if those are handled by the visualizer)
+    'de.uni_stuttgart.Voxie.PropertyType.SeriesEntrySelection': {
+        'DisplayName': 'Series entry',
+        # Map from the name of the dimension to the value
+        'DBusSignature': 'a{sv}',
+        'DBusVariantStyle': 'de.uni_stuttgart.Voxie.DBusVariantStyle.DBusVariant',
+
+        'SupportQVariant': False,
+        # 'QtType': 'vx::SeriesEntrySelection',
+
+        # 'DefaultValueExpression': 'QMap<QString, QDBusVariant>()',
+        'DefaultValueExpression': 'QMap<QString, vx::DBusVariant>()',
+        # 'DefaultValueExpression': 'SeriesEntrySelection::empty()',
+        # 'CompareFunction': 'defaultValueCompare',
+        # TODO: Is this needed?
+        # 'VerifyFunctionSimple': 'vx::SeriesEntrySelection::parse',
     },
 }
 

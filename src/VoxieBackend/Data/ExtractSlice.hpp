@@ -35,19 +35,6 @@
 #include <VoxieClient/RunParallel.hpp>
 
 namespace vx {
-
-template <typename Accessor, typename F>
-void withInterpolation(const Accessor& accessor, vx::InterpolationMethod method,
-                       const F& f) {
-  if (method == vx::InterpolationMethod::NearestNeighbor)
-    f(nearestInterpolation(accessor));
-  else if (method == vx::InterpolationMethod::Linear)
-    f(linearInterpolation(accessor));
-  else
-    throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
-                        "Invalid interpolation method");
-}
-
 // TODO: Provide Task and CancellationToken parameter?
 template <typename F>
 void runParallelExtractSlice(size_t items, const F& f) {
@@ -88,6 +75,7 @@ void extractSliceCpu(Data& data, const QVector3D& origin1,
   FloatBuffer buffer = outputImage.getBuffer();
 
   runParallelExtractSlice(outputSize.height(), [&](const auto& cb) {
+    // TODO: Use data.withInterpolatedAccessor()
     auto accessor = data.accessor();
     // TODO: Always convert to float? Also convert to float for nearest?
     auto accessorConv = convertedVoxelAccessor<float>(accessor);

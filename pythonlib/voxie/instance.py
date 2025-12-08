@@ -1,4 +1,3 @@
-from voxie.buffer import Buffer
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,6 +19,8 @@ from voxie.buffer import Buffer
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from voxie.buffer import Buffer
 import voxie
 import voxie.json_dbus
 import dbus
@@ -143,6 +144,32 @@ class InstanceImpl(voxie.DBusObject):
     # Automatically set the timeout for CreateVolumeDataVoxel (creating a large volume can be slow)
     def CreateVolumeDataVoxel(self, arrayShape, dataType, volumeOrigin, gridSpacing, options={}, *, DBusObject_timeout=timeoutValue):
         return self._getDBusMethod('CreateVolumeDataVoxel')(arrayShape, dataType, volumeOrigin, gridSpacing, options, DBusObject_timeout=DBusObject_timeout)
+
+    # Automatically set the timeout for CreateTomographyRawData2DAccessor (this will call back into the accessor the get e.g. images size which can be slow)
+    def CreateTomographyRawData2DAccessor(self, backend, options={}, *, DBusObject_timeout=timeoutValue, **kwargs):
+        return self._getDBusMethod('CreateTomographyRawData2DAccessor')(backend, options, DBusObject_timeout=DBusObject_timeout, **kwargs)
+
+    def GetNodeByDisplayName(self, name, kind=None):
+        found = None
+        for node in self.ListNodes():
+            if node.DisplayName != name:
+                continue
+            if kind is not None:
+                node_kind = node.Prototype.NodeKind
+                if node_kind != kind:  # and node_kind != 'de.uni_stuttgart.Voxie.NodeKind.' + kind:
+                    continue
+            if found is not None:
+                raise Exception('Found multiple nodes with name {!r}: {} and {}'.format(name, found._objectPath, node._objectPath))
+            found = node
+        if found is None:
+            raise Exception('Did not find node with name {!r}'.format(name))
+        if kind == 'de.uni_stuttgart.Voxie.NodeKind.Data':
+            found = found.CastTo('de.uni_stuttgart.Voxie.DataNode')
+        elif kind == 'de.uni_stuttgart.Voxie.NodeKind.Visualizer':
+            found = found.CastTo('de.uni_stuttgart.Voxie.VisualizerNode')
+        elif kind == 'de.uni_stuttgart.Voxie.NodeKind.Filter':
+            found = found.CastTo('de.uni_stuttgart.Voxie.FilterNode')
+        return found
 
 
 class DynamicObjectImpl(voxie.DBusObject):
@@ -618,51 +645,74 @@ class ExternalOperationRunFilterImpl(ExternalOperationImpl):
             self._context.bus, self._context.busName, inputDataPath, ['de.uni_stuttgart.Voxie.Data'])
         return inputData
 
-    # Create a new output data object or reuse the existing one
     def GetOutputVolumeDataVoxelLike(self, outputPath, inputData, type=None, volume_structure_type=None):
-        inputData = refcountingcontext.castImplicit(inputData, 'de.uni_stuttgart.Voxie.VolumeData')
+        force_interface = None
+        if volume_structure_type == 'de.uni_stuttgart.Voxie.VolumeStructureType.Voxel':
+            force_interface = 'de.uni_stuttgart.Voxie.VolumeDataVoxel'
+        return self.get_output_data_like(outputPath, inputData, data_type=type, force_interface=force_interface)
 
-        is_block = False
-        if 'de.uni_stuttgart.Voxie.VolumeDataVoxel' in inputData.SupportedInterfaces:
-            inputData = refcountingcontext.cast(inputData, 'de.uni_stuttgart.Voxie.VolumeDataVoxel')
-        elif 'de.uni_stuttgart.Voxie.VolumeDataBlock' in inputData.SupportedInterfaces:
-            # inputData = refcountingcontext.cast(inputData, 'de.uni_stuttgart.Voxie.VolumeDataBlockJpeg')
-            inputData = refcountingcontext.cast(inputData, 'de.uni_stuttgart.Voxie.VolumeDataBlock')
-            # is_block = True
-            # blockShape = inputData.BlockShape
-        else:
-            raise Exception('Unknown volume interface: ' + repr(inputData.SupportedInterfaces))
+    def get_output_data_like(self, output_path, reference_data, *, data_type=None, force_interface=None):
+        """Create a new output data object or reuse the existing one.
 
-        inputOrigin = inputData.VolumeOrigin
-        inputSpacing = inputData.GridSpacing
-        inputSize = inputData.ArrayShape
-        inputType = inputData.DataType
-        if type is None:
-            type = inputType
+        Args:
+            output_path: The DBus path of the output parameter.
+            reference_data: The reference data object which should be used as a template for creating the output object.
+            data_type: If not None (the default) can be used to overwrite the data type.
+            force_interface: A DBus interface which has to be implemented by the returned volume (or, in cases of a VolumeSeries, by each of the returned volumes). Can be set to 'de.uni_stuttgart.Voxie.VolumeDataVoxel' to force voxel data even if the reference data object contains e.g. BlockJpeg data.
+        """
+        ref_data = None
+        for interface in reference_data.SupportedInterfaces:
+            # TODO: Handle VolumeDataSeries
+            if interface == 'de.uni_stuttgart.Voxie.VolumeDataVoxel':
+                interface_type = 'de.uni_stuttgart.Voxie.VolumeDataVoxel'
+                ref_data = refcountingcontext.cast(reference_data, 'de.uni_stuttgart.Voxie.VolumeDataVoxel')
+                break
+            elif interface == 'de.uni_stuttgart.Voxie.VolumeDataBlock':
+                # ref_data = refcountingcontext.cast(reference_data, 'de.uni_stuttgart.Voxie.VolumeDataBlockJpeg')
+                interface_type = 'de.uni_stuttgart.Voxie.VolumeDataBlockJpeg'
+                ref_data = refcountingcontext.cast(reference_data, 'de.uni_stuttgart.Voxie.VolumeDataBlock')
+                # blockShape = inputData.BlockShape
+                break
+        if ref_data is None:
+            raise Exception('Unknown data interface: ' + repr(reference_data.SupportedInterfaces))
 
-        outputDataPath = self.ParametersCached[outputPath]['Data'].getValue(
+        if force_interface is not None:
+            interface_type = force_interface
+
+        inputOrigin = ref_data.VolumeOrigin
+        inputSpacing = ref_data.GridSpacing
+        inputSize = ref_data.ArrayShape
+        inputType = ref_data.DataType
+
+        result_type = inputType
+        if data_type is not None:
+            result_type = data_type
+
+        outputDataPath = self.ParametersCached[output_path]['Data'].getValue(
             'o')
         if outputDataPath != dbus.ObjectPath('/'):
             outputData = self._context.makeObject(self._context.bus, self._context.busName, outputDataPath, ['de.uni_stuttgart.Voxie.Data']).CastTo('de.uni_stuttgart.Voxie.VolumeData')
             # TODO: Also reuse VolumeDataBlock
-            if outputData.IsInstance('de.uni_stuttgart.Voxie.VolumeDataVoxel') and not is_block:
+            if outputData.IsInstance('de.uni_stuttgart.Voxie.VolumeDataVoxel') and interface_type == 'de.uni_stuttgart.Voxie.VolumeDataVoxel':
                 outputDataVoxel = outputData.CastTo('de.uni_stuttgart.Voxie.VolumeDataVoxel')
                 outputOrigin = outputDataVoxel.VolumeOrigin
                 outputSpacing = outputDataVoxel.GridSpacing
                 outputSize = outputDataVoxel.ArrayShape
                 outputType = outputDataVoxel.DataType
 
-                if inputOrigin == outputOrigin and inputSpacing == outputSpacing and inputSize == outputSize and type == outputType:
+                if inputOrigin == outputOrigin and inputSpacing == outputSpacing and inputSize == outputSize and result_type == outputType:
                     # Reuse existing output data
                     # print ('Reusing data')
                     return outputDataVoxel
             # print ('Creating new data')
 
-        if is_block:
+        if interface_type == 'de.uni_stuttgart.Voxie.VolumeDataVoxel':
+            return self._context.instance.CreateVolumeDataVoxel(inputSize, result_type, inputOrigin, inputSpacing)
+        elif interface_type == 'de.uni_stuttgart.Voxie.VolumeDataBlockJpeg':
             # TODO: Check whether input is really JPEG?
-            return self._context.instance.CreateVolumeDataBlockJpeg(inputSize, blockShape, inputOrigin, inputSpacing, inputData.ValueOffset, inputData.ValueScalingFactor, inputData.SamplePrecision, inputData.HuffmanTableDC, inputData.HuffmanTableAC, inputData.QuantizationTable)
+            return self._context.instance.CreateVolumeDataBlockJpeg(inputSize, blockShape, inputOrigin, inputSpacing, ref_data.ValueOffset, ref_data.ValueScalingFactor, ref_data.SamplePrecision, ref_data.HuffmanTableDC, ref_data.HuffmanTableAC, ref_data.QuantizationTable)
         else:
-            return self._context.instance.CreateVolumeDataVoxel(inputSize, type, inputOrigin, inputSpacing)
+            raise Exception('Unexpected interface type: ' + repr(interface_type))
 
 
 class ExternalOperationRunSegmentationStepImpl(ExternalOperationImpl):

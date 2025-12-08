@@ -125,10 +125,10 @@ void GeometricPrimitive::constructDataPointMarker(
     QVector3D c = center + QVector3D(length, -hl, -hl);
     QVector3D d = center + QVector3D(length, hl, -hl);
 
-    drawingBuffer.addTriangle(dataPointColor, center, a, b);
-    drawingBuffer.addTriangle(dataPointColor, center, b, c);
-    drawingBuffer.addTriangle(dataPointColor, center, c, d);
-    drawingBuffer.addTriangle(dataPointColor, center, d, a);
+    drawingBuffer.addTriangle(dataPointColor, center, b, a);
+    drawingBuffer.addTriangle(dataPointColor, center, c, b);
+    drawingBuffer.addTriangle(dataPointColor, center, d, c);
+    drawingBuffer.addTriangle(dataPointColor, center, a, d);
     drawingBuffer.addQuad(dataPointColor, a, b, c, d);
 
     // Construct opposite side:
@@ -142,7 +142,7 @@ void GeometricPrimitive::constructDataPointMarker(
     drawingBuffer.addTriangle(dataPointColor, center, b, c);
     drawingBuffer.addTriangle(dataPointColor, center, c, d);
     drawingBuffer.addTriangle(dataPointColor, center, d, a);
-    drawingBuffer.addQuad(dataPointColor, a, b, c, d);
+    drawingBuffer.addQuad(dataPointColor, d, c, b, a);
   }
 
   // Constructing Y Pyramids
@@ -151,11 +151,13 @@ void GeometricPrimitive::constructDataPointMarker(
     QVector3D b = center + QVector3D(-hl, length, hl);
     QVector3D c = center + QVector3D(-hl, length, -hl);
     QVector3D d = center + QVector3D(hl, length, -hl);
+
     drawingBuffer.addTriangle(dataPointColor, center, a, b);
     drawingBuffer.addTriangle(dataPointColor, center, b, c);
     drawingBuffer.addTriangle(dataPointColor, center, c, d);
     drawingBuffer.addTriangle(dataPointColor, center, d, a);
-    drawingBuffer.addQuad(dataPointColor, a, b, c, d);
+    drawingBuffer.addQuad(dataPointColor, d, c, b, a);
+
     // Construct opposite side:
     auto opLength = center.y() - length;
     a.setY(opLength);
@@ -163,10 +165,10 @@ void GeometricPrimitive::constructDataPointMarker(
     c.setY(opLength);
     d.setY(opLength);
 
-    drawingBuffer.addTriangle(dataPointColor, center, a, b);
-    drawingBuffer.addTriangle(dataPointColor, center, b, c);
-    drawingBuffer.addTriangle(dataPointColor, center, c, d);
-    drawingBuffer.addTriangle(dataPointColor, center, d, a);
+    drawingBuffer.addTriangle(dataPointColor, center, b, a);
+    drawingBuffer.addTriangle(dataPointColor, center, c, b);
+    drawingBuffer.addTriangle(dataPointColor, center, d, c);
+    drawingBuffer.addTriangle(dataPointColor, center, a, d);
     drawingBuffer.addQuad(dataPointColor, a, b, c, d);
   }
   // Constructing Z pyramids
@@ -175,10 +177,10 @@ void GeometricPrimitive::constructDataPointMarker(
     QVector3D b = center + QVector3D(-hl, hl, length);
     QVector3D c = center + QVector3D(-hl, -hl, length);
     QVector3D d = center + QVector3D(hl, -hl, length);
-    drawingBuffer.addTriangle(dataPointColor, center, a, b);
-    drawingBuffer.addTriangle(dataPointColor, center, b, c);
-    drawingBuffer.addTriangle(dataPointColor, center, c, d);
-    drawingBuffer.addTriangle(dataPointColor, center, d, a);
+    drawingBuffer.addTriangle(dataPointColor, center, b, a);
+    drawingBuffer.addTriangle(dataPointColor, center, c, b);
+    drawingBuffer.addTriangle(dataPointColor, center, d, c);
+    drawingBuffer.addTriangle(dataPointColor, center, a, d);
     drawingBuffer.addQuad(dataPointColor, a, b, c, d);
     // Construct opposite side:
     auto opLength = center.z() - length;
@@ -191,7 +193,7 @@ void GeometricPrimitive::constructDataPointMarker(
     drawingBuffer.addTriangle(dataPointColor, center, b, c);
     drawingBuffer.addTriangle(dataPointColor, center, c, d);
     drawingBuffer.addTriangle(dataPointColor, center, d, a);
-    drawingBuffer.addQuad(dataPointColor, a, b, c, d);
+    drawingBuffer.addQuad(dataPointColor, d, c, b, a);
   }
 }
 
@@ -240,7 +242,9 @@ void GeometricPrimitive::render(
       this->constructDataPointMarker(drawingBuffer, pointPrimitive, pointSize,
                                      id == currentPointID);
     }
-    psg->drawUtils->draw(drawingBuffer, matViewProj);
+    QVector4D lightPosition = context.lightPosition();
+    psg->drawUtils->draw(drawingBuffer, QMatrix4x4(), matViewProj,
+                         &lightPosition);
   }
 
   // Draw Measuring line
@@ -251,7 +255,7 @@ void GeometricPrimitive::render(
     psg->functions.glEnable(GL_BLEND);
     psg->functions.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     psg->functions.glDepthMask(GL_FALSE);
-    psg->drawUtils->draw(buffer, matViewProj);
+    psg->drawUtils->draw(buffer, QMatrix4x4(), matViewProj);
     psg->functions.glDepthMask(GL_TRUE);
     psg->functions.glDisable(GL_BLEND);
   }

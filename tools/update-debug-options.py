@@ -61,6 +61,9 @@ debug_options = {
         'Log.Vis.Keyboard': {'Type': 'bool'},
         'Log.Vis.Mouse': {'Type': 'bool'},
         'Log.NodeNameLineEdit': {'Type': 'bool'},
+        'Log.FilterChangeTracking': {'Type': 'bool'},
+
+        'SeriesEntrySelection.SlideshowTime': {'Type': 'float', 'DefaultValue': 0.5},
 
         # Note: This is used by both PluginVisSlice and PluginSegmentation
         'Log.VisSlice.BrushSelection': {'Type': 'bool'},

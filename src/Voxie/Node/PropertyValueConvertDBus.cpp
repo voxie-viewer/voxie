@@ -22,6 +22,7 @@
 
 #include "PropertyValueConvertDBus.hpp"
 
+#include <VoxieClient/DBusVariant.hpp>
 #include <VoxieClient/JsonDBus.hpp>
 
 #include <QtCore/QJsonObject>
@@ -58,4 +59,61 @@ QDBusVariant PropertyValueConvertDBus<QJsonValue, QDBusVariant>::fromRaw(
 QJsonValue PropertyValueConvertDBus<QJsonValue, QDBusVariant>::toRaw(
     const QDBusVariant& dbus) {
   return vx::dbusToJson(dbus);
+}
+
+QMap<QString, vx::DBusVariant>
+PropertyValueConvertDBus<QJsonObject, QMap<QString, vx::DBusVariant>>::fromRaw(
+    const QJsonObject& raw) {
+  return vx::jsonToDBusVoxie(raw);
+}
+QJsonObject
+PropertyValueConvertDBus<QJsonObject, QMap<QString, vx::DBusVariant>>::toRaw(
+    const QMap<QString, vx::DBusVariant>& dbus) {
+  return vx::dbusVoxieToJson(dbus);
+}
+
+std::tuple<QString, QMap<QString, vx::DBusVariant>>
+PropertyValueConvertDBus<std::tuple<QString, QJsonObject>,
+                         std::tuple<QString, QMap<QString, vx::DBusVariant>>>::
+    fromRaw(const std::tuple<QString, QJsonObject>& raw) {
+  return std::make_tuple(std::get<0>(raw),
+                         vx::jsonToDBusVoxie(std::get<1>(raw)));
+}
+std::tuple<QString, QJsonObject>
+PropertyValueConvertDBus<std::tuple<QString, QJsonObject>,
+                         std::tuple<QString, QMap<QString, vx::DBusVariant>>>::
+    toRaw(const std::tuple<QString, QMap<QString, vx::DBusVariant>>& dbus) {
+  return std::make_tuple(std::get<0>(dbus),
+                         vx::dbusVoxieToJson(std::get<1>(dbus)));
+}
+
+vx::DBusVariant PropertyValueConvertDBus<QJsonValue, vx::DBusVariant>::fromRaw(
+    const QJsonValue& raw) {
+  return vx::jsonToDBusVoxie(raw);
+}
+QJsonValue PropertyValueConvertDBus<QJsonValue, vx::DBusVariant>::toRaw(
+    const vx::DBusVariant& dbus) {
+  return vx::dbusVoxieToJson(dbus);
+}
+
+QMap<QString, QDBusVariant> PropertyValueConvertDBus<
+    QMap<QString, vx::DBusVariant>,
+    QMap<QString, QDBusVariant>>::fromRaw(const QMap<QString, vx::DBusVariant>&
+                                              raw) {
+  QMap<QString, QDBusVariant> result;
+  for (auto entry = raw.begin(); entry != raw.end(); ++entry) {
+    result.insert(entry.key(), entry.value().asQDBusVariant());
+  }
+  return result;
+}
+QMap<QString, vx::DBusVariant> PropertyValueConvertDBus<
+    QMap<QString, vx::DBusVariant>,
+    QMap<QString, QDBusVariant>>::toRaw(const QMap<QString, QDBusVariant>&
+                                            dbus) {
+  QMap<QString, vx::DBusVariant> result;
+  for (auto entry = dbus.begin(); entry != dbus.end(); ++entry) {
+    result.insert(entry.key(),
+                  vx::DBusVariant::fromQDBusVariant(entry.value()));
+  }
+  return result;
 }

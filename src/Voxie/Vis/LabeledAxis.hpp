@@ -25,6 +25,8 @@
 #include <QPainter>
 #include <QVector2D>
 
+#include <Voxie/Voxie.hpp>
+
 namespace vx {
 /**
  * Represents a horizontal or vertical graph axis, displaying an arrow
@@ -33,7 +35,7 @@ namespace vx {
  *
  * It supports linear or logarithmic axis scaling.
  */
-class LabeledAxis {
+class VOXIECORESHARED_EXPORT LabeledAxis {
  public:
   enum Orientation {
     Horizontal,

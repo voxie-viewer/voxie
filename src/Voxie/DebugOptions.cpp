@@ -5,6 +5,7 @@
 
 namespace vx {
 namespace debug_option_impl {
+vx::DebugOptionBool Log_FilterChangeTracking_option("Log.FilterChangeTracking");
 vx::DebugOptionBool Log_HighDPI_option("Log.HighDPI");
 vx::DebugOptionBool Log_NodeNameLineEdit_option("Log.NodeNameLineEdit");
 vx::DebugOptionBool Log_Properties_UI_option("Log.Properties.UI");
@@ -21,6 +22,8 @@ vx::DebugOptionBool Log_VisSlice_BrushSelection_option(
     "Log.VisSlice.BrushSelection");
 vx::DebugOptionBool Log_Workaround_CoalesceOpenGLResize_option(
     "Log.Workaround.CoalesceOpenGLResize");
+vx::DebugOptionFloat SeriesEntrySelection_SlideshowTime_option(
+    "SeriesEntrySelection.SlideshowTime", 0.5);
 vx::DebugOptionFloat VisSlice_BrushSelection_MinDistance_option(
     "VisSlice.BrushSelection.MinDistance", 1);
 vx::DebugOptionBool Workaround_CoalesceOpenGLResize_option(
@@ -28,6 +31,9 @@ vx::DebugOptionBool Workaround_CoalesceOpenGLResize_option(
 }  // namespace debug_option_impl
 }  // namespace vx
 
+vx::DebugOptionBool* vx::debug_option::Log_FilterChangeTracking() {
+  return &vx::debug_option_impl::Log_FilterChangeTracking_option;
+}
 vx::DebugOptionBool* vx::debug_option::Log_HighDPI() {
   return &vx::debug_option_impl::Log_HighDPI_option;
 }
@@ -64,6 +70,9 @@ vx::DebugOptionBool* vx::debug_option::Log_VisSlice_BrushSelection() {
 vx::DebugOptionBool* vx::debug_option::Log_Workaround_CoalesceOpenGLResize() {
   return &vx::debug_option_impl::Log_Workaround_CoalesceOpenGLResize_option;
 }
+vx::DebugOptionFloat* vx::debug_option::SeriesEntrySelection_SlideshowTime() {
+  return &vx::debug_option_impl::SeriesEntrySelection_SlideshowTime_option;
+}
 vx::DebugOptionFloat* vx::debug_option::VisSlice_BrushSelection_MinDistance() {
   return &vx::debug_option_impl::VisSlice_BrushSelection_MinDistance_option;
 }
@@ -73,6 +82,7 @@ vx::DebugOptionBool* vx::debug_option::Workaround_CoalesceOpenGLResize() {
 
 QList<vx::DebugOption*> vx::getVoxieDebugOptions() {
   return {
+      vx::debug_option::Log_FilterChangeTracking(),
       vx::debug_option::Log_HighDPI(),
       vx::debug_option::Log_NodeNameLineEdit(),
       vx::debug_option::Log_Properties_UI(),
@@ -85,6 +95,7 @@ QList<vx::DebugOption*> vx::getVoxieDebugOptions() {
       vx::debug_option::Log_Vis3D_MouseTracking(),
       vx::debug_option::Log_VisSlice_BrushSelection(),
       vx::debug_option::Log_Workaround_CoalesceOpenGLResize(),
+      vx::debug_option::SeriesEntrySelection_SlideshowTime(),
       vx::debug_option::VisSlice_BrushSelection_MinDistance(),
       vx::debug_option::Workaround_CoalesceOpenGLResize(),
   };

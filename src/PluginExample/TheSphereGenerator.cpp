@@ -112,7 +112,7 @@ QSharedPointer<vx::io::RunFilterOperation> TheSphereGenerator::calculate(
   if (!output) {
     output = dynamic_cast<VolumeNode*>(
         VolumeNode::getPrototypeSingleton()
-            ->create(QMap<QString, QVariant>(), QList<Node*>(),
+            ->create(QMap<QString, vx::Any>(), QList<Node*>(),
                      QMap<QString, QDBusVariant>())
             .data());
     if (!output) {

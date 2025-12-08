@@ -20,7 +20,8 @@
                         "de.uni_stuttgart.Voxie.NodeKind.Object3D"
                     ],
                     "DisplayName": "3D Objects",
-                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReferenceList"
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReferenceList",
+                    "CallSetOrder": -10
                 },
                 "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.FieldOfView": {
                     "CompatibilityNames": [

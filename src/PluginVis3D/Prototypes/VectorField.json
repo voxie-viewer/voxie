@@ -1,0 +1,87 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Vector Field ARROW shown in the 3D visualizer",
+            "DisplayName": "Vector Field",
+            "Name": "de.uni_stuttgart.Voxie.Object3D.VectorField",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Object3D",
+            "Icon": ":/icons/universal.png",
+            
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Object3D.Generic.Visible": {
+                    "CompatibilityNames": [
+                        "de.uni_stuttgart.Voxie.Object3D.Visible"
+                    ],
+                    "DisplayName": "Visible",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
+                },
+                "de.uni_stuttgart.Voxie.Object3D.VectorField.Field": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.VolumeSeries"
+                    ],
+                    "DisplayName": "Vector Field",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference"
+                },
+                "de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor": {
+                    "DisplayName": "Scale Factor",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 5e-7,
+                    "Unit": []
+                    },
+
+                "de.uni_stuttgart.Voxie.Object3D.VectorField.Step": {
+                    "DisplayName": "Step",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Int",
+                    "DefaultValue": 15,
+                    "Minimum": 1,
+                    "Maximum": 100
+                    },
+                "de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode": {
+                    "DisplayName": "Color Mode",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "Fixed": {
+                        "DisplayName": "Fixed",
+                        "UIPosition": 1
+                        },
+                        "ByMagnitude": {
+                        "DisplayName": "By Magnitude",
+                        "UIPosition": 2
+                        }
+                    },
+                    "DefaultValue": "ByMagnitude"
+                    },
+               "de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor": {
+                    "DisplayName": "Fixed Color",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Color",
+                    "DefaultValue": [1.0, 0.0, 0.0, 1.0]
+                    },
+                "de.uni_stuttgart.Voxie.Object3D.VectorField.MagnitudeThreshold": {
+                    "DisplayName": "Magnitude Threshold",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Float",
+                    "DefaultValue": 0.05,
+                    "Unit": []
+                    },
+                "de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid": {
+                    "DisplayName": "SelectGrid",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Enumeration",
+                    "EnumEntries": {
+                        "Regular": {
+                        "DisplayName": "Regular",
+                        "UIPosition": 1
+                        },
+                        "Unstructured": {
+                        "DisplayName": "Unstructured",
+                        "UIPosition": 2
+                        }
+                    },
+                    "DefaultValue": "Regular"
+                    }    
+
+    
+                
+            }
+        }
+    ]
+}

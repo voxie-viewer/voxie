@@ -1,0 +1,46 @@
+{
+    "NodePrototype": [
+        {
+            "Description": "Displays a line though a volume as a line plot.",
+            "DisplayName": "Line plot visualizer",
+            "Name": "de.uni_stuttgart.Voxie.Visualizer.LinePlot",
+            "NodeKind": "de.uni_stuttgart.Voxie.NodeKind.Visualizer",
+            "Properties": {
+                "de.uni_stuttgart.Voxie.Visualizer.LinePlot.Volume": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.Volume"
+                    ],
+                    "DisplayName": "Volume",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "UIPosition": 1
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.LinePlot.GeometricPrimitive": {
+                    "AllowedNodePrototypes": [
+                        "de.uni_stuttgart.Voxie.Data.GeometricPrimitive"
+                    ],
+                    "DisplayName": "Geometric primitive",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.NodeReference",
+                    "UIPosition": 2
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.LinePlot.StartPoint": {
+                    "AllowedPrimitives": [
+                        "de.uni_stuttgart.Voxie.GeometricPrimitive.Point"
+                    ],
+                    "DisplayName": "Start point",
+                    "ParentProperty": "de.uni_stuttgart.Voxie.Visualizer.LinePlot.GeometricPrimitive",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.GeometricPrimitive",
+                    "UIPosition": 3
+                },
+                "de.uni_stuttgart.Voxie.Visualizer.LinePlot.EndPoint": {
+                    "AllowedPrimitives": [
+                        "de.uni_stuttgart.Voxie.GeometricPrimitive.Point"
+                    ],
+                    "DisplayName": "End point",
+                    "ParentProperty": "de.uni_stuttgart.Voxie.Visualizer.LinePlot.GeometricPrimitive",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.GeometricPrimitive",
+                    "UIPosition": 4
+                }
+            }
+        }
+    ]
+}

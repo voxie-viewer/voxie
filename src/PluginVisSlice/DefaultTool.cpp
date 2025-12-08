@@ -72,6 +72,16 @@ void DefaultTool::toolMousePressEvent(QMouseEvent* ev,
     this->sv->movePlaneOrigin(planePos);
   } else if (modifiers == Qt::ControlModifier) {
     this->savePoint(pixelPos);
+  } else if (modifiers == Qt::NoModifier) {
+    auto action = this->sv->currentClickAction();
+    if (action) {
+      auto planePoint = this->sv->pixelPosToPlanePosCurrentImage(pixelPos);
+      auto threeDPoint = this->sv->planePosTo3DPosCurrentImage(planePoint);
+
+      Q_EMIT action->click(ev, planePoint, threeDPoint);
+    } else {
+      qDebug() << "Slice click without action";
+    }
   }
 }
 
@@ -106,7 +116,7 @@ void DefaultTool::savePoint(const vx::Vector<double, 2>& pixelPos) {
   if (!gpo) {
     gpo = dynamic_cast<GeometricPrimitiveNode*>(
         GeometricPrimitiveNode::getPrototypeSingleton()
-            ->create(QMap<QString, QVariant>(), QList<Node*>(),
+            ->create(QMap<QString, vx::Any>(), QList<Node*>(),
                      QMap<QString, QDBusVariant>())
             .data());
     if (!gpo) {

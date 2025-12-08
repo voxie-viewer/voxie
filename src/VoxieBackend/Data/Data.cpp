@@ -138,7 +138,7 @@ class DataAdaptorImpl : public DataAdaptor {
 
       auto valueRaw = object->getProperty(propertyObj, allowMissing);
 
-      if (valueRaw.isValid()) {
+      if (valueRaw.has_value()) {
         return propertyObj->type()->rawToDBus(valueRaw);
       } else {
         // https://bugreports.qt.io/browse/QTBUG-124919
@@ -163,13 +163,14 @@ class DataAdaptorImpl : public DataAdaptor {
           options, "ReplaceMode", "de.uni_stuttgart.Voxie.ReplaceMode.Insert");
       auto replaceMode = parseReplaceMode(replaceModeStr);
 
-      QVariant valueRaw;
+      vx::Any valueRaw;
       if (dbusGetVariantSignature(value) != QDBusSignature("g") ||
+          // TODO: Shouldn't this be "x"? (See DBus doc)
           (dbusGetVariantValue<QDBusSignature>(value).signature() != "" &&
            dbusGetVariantValue<QDBusSignature>(value).signature() != "n")) {
         valueRaw = propertyObj->type()->dbusToRaw(value);
       } else {
-        valueRaw = QVariant();  // Use invalid QVariant to remove value
+        valueRaw = vx::Any();  // Use invalid vx::Any to remove value
       }
 
       object->setProperty(updateObj, propertyObj, valueRaw, replaceMode);
@@ -356,20 +357,20 @@ QList<QSharedPointer<DataProperty>> Data::listProperties() {
   return res;
 }
 
-QVariant Data::getProperty(const QSharedPointer<DataProperty>& property,
-                           bool allowMissing) {
+vx::Any Data::getProperty(const QSharedPointer<DataProperty>& property,
+                          bool allowMissing) {
   vx::checkOnMainThread("Data::getProperty");
 
   QString key = property->name();
 
   if (!this->dataProperties.contains(key)) {
-    if (allowMissing) return QVariant();
+    if (allowMissing) return vx::Any();
     throw vx::Exception("de.uni_stuttgart.Voxie.KeyNotFound",
                         "Failed to look up data property");
   }
   const auto& val = this->dataProperties[key];
 
-  if (!val.value.isValid())
+  if (!val.value.has_value())
     throw vx::Exception("de.uni_stuttgart.Voxie.InternalError",
                         "Got invalid data property value");
 
@@ -384,7 +385,7 @@ QVariant Data::getProperty(const QSharedPointer<DataProperty>& property,
 
 void Data::setProperty(const QSharedPointer<DataUpdate>& update,
                        const QSharedPointer<DataProperty>& property,
-                       const QVariant& value, ReplaceMode replaceMode) {
+                       const vx::Any& value, ReplaceMode replaceMode) {
   vx::checkOnMainThread("Data::setProperty");
 
   update->validateCanUpdate(this);
@@ -393,7 +394,7 @@ void Data::setProperty(const QSharedPointer<DataUpdate>& update,
 
   QString key = property->name();
 
-  bool haveNewData = value.isValid();
+  bool haveNewData = value.has_value();
 
   // Check data
   if (haveNewData) property->type()->verifyValueWithoutProperty(value);
@@ -419,10 +420,14 @@ void Data::setProperty(const QSharedPointer<DataUpdate>& update,
     case ReplaceMode::InsertOrSame: {
       if (contains) {
         const auto& oldValue = this->dataProperties[key];
-        if (oldValue.property != property || oldValue.value != value)
+        if (oldValue.property != property)
           throw vx::Exception("de.uni_stuttgart.Voxie.DuplicateKey",
                               "Attempting to insert duplicate data property "
-                              "with different definition or data");
+                              "with different property definition");
+        if (!property->type()->equals(oldValue.value, value))
+          throw vx::Exception("de.uni_stuttgart.Voxie.DuplicateKey",
+                              "Attempting to insert duplicate data property "
+                              "with different data");
         // No need to continue if data is the same
         return;
       }

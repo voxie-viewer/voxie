@@ -72,7 +72,7 @@ ExtensionImporter::~ExtensionImporter() {}
 
 QSharedPointer<OperationResultImport> ExtensionImporter::import(
     const QString& fileName, bool doCreateNode,
-    const QMap<QString, QVariant>& properties) {
+    const QMap<QString, vx::Any>& properties) {
   // Use absolute filename because script uses a different working directory
   auto absFileName = QFileInfo(fileName).absoluteFilePath();
 

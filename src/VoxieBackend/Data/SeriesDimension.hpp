@@ -26,6 +26,8 @@
 
 #include <VoxieBackend/VoxieBackend.hpp>
 
+#include <VoxieClient/Any.hpp>
+
 namespace vx {
 class DataProperty;
 
@@ -45,7 +47,7 @@ class VOXIEBACKEND_EXPORT SeriesDimension : public RefCountedObject {
   // Note: this cannot be changed without creating a new SeriesData object.
   // Otherwise the EntryKey (an integer) would not be able to identify values
   // reliably (especially if entries are supposed to be sorted).
-  QList<QVariant> entries_;
+  QList<vx::Any> entries_;
 
  public:
   using EntryKey = quint64;
@@ -53,7 +55,7 @@ class VOXIEBACKEND_EXPORT SeriesDimension : public RefCountedObject {
       std::numeric_limits<quint64>::max();
 
   const QSharedPointer<DataProperty>& property() { return property_; }
-  QList<QVariant> entries() { return entries_; }
+  QList<vx::Any> entries() { return entries_; }
   EntryKey length() { return entries().length(); }
 
   // QString name() { return name_; }
@@ -63,10 +65,10 @@ class VOXIEBACKEND_EXPORT SeriesDimension : public RefCountedObject {
  public:
   // TODO: should this be private so that only the create() method can call it?
   SeriesDimension(const QSharedPointer<DataProperty>& type,
-                  const QList<QVariant>& entries);
+                  const QList<vx::Any>& entries);
 
-  QVariant getEntryValue(EntryKey key);
-  EntryKey lookupEntryByValueOrInvalid(const QVariant& value);
+  vx::Any getEntryValue(EntryKey key);
+  EntryKey lookupEntryByValueOrInvalid(const vx::Any& value);
 
  public:
   ~SeriesDimension();

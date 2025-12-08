@@ -3308,6 +3308,7 @@ class VOXIECLIENT_EXPORT PropertyTypeAdaptor : public QDBusAbstractAdaptor {
       "    <property access=\"read\" type=\"s\" name=\"DisplayName\"/>\n"
       "    <property access=\"read\" type=\"v\" name=\"DefaultValue\"/>\n"
       "    <property access=\"read\" type=\"g\" name=\"DBusSignature\"/>\n"
+      "    <property access=\"read\" type=\"s\" name=\"DBusVariantStyle\"/>\n"
       "  </interface>\n"
       "")
  public:
@@ -3317,6 +3318,9 @@ class VOXIECLIENT_EXPORT PropertyTypeAdaptor : public QDBusAbstractAdaptor {
  public:  // PROPERTIES
   Q_PROPERTY(QDBusSignature DBusSignature READ dBusSignature)
   virtual QDBusSignature dBusSignature() const = 0;
+
+  Q_PROPERTY(QString DBusVariantStyle READ dBusVariantStyle)
+  virtual QString dBusVariantStyle() const = 0;
 
   Q_PROPERTY(QDBusVariant DefaultValue READ defaultValue)
   virtual QDBusVariant defaultValue() const = 0;
@@ -4190,6 +4194,24 @@ class VOXIECLIENT_EXPORT UtilitiesAdaptor : public QDBusAbstractAdaptor {
       "D-Bus Introspection",
       ""
       "  <interface name=\"de.uni_stuttgart.Voxie.Utilities\">\n"
+      "    <method name=\"ExtractLine\">\n"
+      "      <arg direction=\"in\" type=\"o\" name=\"volume\"/>\n"
+      "      <arg direction=\"in\" type=\"(ddd)\" name=\"startPoint\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((std::tuple&lt;double, "
+      "double, double&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In1\"/>\n"
+      "      <arg direction=\"in\" type=\"(ddd)\" name=\"endPoint\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((std::tuple&lt;double, "
+      "double, double&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In2\"/>\n"
+      "      <arg direction=\"in\" type=\"o\" name=\"outputBuffer\"/>\n"
+      "      <arg direction=\"in\" type=\"t\" name=\"outputBufferOffset\"/>\n"
+      "      <arg direction=\"in\" type=\"t\" name=\"outputBufferCount\"/>\n"
+      "      <arg direction=\"in\" type=\"a{sv}\" name=\"options\"/>\n"
+      "      <annotation value=\"const VX_IDENTITY_TYPE((QMap&lt;QString, "
+      "QDBusVariant&gt;))&amp;\" "
+      "name=\"org.qtproject.QtDBus.QtTypeName.In6\"/>\n"
+      "    </method>\n"
       "    <method name=\"ExtractSlice\">\n"
       "      <arg direction=\"in\" type=\"o\" name=\"volume\"/>\n"
       "      <arg direction=\"in\" type=\"(ddd)\" name=\"origin\"/>\n"
@@ -4226,6 +4248,11 @@ class VOXIECLIENT_EXPORT UtilitiesAdaptor : public QDBusAbstractAdaptor {
       "value=\"VX_IDENTITY_TYPE((QList&lt;std::tuple&lt;quint64, "
       "double&gt;&gt;))\" name=\"org.qtproject.QtDBus.QtTypeName.Out0\"/>\n"
       "    </method>\n"
+      "    <method name=\"DebugReturnValue\">\n"
+      "      <arg direction=\"in\" type=\"i\" name=\"mode\"/>\n"
+      "      <arg direction=\"in\" type=\"v\" name=\"value\"/>\n"
+      "      <arg direction=\"out\" type=\"v\" name=\"result\"/>\n"
+      "    </method>\n"
       "  </interface>\n"
       "")
  public:
@@ -4238,6 +4265,15 @@ class VOXIECLIENT_EXPORT UtilitiesAdaptor : public QDBusAbstractAdaptor {
       DebugFindMatchingSpectrums(
           const QDBusObjectPath& dimension, double start, double end,
           const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
+  virtual QDBusVariant DebugReturnValue(int mode,
+                                        const QDBusVariant& value) = 0;
+  virtual void ExtractLine(
+      const QDBusObjectPath& volume,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) & startPoint,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) & endPoint,
+      const QDBusObjectPath& outputBuffer, qulonglong outputBufferOffset,
+      qulonglong outputBufferCount,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) = 0;
   virtual void ExtractSlice(
       const QDBusObjectPath& volume,
       const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) & origin,

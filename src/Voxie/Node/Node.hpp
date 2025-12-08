@@ -33,8 +33,10 @@
 
 #include <QtWidgets/QAction>
 
+#include <VoxieClient/Any.hpp>
 #include <VoxieClient/DBusAdaptors.hpp>
 #include <VoxieClient/DBusUtil.hpp>
+#include <VoxieClient/ToString.hpp>
 #include <VoxieClient/VoxieDBus.hpp>
 
 #include <Voxie/Data/Color.hpp>
@@ -182,7 +184,9 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
   QList<QWidget*> propertySections_;
   int defaultSectionPosition_ = -1;
 
-  QMap<QString, QVariant>
+  QWidget* propertySectionNode;
+
+  QMap<QString, vx::Any>
       propertyValues_;  // For properties without custom getter/setter
 
   // List of nodes which have properties pointing to this node as an input
@@ -201,10 +205,10 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
                        bool emitSignalsForObj);
 
   void setNodeProperty(const QSharedPointer<NodeProperty>& property,
-                       const QVariant& value, bool emitSignalsForThis);
-  void setNodeProperty(NodeProperty* property, const QVariant& value,
+                       const vx::Any& value, bool emitSignalsForThis);
+  void setNodeProperty(NodeProperty* property, const vx::Any& value,
                        bool emitSignalsForThis);
-  void setNodeProperty(const QString& key, const QVariant& value,
+  void setNodeProperty(const QString& key, const vx::Any& value,
                        bool emitSignalsForThis);
 
  public:
@@ -228,7 +232,7 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
   /**
    * Return all properties, including custom storage ones.
    */
-  QMap<QString, QVariant> propertyValues();
+  QMap<QString, vx::Any> propertyValues();
 
   /**
    * @brief Returns the name of this filter node (e.g. for displaying it in
@@ -319,12 +323,12 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
   // getProperty()/setProperty() to prevent QObject::setProperty() from being
   // hidden
 
-  QVariant getNodeProperty(const QSharedPointer<NodeProperty>& property);
-  QVariant getNodeProperty(const QString& key);
+  vx::Any getNodeProperty(const QSharedPointer<NodeProperty>& property);
+  vx::Any getNodeProperty(const QString& key);
 
   void setNodeProperty(const QSharedPointer<NodeProperty>& property,
-                       const QVariant& value);
-  void setNodeProperty(const QString& key, const QVariant& value);
+                       const vx::Any& value);
+  void setNodeProperty(const QString& key, const vx::Any& value);
 
   template <typename T>
   typename T::QtType getNodeProperty(const NodePropertyTyped<T>& property) {
@@ -342,7 +346,7 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
    * In some cases the property setters have to be called in a certain order,
    * this function will make sure they will be called in the right order.
    */
-  void setNodeProperties(const QMap<QString, QVariant>& values);
+  void setNodeProperties(const QMap<QString, vx::Any>& values);
 
   /**
    * @brief Returns a dynamically-typed data node associated with the
@@ -367,7 +371,7 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
    * function.
    * @param key string identiifier for the field to return
    */
-  virtual QVariant getNodePropertyCustom(QString key);
+  virtual vx::Any getNodePropertyCustom(QString key);
 
   /**
    * @brief SetNodeProperty setter for the single fields of this node which
@@ -378,7 +382,7 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
    * @param key string identiifier for the field to return
    * @param value new value for the corresponding field
    */
-  virtual void setNodePropertyCustom(QString key, QVariant value);
+  virtual void setNodePropertyCustom(QString key, vx::Any value);
 
   void emitCustomPropertyChanged(const QSharedPointer<NodeProperty>& property);
 
@@ -417,6 +421,8 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
    */
   virtual void setupFinished();
 
+  QLabel* nodeInfoLinks = nullptr;
+
  public:
   const QSharedPointer<NodePrototype>& prototype() { return prototype_; }
 
@@ -446,14 +452,16 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
     return value.value<T>();
     */
   }
+  // TODO: These functions should specify what kind of values (raw etc.) the use
+  // or be dropped.
   template <typename T>
   void setNodePropertyTyped(const QSharedPointer<NodeProperty>& property,
                             const T& value) {
-    setNodeProperty(property, QVariant::fromValue(value));
+    setNodeProperty(property, vx::make_any<T>(value));
   }
   template <typename T>
   void setNodePropertyTyped(const QString& key, const T& value) {
-    setNodeProperty(key, QVariant::fromValue(value));
+    setNodeProperty(key, vx::make_any<T>(value));
   }
 
  Q_SIGNALS:
@@ -488,10 +496,10 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
    * @param value The new value of the property
    */
   void propertyChanged(const QSharedPointer<NodeProperty>& property,
-                       const QVariant& value);
+                       const vx::Any& value);
 
  public:
-  static QVariant propertyDBusToRaw(
+  static vx::Any propertyDBusToRaw(
       // TODO: This should be a shared pointer (and NodeProperty should
       // inherit from RefCountedObject)
       // const QSharedPointer<NodePrototype>& prototype,
@@ -499,21 +507,23 @@ class VOXIECORESHARED_EXPORT Node : public vx::DynamicObject {
       const QDBusVariant& value);
 
   template <typename T>
-  static T parseVariant(const QVariant& variant) {
-    if (variant.userType() != qMetaTypeId<T>())
+  static T parseVariant(const vx::Any& variant) {
+    // TODO: Rely on vx::any_cast to produce a nice exception message? Drop
+    // parseVariant() completely?
+    if (variant.type() != typeid(T))
       throw Exception("de.uni_stuttgart.Voxie.Error",
                       QString() + "Got invalid type: Expected " +
-                          QMetaType::typeName(qMetaTypeId<T>()) + ", got " +
-                          QMetaType::typeName(variant.userType()));
-    return variant.value<T>();
+                          vx::getTypeNameString<T>() + ", got " +
+                          vx::toString(variant.type()));
+    return vx::any_cast<T>(variant);
   }
 
   // TODO: Return shared pointers?
-  static Node* parseVariantNode(const QVariant& variant);
-  static QList<Node*> parseVariantNodeList(const QVariant& variant);
+  static Node* parseVariantNode(const vx::Any& variant);
+  static QList<Node*> parseVariantNodeList(const vx::Any& variant);
 
-  static QVariant getVariant(Node* obj);
-  static QVariant getVariant(const QList<Node*>& objs);
+  static vx::Any getVariant(Node* obj);
+  static vx::Any getVariant(const QList<Node*>& objs);
 };
 
 namespace Prop {}
@@ -521,14 +531,14 @@ namespace PropType {}
 class VOXIECORESHARED_EXPORT PropTypeBase {};
 class VOXIECORESHARED_EXPORT PropertiesEntryBase {
   QString name_;
-  QVariant value_;
+  vx::Any value_;
 
  public:
-  PropertiesEntryBase(const QString& name, const QVariant& value);
+  PropertiesEntryBase(const QString& name, const vx::Any& value);
   ~PropertiesEntryBase();
 
   const QString& name() const { return name_; }
-  const QVariant& value() const { return value_; }
+  const vx::Any& value() const { return value_; }
 };
 
 template <typename T>
@@ -539,7 +549,7 @@ QSharedPointer<T> createNode(
                       typename T::PropertiesEntryType>::value,
       "T::PropertiesEntryType must have base vx::PropertiesEntryBase");
 
-  QMap<QString, QVariant> propertiesRes;
+  QMap<QString, vx::Any> propertiesRes;
   for (const auto& entry : properties) {
     const PropertiesEntryBase& entry2 = entry;
     const auto& name = entry2.name();

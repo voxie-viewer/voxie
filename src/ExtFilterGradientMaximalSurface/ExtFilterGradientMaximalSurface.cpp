@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
             samplingPointCount < 2 ? 2 : samplingPointCount, samplingDistance);
         filter.run(op);
 
-        volume_version = createQSharedPointer<
+        volume_version = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(updateVolume->Finish(

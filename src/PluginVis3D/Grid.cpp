@@ -98,7 +98,7 @@ void Grid::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
   psg->functions.glEnable(GL_BLEND);
   psg->functions.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   psg->functions.glDepthMask(GL_FALSE);
-  psg->utils.draw(buffer, matViewProj);
+  psg->utils.draw(buffer, QMatrix4x4(), matViewProj);
   psg->functions.glDepthMask(GL_TRUE);
   psg->functions.glDisable(GL_BLEND);
 }

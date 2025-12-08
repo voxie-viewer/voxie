@@ -44,4 +44,8 @@ VOXIEBACKEND_EXPORT QList<SpectrumResult> findMatchingSpectrums(
     double end);
 VOXIEBACKEND_EXPORT QList<SpectrumResult> findMatchingSpectrums(
     const QSharedPointer<SeriesDimension>& dimension, double start, double end);
+
+VOXIEBACKEND_EXPORT PiecewisePolynomialFunction
+getValueSpectrum(const QList<PiecewisePolynomialFunction>& spectrums,
+                 const QList<double>& values);
 }  // namespace vx

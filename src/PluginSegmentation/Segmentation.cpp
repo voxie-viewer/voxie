@@ -278,12 +278,13 @@ void Segmentation::initData() {
       dynamic_cast<ContainerNode*>(this->properties->output());
 
   if (!labelContainer) {
-    // TODO: Should creation of the container be delayed until it is used the first time?
+    // TODO: Should creation of the container be delayed until it is used the
+    // first time?
     qWarning() << "No Label Container connected, create a new one";
     // create ContainerNode
     labelContainer = dynamic_cast<ContainerNode*>(
         ContainerNode::getPrototypeSingleton()
-            ->create(QMap<QString, QVariant>(), QList<Node*>(),
+            ->create(QMap<QString, vx::Any>(), QList<Node*>(),
                      QMap<QString, QDBusVariant>())
             .data());
     this->properties->setOutput(labelContainer);
@@ -442,28 +443,31 @@ SliceVisualizerI* Segmentation::spawnSingleSliceVisualizer(
               "de.uni_stuttgart.Voxie.Visualizer.Slice", false)
           ->create(
               {{"de.uni_stuttgart.Voxie.Visualizer.Slice.SegmentationFilter",
-                QVariant::fromValue(vx::PropertyValueConvertRaw<
-                                    QDBusObjectPath, vx::Node*>::toRaw(this))},
+                vx::make_any<QDBusObjectPath>(
+                    vx::PropertyValueConvertRaw<QDBusObjectPath,
+                                                vx::Node*>::toRaw(this))},
                {"de.uni_stuttgart.Voxie.Visualizer.Slice.Volume",
-                QVariant::fromValue(
+                vx::make_any<QDBusObjectPath>(
                     vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::
                         toRaw(this->properties->input()))},
                {"de.uni_stuttgart.Voxie.Visualizer.Slice.LabelContainer",
-                QVariant::fromValue(
+                vx::make_any<QDBusObjectPath>(
                     vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::
                         toRaw(dynamic_cast<ContainerNode*>(
                             this->properties->output())))},
 
                /* {"de.uni_stuttgart.Voxie.View2D.VerticalSize",
-                0.1}, */
+                vx::make_any<double>(0.1)}, */
                /* {"de.uni_stuttgart.Voxie.View2D.CenterPoint",
-                QVariant::fromValue(std::tuple<double, double>(10.0, 10.0))},
+                vx::make_any<std::tuple<double, double>>(std::tuple<double,
+                double>(10.0, 10.0))},
               */
 
                {"de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Orientation",
-                QVariant::fromValue(vx::PropertyValueConvertRaw<
-                                    std::tuple<double, double, double, double>,
-                                    QQuaternion>::toRaw(planeOrientation))}},
+                vx::make_any<std::tuple<double, double, double, double>>(
+                    vx::PropertyValueConvertRaw<
+                        std::tuple<double, double, double, double>,
+                        QQuaternion>::toRaw(planeOrientation))}},
               QList<Node*>(), QMap<QString, QDBusVariant>())
           .data());
 

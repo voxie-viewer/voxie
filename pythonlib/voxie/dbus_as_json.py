@@ -1,4 +1,3 @@
-import math
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,6 +19,8 @@ import math
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+import math
 import dbus
 import enum
 

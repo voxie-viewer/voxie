@@ -58,7 +58,7 @@ class PropertyUIImplBase : public PropertyUI {
     QObject::connect(
         node, &Node::propertyChanged, this,
         [this](const QSharedPointer<NodeProperty>& property2,
-               const QVariant& value) {
+               const vx::Any& value) {
           try {
             // qDebug() << "Property change of" << property->name()
             // << "to" << value;
@@ -85,7 +85,7 @@ class PropertyUIImplBase : public PropertyUI {
                << "but the property UI expects" << TypeInfo::type()->name();
     }
 
-    propertyInstance->connectChanged(this, [this](const QVariant& value) {
+    propertyInstance->connectChanged(this, [this](const vx::Any& value) {
       try {
         Node* o = this->node();
         if (!o) return;  // Probably should never happen
@@ -121,21 +121,20 @@ class PropertyUIImplBase : public PropertyUI {
 
   // Will catch errors, will ignore the call if the node is already destroyed
   // Will ignore calls while an updateUIValue() call is running
-  void setValueChecked(const CppType& value) {
+  void setValueChecked(const CppType& value, bool isUpdateFromUI = true) {
     // qDebug() << "Updating value to" << value;
     // qDebug() << "Updating value";
     Node* o = this->node();
     if (!o) return;
-    if (suppressForwardFromUI) return;
+    if (isUpdateFromUI && suppressForwardFromUI) return;
     try {
       auto valRaw = PropertyValueConvertRaw<RawType, CppType>::toRaw(value);
-      suppressForwardToUI = true;
-      o->setNodeProperty(this->property(),
-                         QVariant::fromValue<RawType>(valRaw));
+      if (isUpdateFromUI) suppressForwardToUI = true;
+      o->setNodeProperty(this->property(), vx::make_any<RawType>(valRaw));
     } catch (Exception& e) {
       qCritical() << "Error while updating property value:" << e.what();
     }
-    suppressForwardToUI = false;
+    if (isUpdateFromUI) suppressForwardToUI = false;
   }
 
   void init2() override {

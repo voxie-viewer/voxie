@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -97,11 +98,11 @@ class VOXIECORESHARED_EXPORT ContainerPropertiesBase {
 };
 class VOXIECORESHARED_EXPORT ContainerPropertiesCopy
     : public ContainerPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   ContainerPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class VOXIECORESHARED_EXPORT ContainerProperties
     : public QObject,
@@ -131,11 +132,11 @@ class VOXIECORESHARED_EXPORT EventListDataPropertiesBase {
 };
 class VOXIECORESHARED_EXPORT EventListDataPropertiesCopy
     : public EventListDataPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   EventListDataPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class VOXIECORESHARED_EXPORT EventListDataProperties
     : public QObject,
@@ -164,11 +165,11 @@ class VOXIECORESHARED_EXPORT FilePropertiesBase {
   virtual ~FilePropertiesBase();
 };
 class VOXIECORESHARED_EXPORT FilePropertiesCopy : public FilePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   FilePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class VOXIECORESHARED_EXPORT FileProperties : public QObject,
                                               public FilePropertiesBase {
@@ -208,11 +209,11 @@ class VOXIECORESHARED_EXPORT GeometricPrimitivePropertiesBase {
 };
 class VOXIECORESHARED_EXPORT GeometricPrimitivePropertiesCopy
     : public GeometricPrimitivePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   GeometricPrimitivePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   quint64 measurementPrimitive1() override final;
   quint64 measurementPrimitive1Raw() override final;
   quint64 measurementPrimitive2() override final;
@@ -296,11 +297,11 @@ class VOXIECORESHARED_EXPORT SurfacePropertiesBase {
 };
 class VOXIECORESHARED_EXPORT SurfacePropertiesCopy
     : public SurfacePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   SurfacePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QQuaternion rotation() override final;
   std::tuple<double, double, double, double> rotationRaw() override final;
   QVector3D translation() override final;
@@ -358,11 +359,11 @@ class VOXIECORESHARED_EXPORT TablePropertiesBase {
   virtual ~TablePropertiesBase();
 };
 class VOXIECORESHARED_EXPORT TablePropertiesCopy : public TablePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   TablePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class VOXIECORESHARED_EXPORT TableProperties : public QObject,
                                                public TablePropertiesBase {
@@ -391,11 +392,11 @@ class VOXIECORESHARED_EXPORT TomographyRawDataPropertiesBase {
 };
 class VOXIECORESHARED_EXPORT TomographyRawDataPropertiesCopy
     : public TomographyRawDataPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   TomographyRawDataPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class VOXIECORESHARED_EXPORT TomographyRawDataProperties
     : public QObject,
@@ -431,11 +432,11 @@ class VOXIECORESHARED_EXPORT VolumePropertiesBase {
 };
 class VOXIECORESHARED_EXPORT VolumePropertiesCopy
     : public VolumePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   VolumePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QQuaternion rotation() override final;
   std::tuple<double, double, double, double> rotationRaw() override final;
   QVector3D translation() override final;
@@ -500,11 +501,11 @@ class VOXIECORESHARED_EXPORT VolumeSeriesPropertiesBase {
 };
 class VOXIECORESHARED_EXPORT VolumeSeriesPropertiesCopy
     : public VolumeSeriesPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   VolumeSeriesPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QQuaternion rotation() override final;
   std::tuple<double, double, double, double> rotationRaw() override final;
   QVector3D translation() override final;
@@ -564,11 +565,11 @@ class VOXIECORESHARED_EXPORT NodeGroupPropertiesBase {
 };
 class VOXIECORESHARED_EXPORT NodeGroupPropertiesCopy
     : public NodeGroupPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   NodeGroupPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class VOXIECORESHARED_EXPORT NodeGroupProperties
     : public QObject,
@@ -603,11 +604,11 @@ class VOXIECORESHARED_EXPORT PlanePropertiesBase {
   virtual std::tuple<double, double, double> originRaw() = 0;
 };
 class VOXIECORESHARED_EXPORT PlanePropertiesCopy : public PlanePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   PlanePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QQuaternion orientation() override final;
   std::tuple<double, double, double, double> orientationRaw() override final;
   QVector3D origin() override final;
@@ -666,11 +667,11 @@ class VOXIECORESHARED_EXPORT PreviewBoxPropertiesBase {
 };
 class VOXIECORESHARED_EXPORT PreviewBoxPropertiesCopy
     : public PreviewBoxPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   PreviewBoxPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class VOXIECORESHARED_EXPORT PreviewBoxProperties
     : public QObject,

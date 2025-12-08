@@ -422,7 +422,7 @@ void Visualizer3DView::drawAxisIndicators(const QMatrix4x4& matViewProj) {
                           center + QVector3D(0.0f, 0.0f, -halfLength),
                           center + QVector3D(0.0f, 0.0f, halfLength));
   }
-  draw(drawingBuffer, matViewProj);
+  draw(drawingBuffer, QMatrix4x4(), matViewProj);
 }
 
 void Visualizer3DView::resizeGL(int w, int h) {
@@ -942,12 +942,12 @@ GeometricPrimitiveNode* Visualizer3DView::findOrAddGPO() {
   if (gpo) return gpo;
   gpo = dynamic_cast<GeometricPrimitiveNode*>(
       GeometricPrimitiveNode::getPrototypeSingleton()
-          ->create(QMap<QString, QVariant>(), QList<Node*>(),
+          ->create(QMap<QString, vx::Any>(), QList<Node*>(),
                    QMap<QString, QDBusVariant>())
           .data());
   auto gp = dynamic_cast<vx::vis3d::GeometricPrimitive*>(
       vx::vis3d::GeometricPrimitive::getPrototypeSingleton()
-          ->create(QMap<QString, QVariant>(), QList<Node*>(),
+          ->create(QMap<QString, vx::Any>(), QList<Node*>(),
                    QMap<QString, QDBusVariant>())
           .data());
   gp->setGpo(gpo);

@@ -24,7 +24,7 @@
 
 #include <QtCore/QScopedPointer>
 
-#include <VoxieClient/QtUtil.hpp>
+#include <VoxieClient/QtCollections.hpp>
 
 using namespace vx;
 using namespace vx::opencl;

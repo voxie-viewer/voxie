@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -45,6 +46,15 @@ class Color : public vx::PropTypeBase {};
 }  // namespace PropType
 namespace Prop {
 constexpr vx::PropType::Color Color = {};
+}
+#endif
+#ifndef VOXIE_PROP_DEFINED_ColorMode
+#define VOXIE_PROP_DEFINED_ColorMode
+namespace PropType {
+class ColorMode : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::ColorMode ColorMode = {};
 }
 #endif
 #ifndef VOXIE_PROP_DEFINED_DefaultSize
@@ -92,6 +102,15 @@ namespace Prop {
 constexpr vx::PropType::FaceCulling FaceCulling = {};
 }
 #endif
+#ifndef VOXIE_PROP_DEFINED_Field
+#define VOXIE_PROP_DEFINED_Field
+namespace PropType {
+class Field : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::Field Field = {};
+}
+#endif
 #ifndef VOXIE_PROP_DEFINED_FieldOfView
 #define VOXIE_PROP_DEFINED_FieldOfView
 namespace PropType {
@@ -99,6 +118,15 @@ class FieldOfView : public vx::PropTypeBase {};
 }  // namespace PropType
 namespace Prop {
 constexpr vx::PropType::FieldOfView FieldOfView = {};
+}
+#endif
+#ifndef VOXIE_PROP_DEFINED_FixedColor
+#define VOXIE_PROP_DEFINED_FixedColor
+namespace PropType {
+class FixedColor : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::FixedColor FixedColor = {};
 }
 #endif
 #ifndef VOXIE_PROP_DEFINED_FrontColor
@@ -137,6 +165,15 @@ namespace Prop {
 constexpr vx::PropType::Input Input = {};
 }
 #endif
+#ifndef VOXIE_PROP_DEFINED_Integrator
+#define VOXIE_PROP_DEFINED_Integrator
+namespace PropType {
+class Integrator : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::Integrator Integrator = {};
+}
+#endif
 #ifndef VOXIE_PROP_DEFINED_Length
 #define VOXIE_PROP_DEFINED_Length
 namespace PropType {
@@ -153,6 +190,33 @@ class LookAt : public vx::PropTypeBase {};
 }  // namespace PropType
 namespace Prop {
 constexpr vx::PropType::LookAt LookAt = {};
+}
+#endif
+#ifndef VOXIE_PROP_DEFINED_MagnitudeThreshold
+#define VOXIE_PROP_DEFINED_MagnitudeThreshold
+namespace PropType {
+class MagnitudeThreshold : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::MagnitudeThreshold MagnitudeThreshold = {};
+}
+#endif
+#ifndef VOXIE_PROP_DEFINED_MaxStreamlines
+#define VOXIE_PROP_DEFINED_MaxStreamlines
+namespace PropType {
+class MaxStreamlines : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::MaxStreamlines MaxStreamlines = {};
+}
+#endif
+#ifndef VOXIE_PROP_DEFINED_NumSteps
+#define VOXIE_PROP_DEFINED_NumSteps
+namespace PropType {
+class NumSteps : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::NumSteps NumSteps = {};
 }
 #endif
 #ifndef VOXIE_PROP_DEFINED_Objects
@@ -180,6 +244,15 @@ class Plane : public vx::PropTypeBase {};
 }  // namespace PropType
 namespace Prop {
 constexpr vx::PropType::Plane Plane = {};
+}
+#endif
+#ifndef VOXIE_PROP_DEFINED_ScaleFactor
+#define VOXIE_PROP_DEFINED_ScaleFactor
+namespace PropType {
+class ScaleFactor : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::ScaleFactor ScaleFactor = {};
 }
 #endif
 #ifndef VOXIE_PROP_DEFINED_ShadingTechnique
@@ -236,6 +309,15 @@ namespace Prop {
 constexpr vx::PropType::SliceVolume SliceVolume = {};
 }
 #endif
+#ifndef VOXIE_PROP_DEFINED_Step
+#define VOXIE_PROP_DEFINED_Step
+namespace PropType {
+class Step : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::Step Step = {};
+}
+#endif
 #ifndef VOXIE_PROP_DEFINED_Surface
 #define VOXIE_PROP_DEFINED_Surface
 namespace PropType {
@@ -272,6 +354,15 @@ namespace Prop {
 constexpr vx::PropType::ZoomLog ZoomLog = {};
 }
 #endif
+#ifndef VOXIE_PROP_DEFINED_selectGrid
+#define VOXIE_PROP_DEFINED_selectGrid
+namespace PropType {
+class selectGrid : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::selectGrid selectGrid = {};
+}
+#endif
 inline namespace object3d_prop {
 class Test3DObjectPropertiesEntry : public vx::PropertiesEntryBase {
   Test3DObjectPropertiesEntry() = delete;
@@ -287,11 +378,11 @@ class Test3DObjectPropertiesBase {
   virtual double lengthRaw() = 0;
 };
 class Test3DObjectPropertiesCopy : public Test3DObjectPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   Test3DObjectPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   double length() override final;
   double lengthRaw() override final;
 };
@@ -339,11 +430,11 @@ class GeometricPrimitivePropertiesBase {
 };
 class GeometricPrimitivePropertiesCopy
     : public GeometricPrimitivePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   GeometricPrimitivePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   bool visible() override final;
   bool visibleRaw() override final;
   QDBusObjectPath geometricPrimitiveRaw() override final;
@@ -400,11 +491,11 @@ class GridPropertiesBase {
   virtual ~GridPropertiesBase();
 };
 class GridPropertiesCopy : public GridPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   GridPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class GridProperties : public QObject, public GridPropertiesBase {
   Q_OBJECT
@@ -415,6 +506,231 @@ class GridProperties : public QObject, public GridPropertiesBase {
   static QSharedPointer<vx::NodePrototype> getNodePrototype();
   GridProperties(vx::Node* parent);
   ~GridProperties();
+};
+
+}  // namespace object3d_prop
+inline namespace object3d_prop {
+class LineVisualizerPropertiesEntry : public vx::PropertiesEntryBase {
+  LineVisualizerPropertiesEntry() = delete;
+
+ public:
+  ~LineVisualizerPropertiesEntry();
+  LineVisualizerPropertiesEntry(vx::PropType::Visible, bool);
+  LineVisualizerPropertiesEntry(vx::PropType::ColorMode, QString);
+  LineVisualizerPropertiesEntry(vx::PropType::Field, vx::Node*);
+  LineVisualizerPropertiesEntry(vx::PropType::FixedColor, vx::Color);
+  LineVisualizerPropertiesEntry(vx::PropType::Integrator, QString);
+  LineVisualizerPropertiesEntry(vx::PropType::MagnitudeThreshold, double);
+  LineVisualizerPropertiesEntry(vx::PropType::MaxStreamlines, qint64);
+  LineVisualizerPropertiesEntry(vx::PropType::NumSteps, qint64);
+  LineVisualizerPropertiesEntry(vx::PropType::ScaleFactor, double);
+  LineVisualizerPropertiesEntry(vx::PropType::Step, qint64);
+  LineVisualizerPropertiesEntry(vx::PropType::selectGrid, QString);
+};
+class LineVisualizerPropertiesBase {
+ public:
+  virtual ~LineVisualizerPropertiesBase();
+  virtual bool visible() = 0;
+  virtual bool visibleRaw() = 0;
+  virtual QString colorMode() = 0;
+  virtual QString colorModeRaw() = 0;
+  virtual QDBusObjectPath fieldRaw() = 0;
+  virtual vx::Color fixedColor() = 0;
+  virtual std::tuple<double, double, double, double> fixedColorRaw() = 0;
+  virtual QString integrator() = 0;
+  virtual QString integratorRaw() = 0;
+  virtual double magnitudeThreshold() = 0;
+  virtual double magnitudeThresholdRaw() = 0;
+  virtual qint64 maxStreamlines() = 0;
+  virtual qint64 maxStreamlinesRaw() = 0;
+  virtual qint64 numSteps() = 0;
+  virtual qint64 numStepsRaw() = 0;
+  virtual double scaleFactor() = 0;
+  virtual double scaleFactorRaw() = 0;
+  virtual qint64 step() = 0;
+  virtual qint64 stepRaw() = 0;
+  virtual QString selectGrid() = 0;
+  virtual QString selectGridRaw() = 0;
+};
+class LineVisualizerPropertiesCopy : public LineVisualizerPropertiesBase {
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
+
+ public:
+  LineVisualizerPropertiesCopy(
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
+  bool visible() override final;
+  bool visibleRaw() override final;
+  QString colorMode() override final;
+  QString colorModeRaw() override final;
+  QDBusObjectPath fieldRaw() override final;
+  vx::Color fixedColor() override final;
+  std::tuple<double, double, double, double> fixedColorRaw() override final;
+  QString integrator() override final;
+  QString integratorRaw() override final;
+  double magnitudeThreshold() override final;
+  double magnitudeThresholdRaw() override final;
+  qint64 maxStreamlines() override final;
+  qint64 maxStreamlinesRaw() override final;
+  qint64 numSteps() override final;
+  qint64 numStepsRaw() override final;
+  double scaleFactor() override final;
+  double scaleFactorRaw() override final;
+  qint64 step() override final;
+  qint64 stepRaw() override final;
+  QString selectGrid() override final;
+  QString selectGridRaw() override final;
+};
+class LineVisualizerProperties : public QObject,
+                                 public LineVisualizerPropertiesBase {
+  Q_OBJECT
+  vx::Node* _node;
+
+ public:
+  static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
+  LineVisualizerProperties(vx::Node* parent);
+  ~LineVisualizerProperties();
+
+  bool visible() override final;
+  bool visibleRaw() override final;
+  static QSharedPointer<NodeProperty> visibleProperty();
+  static NodePropertyTyped<vx::types::Boolean> visiblePropertyTyped();
+  NodeNodeProperty visibleInstance();
+  void setVisible(bool value);
+ Q_SIGNALS:
+  void visibleChanged(bool value);
+
+ public:
+  // Q_PROPERTY(bool Visible READ visible WRITE setVisible NOTIFY
+  // visibleChanged)
+
+  QString colorMode() override final;
+  QString colorModeRaw() override final;
+  static QSharedPointer<NodeProperty> colorModeProperty();
+  static NodePropertyTyped<vx::types::Enumeration> colorModePropertyTyped();
+  NodeNodeProperty colorModeInstance();
+  void setColorMode(QString value);
+ Q_SIGNALS:
+  void colorModeChanged(QString value);
+
+ public:
+  // Q_PROPERTY(QString ColorMode READ colorMode WRITE setColorMode NOTIFY
+  // colorModeChanged)
+
+  vx::Node* field();
+  QDBusObjectPath fieldRaw() override final;
+  static QSharedPointer<NodeProperty> fieldProperty();
+  static NodePropertyTyped<vx::types::NodeReference> fieldPropertyTyped();
+  NodeNodeProperty fieldInstance();
+  void setField(vx::Node* value);
+ Q_SIGNALS:
+  void fieldChanged(vx::Node* value);
+
+ public:
+  // Q_PROPERTY(vx::Node* Field READ field WRITE setField NOTIFY fieldChanged)
+
+  vx::Color fixedColor() override final;
+  std::tuple<double, double, double, double> fixedColorRaw() override final;
+  static QSharedPointer<NodeProperty> fixedColorProperty();
+  static NodePropertyTyped<vx::types::Color> fixedColorPropertyTyped();
+  NodeNodeProperty fixedColorInstance();
+  void setFixedColor(vx::Color value);
+ Q_SIGNALS:
+  void fixedColorChanged(vx::Color value);
+
+ public:
+  // Q_PROPERTY(vx::Color FixedColor READ fixedColor WRITE setFixedColor NOTIFY
+  // fixedColorChanged)
+
+  QString integrator() override final;
+  QString integratorRaw() override final;
+  static QSharedPointer<NodeProperty> integratorProperty();
+  static NodePropertyTyped<vx::types::Enumeration> integratorPropertyTyped();
+  NodeNodeProperty integratorInstance();
+  void setIntegrator(QString value);
+ Q_SIGNALS:
+  void integratorChanged(QString value);
+
+ public:
+  // Q_PROPERTY(QString Integrator READ integrator WRITE setIntegrator NOTIFY
+  // integratorChanged)
+
+  double magnitudeThreshold() override final;
+  double magnitudeThresholdRaw() override final;
+  static QSharedPointer<NodeProperty> magnitudeThresholdProperty();
+  static NodePropertyTyped<vx::types::Float> magnitudeThresholdPropertyTyped();
+  NodeNodeProperty magnitudeThresholdInstance();
+  void setMagnitudeThreshold(double value);
+ Q_SIGNALS:
+  void magnitudeThresholdChanged(double value);
+
+ public:
+  // Q_PROPERTY(double MagnitudeThreshold READ magnitudeThreshold WRITE
+  // setMagnitudeThreshold NOTIFY magnitudeThresholdChanged)
+
+  qint64 maxStreamlines() override final;
+  qint64 maxStreamlinesRaw() override final;
+  static QSharedPointer<NodeProperty> maxStreamlinesProperty();
+  static NodePropertyTyped<vx::types::Int> maxStreamlinesPropertyTyped();
+  NodeNodeProperty maxStreamlinesInstance();
+  void setMaxStreamlines(qint64 value);
+ Q_SIGNALS:
+  void maxStreamlinesChanged(qint64 value);
+
+ public:
+  // Q_PROPERTY(qint64 MaxStreamlines READ maxStreamlines WRITE
+  // setMaxStreamlines NOTIFY maxStreamlinesChanged)
+
+  qint64 numSteps() override final;
+  qint64 numStepsRaw() override final;
+  static QSharedPointer<NodeProperty> numStepsProperty();
+  static NodePropertyTyped<vx::types::Int> numStepsPropertyTyped();
+  NodeNodeProperty numStepsInstance();
+  void setNumSteps(qint64 value);
+ Q_SIGNALS:
+  void numStepsChanged(qint64 value);
+
+ public:
+  // Q_PROPERTY(qint64 NumSteps READ numSteps WRITE setNumSteps NOTIFY
+  // numStepsChanged)
+
+  double scaleFactor() override final;
+  double scaleFactorRaw() override final;
+  static QSharedPointer<NodeProperty> scaleFactorProperty();
+  static NodePropertyTyped<vx::types::Float> scaleFactorPropertyTyped();
+  NodeNodeProperty scaleFactorInstance();
+  void setScaleFactor(double value);
+ Q_SIGNALS:
+  void scaleFactorChanged(double value);
+
+ public:
+  // Q_PROPERTY(double ScaleFactor READ scaleFactor WRITE setScaleFactor NOTIFY
+  // scaleFactorChanged)
+
+  qint64 step() override final;
+  qint64 stepRaw() override final;
+  static QSharedPointer<NodeProperty> stepProperty();
+  static NodePropertyTyped<vx::types::Int> stepPropertyTyped();
+  NodeNodeProperty stepInstance();
+  void setStep(qint64 value);
+ Q_SIGNALS:
+  void stepChanged(qint64 value);
+
+ public:
+  // Q_PROPERTY(qint64 Step READ step WRITE setStep NOTIFY stepChanged)
+
+  QString selectGrid() override final;
+  QString selectGridRaw() override final;
+  static QSharedPointer<NodeProperty> selectGridProperty();
+  static NodePropertyTyped<vx::types::Enumeration> selectGridPropertyTyped();
+  NodeNodeProperty selectGridInstance();
+  void setSelectGrid(QString value);
+ Q_SIGNALS:
+  void selectGridChanged(QString value);
+
+ public:
+  // Q_PROPERTY(QString SelectGrid READ selectGrid WRITE setSelectGrid NOTIFY
+  // selectGridChanged)
 };
 
 }  // namespace object3d_prop
@@ -455,11 +771,11 @@ class PlanePropertiesBase {
   virtual QDBusObjectPath sliceVolumeRaw() = 0;
 };
 class PlanePropertiesCopy : public PlanePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   PlanePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QString clippingDirection() override final;
   QString clippingDirectionRaw() override final;
   vx::Color color() override final;
@@ -636,11 +952,11 @@ class SurfacePropertiesBase {
   virtual QDBusObjectPath surfaceRaw() = 0;
 };
 class SurfacePropertiesCopy : public SurfacePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   SurfacePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   bool visible() override final;
   bool visibleRaw() override final;
   vx::Color backColor() override final;
@@ -805,6 +1121,176 @@ class SurfaceProperties : public QObject, public SurfacePropertiesBase {
 };
 
 }  // namespace object3d_prop
+inline namespace object3d_prop {
+class VectorFieldPropertiesEntry : public vx::PropertiesEntryBase {
+  VectorFieldPropertiesEntry() = delete;
+
+ public:
+  ~VectorFieldPropertiesEntry();
+  VectorFieldPropertiesEntry(vx::PropType::Visible, bool);
+  VectorFieldPropertiesEntry(vx::PropType::ColorMode, QString);
+  VectorFieldPropertiesEntry(vx::PropType::Field, vx::Node*);
+  VectorFieldPropertiesEntry(vx::PropType::FixedColor, vx::Color);
+  VectorFieldPropertiesEntry(vx::PropType::MagnitudeThreshold, double);
+  VectorFieldPropertiesEntry(vx::PropType::ScaleFactor, double);
+  VectorFieldPropertiesEntry(vx::PropType::Step, qint64);
+  VectorFieldPropertiesEntry(vx::PropType::selectGrid, QString);
+};
+class VectorFieldPropertiesBase {
+ public:
+  virtual ~VectorFieldPropertiesBase();
+  virtual bool visible() = 0;
+  virtual bool visibleRaw() = 0;
+  virtual QString colorMode() = 0;
+  virtual QString colorModeRaw() = 0;
+  virtual QDBusObjectPath fieldRaw() = 0;
+  virtual vx::Color fixedColor() = 0;
+  virtual std::tuple<double, double, double, double> fixedColorRaw() = 0;
+  virtual double magnitudeThreshold() = 0;
+  virtual double magnitudeThresholdRaw() = 0;
+  virtual double scaleFactor() = 0;
+  virtual double scaleFactorRaw() = 0;
+  virtual qint64 step() = 0;
+  virtual qint64 stepRaw() = 0;
+  virtual QString selectGrid() = 0;
+  virtual QString selectGridRaw() = 0;
+};
+class VectorFieldPropertiesCopy : public VectorFieldPropertiesBase {
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
+
+ public:
+  VectorFieldPropertiesCopy(
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
+  bool visible() override final;
+  bool visibleRaw() override final;
+  QString colorMode() override final;
+  QString colorModeRaw() override final;
+  QDBusObjectPath fieldRaw() override final;
+  vx::Color fixedColor() override final;
+  std::tuple<double, double, double, double> fixedColorRaw() override final;
+  double magnitudeThreshold() override final;
+  double magnitudeThresholdRaw() override final;
+  double scaleFactor() override final;
+  double scaleFactorRaw() override final;
+  qint64 step() override final;
+  qint64 stepRaw() override final;
+  QString selectGrid() override final;
+  QString selectGridRaw() override final;
+};
+class VectorFieldProperties : public QObject, public VectorFieldPropertiesBase {
+  Q_OBJECT
+  vx::Node* _node;
+
+ public:
+  static const char* _getPrototypeJson();
+  static QSharedPointer<vx::NodePrototype> getNodePrototype();
+  VectorFieldProperties(vx::Node* parent);
+  ~VectorFieldProperties();
+
+  bool visible() override final;
+  bool visibleRaw() override final;
+  static QSharedPointer<NodeProperty> visibleProperty();
+  static NodePropertyTyped<vx::types::Boolean> visiblePropertyTyped();
+  NodeNodeProperty visibleInstance();
+  void setVisible(bool value);
+ Q_SIGNALS:
+  void visibleChanged(bool value);
+
+ public:
+  // Q_PROPERTY(bool Visible READ visible WRITE setVisible NOTIFY
+  // visibleChanged)
+
+  QString colorMode() override final;
+  QString colorModeRaw() override final;
+  static QSharedPointer<NodeProperty> colorModeProperty();
+  static NodePropertyTyped<vx::types::Enumeration> colorModePropertyTyped();
+  NodeNodeProperty colorModeInstance();
+  void setColorMode(QString value);
+ Q_SIGNALS:
+  void colorModeChanged(QString value);
+
+ public:
+  // Q_PROPERTY(QString ColorMode READ colorMode WRITE setColorMode NOTIFY
+  // colorModeChanged)
+
+  vx::Node* field();
+  QDBusObjectPath fieldRaw() override final;
+  static QSharedPointer<NodeProperty> fieldProperty();
+  static NodePropertyTyped<vx::types::NodeReference> fieldPropertyTyped();
+  NodeNodeProperty fieldInstance();
+  void setField(vx::Node* value);
+ Q_SIGNALS:
+  void fieldChanged(vx::Node* value);
+
+ public:
+  // Q_PROPERTY(vx::Node* Field READ field WRITE setField NOTIFY fieldChanged)
+
+  vx::Color fixedColor() override final;
+  std::tuple<double, double, double, double> fixedColorRaw() override final;
+  static QSharedPointer<NodeProperty> fixedColorProperty();
+  static NodePropertyTyped<vx::types::Color> fixedColorPropertyTyped();
+  NodeNodeProperty fixedColorInstance();
+  void setFixedColor(vx::Color value);
+ Q_SIGNALS:
+  void fixedColorChanged(vx::Color value);
+
+ public:
+  // Q_PROPERTY(vx::Color FixedColor READ fixedColor WRITE setFixedColor NOTIFY
+  // fixedColorChanged)
+
+  double magnitudeThreshold() override final;
+  double magnitudeThresholdRaw() override final;
+  static QSharedPointer<NodeProperty> magnitudeThresholdProperty();
+  static NodePropertyTyped<vx::types::Float> magnitudeThresholdPropertyTyped();
+  NodeNodeProperty magnitudeThresholdInstance();
+  void setMagnitudeThreshold(double value);
+ Q_SIGNALS:
+  void magnitudeThresholdChanged(double value);
+
+ public:
+  // Q_PROPERTY(double MagnitudeThreshold READ magnitudeThreshold WRITE
+  // setMagnitudeThreshold NOTIFY magnitudeThresholdChanged)
+
+  double scaleFactor() override final;
+  double scaleFactorRaw() override final;
+  static QSharedPointer<NodeProperty> scaleFactorProperty();
+  static NodePropertyTyped<vx::types::Float> scaleFactorPropertyTyped();
+  NodeNodeProperty scaleFactorInstance();
+  void setScaleFactor(double value);
+ Q_SIGNALS:
+  void scaleFactorChanged(double value);
+
+ public:
+  // Q_PROPERTY(double ScaleFactor READ scaleFactor WRITE setScaleFactor NOTIFY
+  // scaleFactorChanged)
+
+  qint64 step() override final;
+  qint64 stepRaw() override final;
+  static QSharedPointer<NodeProperty> stepProperty();
+  static NodePropertyTyped<vx::types::Int> stepPropertyTyped();
+  NodeNodeProperty stepInstance();
+  void setStep(qint64 value);
+ Q_SIGNALS:
+  void stepChanged(qint64 value);
+
+ public:
+  // Q_PROPERTY(qint64 Step READ step WRITE setStep NOTIFY stepChanged)
+
+  QString selectGrid() override final;
+  QString selectGridRaw() override final;
+  static QSharedPointer<NodeProperty> selectGridProperty();
+  static NodePropertyTyped<vx::types::Enumeration> selectGridPropertyTyped();
+  NodeNodeProperty selectGridInstance();
+  void setSelectGrid(QString value);
+ Q_SIGNALS:
+  void selectGridChanged(QString value);
+
+ public:
+  // Q_PROPERTY(QString SelectGrid READ selectGrid WRITE setSelectGrid NOTIFY
+  // selectGridChanged)
+};
+
+}  // namespace object3d_prop
 inline namespace visualizer_prop {
 class View3DPropertiesEntry : public vx::PropertiesEntryBase {
   View3DPropertiesEntry() = delete;
@@ -837,11 +1323,11 @@ class View3DPropertiesBase {
   virtual bool showViewCenterRaw() = 0;
 };
 class View3DPropertiesCopy : public View3DPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   View3DPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   double fieldOfView() override final;
   double fieldOfViewRaw() override final;
   QVector3D lookAt() override final;
@@ -973,11 +1459,11 @@ class VolumeRenderingPropertiesBase {
   virtual QList<QDBusObjectPath> inputRaw() = 0;
 };
 class VolumeRenderingPropertiesCopy : public VolumeRenderingPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   VolumeRenderingPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<QDBusObjectPath> inputRaw() override final;
 };
 class VolumeRenderingProperties : public QObject,

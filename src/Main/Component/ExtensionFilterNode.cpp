@@ -87,10 +87,12 @@ ExtensionFilterNode::ExtensionFilterNode(
   auto extension =
       qSharedPointerDynamicCast<Extension>(this->prototype()->container());
   if (extension && extension->offerShowSource()) {
-    this->sourceCodeButton->setText(
-        this->sourceCodeButton->text() + " " + "<a href=\"" +
-        vx::help::uriForEditSource(this->prototype()).toHtmlEscaped() +
-        "\">Source code</a>");
+    if (!voxieRoot().isHeadless()) {
+      this->nodeInfoLinks->setText(
+          this->nodeInfoLinks->text() + " " + "<a href=\"" +
+          vx::help::uriForEditSource(this->prototype()).toHtmlEscaped() +
+          "\">Source code</a>");
+    }
   }
 }
 ExtensionFilterNode::~ExtensionFilterNode() {}
@@ -140,7 +142,7 @@ QSharedPointer<RunFilterOperation> ExtensionFilterNode::calculate(
       continue;
     }
 
-    QMap<QString, QVariant> properties;
+    QMap<QString, vx::Any> properties;
     QList<Node*> inputs;
     QMap<QString, QDBusVariant> options;
     auto obj = type->create(properties, inputs, options);

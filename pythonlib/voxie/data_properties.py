@@ -2,6 +2,11 @@ import voxie
 import voxie.dbus_as_json
 
 
+# TODO: Should this depend on the property type? Currently mostly used for ChemicalComposition, which contains JSON data. See also ExtFileVxVolSer.py
+style = voxie.dbus_as_json.DBusAsJSONStyle()
+style.variant_style = voxie.dbus_as_json.VariantStyle.JsonVariant
+
+
 def save_properties(data, json_data, child_name='DataProperties'):
     if child_name in json_data:
         raise Exception('json_data dict already has an entry for {!r}'.format(child_name))
@@ -19,7 +24,7 @@ def save_properties(data, json_data, child_name='DataProperties'):
             raise Exception('name in prop_data')
         sig = prop.Type.DBusSignature
         value = data.GetProperty(prop).getValue(sig)
-        value_json = voxie.dbus_as_json.encode_dbus_as_json(sig, value)
+        value_json = voxie.dbus_as_json.encode_dbus_as_json(sig, value, style=style)
         val = prop.PropertyDefinition
         val['Value'] = value_json
         prop_data[name] = val
@@ -45,7 +50,7 @@ def load_properties(instance, data, update, json_data, child_name='DataPropertie
         prop = instance.CreateDataProperty(prop_name, prop_json)
 
         sig = prop.Type.DBusSignature
-        value = voxie.dbus_as_json.decode_dbus_as_json(sig, value_json)
+        value = voxie.dbus_as_json.decode_dbus_as_json(sig, value_json, style=style)
 
         data.SetProperty(update, prop, voxie.Variant(sig, value), {
             'ReplaceMode': voxie.Variant('s', 'de.uni_stuttgart.Voxie.ReplaceMode.Insert'),

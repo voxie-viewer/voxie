@@ -82,7 +82,7 @@ void Test3DObject::render(
   drawingBuffer.addLine(vx::Color(1.0f, 0.0f, 0.0f),
                         QVector3D(-val, -val, -val), QVector3D(val, val, val));
 
-  psg->utils.draw(drawingBuffer, matViewProj);
+  psg->utils.draw(drawingBuffer, QMatrix4x4(), matViewProj);
 }
 
 BoundingBox3D Test3DObject::getBoundingBox() {

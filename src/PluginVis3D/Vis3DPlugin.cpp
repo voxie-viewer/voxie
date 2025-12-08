@@ -24,9 +24,11 @@
 
 #include <PluginVis3D/GeometricPrimitive.hpp>
 #include <PluginVis3D/Grid.hpp>
+#include <PluginVis3D/LineVisualizer.hpp>
 #include <PluginVis3D/Plane.hpp>
 #include <PluginVis3D/Surface.hpp>
 #include <PluginVis3D/Test3DObject.hpp>
+#include <PluginVis3D/VectorField.hpp>
 #include <PluginVis3D/Visualizer3D.hpp>
 #include <PluginVis3D/VolumeRenderingVisualizer.hpp>
 
@@ -61,5 +63,7 @@ QList<QSharedPointer<vx::NodePrototype>> Vis3DPlugin::objectPrototypes() {
   list.append(vx::vis3d::Surface::getPrototypeSingleton());
   list.append(vx::vis3d::Grid::getPrototypeSingleton());
   list.append(vx::vis3d::GeometricPrimitive::getPrototypeSingleton());
+  list.append(vx::vis3d::VectorField::getPrototypeSingleton());
+  list.append(vx::vis3d::LineVisualizer::getPrototypeSingleton());
   return list;
 }

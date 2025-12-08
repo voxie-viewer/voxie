@@ -24,6 +24,8 @@
 
 #include <Voxie/Voxie.hpp>
 
+#include <VoxieClient/Any.hpp>
+
 #include <QtDBus/QDBusObjectPath>
 
 #include <QtCore/QSharedPointer>
@@ -38,7 +40,7 @@ class VOXIECORESHARED_EXPORT ParameterCopyBase {
  private:
   QDBusObjectPath mainNodePath_;
 
-  QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, QVariant>>>
+  QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>
       properties_;
 
   QMap<QDBusObjectPath, QSharedPointer<NodePrototype>> prototypes_;
@@ -49,8 +51,8 @@ class VOXIECORESHARED_EXPORT ParameterCopyBase {
   // protected constructor to prevent instantiation
   ParameterCopyBase(
       const QDBusObjectPath& mainObjectPath,
-      const QMap<QDBusObjectPath,
-                 QSharedPointer<const QMap<QString, QVariant>>>& properties,
+      const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>&
+          properties,
       const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes,
       const QMap<QDBusObjectPath, QMap<QString, QString>>& extensionInfo);
 
@@ -59,7 +61,7 @@ class VOXIECORESHARED_EXPORT ParameterCopyBase {
 
   const QDBusObjectPath& mainNodePath() const;
 
-  const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, QVariant>>>&
+  const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>&
   properties() const;
 
   const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes()

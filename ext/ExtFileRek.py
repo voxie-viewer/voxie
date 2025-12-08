@@ -30,15 +30,9 @@ import collections
 import dataclasses
 import typing
 
-# dtype = np.dtype('<f4') # Not working currently
-dtype = np.dtype('<u2')
-# dtype = np.dtype('<u1')
+# TODO: Add tests
 
 # Note: On importing, vgstudio by default mirrors Y and Z. Also do that.
-
-doRescaling = dtype.kind != 'f'
-if doRescaling:
-    info = np.iinfo(dtype)
 
 '''
 exporter = instance.Components.GetComponent('de.uni_stuttgart.Voxie.ComponentType.Exporter', 'de.uni_stuttgart.Voxie.FileFormat.TomographyRawData.Rek.Export').CastTo('de.uni_stuttgart.Voxie.Exporter')
@@ -114,92 +108,168 @@ if rekHeaderStruct.size != 2048:
 # h = RekHeader._make(rekHeaderStruct.unpack(data))
 # print(h)
 
-args = voxie.parser.parse_args()
-context = voxie.VoxieContext(args)
-instance = context.createInstance()
 
-if args.voxie_action != 'Export' and args.voxie_action != 'Import':
-    raise Exception('Invalid operation: ' + repr(args.voxie_action))
+def main():
+    args = voxie.parser.parse_args()
+    context = voxie.VoxieContext(args)
+    instance = context.createInstance()
 
-if args.voxie_action == 'Export':
-    with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationExport']).ClaimOperationAndCatch() as op:
-        filename = op.Filename
-        data = op.Data.CastTo('de.uni_stuttgart.Voxie.VolumeData')
-        data = data.CastTo('de.uni_stuttgart.Voxie.VolumeDataVoxel')
+    if args.voxie_action != 'Export' and args.voxie_action != 'Import':
+        raise Exception('Invalid operation: ' + repr(args.voxie_action))
 
-        # print('Export %s %s' % (filename, data))
+    if args.voxie_action == 'Export':
+        with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationExport']).ClaimOperationAndCatch() as op:
+            filename = op.Filename
+            data = op.Data.CastTo('de.uni_stuttgart.Voxie.VolumeData')
+            data = data.CastTo('de.uni_stuttgart.Voxie.VolumeDataVoxel')
 
-        shape = data.ArrayShape
-        spacing = data.GridSpacing
+            # dtype = np.dtype('<f4') # Not working currently
+            dtype = np.dtype('<u2')
+            # dtype = np.dtype('<u1')
 
-        if spacing[0] != spacing[1]:
-            raise Exception('Spacing in X and Y direction not the same')
+            doRescaling = dtype.kind != 'f'
+            if doRescaling:
+                info = np.iinfo(dtype)
 
-        with data.GetBufferReadonly() as inputArray:
-            if not doRescaling:
-                progressMax = 0
-                progressSave = 1
-            else:
-                progressMax = 0.2
-                progressSave = 0.8
+            # print('Export %s %s' % (filename, data))
 
-            scalingFactor = 1
-            if doRescaling and shape[0] > 0 and shape[1] > 0 and shape[2] > 0:
-                maxVal = np.max(inputArray[:, :, 0])
-                for z in range(1, shape[2]):
-                    op.SetProgress(progressMax * z / shape[2])
-                    maxVal = np.maximum(maxVal, np.max(inputArray[:, :, z]))
-                scalingFactor = info.max / maxVal
-                # print(maxVal, scalingFactor)
-            op.SetProgress(progressMax)
+            shape = data.ArrayShape
+            spacing = data.GridSpacing
 
-            header = RekHeader()
-            header.ImageWidth = shape[0]
-            header.ImageHeight = shape[1]
-            header.ImageDepth = shape[2]
-            header.BitsPerPixel = dtype.itemsize * 8
-            header.HeaderSize = 2048
-            header.MajorVersion = 2
-            header.MinorVersion = 4
-            header.Revision = 0  # TODO: Use 5?
-            header.ReconstructionZMin = 0
-            header.ReconstructionZMax = shape[2] - 1
-            header.ReconstructionWidth = shape[0]
-            header.ReconstructionHeight = shape[1]
-            header.ReconstructionDepth = shape[2]
-            header.ReconstructionScalingFactor = scalingFactor
-            header.VoxelSizeXYUM = spacing[0] * 1e6
-            header.VoxelSizeZUM = spacing[2] * 1e6
-            # header.DetectorWidthPixel = 992
-            # header.DetectorHeightPixel = 992
-            # TODO: Are there more values needed for FP?
-            # header.Unknown3 = 5
-            # header.Unknown4 = 71
-            # header.Unknown5 = 10
-            # header.Unknown6 = 10
-            # header.Unknown7 = 2
-            # header.Unknown8 = 1500
+            if spacing[0] != spacing[1]:
+                raise Exception('Spacing in X and Y direction not the same')
 
-            # print(header)
-            data = rekHeaderStruct.pack(*dataclasses.astuple(header))
-            # print(data)
-            with open(filename, 'wb') as file:
-                file.write(data)
-                for z0 in range(shape[2]):
-                    z = shape[2] - 1 - z0  # Mirror z
-                    op.SetProgress(progressMax + progressSave * z0 / shape[2])
-                    slice = inputArray[:, :, z]
-                    slice = slice[:, ::-1]  # Mirror y
-                    if doRescaling:
-                        slice = slice * scalingFactor
-                        slice = np.clip(slice, info.min, info.max)
-                    slice = np.array(slice, dtype=dtype, order='F')
-                    file.write(slice.tobytes(order='F'))
-            op.SetProgress(progressMax + progressSave)
+            with data.GetBufferReadonly() as inputArray:
+                if not doRescaling:
+                    progressMax = 0
+                    progressSave = 1
+                else:
+                    progressMax = 0.2
+                    progressSave = 0.8
 
-        op.Finish()
-else:
-    with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationImport']).ClaimOperationAndCatch() as op:
-        raise Exception('Not implemented')
+                scalingFactor = 1
+                if doRescaling and shape[0] > 0 and shape[1] > 0 and shape[2] > 0:
+                    maxVal = np.max(inputArray[:, :, 0])
+                    for z in range(1, shape[2]):
+                        op.SetProgress(progressMax * z / shape[2])
+                        maxVal = np.maximum(maxVal, np.max(inputArray[:, :, z]))
+                    scalingFactor = info.max / maxVal
+                    # print(maxVal, scalingFactor)
+                op.SetProgress(progressMax)
 
-context.client.destroy()
+                header = RekHeader()
+                header.ImageWidth = shape[0]
+                header.ImageHeight = shape[1]
+                header.ImageDepth = shape[2]
+                header.BitsPerPixel = dtype.itemsize * 8
+                header.HeaderSize = 2048
+                header.MajorVersion = 2
+                header.MinorVersion = 4
+                header.Revision = 0  # TODO: Use 5?
+                header.ReconstructionZMin = 0
+                header.ReconstructionZMax = shape[2] - 1
+                header.ReconstructionWidth = shape[0]
+                header.ReconstructionHeight = shape[1]
+                header.ReconstructionDepth = shape[2]
+                header.ReconstructionScalingFactor = scalingFactor
+                header.VoxelSizeXYUM = spacing[0] * 1e6
+                header.VoxelSizeZUM = spacing[2] * 1e6
+                # header.DetectorWidthPixel = 992
+                # header.DetectorHeightPixel = 992
+                # TODO: Are there more values needed for FP?
+                # header.Unknown3 = 5
+                # header.Unknown4 = 71
+                # header.Unknown5 = 10
+                # header.Unknown6 = 10
+                # header.Unknown7 = 2
+                # header.Unknown8 = 1500
+
+                # print(header)
+                data = rekHeaderStruct.pack(*dataclasses.astuple(header))
+                # print(data)
+                with open(filename, 'wb') as file:
+                    file.write(data)
+                    for z0 in range(shape[2]):
+                        z = shape[2] - 1 - z0  # Mirror z
+                        op.SetProgress(progressMax + progressSave * z0 / shape[2])
+                        slice = inputArray[:, :, z]
+                        slice = slice[:, ::-1]  # Mirror y
+                        if doRescaling:
+                            slice = slice * scalingFactor
+                            slice = np.clip(slice, info.min, info.max)
+                        slice = np.array(slice, dtype=dtype, order='F')
+                        file.write(slice.tobytes(order='F'))
+                op.SetProgress(progressMax + progressSave)
+
+            op.Finish()
+    else:
+        with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de.uni_stuttgart.Voxie.ExternalOperationImport']).ClaimOperationAndCatch() as op:
+            filename = op.Filename
+
+            with open(filename, 'rb') as file:
+                header_data = file.read(rekHeaderStruct.size)
+                if len(header_data) != rekHeaderStruct.size:
+                    raise Exception('Unable to read REK header of file {!r}'.format(filename))
+                header = RekHeader(*rekHeaderStruct.unpack(header_data))
+
+                if header.BitsPerPixel == 8:
+                    dtype = np.dtype('<u1')
+                    mem_data_type = ('uint', 8, 'none')
+                elif header.BitsPerPixel == 16:
+                    dtype = np.dtype('<u2')
+                    mem_data_type = ('uint', 16, 'native')
+                elif header.BitsPerPixel == 32:
+                    dtype = np.dtype('<f4')
+                    mem_data_type = ('float', 32, 'native')
+                else:
+                    raise Exception('Unknown data type in REK file {!r}: BitsPerPixel={}'.format(filename, header.BitsPerPixel))
+
+                do_scaling = header.ReconstructionScalingFactor != 1
+                if do_scaling:
+                    mem_data_type = ('float', 32, 'native')
+
+                array_shape = [header.ImageWidth, header.ImageHeight, header.ImageDepth]
+                grid_spacing = [header.VoxelSizeXYUM * 1e-6, header.VoxelSizeXYUM * 1e-6, header.VoxelSizeZUM * 1e-6]
+
+                # TODO: Is there more information about the position in the REK file?
+                volume_origin = [
+                    -grid_spacing[0] * array_shape[0] / 2.0,
+                    -grid_spacing[1] * array_shape[1] / 2.0,
+                    -grid_spacing[2] * array_shape[2] / 2.0,
+                ]
+                # TODO: Do this?
+                # volume_origin[2] = grid_spacing[2] * header.ReconstructionZMin
+
+                file.seek(header.HeaderSize)
+
+                progressMax = 0.0
+                progressSave = 1.0
+
+                bytes_per_slice = dtype.itemsize * array_shape[0] * array_shape[1]
+
+                with instance.CreateVolumeDataVoxel(array_shape, mem_data_type, volume_origin, grid_spacing) as resultData:
+                    with resultData.CreateUpdate() as update, resultData.GetBufferWritable(update) as buffer:
+                        for z0 in range(array_shape[2]):
+                            op.SetProgress(progressMax + progressSave * z0 / array_shape[2])
+                            slice = file.read(bytes_per_slice)
+                            if len(slice) != bytes_per_slice:
+                                raise Exception('Got EOF while reading data in in REK file {!r}'.format(filename, header.BitsPerPixel))
+                            slice = np.frombuffer(slice, dtype=dtype).reshape(array_shape[0], array_shape[1], order='F')
+
+                            if do_scaling:
+                                slice = slice.astype(np.float32) / header.ReconstructionScalingFactor
+
+                            z = array_shape[2] - 1 - z0  # Mirror z
+                            slice = slice[:, ::-1]  # Mirror y
+                            buffer[:, :, z] = slice
+
+                        op.SetProgress(progressMax + progressSave)
+                        version = update.Finish()
+                        with version:
+                            op.Finish(resultData, version)
+
+    context.client.destroy()
+
+
+if __name__ == '__main__':
+    main()

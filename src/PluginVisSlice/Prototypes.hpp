@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -75,6 +76,16 @@ class GeometricPrimitiveColorOnSlice : public vx::PropTypeBase {};
 namespace Prop {
 constexpr vx::PropType::GeometricPrimitiveColorOnSlice
     GeometricPrimitiveColorOnSlice = {};
+}
+#endif
+#ifndef VOXIE_PROP_DEFINED_GeometricPrimitiveShowDescriptions
+#define VOXIE_PROP_DEFINED_GeometricPrimitiveShowDescriptions
+namespace PropType {
+class GeometricPrimitiveShowDescriptions : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::GeometricPrimitiveShowDescriptions
+    GeometricPrimitiveShowDescriptions = {};
 }
 #endif
 #ifndef VOXIE_PROP_DEFINED_GeometricPrimitiveVisibilityDistance
@@ -222,6 +233,15 @@ namespace Prop {
 constexpr vx::PropType::SegmentationFilter SegmentationFilter = {};
 }
 #endif
+#ifndef VOXIE_PROP_DEFINED_SeriesEntry
+#define VOXIE_PROP_DEFINED_SeriesEntry
+namespace PropType {
+class SeriesEntry : public vx::PropTypeBase {};
+}  // namespace PropType
+namespace Prop {
+constexpr vx::PropType::SeriesEntry SeriesEntry = {};
+}
+#endif
 #ifndef VOXIE_PROP_DEFINED_Show2DFilterMask
 #define VOXIE_PROP_DEFINED_Show2DFilterMask
 namespace PropType {
@@ -318,6 +338,8 @@ class SlicePropertiesEntry : public vx::PropertiesEntryBase {
 
  public:
   ~SlicePropertiesEntry();
+  SlicePropertiesEntry(vx::PropType::SeriesEntry,
+                       QMap<QString, vx::DBusVariant>);
   SlicePropertiesEntry(vx::PropType::CenterPoint, QPointF);
   SlicePropertiesEntry(vx::PropType::VerticalSize, double);
   SlicePropertiesEntry(vx::PropType::Filter2DConfiguration, QString);
@@ -327,6 +349,7 @@ class SlicePropertiesEntry : public vx::PropertiesEntryBase {
   SlicePropertiesEntry(vx::PropType::GeometricPrimitiveColorInFrontOfSlice,
                        vx::Color);
   SlicePropertiesEntry(vx::PropType::GeometricPrimitiveColorOnSlice, vx::Color);
+  SlicePropertiesEntry(vx::PropType::GeometricPrimitiveShowDescriptions, bool);
   SlicePropertiesEntry(vx::PropType::GeometricPrimitiveVisibilityDistance,
                        double);
   SlicePropertiesEntry(vx::PropType::GridColor, vx::Color);
@@ -358,6 +381,8 @@ class SlicePropertiesEntry : public vx::PropertiesEntryBase {
 class SlicePropertiesBase {
  public:
   virtual ~SlicePropertiesBase();
+  virtual QMap<QString, vx::DBusVariant> seriesEntry() = 0;
+  virtual QMap<QString, vx::DBusVariant> seriesEntryRaw() = 0;
   virtual QPointF centerPoint() = 0;
   virtual std::tuple<double, double> centerPointRaw() = 0;
   virtual double verticalSize() = 0;
@@ -374,6 +399,8 @@ class SlicePropertiesBase {
   virtual vx::Color geometricPrimitiveColorOnSlice() = 0;
   virtual std::tuple<double, double, double, double>
   geometricPrimitiveColorOnSliceRaw() = 0;
+  virtual bool geometricPrimitiveShowDescriptions() = 0;
+  virtual bool geometricPrimitiveShowDescriptionsRaw() = 0;
   virtual double geometricPrimitiveVisibilityDistance() = 0;
   virtual double geometricPrimitiveVisibilityDistanceRaw() = 0;
   virtual vx::Color gridColor() = 0;
@@ -422,11 +449,13 @@ class SlicePropertiesBase {
   virtual bool volumeGridShowRaw() = 0;
 };
 class SlicePropertiesCopy : public SlicePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   SlicePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
+  QMap<QString, vx::DBusVariant> seriesEntry() override final;
+  QMap<QString, vx::DBusVariant> seriesEntryRaw() override final;
   QPointF centerPoint() override final;
   std::tuple<double, double> centerPointRaw() override final;
   double verticalSize() override final;
@@ -443,6 +472,8 @@ class SlicePropertiesCopy : public SlicePropertiesBase {
   vx::Color geometricPrimitiveColorOnSlice() override final;
   std::tuple<double, double, double, double> geometricPrimitiveColorOnSliceRaw()
       override final;
+  bool geometricPrimitiveShowDescriptions() override final;
+  bool geometricPrimitiveShowDescriptionsRaw() override final;
   double geometricPrimitiveVisibilityDistance() override final;
   double geometricPrimitiveVisibilityDistanceRaw() override final;
   vx::Color gridColor() override final;
@@ -499,6 +530,20 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   static QSharedPointer<vx::NodePrototype> getNodePrototype();
   SliceProperties(vx::Node* parent);
   ~SliceProperties();
+
+  QMap<QString, vx::DBusVariant> seriesEntry() override final;
+  QMap<QString, vx::DBusVariant> seriesEntryRaw() override final;
+  static QSharedPointer<NodeProperty> seriesEntryProperty();
+  static NodePropertyTyped<vx::types::SeriesEntrySelection>
+  seriesEntryPropertyTyped();
+  NodeNodeProperty seriesEntryInstance();
+  void setSeriesEntry(QMap<QString, vx::DBusVariant> value);
+ Q_SIGNALS:
+  void seriesEntryChanged();
+
+ public:
+  // Q_PROPERTY(QMap<QString, vx::DBusVariant> SeriesEntry READ seriesEntry
+  // WRITE setSeriesEntry NOTIFY seriesEntryChanged)
 
   QPointF centerPoint() override final;
   std::tuple<double, double> centerPointRaw() override final;
@@ -605,6 +650,23 @@ class SliceProperties : public QObject, public SlicePropertiesBase {
   // Q_PROPERTY(vx::Color GeometricPrimitiveColorOnSlice READ
   // geometricPrimitiveColorOnSlice WRITE setGeometricPrimitiveColorOnSlice
   // NOTIFY geometricPrimitiveColorOnSliceChanged)
+
+  bool geometricPrimitiveShowDescriptions() override final;
+  bool geometricPrimitiveShowDescriptionsRaw() override final;
+  static QSharedPointer<NodeProperty>
+  geometricPrimitiveShowDescriptionsProperty();
+  static NodePropertyTyped<vx::types::Boolean>
+  geometricPrimitiveShowDescriptionsPropertyTyped();
+  NodeNodeProperty geometricPrimitiveShowDescriptionsInstance();
+  void setGeometricPrimitiveShowDescriptions(bool value);
+ Q_SIGNALS:
+  void geometricPrimitiveShowDescriptionsChanged(bool value);
+
+ public:
+  // Q_PROPERTY(bool GeometricPrimitiveShowDescriptions READ
+  // geometricPrimitiveShowDescriptions WRITE
+  // setGeometricPrimitiveShowDescriptions NOTIFY
+  // geometricPrimitiveShowDescriptionsChanged)
 
   double geometricPrimitiveVisibilityDistance() override final;
   double geometricPrimitiveVisibilityDistanceRaw() override final;

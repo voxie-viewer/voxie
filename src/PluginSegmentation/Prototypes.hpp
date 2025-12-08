@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -267,11 +268,11 @@ class SegmentationPropertiesBase {
   virtual QList<QDBusObjectPath> stepListRaw() = 0;
 };
 class SegmentationPropertiesCopy : public SegmentationPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   SegmentationPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QDBusObjectPath initialSegmentationRaw() override final;
   QDBusObjectPath inputRaw() override final;
   QDBusObjectPath outputRaw() override final;
@@ -359,11 +360,11 @@ class AssignmentStepPropertiesBase {
   virtual qint64 labelIDRaw() = 0;
 };
 class AssignmentStepPropertiesCopy : public AssignmentStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   AssignmentStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   qint64 labelID() override final;
   qint64 labelIDRaw() override final;
 };
@@ -437,11 +438,11 @@ class BrushSelectionStepPropertiesBase {
 };
 class BrushSelectionStepPropertiesCopy
     : public BrushSelectionStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   BrushSelectionStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<std::tuple<vx::Vector<double, 3>, double>> brushEraseCentersWithRadius()
       override final;
   QList<std::tuple<std::tuple<double, double, double>, double>>
@@ -617,11 +618,11 @@ class LassoSelectionStepPropertiesBase {
 };
 class LassoSelectionStepPropertiesCopy
     : public LassoSelectionStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   LassoSelectionStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QQuaternion planeOrientation() override final;
   std::tuple<double, double, double, double> planeOrientationRaw()
       override final;
@@ -749,11 +750,11 @@ class ManualSelectionStepPropertiesBase {
 };
 class ManualSelectionStepPropertiesCopy
     : public ManualSelectionStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   ManualSelectionStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<qint64> labelIds() override final;
   QList<qint64> labelIdsRaw() override final;
 };
@@ -813,11 +814,11 @@ class MetaStepPropertiesBase {
   virtual bool visibilityRaw() = 0;
 };
 class MetaStepPropertiesCopy : public MetaStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   MetaStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   vx::Color color() override final;
   std::tuple<double, double, double, double> colorRaw() override final;
   QString description() override final;
@@ -945,11 +946,11 @@ class MultiThresholdStepPropertiesBase {
 };
 class MultiThresholdStepPropertiesCopy
     : public MultiThresholdStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   MultiThresholdStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint64>>
   thresholdList() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint64>>
@@ -1020,11 +1021,11 @@ class RemoveLabelStepPropertiesBase {
   virtual QList<qint64> labelIDsRaw() = 0;
 };
 class RemoveLabelStepPropertiesCopy : public RemoveLabelStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   RemoveLabelStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<qint64> labelIDs() override final;
   QList<qint64> labelIDsRaw() override final;
 };
@@ -1069,11 +1070,11 @@ class SubtractStepPropertiesBase {
   virtual qint64 labelIdRaw() = 0;
 };
 class SubtractStepPropertiesCopy : public SubtractStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   SubtractStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   qint64 labelId() override final;
   qint64 labelIdRaw() override final;
 };
@@ -1124,11 +1125,11 @@ class ThresholdSelectionStepPropertiesBase {
 };
 class ThresholdSelectionStepPropertiesCopy
     : public ThresholdSelectionStepPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   ThresholdSelectionStepPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   double lowerThreshold() override final;
   double lowerThresholdRaw() override final;
   double upperThreshold() override final;

@@ -105,7 +105,7 @@ void ConnectNodesImplInputObject3D::connect() {
     return;
   }
 
-  auto obj3D = prototype->create(QMap<QString, QVariant>(), QList<Node*>(),
+  auto obj3D = prototype->create(QMap<QString, vx::Any>(), QList<Node*>(),
                                  QMap<QString, QDBusVariant>());
 
   if (property->type() == types::NodeReferenceType()) {

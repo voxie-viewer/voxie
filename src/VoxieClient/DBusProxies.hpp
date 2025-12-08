@@ -3053,6 +3053,12 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxiePropertyTypeInterface
         QDBusAbstractInterface::property("DBusSignature"));
   }
 
+  Q_PROPERTY(QString DBusVariantStyle READ dBusVariantStyle)
+  inline QString dBusVariantStyle() const {
+    return qvariant_cast<QString>(
+        QDBusAbstractInterface::property("DBusVariantStyle"));
+  }
+
   Q_PROPERTY(QDBusVariant DefaultValue READ defaultValue)
   inline QDBusVariant defaultValue() const {
     return qvariant_cast<QDBusVariant>(
@@ -3805,6 +3811,33 @@ class VOXIECLIENT_EXPORT DeUni_stuttgartVoxieUtilitiesInterface
                  << QVariant::fromValue(end) << QVariant::fromValue(options);
     return asyncCallWithArgumentList(
         QStringLiteral("DebugFindMatchingSpectrums"), argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<QDBusVariant> DebugReturnValue(
+      int mode, const QDBusVariant& value) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(mode) << QVariant::fromValue(value);
+    return asyncCallWithArgumentList(QStringLiteral("DebugReturnValue"),
+                                     argumentList);
+  }
+
+  Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> ExtractLine(
+      const QDBusObjectPath& volume,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) & startPoint,
+      const VX_IDENTITY_TYPE((std::tuple<double, double, double>)) & endPoint,
+      const QDBusObjectPath& outputBuffer, qulonglong outputBufferOffset,
+      qulonglong outputBufferCount,
+      const VX_IDENTITY_TYPE((QMap<QString, QDBusVariant>)) & options) {
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(volume)
+                 << QVariant::fromValue(startPoint)
+                 << QVariant::fromValue(endPoint)
+                 << QVariant::fromValue(outputBuffer)
+                 << QVariant::fromValue(outputBufferOffset)
+                 << QVariant::fromValue(outputBufferCount)
+                 << QVariant::fromValue(options);
+    return asyncCallWithArgumentList(QStringLiteral("ExtractLine"),
+                                     argumentList);
   }
 
   Q_REQUIRED_RESULT vx::QDBusPendingReplyWrapper<> ExtractSlice(

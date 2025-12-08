@@ -1,6 +1,12 @@
 #include "multivariateDataWidget.hpp"
 #include "ui_multivariateDataWidget.h"
 
+#include <VoxieClient/Format.hpp>
+
+#include <VoxieBackend/Component/Extension.hpp>
+
+#include <Voxie/Data/PiecewisePolynomialFunction.hpp>
+
 MultivariateDataWidget::MultivariateDataWidget(QWidget* parent,
                                                SliceVisualizer* sv)
     : QWidget(parent), ui(new Ui::MultivariateData_Widget) {
@@ -17,6 +23,42 @@ MultivariateDataWidget::MultivariateDataWidget(QWidget* parent,
   this->setOverviewOptions();
   this->setEffZOptions();
   this->setInitUIValues();
+
+  this->getSpectrumClick = new SliceClickAction(this);
+  QObject::connect(this->getSpectrumClick, &SliceClickAction::click, this,
+                   [this](QMouseEvent* e, const vx::Vector<double, 2>& planePos,
+                          const vx::Vector<double, 3>& pos3D) {
+                     this->sv->removeClickAction(this->getSpectrumClick);
+
+                     (void)e;
+                     (void)planePos;
+                     // qDebug() << "GetSpectrum" << e << planePos << pos3D;
+                     try {
+                       showSpectrumForPoint(pos3D);
+                     } catch (vx::Exception& exc) {
+                       vx::showErrorMessage(
+                           "Got exception while showing spectrum", exc);
+                     }
+                   });
+
+  ui->Get_Spectrum_Button->setCheckable(true);
+  connect(ui->Get_Spectrum_Button, &QPushButton::clicked, this,
+          [this](bool checked) {
+            if (checked)
+              this->sv->setClickAction(this->getSpectrumClick);
+            else
+              this->sv->removeClickAction(this->getSpectrumClick);
+          });
+  connect(this->sv, &SliceVisualizer::currentClickActionChanged, this,
+          [this](SliceClickAction* newAction) {
+            bool shouldBeChecked = newAction == this->getSpectrumClick;
+            // TODO: Test this (should reset the button if another click action
+            // is selected)
+            // qDebug() << "XY" << ui->Get_Spectrum_Button->isChecked()
+            //          << shouldBeChecked;
+            if (shouldBeChecked != ui->Get_Spectrum_Button->isChecked())
+              ui->Get_Spectrum_Button->setChecked(shouldBeChecked);
+          });
 
   // connections from own widget elements to slots
 
@@ -759,3 +801,102 @@ void MultivariateDataWidget::effZ_DensityMax_TextChanged() {
 }
 
 // ######## Slots for own UI items ###############
+
+void MultivariateDataWidget::showSpectrumForPoint(
+    const vx::Vector<double, 3>& pos3D) {
+  qDebug() << "showSpectrumForPoint" << pos3D;
+
+  auto node = dynamic_cast<DataNode*>(this->sv->properties->volume());
+  auto data = node ? node->data() : QSharedPointer<Data>();
+  auto dataSeries = qSharedPointerDynamicCast<VolumeSeriesData>(data);
+  if (!dataSeries || dataSeries->dimensionCount() != 1) {
+    qDebug() << "Did not find 1-D series data";
+    return;
+  }
+  auto dimension = dataSeries->dimensions()[0];
+
+  // TODO: Check this?
+  if (dimension->property()->name() !=
+      "de.uni_stuttgart.Voxie.SeriesDimension.Spectrum") {
+    qDebug() << "Data is not de.uni_stuttgart.Voxie.SeriesDimension.Spectrum";
+    return;
+  }
+
+  if (dimension->property()->type() !=
+      vx::types::PiecewisePolynomialFunctionType()) {
+    qDebug() << "Data is not PiecewisePolynomialFunction";
+    return;
+  }
+
+  QList<PiecewisePolynomialFunction> polynomials;
+  QList<double> values;
+  for (SeriesDimension::EntryKey i = 0;
+       i < (SeriesDimension::EntryKey)dimension->entries().size(); i++) {
+    // TODO: Move parsing a QVariant to a QtType somewhere else?
+    auto raw =
+        Node::parseVariant<vx::types::PiecewisePolynomialFunction::RawType>(
+            dimension->entries()[i]);
+    auto polynomial = vx::PropertyValueConvertRaw<
+        vx::types::PiecewisePolynomialFunction::RawType,
+        vx::types::PiecewisePolynomialFunction::QtType>::fromRaw(raw);
+
+    // qDebug() << polynomial.toString();
+
+    auto entry = dataSeries->lookupEntry({i});
+    if (!entry) {
+      qDebug() << "Skipping over missing entry";
+      continue;
+    }
+    auto entryVolume = qSharedPointerDynamicCast<VolumeData>(entry);
+    if (!entryVolume) {
+      qDebug() << "Series entry is not a volume";
+      continue;
+    }
+    // TODO: Move this into a function in VolumeData? (and handle non-voxel
+    // data)
+    auto entryVolumeVoxel = qSharedPointerDynamicCast<VolumeDataVoxel>(entry);
+    if (!entryVolumeVoxel) {
+      qDebug() << "Series entry is not a voxel volume";
+      continue;
+    }
+    auto value =
+        entryVolumeVoxel->performInGenericContext([&](auto& entryVolumeInst) {
+          return static_cast<double>(entryVolumeInst.getVoxelMetric(pos3D));
+        });
+
+    // qDebug() << i << value;
+    polynomials << polynomial;
+    values << value;
+  }
+
+  auto spectrum = getValueSpectrum(polynomials, values);
+  qDebug() << spectrum.description().toUtf8().data();
+
+  auto jsonData = QByteArray(QJsonDocument(spectrum.toJson()).toJson());
+  // TODO: Clean up
+  // TODO: How to find the python file?
+  auto process = new QProcess();
+  process->setWorkingDirectory(voxieRoot().directoryManager()->baseDir());
+  process->setProgram(voxieRoot().directoryManager()->pythonExecutable());
+  QStringList args;
+  args << (voxieRoot().directoryManager()->baseDir() +
+           "/tools/PiecewisePolynomialFunctionEditor.py");
+  args << "--from-stdin";
+  process->setArguments(args);
+
+  auto isStarted = createQSharedPointer<bool>();
+  connect(process, &QProcess::started, [isStarted]() { *isStarted = true; });
+  connect(process, &QProcess::stateChanged, process,
+          [process, isStarted](QProcess::ProcessState newState) {
+            if (newState == QProcess::NotRunning && !*isStarted) {
+              qDebug() << vx::format(
+                  "Error while starting PiecewisePolynomialFunctionEditor: {}",
+                  processErrorToString(process->error()));
+            }
+            if (newState == QProcess::NotRunning) process->deleteLater();
+          });
+  process->start();
+  // TODO: Can this be blocking?
+  process->write(jsonData);
+  process->closeWriteChannel();
+}

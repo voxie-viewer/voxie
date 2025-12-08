@@ -26,7 +26,7 @@ QSharedPointer<vx::NodePrototype> vx::parseNodePrototype(
     const QJsonObject& json) {
   auto prototypePtr = createQSharedPointer<QSharedPointer<NodePrototype>>();
   *prototypePtr = NodePrototype::fromJson(
-      json, [prototypePtr](const QMap<QString, QVariant>& properties,
+      json, [prototypePtr](const QMap<QString, vx::Any>& properties,
                            const QList<Node*>& inputs,
                            const QMap<QString, QDBusVariant>& options,
                            vx::NodePrototype* prototype, bool registerNode) {

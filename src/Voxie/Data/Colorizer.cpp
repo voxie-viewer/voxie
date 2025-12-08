@@ -33,6 +33,8 @@
 #include <VoxieBackend/Data/ImageDataPixelInst.hpp>
 #include <VoxieBackend/Data/VolumeDataInst.hpp>
 
+#include <VoxieClient/QtCollections.hpp>
+
 #include <cmath>
 #include <functional>
 

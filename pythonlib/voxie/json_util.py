@@ -20,6 +20,8 @@
 # THE SOFTWARE.
 #
 
+import math
+
 
 def json_type_to_string(ty):
     if ty == dict:
@@ -34,9 +36,9 @@ def json_type_to_string(ty):
         return 'number(real)'
     if ty == bool:
         return 'boolean'
-    if ty == NoneType:
+    if ty is type(None):  # noqa: E721
         return 'null'
-    raise Exception('Got unknown json type')
+    raise Exception('Got unknown json type (' + repr(ty) + ')')
 
 
 def expect(value, *types):
@@ -70,11 +72,18 @@ def expect_array_with_size(value, size):
 
 
 def expect_number(value):
-    return expect(value, int, float)
+    if value == 'NaN':
+        return math.nan
+    elif value == 'Infinity':
+        return math.inf
+    elif value == '-Infinity':
+        return -math.inf
+    else:
+        return expect(value, int, float)
 
 
 def expect_float(value):
-    return float(expect(value, int, float))
+    return float(expect_number(value))
 
 
 def expect_int(value):

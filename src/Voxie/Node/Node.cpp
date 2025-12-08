@@ -27,6 +27,8 @@
 #include <VoxieClient/JsonUtil.hpp>
 #include <VoxieClient/VoxieDBus.hpp>
 
+#include <Voxie/Component/HelpCommon.hpp>
+
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorInterpolator.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
@@ -39,6 +41,8 @@
 #include <Voxie/Node/PropertyUI.hpp>
 #include <Voxie/Node/PropertyValueConvertRaw.hpp>
 #include <Voxie/Node/Types.hpp>
+
+#include <Voxie/Gui/NodeNameLineEdit.hpp>
 
 #include <Voxie/DebugOptions.hpp>
 #include <Voxie/IVoxie.hpp>
@@ -102,10 +106,10 @@ Node::~Node() {
                    "referencingNodesAsOutput";
 }
 
-QVariant Node::getNodeProperty(const QSharedPointer<NodeProperty>& property) {
+vx::Any Node::getNodeProperty(const QSharedPointer<NodeProperty>& property) {
   return getNodeProperty(property->name());
 }
-QVariant Node::getNodeProperty(const QString& key) {
+vx::Any Node::getNodeProperty(const QString& key) {
   auto property = prototype()->getProperty(key, false);
   if (property->isCustomStorage()) {
     return getNodePropertyCustom(key);
@@ -117,22 +121,22 @@ QVariant Node::getNodeProperty(const QString& key) {
 }
 
 void Node::setNodeProperty(const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
   setNodeProperty(property->name(), value);
 }
-void Node::setNodeProperty(const QString& key, const QVariant& value) {
+void Node::setNodeProperty(const QString& key, const vx::Any& value) {
   setNodeProperty(key, value, true);
 }
 
 void Node::setNodeProperty(const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value, bool emitSignalsForThis) {
+                           const vx::Any& value, bool emitSignalsForThis) {
   setNodeProperty(property->name(), value, emitSignalsForThis);
 }
-void Node::setNodeProperty(NodeProperty* property, const QVariant& value,
+void Node::setNodeProperty(NodeProperty* property, const vx::Any& value,
                            bool emitSignalsForThis) {
   setNodeProperty(property->name(), value, emitSignalsForThis);
 }
-void Node::setNodeProperty(const QString& key, const QVariant& valueOrig,
+void Node::setNodeProperty(const QString& key, const vx::Any& valueOrig,
                            bool emitSignalsForThis) {
   auto property = prototype()->getProperty(key, false);
   // TODO: Add option to disable canonicalization, use verify() + value in this
@@ -230,12 +234,12 @@ void Node::setNodeProperty(const QString& key, const QVariant& valueOrig,
   if (emitSignalsForThis) Q_EMIT this->propertyChanged(property, value);
 }
 
-QVariant Node::getNodePropertyCustom(QString key) {
+vx::Any Node::getNodePropertyCustom(QString key) {
   throw Exception("de.uni_stuttgart.Voxie.Error",
                   "Custom property getter for '" + key + "' not found");
 }
 
-void Node::setNodePropertyCustom(QString key, QVariant value) {
+void Node::setNodePropertyCustom(QString key, vx::Any value) {
   Q_UNUSED(value);
   throw Exception("de.uni_stuttgart.Voxie.Error",
                   "Custom property setter for '" + key + "' not found");
@@ -257,7 +261,7 @@ void Node::emitCustomPropertyChanged(
   Q_EMIT this->propertyChanged(property, value);
 }
 
-void Node::setNodeProperties(const QMap<QString, QVariant>& options) {
+void Node::setNodeProperties(const QMap<QString, vx::Any>& options) {
   QList<QSharedPointer<NodeProperty>> properties;
   for (const auto& key : options.keys())
     properties << prototype()->getProperty(key, false);
@@ -752,7 +756,7 @@ class NodeAdaptorImpl : public NodeAdaptor, public ObjectAdaptor {
           ExportedObject::getOptionValueOrDefault<bool>(
               options, "AllowCompatibilityNames", true);
 
-      QVariantMap properties;
+      QMap<QString, vx::Any> properties;
       for (const auto& key : values.keys()) {
         auto prototype = this->object->prototype();
         auto property = prototype->getProperty(key, allowCompatibilityNames);
@@ -967,7 +971,7 @@ Node::Node(const QString& type, const QSharedPointer<NodePrototype>& prototype)
   auto adaptor = new NodeAdaptorImpl(this);
   QObject::connect(this, &Node::propertyChanged, this,
                    [adaptor](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
                      try {
                        NodeAdaptor* adaptor1 = adaptor;
                        Q_EMIT adaptor1->PropertyChanged(
@@ -988,6 +992,32 @@ Node::Node(const QString& type, const QSharedPointer<NodePrototype>& prototype)
     qDebug() << "Calling constructor for node" << this;
 
   if (!voxieRoot().isHeadless()) {
+    // Create main section which is common for all nodes
+
+    auto mainVBoxLayout = new QVBoxLayout();
+
+    auto nameLayout = new QHBoxLayout();
+    mainVBoxLayout->addLayout(nameLayout);
+    auto nameLabel = new QLabel("Node name");
+    nameLayout->addWidget(nameLabel);
+    auto nameEdit = new NodeNameLineEdit(this);
+    nameLayout->addWidget(nameEdit);
+
+    this->nodeInfoLinks = new QLabel();
+    mainVBoxLayout->addWidget(this->nodeInfoLinks);
+    voxieRoot().connectLinkHandler(this->nodeInfoLinks);
+    this->nodeInfoLinks->setText(
+        "<a href=\"" +
+        vx::help::uriForPrototype(this->prototype()).toHtmlEscaped() +
+        "\">Help</a>");
+
+    this->propertySectionNode = new QWidget();
+    this->propertySectionNode->setWindowTitle("Node");
+    this->propertySectionNode->setLayout(mainVBoxLayout);
+    this->addPropertySection(this->propertySectionNode);
+
+    // Add sections from JSON data
+
     for (const auto& spSection_ : this->prototype()
                                       ->rawJson()["UI"]
                                       .toObject()["SidePanelSections"]
@@ -1133,7 +1163,7 @@ void Node::initializeReal() {
   }
 }
 
-Node* Node::parseVariantNode(const QVariant& variant) {
+Node* Node::parseVariantNode(const vx::Any& variant) {
   auto value = parseVariant<QDBusObjectPath>(variant);
   if (value.path() == "/") return nullptr;
   auto ptr = ExportedObject::lookupWeakObject(value);
@@ -1156,7 +1186,7 @@ Node* Node::parseVariantNode(const QVariant& variant) {
   }
   return obj;
 }
-QList<Node*> Node::parseVariantNodeList(const QVariant& variant) {
+QList<Node*> Node::parseVariantNodeList(const vx::Any& variant) {
   auto list = parseVariant<QList<QDBusObjectPath>>(variant);
   QList<Node*> res;
   for (const auto& value : list) {
@@ -1217,10 +1247,11 @@ void Node::setStateToNormal() {
 
 void Node::setupFinished() {}
 
-QVariant Node::getVariant(Node* obj) {
-  return QVariant::fromValue(obj ? obj->getPath() : QDBusObjectPath("/"));
+vx::Any Node::getVariant(Node* obj) {
+  return vx::make_any<QDBusObjectPath>(obj ? obj->getPath()
+                                           : QDBusObjectPath("/"));
 }
-QVariant Node::getVariant(const QList<Node*>& objs) {
+vx::Any Node::getVariant(const QList<Node*>& objs) {
   QList<QDBusObjectPath> ret;
   for (const auto& obj : objs) {
     if (obj) {
@@ -1229,19 +1260,19 @@ QVariant Node::getVariant(const QList<Node*>& objs) {
       qWarning() << "Node list contains nullptr";
     }
   }
-  return QVariant::fromValue(ret);
+  return vx::make_any<QList<QDBusObjectPath>>(ret);
 }
 
-QMap<QString, QVariant> Node::propertyValues() {
-  QMap<QString, QVariant> map;
+QMap<QString, vx::Any> Node::propertyValues() {
+  QMap<QString, vx::Any> map;
   for (const auto& prop : prototype()->nodeProperties())
     map[prop->name()] = getNodeProperty(prop->name());
   return map;
 }
 
-QVariant Node::propertyDBusToRaw(NodePrototype* prototype,
-                                 const QSharedPointer<NodeProperty>& property,
-                                 const QDBusVariant& value) {
+vx::Any Node::propertyDBusToRaw(NodePrototype* prototype,
+                                const QSharedPointer<NodeProperty>& property,
+                                const QDBusVariant& value) {
   // Support for loading old ValueColorMapping values (before
   // 19ad5739b10ba87d970663ad5c1e5902b01440ed)
   if (property->type() == vx::types::ValueColorMappingType() &&
@@ -1257,7 +1288,7 @@ QVariant Node::propertyDBusToRaw(NodePrototype* prototype,
     for (const auto& entry : val)
       entries << ColorizerEntry(std::get<0>(entry), std::get<1>(entry),
                                 ColorInterpolator::RGB);
-    return QVariant::fromValue(
+    return vx::make_any<vx::types::ValueColorMapping::RawType>(
         vx::PropertyValueConvertRaw<
             vx::types::ValueColorMapping::RawType,
             vx::types::ValueColorMapping::QtType>::toRaw(entries));
@@ -1278,7 +1309,7 @@ QVariant Node::propertyDBusToRaw(NodePrototype* prototype,
                           "Got more than one input for CCL");
     }
 
-    return QVariant::fromValue(path);
+    return vx::make_any<QDBusObjectPath>(path);
   }
 
   return property->type()->dbusToRaw(value);
@@ -1319,6 +1350,6 @@ void Node::parentNodeGroupStateChanged(State state) {
 }
 
 PropertiesEntryBase::PropertiesEntryBase(const QString& name,
-                                         const QVariant& value)
+                                         const vx::Any& value)
     : name_(name), value_(value) {}
 PropertiesEntryBase::~PropertiesEntryBase() {}

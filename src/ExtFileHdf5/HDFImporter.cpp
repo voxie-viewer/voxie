@@ -186,10 +186,19 @@ loadVoxelData(
                    .open("value", HDF5::setEFilePrefix());
     else
       volume = (HDF5::DataSet)volumeObj;
+
+    double scalingFactor = 1.0;
+    if (file.rootGroup().exists("VolumeScalingFactor"))
+      scalingFactor =
+          *HDF5::matlabDeserialize<double>(file, "VolumeScalingFactor");
+
     typeToUse = convertHDF5TypeToDataType(volume.getDataType());
-    // create and fill the voxel data object
+    // If values get scaled, always use a float type
+    if (scalingFactor != 1.0 && typeToUse.baseType() != BaseType::Float)
+      typeToUse = DataTypeExt(vx::BaseType::Float, 32, vx::Endianness::Native);
   }
 
+  // create and fill the voxel data object
   return createGenericVolume(dbusClient, file, typeToUse, op);
 }
 
@@ -205,7 +214,7 @@ import(vx::DBusClient& dbusClient,
     QFile qFile(fileName);
     if (!qFile.exists()) {
       throw Exception("de.uni_stuttgart.Voxie.HDFImporter.FileNotFound",
-                      "File not found");
+                      "File not found: " + fileName);
     }
 
     auto file = HDF5::File::open(fileName.toUtf8().data(), H5F_ACC_RDONLY);
@@ -221,15 +230,16 @@ import(vx::DBusClient& dbusClient,
       HDFIMPORTER_CPP_ADDITIONAL_IMPORT
 #endif
     } else {
-      throw Exception(
-          "de.uni_stuttgart.Voxie.HDFImporter.Error",
-          QString() + "Got unknown HDF5 file type: " + type->Type->c_str());
+      throw Exception("de.uni_stuttgart.Voxie.HDFImporter.Error",
+                      QString() + "Got unknown HDF5 file type: " + fileName +
+                          ": " + type->Type->c_str());
     }
   } catch (Exception& e) {
     throw;
   } catch (std::exception& e) {
     throw Exception("de.uni_stuttgart.Voxie.HDFImporter.Error",
-                    QString() + "Failure while loading file: " + e.what());
+                    QString() + "Failure while loading file: " + fileName +
+                        ": " + e.what());
   }
 }
 

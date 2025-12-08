@@ -1,4 +1,3 @@
-import dbus
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,6 +19,8 @@ import dbus
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+import dbus
 
 from .dbusobject import DBusObject, DBusObjectContext, DBusExportObject, Variant
 

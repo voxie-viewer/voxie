@@ -17,7 +17,8 @@
             "DisplayName": "Voxie Volume Series JSON",
             "Description": "Load Volume Series from JSON files",
             "Patterns": [
-                "*.vxvolser.json"
+                "*.vxvolser.json",
+                "*.vxvolser"
             ]
         }
     ]

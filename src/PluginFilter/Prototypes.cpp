@@ -15,7 +15,7 @@ ColorizeLabeledSurfacePropertiesEntry::ColorizeLabeledSurfacePropertiesEntry(
     vx::PropType::InputColorizer, QList<vx::ColorizerEntry> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.InputColorizer",
-          QVariant::fromValue<QList<std::tuple<
+          vx::make_any<QList<std::tuple<
               double, std::tuple<double, double, double, double>, qint32>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double,
@@ -26,26 +26,26 @@ ColorizeLabeledSurfacePropertiesEntry::ColorizeLabeledSurfacePropertiesEntry(
     vx::PropType::InputSurface, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.InputSurface",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 ColorizeLabeledSurfacePropertiesEntry::ColorizeLabeledSurfacePropertiesEntry(
     vx::PropType::InputTable, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.InputTable",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 ColorizeLabeledSurfacePropertiesEntry::ColorizeLabeledSurfacePropertiesEntry(
     vx::PropType::Output, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.ColorizeLabeledSurface.Output",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 ColorizeLabeledSurfacePropertiesBase::~ColorizeLabeledSurfacePropertiesBase() {}
 ColorizeLabeledSurfacePropertiesCopy::ColorizeLabeledSurfacePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<vx::ColorizerEntry>
 ColorizeLabeledSurfacePropertiesCopy::inputColorizer() {
@@ -365,7 +365,7 @@ ColorizeLabeledSurfaceProperties::ColorizeLabeledSurfaceProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_InputColorizer](const QSharedPointer<NodeProperty>& property,
-                                   const QVariant& value) {
+                                   const vx::Any& value) {
         if (property != _prop_InputColorizer) return;
         QList<vx::ColorizerEntry> valueCasted;
         try {
@@ -392,7 +392,7 @@ ColorizeLabeledSurfaceProperties::ColorizeLabeledSurfaceProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_InputSurface](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_InputSurface) return;
         vx::Node* valueCasted;
         try {
@@ -414,7 +414,7 @@ ColorizeLabeledSurfaceProperties::ColorizeLabeledSurfaceProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_InputTable](const QSharedPointer<NodeProperty>& property,
-                               const QVariant& value) {
+                               const vx::Any& value) {
         if (property != _prop_InputTable) return;
         vx::Node* valueCasted;
         try {
@@ -436,7 +436,7 @@ ColorizeLabeledSurfaceProperties::ColorizeLabeledSurfaceProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Output](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Output) return;
         vx::Node* valueCasted;
         try {
@@ -465,7 +465,7 @@ ColorizeSurfaceFromAttributePropertiesEntry::
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute."
           "InputColorizer",
-          QVariant::fromValue<QList<std::tuple<
+          vx::make_any<QList<std::tuple<
               double, std::tuple<double, double, double, double>, qint32>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double,
@@ -478,7 +478,7 @@ ColorizeSurfaceFromAttributePropertiesEntry::
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute."
           "InputSurface",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 ColorizeSurfaceFromAttributePropertiesEntry::
@@ -486,14 +486,14 @@ ColorizeSurfaceFromAttributePropertiesEntry::
                                                 vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.ColorizeSurfaceFromAttribute.Output",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 ColorizeSurfaceFromAttributePropertiesBase::
     ~ColorizeSurfaceFromAttributePropertiesBase() {}
 ColorizeSurfaceFromAttributePropertiesCopy::
     ColorizeSurfaceFromAttributePropertiesCopy(
-        const QSharedPointer<const QMap<QString, QVariant>>& properties)
+        const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<vx::ColorizerEntry>
 ColorizeSurfaceFromAttributePropertiesCopy::inputColorizer() {
@@ -760,7 +760,7 @@ ColorizeSurfaceFromAttributeProperties::ColorizeSurfaceFromAttributeProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_InputColorizer](const QSharedPointer<NodeProperty>& property,
-                                   const QVariant& value) {
+                                   const vx::Any& value) {
         if (property != _prop_InputColorizer) return;
         QList<vx::ColorizerEntry> valueCasted;
         try {
@@ -787,7 +787,7 @@ ColorizeSurfaceFromAttributeProperties::ColorizeSurfaceFromAttributeProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_InputSurface](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_InputSurface) return;
         vx::Node* valueCasted;
         try {
@@ -810,7 +810,7 @@ ColorizeSurfaceFromAttributeProperties::ColorizeSurfaceFromAttributeProperties(
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Output](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Output) return;
         vx::Node* valueCasted;
         try {
@@ -836,38 +836,38 @@ CreateSurfacePropertiesEntry::CreateSurfacePropertiesEntry(
     vx::PropType::Algorithm, QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.CreateSurface.Algorithm",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 CreateSurfacePropertiesEntry::CreateSurfacePropertiesEntry(
     vx::PropType::InputVolume, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.CreateSurface.InputVolume",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 CreateSurfacePropertiesEntry::CreateSurfacePropertiesEntry(
     vx::PropType::LabelVolume, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.CreateSurface.LabelVolume",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 CreateSurfacePropertiesEntry::CreateSurfacePropertiesEntry(
     vx::PropType::Threshold, double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.CreateSurface.Threshold",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 CreateSurfacePropertiesEntry::CreateSurfacePropertiesEntry(vx::PropType::Output,
                                                            vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Output",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 CreateSurfacePropertiesBase::~CreateSurfacePropertiesBase() {}
 CreateSurfacePropertiesCopy::CreateSurfacePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QString CreateSurfacePropertiesCopy::algorithm() {
   return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
@@ -1170,7 +1170,7 @@ CreateSurfaceProperties::CreateSurfaceProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Algorithm](const QSharedPointer<NodeProperty>& property,
-                              const QVariant& value) {
+                              const vx::Any& value) {
         if (property != _prop_Algorithm) return;
         QString valueCasted;
         try {
@@ -1191,7 +1191,7 @@ CreateSurfaceProperties::CreateSurfaceProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_InputVolume](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_InputVolume) return;
         vx::Node* valueCasted;
         try {
@@ -1213,7 +1213,7 @@ CreateSurfaceProperties::CreateSurfaceProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LabelVolume](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_LabelVolume) return;
         vx::Node* valueCasted;
         try {
@@ -1235,7 +1235,7 @@ CreateSurfaceProperties::CreateSurfaceProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Threshold](const QSharedPointer<NodeProperty>& property,
-                              const QVariant& value) {
+                              const vx::Any& value) {
         if (property != _prop_Threshold) return;
         double valueCasted;
         try {
@@ -1256,7 +1256,7 @@ CreateSurfaceProperties::CreateSurfaceProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Output](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Output) return;
         vx::Node* valueCasted;
         try {
@@ -1280,19 +1280,19 @@ TableFilterPropertiesEntry::TableFilterPropertiesEntry(vx::PropType::Input,
                                                        QList<vx::Node*> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Input",
-          QVariant::fromValue<QList<QDBusObjectPath>>(
+          vx::make_any<QList<QDBusObjectPath>>(
               vx::PropertyValueConvertRaw<QList<QDBusObjectPath>,
                                           QList<vx::Node*>>::toRaw(value_))) {}
 TableFilterPropertiesEntry::TableFilterPropertiesEntry(vx::PropType::Output,
                                                        vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Output",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 TableFilterPropertiesBase::~TableFilterPropertiesBase() {}
 TableFilterPropertiesCopy::TableFilterPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<QDBusObjectPath> TableFilterPropertiesCopy::inputRaw() {
   return vx::Node::parseVariant<QList<QDBusObjectPath>>(
@@ -1439,7 +1439,7 @@ TableFilterProperties::TableFilterProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Input](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Input) return;
         QList<vx::Node*> valueCasted;
         try {
@@ -1459,7 +1459,7 @@ TableFilterProperties::TableFilterProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Output](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Output) return;
         vx::Node* valueCasted;
         try {

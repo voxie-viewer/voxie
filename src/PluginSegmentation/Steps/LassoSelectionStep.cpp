@@ -58,53 +58,55 @@ QSharedPointer<OperationResult> LassoSelectionStep::calculate(
     QSharedPointer<ContainerData> containerData, QDBusObjectPath inputVolume) {
   Q_UNUSED(inputVolume);
 
-  return this->runThreaded("AssignmentStep", [parameterCopy, containerData,
-                                              this](const QSharedPointer<
-                                                    Operation>& op) {
-    LassoSelectionStepPropertiesCopy propertyCopy(
-        parameterCopy->properties()[parameterCopy->mainNodePath()]);
+  return this->runThreaded(
+      "AssignmentStep", [parameterCopy, containerData,
+                         this](const QSharedPointer<Operation>& op) {
+        LassoSelectionStepPropertiesCopy propertyCopy(
+            parameterCopy->properties()[parameterCopy->mainNodePath()]);
 
-    auto compoundVoxelData = qSharedPointerDynamicCast<VolumeDataVoxel>(
-        containerData->getElement("labelVolume"));
+        auto compoundVoxelData = qSharedPointerDynamicCast<VolumeDataVoxel>(
+            containerData->getElement("labelVolume"));
 
-    if (qFuzzyCompare(compoundVoxelData->origin(),
-                      propertyCopy.volumeOrigin()) &&
-        qFuzzyCompare(compoundVoxelData->getSpacing(),
-                      propertyCopy.voxelSize())) {
-      qint64 voxelCount = 0;
+        if (qFuzzyCompare(compoundVoxelData->origin(),
+                          propertyCopy.volumeOrigin()) &&
+            qFuzzyCompare(compoundVoxelData->getSpacing(),
+                          propertyCopy.voxelSize())) {
+          qint64 voxelCount = 0;
 
-      auto calculator = LassoCalculator(
-          propertyCopy.polygonNodes(), compoundVoxelData,
-          propertyCopy.planeOrigin(), propertyCopy.planeOrientation());
+          auto calculator = LassoCalculator(
+              propertyCopy.polygonNodes(), compoundVoxelData,
+              propertyCopy.planeOrigin(), propertyCopy.planeOrientation());
 
-      calculator.growRegion();
+          calculator.growRegion();
 
-      auto selectFunc =
-          [&voxelCount](
-              quint32& x, quint32& y, quint32& z,
-              const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
-                  labelData) {
-            SegmentationType voxelVal =
-                (SegmentationType)labelData->getVoxel(x, y, z);
-            if (getBit(voxelVal, segmentationShift) == 0) {
-              voxelCount++;
-              setBit(voxelVal, segmentationShift);
-              labelData->setVoxel(x, y, z, voxelVal);
-            }
-          };
+          auto selectFunc =
+              [&voxelCount](
+                  quint32& x, quint32& y, quint32& z,
+                  const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                      labelData) {
+                SegmentationType voxelVal =
+                    (SegmentationType)labelData->getVoxel(x, y, z);
+                if (getBit(voxelVal, segmentationShift) == 0) {
+                  voxelCount++;
+                  setBit(voxelVal, segmentationShift);
+                  labelData->setVoxel(x, y, z, voxelVal);
+                }
+              };
 
-      iterateAllPassedLabelVolumeVoxels(selectFunc, calculator.getFoundVoxels(),
-                                        containerData, op, false);
+          iterateAllPassedLabelVolumeVoxels(selectFunc,
+                                            calculator.getFoundVoxels(),
+                                            containerData, op, false);
 
-      Q_EMIT(this->updateSelectedVoxelCount(voxelCount, true));
+          Q_EMIT(this->updateSelectedVoxelCount(voxelCount, true));
 
-    } else {
-      throw vx::Exception(
-          "de.uni_stuttgart.Voxie.InvalidOperation",
-          QString("The orientation, the origin and the voxel size of the step "
+        } else {
+          throw vx::Exception(
+              "de.uni_stuttgart.Voxie.InvalidOperation",
+              QString(
+                  "The orientation, the origin and the voxel size of the step "
                   "and the labelVolume should match"));
-    }
-  });
+        }
+      });
 }
 
 void LassoSelectionStep::resetUIWidget() {}

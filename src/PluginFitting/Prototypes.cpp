@@ -14,43 +14,43 @@ FitPlanePropertiesEntry::FitPlanePropertiesEntry(
     vx::PropType::GeometricPrimitive, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.FitPlane.GeometricPrimitive",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 FitPlanePropertiesEntry::FitPlanePropertiesEntry(vx::PropType::MaximumDistance,
                                                  double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.FitPlane.MaximumDistance",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 FitPlanePropertiesEntry::FitPlanePropertiesEntry(vx::PropType::Point1,
                                                  quint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.FitPlane.Point1",
-          QVariant::fromValue<quint64>(
+          vx::make_any<quint64>(
               vx::PropertyValueConvertRaw<quint64, quint64>::toRaw(value_))) {}
 FitPlanePropertiesEntry::FitPlanePropertiesEntry(vx::PropType::Point2,
                                                  quint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.FitPlane.Point2",
-          QVariant::fromValue<quint64>(
+          vx::make_any<quint64>(
               vx::PropertyValueConvertRaw<quint64, quint64>::toRaw(value_))) {}
 FitPlanePropertiesEntry::FitPlanePropertiesEntry(vx::PropType::Point3,
                                                  quint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.FitPlane.Point3",
-          QVariant::fromValue<quint64>(
+          vx::make_any<quint64>(
               vx::PropertyValueConvertRaw<quint64, quint64>::toRaw(value_))) {}
 FitPlanePropertiesEntry::FitPlanePropertiesEntry(vx::PropType::Surface,
                                                  vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.FitPlane.Surface",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 FitPlanePropertiesBase::~FitPlanePropertiesBase() {}
 FitPlanePropertiesCopy::FitPlanePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QDBusObjectPath FitPlanePropertiesCopy::geometricPrimitiveRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>(
@@ -450,7 +450,7 @@ FitPlaneProperties::FitPlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_GeometricPrimitive](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_GeometricPrimitive) return;
         vx::Node* valueCasted;
         try {
@@ -472,7 +472,7 @@ FitPlaneProperties::FitPlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_MaximumDistance](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_MaximumDistance) return;
         double valueCasted;
         try {
@@ -493,7 +493,7 @@ FitPlaneProperties::FitPlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Point1](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Point1) return;
         quint64 valueCasted;
         try {
@@ -513,7 +513,7 @@ FitPlaneProperties::FitPlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Point2](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Point2) return;
         quint64 valueCasted;
         try {
@@ -533,7 +533,7 @@ FitPlaneProperties::FitPlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Point3](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Point3) return;
         quint64 valueCasted;
         try {
@@ -553,7 +553,7 @@ FitPlaneProperties::FitPlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Surface](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_Surface) return;
         vx::Node* valueCasted;
         try {

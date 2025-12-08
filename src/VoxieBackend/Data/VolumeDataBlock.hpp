@@ -133,6 +133,21 @@ class VOXIEBACKEND_EXPORT VolumeDataBlock : public VolumeData,
     return Accessor(thisShared(), cache);
   }
 
+  template <typename AccessorType, typename F>
+  void withInterpolatedAccessor(vx::InterpolationMethod interpolationMethod,
+                                const F& f) {
+    static_assert(std::is_same<AccessorType, float>::value,
+                  "AccessorType must be float");
+
+    auto accessor = this->accessor();
+
+    // TODO: Allow AccessorType to be something other than float? Does this make
+    // sense for VolumeDataBlock? Is this conversion needed? (Probably not)
+    auto accessorConv = vx::convertedVoxelAccessor<float>(accessor);
+
+    vx::withInterpolation(accessorConv, interpolationMethod, f);
+  }
+
   QSharedPointer<BlockProviderInfo> info() override final { return info_; }
 
   const vx::Vector<size_t, 3>& arrayShape() final override {
@@ -198,6 +213,22 @@ class VOXIEBACKEND_EXPORT VolumeDataBlock : public VolumeData,
 
   // Will always return 'float'
   DataType getDataType() override;
+
+  // This is here only for compatibility with other volume types
+  template <typename F, typename Ret = decltype((*(F*)nullptr)(
+                            (*(VolumeDataBlock*)nullptr)))>
+  Ret performInGenericContext(const F& lambda) {
+    return lambda(*this);
+  }
+
+  // TODO: Implement this
+  template <typename Callback>
+  void forEachVoxelImpl(const Callback& callback) {
+    (void)callback;
+
+    qWarning()
+        << "TODO: VolumeDataBlock::forEachVoxelImpl() is not implemented";
+  }
 
  protected:
   // Same as encodeBlock(), but does not invalidate the cache entry

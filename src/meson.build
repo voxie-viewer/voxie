@@ -35,7 +35,11 @@ if meson.get_compiler('c').get_argument_syntax() != 'msvc'
   add_project_arguments('-Wno-unknown-warning-option', language : ['c', 'cpp'])
 else
   # MSVC
-  add_project_arguments('/wd4127', language : ['c', 'cpp']) # Diable "conditional expression is constant"
+  add_project_arguments('/wd4127', language : ['c', 'cpp']) # Disable "conditional expression is constant"
+
+  # MSVC does not seem to enable /Zc:lambda on older versions when /permissive- is set, even though the documentation <https://learn.microsoft.com/en-us/cpp/build/reference/zc-lambda?view=msvc-140> says it should be: <https://godbolt.org/z/h5K3qq4a4>. Enable /Zc:lambda manually. See e.g. <https://developercommunity.microsoft.com/t/Captured-parameter-not-visible-in-nested/10634637> for more information whye /Zc:lambda is needed.
+  add_project_arguments('/Zc:lambda', language : ['cpp'])
+  # Full link: <https://godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYTStJg1DIApACYAQuYukl9ZATwDKjdAGFUtAK4sGe1wAyeAyYAHI%2BAEaYxBIapAAOqAqETgwe3r56icmOAkEh4SxRMVxxdpgOqUIETMQE6T5%2BXLaY9rkM1bUE%2BWGR0bG2NXUNmc0KQ93BvUX9pQCUtqhexMjsHABuqHjoANRUXBBzOzsmAOxWGgCCx8doDOOYqvHEO0xeRDvIAPrrYl6YJwAzAARHZcEyAi7XG5vD5ULwMZBA0EmACsVlRwMOJ3OJiuNwJO2ImAIywYnx%2Bf0wEKhBLOwJpeOhx3hiMOjKu9KZTOCBB2LCYwWxZyspwZVw4C1onFRvD8HC0pFQnDc1msOwUSxWAPMgJ4pAImklCwA1rE4tKOJJeCwQKi4vLFcqOLwFCA4oaFZLSHBYDBEChUCx4nRouRKGhg6GYsAFMx4goEKgCHw6ARom6IBEjaQIsFagBPTj6vPMYgFgDyEW0FU9%2BsjbEEFYYtCLXtIWAiXmAbjEtDd3F4WAFRnE7fwxMq60wA8Vjwq7zW%2Bt5rRztDwEWIhY8WGLvAIxDwtsHpGnxAiSUwwMwI%2BA66MRoWVAMsYAanhMAB3CvxRh7mSCCIYjsFIAHyEoag5roZj6IYxhqpY%2Bgbm6kALKg8TtAOAC04zoBCwKmJY1hcKcvCoGeh5YChhwtG0qQuAw7ieI0/iMT0hTFFkSQpAIIxNAk3HtOxfQlLRtZVBMfF6OUlQCJ0dTCTMonjF0UljBMimcVwCyassqwSFKMpyjmzo7KoAAcABsWGWZIOzAMgSIQAeCImkcEC4IQJAnGYepzPuj4LAgmBMFgMQ0WaXAAJwAHSooCGgaGYlmlFFlmWRoqKnKi%2BicNapCOmRnCuu6BqPj6/q%2BlAlVIJGIb0GQFAQHV0YgOsyDxPEPzRV8ZhRV8r5CFwllfKUXyqLZqa0OmxCZtm7aloW/6LeWVY1g4/4NowBDNq2Oadt2va0P2/7DnBY6KhO4nTrOvDzsgi7/iulqKuum7bhgS77oex76meF5KNet73qAXpPi%2BCjvl%2BP5/ie/CAaI4igfD4EqOo7a6ICsEPoRViIW91FoRhqRugA9L%2BxAsHgCjJNOWFKhR2wzvAOmtOJzgQK4amkIEUwcbMAk5Kk3PZDxDCaQLMntPJ9TMaMYmyR0Gl8yJ0mSXL/EqQpKtKQZix6SBhkcLKBUmZwZm2fyCjtTs6zRTFfU7INw0xaUOwefgRAvLq2kBWDQUhWFlCmiACUxZZgKAmYZiZZIkhcICpynJNlr5ba9qm%2B2zolR65VVRAtVBvVYZNS1DVtR1XV2/1UcDUNpy9eNk00NNGaUPNiorW2Jb5qt1a1ptQaNjtLZtpdmBdj2fYDvqZ2jmsl14JOjg3Tm92PSez1rhuW7ljuX0Gj9/7/ZeQPncEoNaODTBvh%2B36/vK%2Boo0BSPSCjiho1BegGDjCE2ATLMlTEwEGTCmVMaZ4DpgzaIlFmaoQVu0BiTEMj8V5gUVWzRRbtBFoJVIEtlJs0VjLbmUsJJdHwWrVSGtKHa3QbrbS%2BttR60tCbQqSpzYTTsiwa2SJq4xSjk7euDt3aeS9j5Pyfsr4B1Cv0CKIA%2BpxXMlZVEkhUQJ0sqicy2Usap2MlnYqthSqeivhVeABdAxRgauGZqRdWrtU6t1fqfU67DVGhoJub80xtyzDmLuy1e6Vn7htE8W0myj32hPQ609To3nOgvIcS9rrM3bOvdMT1BCrnbG9XeBZ97/gPEeY%2B0QAZXliaOC%2B5Vnw30hnfGGj9eDP0RiBN%2BsgP6QQxiAaQP94JEXxshQB6FMKcHJtEcBtNMBYR2KTAAWsgEABgijoCYGRRmVFAGkI5lzahzQ0HTC0oLMWOChZ5B1vsjZSsqEoOkoQ6Wys6FnPVlc9S5DTmzB0lqfSDCWF6KdBwy23CbZ8Mds7SyrsNAiM9t5H2/kyr%2B1IMFGR4UQ6AlikncyXAzCSCipIaOGhARYtylaH5RUXSGNznCy0ZgbR2gdGbUlxjvT5xqiAJYBB4jvGsZgSFlE9CNOAhIFpgg2no0VJjUgn4tzxD3EbVhdKKzvHZXyVAVALZcJ4bbe2wKhqgrdhADwljojiMBDChlcxpFBzkWHQEllTjmTMOZVEqJLJRVOAnZoujSDp1pfo0lbpyUmPzkgVlirrFl2iKEVgaxOFW0BfbPUgiSKuzuty7YvLZAv2aWBYVX9mgSqYFKwcMriXsI4PKtl7wdjKtVTG3hcazAJtOMIvVtiGriN9rCqR8LA6yJDgo21EdnVJwSklcyaVCX5TYdnMlHbGXMuDRy0uLbw2Rs4NGgFtbYpapdqUZNXkeXND5a/LNEERU6E6eKyV0rCWyp9WWxVlaVVrvVUCqKCadXgubQa72vlJAmsCl2xFwdSBmhRTFcyqjzIaGGqcRKZhNHjuLVOv1M6zWEqpZ6mlmdfn0v/WaSDMVJDOpdYCUdeKUWSB0ZwQEiGDGmqNuhr1WGSWSONIS6jTGS0sdQ2eZIzhJBAA%3D%3D%3D>
 endif
 
 if target_machine.system() == 'windows'
@@ -222,6 +226,7 @@ if get_option('plugins').enabled()
   subdir('PluginVisRaw')
   subdir('PluginVis3D')
   subdir('PluginVisTable')
+  subdir('PluginVisLinePlot')
   subdir('PluginFilter2D')
   subdir('PluginExample')
   subdir('PluginSegmentation')

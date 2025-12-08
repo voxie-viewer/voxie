@@ -85,11 +85,21 @@ class VOXIECORESHARED_EXPORT OpenGLDrawUtils : public QObject,
                                                protected QOpenGLFunctions {
  private:
   // QOpenGLVertexArrayObject vao;
-  QOpenGLShaderProgram program;
-  GLuint MVP_ID;
-  GLuint vertexPosition_modelspaceID;
-  GLuint vertexColorID;
+  QOpenGLShaderProgram programSimple;
+  GLuint simple_MVP_ID;
+  GLuint simple_vertexPosition_modelspaceID;
+  GLuint simple_vertexColorID;
+
+  QOpenGLShaderProgram programFlat;
+  GLuint flat_MVP_ID;
+  GLuint flat_M_ID;
+  GLuint flat_vertexPosition_modelspaceID;
+  GLuint flat_vertexNormalID;
+  GLuint flat_vertexColorID;
+  GLuint flat_lightPositionID;
+
   QOpenGLBuffer vertexbuffer;
+  QOpenGLBuffer normalbuffer;  // Only used for shader with light
   QOpenGLBuffer colorbuffer;
 
  public:
@@ -133,11 +143,13 @@ class VOXIECORESHARED_EXPORT OpenGLDrawUtils : public QObject,
    * vertex, including alpha value).
    */
   void draw(GLenum mode, const std::vector<GLfloat>& vertices,
-            const std::vector<GLfloat>& colors,
-            const QMatrix4x4& modelViewProjectionMatrix);
+            const std::vector<GLfloat>& colors, const QMatrix4x4& modelMatrix,
+            const QMatrix4x4& modelViewProjectionMatrix,
+            const QVector4D* lightPosition = nullptr);
 
-  void draw(const PrimitiveBuffer& buffer,
-            const QMatrix4x4& modelViewProjectionMatrix);
+  void draw(const PrimitiveBuffer& buffer, const QMatrix4x4& modelMatrix,
+            const QMatrix4x4& modelViewProjectionMatrix,
+            const QVector4D* lightPosition = nullptr);
 };
 
 // Subclass of OpenGLWidget which provides some basic 3D drawing operations
@@ -153,8 +165,9 @@ class VOXIECORESHARED_EXPORT OpenGLDrawWidget : public OpenGLWidget {
 
   typedef OpenGLDrawUtils::PrimitiveBuffer PrimitiveBuffer;
 
-  void draw(const PrimitiveBuffer& buffer,
-            const QMatrix4x4& modelViewProjectionMatrix);
+  void draw(const PrimitiveBuffer& buffer, const QMatrix4x4& modelMatrix,
+            const QMatrix4x4& modelViewProjectionMatrix,
+            const QVector4D* lightPosition = nullptr);
 };
 
 }  // namespace visualization

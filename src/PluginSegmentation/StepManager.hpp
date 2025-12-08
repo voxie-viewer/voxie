@@ -62,7 +62,7 @@ class StepManager : public QObject, public StepManagerI {
    * @param key key of the property to modify
    * @param value new value that shall be assigned to the key
    */
-  void createMetaStep(qlonglong labelID, QString key, QVariant value) override;
+  void createMetaStep(qlonglong labelID, QString key, vx::Any value) override;
 
   /**
    * @brief adds a row to the label table by creating a meta step with the given
@@ -76,7 +76,7 @@ class StepManager : public QObject, public StepManagerI {
    * visualizer
    */
   void addLabelTableRow(qlonglong labelID, QString name, QString description,
-                        QVariant color, bool visibility);
+                        vx::Any color, bool visibility);
 
   /**
    * @brief creates an RemoveLabelStep and starts removal calculation for the
@@ -263,7 +263,7 @@ class StepManager : public QObject, public StepManagerI {
   template <typename T, typename = std::enable_if<
                             std::is_base_of<SegmentationStep, T>::value>>
   void registerStep(QSharedPointer<T>& step) {
-    QMap<QString, QVariant> properties;
+    QMap<QString, vx::Any> properties;
     step = qSharedPointerDynamicCast<T>(T::getPrototypeSingleton()->create(
         properties, QList<Node*>(), QMap<QString, QDBusVariant>(), false));
   }

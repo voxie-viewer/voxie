@@ -6,6 +6,8 @@ import json
 import numbers
 import io
 import signal
+import math
+import argparse
 import tkinter
 import tkinter.scrolledtext
 
@@ -21,9 +23,20 @@ if True:
 
 
 def get_readonly_copy(a, *, dtype=None):
-    copy = np.array(a)
+    copy = np.array(a, dtype=dtype)
     copy.flags.writeable = False
     return copy
+
+
+def numberToJson(value):
+    if isinstance(value, float) and math.isnan(value):
+        return 'NaN'
+    elif value == math.inf:
+        return 'Infinity'
+    elif value == -math.inf:
+        return '-Infinity'
+    else:
+        return value
 
 
 class BernsteinPolynomial:
@@ -259,14 +272,13 @@ class PiecewisePolynomialFunction:
 
         return PiecewisePolynomialFunction(self.dtype, newBreakpoints, newBreakpointValues, newBreakpointIntegrals, new_polynomials)
 
-    # TODO: inf/nan
     def asJson(self):
         bp = []
         for i in range(self.breakpointCount):
-            bp.append([self.breakpoints[i], [self.breakpointValues[i], self.breakpointIntegrals[i]]])
+            bp.append([numberToJson(self.breakpoints[i]), [numberToJson(self.breakpointValues[i]), numberToJson(self.breakpointIntegrals[i])]])
         intervals = []
         for i in range(self.breakpointCount + 1):
-            intervals.append(list(self.polynomials[i].coefficients))
+            intervals.append(list([numberToJson(f) for f in self.polynomials[i].coefficients]))
         return [bp, intervals]
 
     # TODO: inf/nan
@@ -462,26 +474,74 @@ class GUI:
         # self.fig.canvas.draw_idle()
         self.update()
 
-    def init_fun(self):
+    def init_fun(self, func=None):
         self.currentInterval = 0
-        self.func = PiecewisePolynomialFunction.zero()
+        if func is None:
+            self.func = PiecewisePolynomialFunction.zero()
+        else:
+            self.func = func
 
     def reset(self):
         print('reset')
         self.init_fun()
         self.update()
 
-    def run(self):
+    def gui_set_range(self, update=True):
+        if len(self.func.breakpoints) == 0:
+            xmin = -5
+            xmax = 5
+        else:
+            xmin = self.func.breakpoints[0] - 1
+            xmax = self.func.breakpoints[-1] + 1
+
+        # print('set_range {} - {}'.format(xmin, xmax))
+
+        size = xmax - xmin
+        xmin -= size * 0.1
+        xmax += size * 0.1
+
+        self.set_range(xmin, xmax)
+        if update:
+            self.update()
+
+    def gui_set_y_range(self, update=True):
+        # TODO: Get proper minimum / maximum?
+        values = [self.func.breakpointValues]
+        for poly in self.func.polynomials:
+            values.append(poly.coefficients)
+        values = np.concatenate(values)
+        values = values[~np.isnan(values)]
+        min_val = np.min(values)
+        max_val = np.max(values)
+        # print(min_val, max_val)
+
+        size = max_val - min_val
+        if size == 0:
+            min_val = -10
+            max_val = 10
+        else:
+            min_val -= size * 0.1
+            max_val += size * 0.1
+
+        self.ax1.set_ylim(min_val, max_val)
+        if update:
+            self.update()
+
+    def set_range(self, xmin, xmax):
+        # self.X = np.arange(xmin, xmax, 0.01)
+        self.X = np.linspace(xmin, xmax, 4000)
+
+        self.m.set_xdata(self.X)
+
+        self.ax1.set_xlim(xmin, xmax)
+
+    def run(self, func=None):
         root = tkinter.Tk()
         root.wm_title("Piecewise polynomial function editor")
 
-        self.init_fun()
+        self.init_fun(func=func)
 
         self.maxDegree = 3
-        xmin = -5
-        xmax = 5
-        ymin = -10
-        ymax = 10
 
         # figure.subplot.right
         # matplotlib.rcParams['figure.subplot.right'] = 0.8
@@ -504,17 +564,17 @@ class GUI:
 
         self.l, = self.ax1.plot([0] * (self.maxDegree + 1), [0] * (self.maxDegree + 1), color='k', linestyle='none', marker='o', markersize=8)
 
-        self.X = np.arange(xmin, xmax, 0.01)
-        self.m, = self.ax1.plot(self.X, self.func(self.X), 'r-')
+        self.m, = self.ax1.plot([], [], 'r-')
 
         self.ax1.set_yscale('linear')
-        self.ax1.set_xlim(xmin, xmax)
-        self.ax1.set_ylim(ymin, ymax)
         self.ax1.set_xlabel('x')
         self.ax1.set_ylabel('y')
         self.ax1.grid(True)
         self.ax1.yaxis.grid(True, which='minor', linestyle='--')
         # self.ax1.legend(loc=2, prop={'size': 22})
+
+        self.gui_set_range(update=False)
+        self.gui_set_y_range(update=False)
 
         self.fig.canvas.mpl_connect('button_press_event', self.button_press_callback)
         self.fig.canvas.mpl_connect('button_release_event', self.button_release_callback)
@@ -525,9 +585,9 @@ class GUI:
         # toolbar.update()
         # toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
 
-        canvas.get_tk_widget().grid(row=0, column=0, columnspan=6, sticky='NSWE')
+        canvas.get_tk_widget().grid(row=0, column=0, columnspan=7, sticky='NSWE')
         root.rowconfigure(0, weight=1)
-        root.columnconfigure(5, weight=1)
+        root.columnconfigure(6, weight=1)
 
         tkinter.Label(root, text='Number of intervals').grid(row=1, column=1)
         self.intervalCountLabel = tkinter.Label(root, text='')
@@ -762,6 +822,12 @@ class GUI:
         button = tkinter.Button(root, text='Info', command=info)
         button.grid(row=4, column=4)
 
+        setRangeButton = tkinter.Button(root, text='Set range', command=self.gui_set_range)
+        setRangeButton.grid(row=1, column=5)
+
+        setYRangeButton = tkinter.Button(root, text='Set Y range', command=self.gui_set_y_range)
+        setYRangeButton.grid(row=2, column=5)
+
         def dec_degree():
             if self.func.polynomials[self.currentInterval].degree == 0:
                 return
@@ -810,8 +876,16 @@ class GUI:
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--from-stdin', action='store_true')
+    args = parser.parse_args()
+
+    func = None
+    if args.from_stdin:
+        func = PiecewisePolynomialFunction.fromJson(json.load(sys.stdin))
+
     gui = GUI()
-    gui.run()
+    gui.run(func=func)
 
 
 if __name__ == '__main__':

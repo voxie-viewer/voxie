@@ -55,6 +55,7 @@ class VOXIECORESHARED_EXPORT TableColumn {
 
 class VOXIECORESHARED_EXPORT TableRow {
   quint64 rowID_;
+  // TODO: Should TableRow use vx::Any or QVariant?
   QList<QVariant> data_;
 
  public:

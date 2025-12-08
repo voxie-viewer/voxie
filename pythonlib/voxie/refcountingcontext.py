@@ -1,4 +1,3 @@
-# Implements a DBusContext where objects are reference counted and uses annotations like de.uni_stuttgart.Voxie.ParentInterface, de.uni_stuttgart.Voxie.Interface, de.uni_stuttgart.Voxie.ReferenceCountChange to look for parent interfaces and to find the correct wrapper object
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,6 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+# Implements a DBusContext where objects are reference counted and uses annotations like de.uni_stuttgart.Voxie.ParentInterface, de.uni_stuttgart.Voxie.Interface, de.uni_stuttgart.Voxie.ReferenceCountChange to look for parent interfaces and to find the correct wrapper object
 
 import dbus
 import sys

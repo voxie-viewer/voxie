@@ -16,7 +16,8 @@
             "Name": "de.uni_stuttgart.Voxie.FileFormat.File.Json.Import",
             "DisplayName": "Voxie file data JSON",
             "Patterns": [
-                "*.vxfl.json"
+                "*.vxfl.json",
+                "*.vxfl"
             ]
         }
     ]

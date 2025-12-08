@@ -23,6 +23,7 @@
 #pragma once
 
 #include <Voxie/Node/ParameterCopyBase.hpp>
+
 #include <VoxieClient/Exception.hpp>
 
 namespace vx {
@@ -48,8 +49,8 @@ class WeakParameterCopy : public ParameterCopyBase {
 
   WeakParameterCopy(
       const QDBusObjectPath& mainNodePath,
-      const QMap<QDBusObjectPath,
-                 QSharedPointer<const QMap<QString, QVariant>>>& properties,
+      const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>&
+          properties,
       const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes,
       const QMap<QDBusObjectPath, QMap<QString, QString>>& extensionInfo,
       const QMap<QDBusObjectPath, WeakDataInfo>& dataMap)
@@ -66,6 +67,8 @@ class WeakParameterCopy : public ParameterCopyBase {
   bool operator==(const WeakParameterCopy& other) const;
 
   bool operator!=(const WeakParameterCopy& other) const;
+
+  QString toString() const;
 
  private:
   QMap<QDBusObjectPath, WeakDataInfo> dataMap_;

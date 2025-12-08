@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/Voxie">
+        <file>Vis/Shader/SimpleShader.vs.glsl</file>
+        <file>Vis/Shader/SimpleShader.fs.glsl</file>
+        <file>Vis/Shader/FlatShader.vs.glsl</file>
+        <file>Vis/Shader/FlatShader.fs.glsl</file>
+    </qresource>
+</RCC>

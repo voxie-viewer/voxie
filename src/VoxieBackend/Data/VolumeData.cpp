@@ -22,8 +22,10 @@
 
 #include "VolumeData.hpp"
 
+#include <VoxieClient/Array.hpp>
 #include <VoxieClient/DBusAdaptors.hpp>
 
+#include <VoxieBackend/Data/VolumeDataInst.hpp>
 #include <VoxieBackend/Data/VolumeStructure.hpp>
 
 #include <VoxieBackend/DBus/DBusTypes.hpp>
@@ -110,5 +112,33 @@ VolumeData::VolumeData(const vx::Vector<double, 3>& volumeOrigin,
 }
 
 VolumeData::~VolumeData() {}
+
+void VolumeData::extractLine(const vx::Vector<double, 3>& startPoint,
+                             const vx::Vector<double, 3>& endPoint,
+                             InterpolationMethod interpolationMethod,
+                             vx::Array1<float>& outputValues, size_t offset,
+                             size_t count) {
+  if (count == 0) return;  // Nothing to do
+  vx::Vector<double, 3> step;
+  if (count == 1)
+    step = vx::Vector<double, 3>::zero();
+  else
+    step = (endPoint - startPoint) / (count - 1);
+
+  // TODO: Parallelization?
+  this->withVolumeType([&](const auto& self) {
+    self->performInGenericContext([&](auto& self2) {
+      self2.template withInterpolatedAccessor<float>(
+          interpolationMethod, [&](const auto& accessorInterpol) {
+            for (size_t i = 0; i < count; i++) {
+              auto point = startPoint + i * step;
+              outputValues(offset + i) =
+                  accessorInterpol.getVoxelInterpolatedObject(point).value_or(
+                      std::numeric_limits<float>::quiet_NaN());
+            }
+          });
+    });
+  });
+}
 
 #include "VolumeData.moc"

@@ -22,6 +22,8 @@
 
 #include "ImageLayer.hpp"
 
+#include <VoxieClient/QtCollections.hpp>
+
 ImageLayer::ImageLayer(SliceVisualizer* sv) : sv(sv) {
   // Redraw when the slice changes
   QObject::connect(sv->properties, &SliceProperties::orientationChanged, this,
@@ -37,6 +39,10 @@ ImageLayer::ImageLayer(SliceVisualizer* sv) : sv(sv) {
 
   // Redraw when data changes
   connect(sv, &SliceVisualizer::volumeDataChangedFinished, this,
+          &Layer::triggerRedraw);
+
+  // Redraw when the selected series entry changes
+  connect(sv->properties, &SliceProperties::seriesEntryChanged, this,
           &Layer::triggerRedraw);
 
   // Redraw when properties of the data change
@@ -99,8 +105,47 @@ void ImageLayer::render(QImage& outputImage,
   vx::filter::FilterChain2D filterChain;
   filterChain.fromXMLString(properties.filter2DConfiguration());
 
-  if (data) {
-    // normal volume data
+  MultivariateDataWidget* widget = this->sv->getMultivariateDataWidget();
+  ActiveMode activeMode = widget->getActiveMode();
+
+  auto dataSeries = qSharedPointerDynamicCast<VolumeSeriesData>(
+      parameters->getData(volumeRaw).data());
+
+  if (data || (dataSeries && activeMode == ActiveMode::none)) {
+    // normal volume data / show one volume of a series
+    if (!data) {
+      auto dimensions = dataSeries->dimensions();
+      auto values = properties.seriesEntry();
+
+      QList<SeriesDimension::EntryKey> indices;
+      for (const auto& dim : dimensions) {
+        // TODO: More error handling?
+        if (!values.contains(dim->property()->name())) {
+          qWarning() << "Could not find value for dimension"
+                     << dim->property()->name();
+          return;
+        }
+        auto valueDBus = getQMapValue(values, dim->property()->name());
+        auto value = dim->property()->type()->dbusVoxieToRaw(valueDBus);
+        auto index = dim->lookupEntryByValueOrInvalid(value);
+        if (index == SeriesDimension::invalidEntryKey) {
+          qWarning() << "Could not find value" << vx::toString(value)
+                     << "in dimension" << dim->property()->name();
+          return;
+        }
+        indices << index;
+      }
+
+      auto entryData = dataSeries->lookupEntry(indices);
+      if (!entryData) {
+        // All dimension values are valid, but there is no entry for this
+        // combination
+        qDebug() << "Series entry not found";
+        return;
+      }
+
+      data = qSharedPointerDynamicCast<VolumeData>(entryData);
+    }
 
     // TODO: try to release memory earlier?
     SliceImage sliceImage = generateSliceImage(
@@ -126,25 +171,20 @@ void ImageLayer::render(QImage& outputImage,
 
   } else {
     // invalid data or multivariate data
-    auto dataSeries = qSharedPointerDynamicCast<VolumeSeriesData>(
-        parameters->getData(volumeRaw).data());
+    // qDebug() << "DS" << dataSeries << activeMode;
     if (dataSeries) {
+      // TODO: Handle this
       if (dataSeries->dimensionCount() != 1) {
         return;
       }
 
       auto dimension = dataSeries->dimensions()[0];
 
-      MultivariateDataWidget* widget = this->sv->getMultivariateDataWidget();
-      ActiveMode activeMode = widget->getActiveMode();
       if (dimension->property()->name().contains(
               "de.uni_stuttgart.Voxie.SeriesDimension.")) {  // check generic
                                                              // data types
 
-        if (activeMode == ActiveMode::none) {
-          // qDebug() << "Activemode == None. Nothing to render";
-          return;
-        } else if (activeMode == ActiveMode::details) {
+        if (activeMode == ActiveMode::details) {
           QList<QPair<QImage, float>> outputImageList;
           QList<channelMetaData> actChan = widget->getActiveChannels();
           for (channelMetaData channel : actChan) {
@@ -355,7 +395,8 @@ void ImageLayer::render(QImage& outputImage,
             SliceImage filteredImage = filterChain.getOutputSlice();
             if (channelDataVolume) {
               // insert eff.Z channel at 0 & density at 1
-              QString channelType = dimension->getEntryValue(i).toString();
+              QString channelType =
+                  vx::any_cast<QString>(dimension->getEntryValue(i));
               if (channelType ==
                   "de.uni_stuttgart.Voxie.Quantity.EffectiveAtomicNumber") {
                 sliceList.insert(0, filteredImage);

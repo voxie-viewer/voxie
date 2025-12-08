@@ -145,10 +145,10 @@ bool TableFilter::checkConstraint(int currentValue, QString op, double limit) {
   return true;
 }
 
-QVariant TableFilter::getNodePropertyCustom(QString key) {
+// TODO: Remove?
+vx::Any TableFilter::getNodePropertyCustom(QString key) {
   return FilterNode::getNodePropertyCustom(key);
 }
-
-void TableFilter::setNodePropertyCustom(QString key, QVariant value) {
+void TableFilter::setNodePropertyCustom(QString key, vx::Any value) {
   FilterNode::setNodePropertyCustom(key, value);
 }

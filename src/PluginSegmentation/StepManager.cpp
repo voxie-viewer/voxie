@@ -80,28 +80,28 @@ StepManager::~StepManager() {
 }
 
 void StepManager::addLabelTableRow(qlonglong labelID, QString name,
-                                   QString description, QVariant color,
+                                   QString description, vx::Any color,
                                    bool visibility) {
   QSharedPointer<MetaStep> metaStep = qSharedPointerDynamicCast<MetaStep>(
       MetaStep::getPrototypeSingleton()->create(
           {{"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep."
             "ModificationKind",
-            "AddLabel"},
+            vx::make_any<QString>("AddLabel")},
            {"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep."
             "LabelID",
-            labelID},
+            vx::make_any<qlonglong>(labelID)},
            {"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep."
             "Name",
-            name},
+            vx::make_any<QString>(name)},
            {"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep."
             "Description",
-            description},
+            vx::make_any<QString>(description)},
            {"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep."
             "Color",
             color},
            {"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep."
             "Visibility",
-            visibility}},
+            vx::make_any<bool>(visibility)}},
           QList<Node*>(), QMap<QString, QDBusVariant>(), false));
   runStepByKind(metaStep);
 }
@@ -300,16 +300,16 @@ void StepManager::createRemoveLabelStep(QList<SegmentationType> labelIDs) {
 }
 
 void StepManager::createMetaStep(qlonglong labelID, QString key,
-                                 QVariant value) {
+                                 vx::Any value) {
   QSharedPointer<MetaStep> metaStep = qSharedPointerDynamicCast<MetaStep>(
       MetaStep::getPrototypeSingleton()->create(
           {
               {"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep."
                "ModificationKind",
-               key},
+               vx::make_any<QString>(key)},
               {"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep."
                "LabelID",
-               labelID},
+               vx::make_any<qlonglong>(labelID)},
               {"de.uni_stuttgart.Voxie.SegmentationStep.MetaStep." + key,
                value},
           },
@@ -321,7 +321,7 @@ void StepManager::createAssignmentStep(qlonglong labelID) {
   QSharedPointer<AssignmentStep> assignmentStep = qSharedPointerDynamicCast<
       AssignmentStep>(AssignmentStep::getPrototypeSingleton()->create(
       {{"de.uni_stuttgart.Voxie.SegmentationStep.AssignmentStep.LabelID",
-        labelID}},
+        vx::make_any<qlonglong>(labelID)}},
       QList<Node*>(), QMap<QString, QDBusVariant>(), false));
   if (!selectionStepList.empty()) {
     for (auto step : this->selectionStepList) {
@@ -339,7 +339,7 @@ void StepManager::createSubtractStep(qint64 labelId) {
       qSharedPointerDynamicCast<SubtractStep>(
           SubtractStep::getPrototypeSingleton()->create(
               {{"de.uni_stuttgart.Voxie.SegmentationStep.SubtractStep.LabelId",
-                labelId}},
+                vx::make_any<qlonglong>(labelId)}},
               QList<Node*>(), QMap<QString, QDBusVariant>(), false));
 
   if (!this->selectionStepList.empty()) {
@@ -613,8 +613,9 @@ QList<QSharedPointer<vx::SegmentationStep>> StepManager::spawnDefaultSteps(
                             labelViewModel->getLabelIDbyRowIdx(index));
                       }
                     }
-                    step->setNodeProperty(property->name(),
-                                          QVariant::fromValue(labelList));
+                    step->setNodeProperty(
+                        property->name(),
+                        vx::make_any<QList<quint64>>(labelList));
                   }
                 }
                 this->runStepByKind(step);

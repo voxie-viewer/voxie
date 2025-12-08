@@ -1,4 +1,3 @@
-import argparse
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,6 +19,8 @@ import argparse
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--voxie-bus-address')

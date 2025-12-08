@@ -187,21 +187,21 @@ QWidget* TableVisualizer::getCustomPropertySectionContent(const QString& name) {
   return new QWidget;
 }
 
-QVariant TableVisualizer::getNodePropertyCustom(QString key) {
+vx::Any TableVisualizer::getNodePropertyCustom(QString key) {
   if (key == "de.uni_stuttgart.Voxie.Visualizer.Table.SortColumn") {
-    return lookUpColumnName(sortColumn);
+    return vx::make_any<QString>(lookUpColumnName(sortColumn));
   } else if (key == "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder") {
-    return lookUpSortOrder(sortOrder);
+    return vx::make_any<QString>(lookUpSortOrder(sortOrder));
   } else {
     return VisualizerNode::getNodePropertyCustom(key);
   }
 }
 
-void TableVisualizer::setNodePropertyCustom(QString key, QVariant value) {
+void TableVisualizer::setNodePropertyCustom(QString key, vx::Any value) {
   if (key == "de.uni_stuttgart.Voxie.Visualizer.Table.SortColumn") {
-    setTableSortColumn(value.toString());
+    setTableSortColumn(Node::parseVariant<QString>(value));
   } else if (key == "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder") {
-    setTableSortOrder(value.toString());
+    setTableSortOrder(Node::parseVariant<QString>(value));
   } else {
     VisualizerNode::setNodePropertyCustom(key, value);
   }

@@ -162,6 +162,7 @@ class CorePluginInstance : public PluginInstance {
 
     // BufferTypes
     components.append(vx::ByteBuffer::bufferType());
+    components.append(vx::Float32Buffer::bufferType());
     components.append(vx::VolumeDataBlock::BlockID::bufferType());
     components.append(vx::VolumeDataBlock::BlockOffsetEntry::bufferType());
     components.append(vx::VolumeDataBlockJpeg::BlockSize::bufferType());
@@ -420,7 +421,7 @@ static QList<QSharedPointer<PropertyBase>> parsePropertiesImpl(
   auto prototypePtr = createQSharedPointer<QSharedPointer<NodePrototype>>();
   auto prototype = NodePrototype::fromJson(
       obj,
-      [prototypePtr](const QMap<QString, QVariant>&, const QList<Node*>&,
+      [prototypePtr](const QMap<QString, vx::Any>&, const QList<Node*>&,
                      const QMap<QString, QDBusVariant>&,
                      vx::NodePrototype* prototype2,
                      bool) -> QSharedPointer<vx::Node> {
@@ -846,7 +847,7 @@ int Root::startVoxie(QCoreApplication& app, QCommandLineParser& parser,
   Importer::registerCreateNodeHandler(
       [](const QSharedPointer<OperationResultImport>& result,
          const QString& fileName, const QSharedPointer<Importer>& importer,
-         const QMap<QString, QVariant>& properties) {
+         const QMap<QString, vx::Any>& properties) {
         Load::registerCreateNode(::root, result, fileName, importer,
                                  properties);
       });

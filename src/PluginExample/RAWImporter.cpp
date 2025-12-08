@@ -68,7 +68,7 @@ static bool isPowerOfThree(size_t nL) {
 
 QSharedPointer<vx::OperationResultImport> RAWImporter::import(
     const QString& fileName, bool doCreateNode,
-    const QMap<QString, QVariant>& properties) {
+    const QMap<QString, vx::Any>& properties) {
   (void)properties;
   return runThreaded(
       "Import " + fileName, doCreateNode,

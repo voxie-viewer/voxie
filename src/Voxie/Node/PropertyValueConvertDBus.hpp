@@ -28,9 +28,14 @@
 
 #include <QtCore/QJsonObject>
 
+// TODO: Remove the JSON-related code and use as DBusTypeVoxie as RawType
+// everywhere?
+
 Q_DECLARE_METATYPE(VX_IDENTITY_TYPE((std::tuple<QString, QJsonObject>)))
 
 namespace vx {
+class DBusVariant;
+
 template <typename Raw, typename DBusType>
 // Must not be marked with VOXIECORESHARED_EXPORT because
 // PropertyValueConvertDBus<T, T> is inline (not really sure how exporting works
@@ -66,5 +71,38 @@ struct VOXIECORESHARED_EXPORT
     PropertyValueConvertDBus<QJsonValue, QDBusVariant> {
   static QDBusVariant fromRaw(const QJsonValue& raw);
   static QJsonValue toRaw(const QDBusVariant& dbus);
+};
+
+template <>
+struct VOXIECORESHARED_EXPORT
+    PropertyValueConvertDBus<QJsonObject, QMap<QString, vx::DBusVariant>> {
+  static QMap<QString, vx::DBusVariant> fromRaw(const QJsonObject& raw);
+  static QJsonObject toRaw(const QMap<QString, vx::DBusVariant>& dbus);
+};
+
+template <>
+struct VOXIECORESHARED_EXPORT PropertyValueConvertDBus<
+    std::tuple<QString, QJsonObject>,
+    std::tuple<QString, QMap<QString, vx::DBusVariant>>> {
+  static std::tuple<QString, QMap<QString, vx::DBusVariant>> fromRaw(
+      const std::tuple<QString, QJsonObject>& raw);
+  static std::tuple<QString, QJsonObject> toRaw(
+      const std::tuple<QString, QMap<QString, vx::DBusVariant>>& dbus);
+};
+
+template <>
+struct VOXIECORESHARED_EXPORT
+    PropertyValueConvertDBus<QJsonValue, vx::DBusVariant> {
+  static vx::DBusVariant fromRaw(const QJsonValue& raw);
+  static QJsonValue toRaw(const vx::DBusVariant& dbus);
+};
+
+template <>
+struct VOXIECORESHARED_EXPORT PropertyValueConvertDBus<
+    QMap<QString, vx::DBusVariant>, QMap<QString, QDBusVariant>> {
+  static QMap<QString, QDBusVariant> fromRaw(
+      const QMap<QString, vx::DBusVariant>& raw);
+  static QMap<QString, vx::DBusVariant> toRaw(
+      const QMap<QString, QDBusVariant>& dbus);
 };
 }  // namespace vx

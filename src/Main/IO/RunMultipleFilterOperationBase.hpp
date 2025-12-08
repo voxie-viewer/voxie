@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <Voxie/DebugOptions.hpp>
+
 #include <Voxie/Node/FilterNode.hpp>
 #include <Voxie/Node/NodePrototype.hpp>
 #include <VoxieBackend/IO/Operation.hpp>
@@ -43,7 +45,10 @@ class RunMultipleFilterOperationBase : public vx::io::Operation {
   ~RunMultipleFilterOperationBase();
   void filterFinished();
 
-  static const bool debug = false;
+  static bool debugEnabled() {
+    if (vx::debug_option::Log_FilterChangeTracking()->get()) return true;
+    return false;
+  }
 
  protected:
   void runFilters(QList<vx::FilterNode*> filterList, bool skipUnchanged);
@@ -95,14 +100,14 @@ class RunFilterNode : public QObject {
       return;
     }
 
-    if (RunMultipleFilterOperationBase::debug)
+    if (RunMultipleFilterOperationBase::debugEnabled())
       qDebug() << "Starting filter" << filter->getPath().path();
     QSharedPointer<RunFilterOperation> filterOp = filter->run();
 
     // when this filter is finished call operationFinished()
     filterOp->onFinished(
         this, [this](const QSharedPointer<Operation::ResultError>& error) {
-          if (RunMultipleFilterOperationBase::debug)
+          if (RunMultipleFilterOperationBase::debugEnabled())
             qDebug() << "Finished filter" << filter->getPath().path();
           this->operationFinished(error);
         });
@@ -118,7 +123,7 @@ class RunFilterNode : public QObject {
     for (QSharedPointer<RunFilterNode> child : children) {
       child->numParentsProcessed++;
       if (child->numParents == child->numParentsProcessed) {
-        if (RunMultipleFilterOperationBase::debug)
+        if (RunMultipleFilterOperationBase::debugEnabled())
           qDebug() << "Starting child" << child->filter->getPath().path()
                    << "of" << this->filter->getPath().path() << "after all"
                    << child->numParents << "parents are processed";
@@ -226,7 +231,7 @@ class FilterGraph {
    */
   void runFilters(bool forceRerunAll) {
     for (QSharedPointer<RunFilterNode> node : root->children) {
-      if (RunMultipleFilterOperationBase::debug)
+      if (RunMultipleFilterOperationBase::debugEnabled())
         qDebug() << "Starting root child" << node->filter->getPath().path();
       node->startFilterIfNecessary(forceRerunAll);
     }
@@ -260,7 +265,7 @@ class FilterGraph {
     while (nodeList.size() != 0) {
       vx::Node* obj = nodeList.takeLast();
       /*
-      if (RunMultipleFilterOperationBase::debug)
+      if (RunMultipleFilterOperationBase::debugEnabled())
         qDebug() << "addChildren" << parentFilter->getPath().path()
                  << obj->getPath().path() << nodeKindToString(obj->nodeKind());
       */

@@ -127,7 +127,7 @@ void OpenFileDialog::finish(int result) {
       }
     }
     // qDebug() << "Open" << file << importer;
-    QMap<QString, QVariant> properties;
+    QMap<QString, vx::Any> properties;
     auto fakeNode = getFakeNode(importer);
     if (fakeNode) {
       for (const auto& prop : importer->properties())

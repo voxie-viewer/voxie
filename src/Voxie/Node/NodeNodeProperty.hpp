@@ -35,14 +35,14 @@ class VOXIECORESHARED_EXPORT PropertyInstance {
   virtual ~PropertyInstance();
 
   virtual QSharedPointer<PropertyType> type() const = 0;
-  virtual QVariant get() const = 0;
-  virtual void set(const QVariant& value) const = 0;
+  virtual vx::Any get() const = 0;
+  virtual void set(const vx::Any& value) const = 0;
   virtual QMetaObject::Connection connectChanged(
-      QObject* obj, std::function<void(const QVariant&)>&& callback) const = 0;
+      QObject* obj, std::function<void(const vx::Any&)>&& callback) const = 0;
   template <typename T>
-  QMetaObject::Connection connectChanged(
-      T* obj, void (T::*fun)(const QVariant& value)) {
-    return connectChanged(obj, [fun](const QVariant& value) { fun(value); });
+  QMetaObject::Connection connectChanged(T* obj,
+                                         void (T::*fun)(const vx::Any& value)) {
+    return connectChanged(obj, [fun](const vx::Any& value) { fun(value); });
   }
 };
 
@@ -76,9 +76,9 @@ class VOXIECORESHARED_EXPORT NodeNodeProperty : public PropertyInstance {
   }
 
   QSharedPointer<PropertyType> type() const override;
-  QVariant get() const override;
-  void set(const QVariant& value) const override;
+  vx::Any get() const override;
+  void set(const vx::Any& value) const override;
   QMetaObject::Connection connectChanged(
       QObject* obj,
-      std::function<void(const QVariant&)>&& callback) const override;
+      std::function<void(const vx::Any&)>&& callback) const override;
 };

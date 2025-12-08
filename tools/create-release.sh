@@ -50,6 +50,15 @@ if [ "$1" = "--unpack-ninja" ]; then
     shift
 fi
 
+CLEANUP_AT_END=0
+if [ "$1" = "--keep-files" ]; then
+    CLEANUP_AT_END=0
+    shift
+elif [ "$1" = "--cleanup-files" ]; then
+    CLEANUP_AT_END=1
+    shift
+fi
+
 if [ "$VOXIEBUILD_PATH_HDF5" = "" ]; then
     HDF5_BIN="hdf5-1.10.0-patch1-linux-centos7-x86_64-gcc485-shared.tar.gz"
     HDF5_SRC="hdf5-1.10.0-patch1.tar.bz2"
@@ -111,12 +120,41 @@ tar czf build/release/"$TAG-lin64.tar.gz" -C build/release/install "$TAG"
 
 cp build/release/"$TAG-lin64.tar.gz" .
 
+# Create script which will set LD_LIBRARY_PATH to lib folder
+cat > build/release/setEnv <<EOF
+#!/bin/sh
+
+set -e
+
+POS="\${0%/*}"; test "\$POS" = "\$0" && POS=.
+
+export LD_LIBRARY_PATH="\$POS/install/$TAG/lib\${LD_LIBRARY_PATH+:\$LD_LIBRARY_PATH}"
+
+exec "\$@"
+EOF
+chmod 755 build/release/setEnv
+
+# Create voxie wrapper script
+cat > build/release/voxie <<EOF
+#!/bin/sh
+
+set -e
+
+POS="\${0%/*}"; test "\$POS" = "\$0" && POS=.
+
+exec "\$POS/setEnv" "\$POS/install/$TAG/voxie" "\$@"
+EOF
+chmod 755 build/release/voxie
+
 # Build documentation
 echo "Building documentation..."
 rm -rf build/doc
 mkdir build/doc
-LD_LIBRARY_PATH="build/release/install/$TAG/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}" ./voxie.sh --no-opencl --dbus-p2p --output-help-directory build/doc
+# LD_LIBRARY_PATH="build/release/install/$TAG/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}" ./voxie.sh --no-opencl --dbus-p2p --output-help-directory build/doc
+build/release/voxie --no-opencl --dbus-p2p --output-help-directory build/doc
 tar cjf doc.tar.bz2 -C build doc
 echo "Building documentation done"
 
-rm -rf build/release/install
+if [ "$CLEANUP_AT_END" = 1 ]; then
+    rm -rf build/release/install
+fi

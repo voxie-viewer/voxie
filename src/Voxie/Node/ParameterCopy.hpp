@@ -65,8 +65,8 @@ class VOXIECORESHARED_EXPORT ParameterCopy : public ParameterCopyBase {
 
   ParameterCopy(
       const QDBusObjectPath& mainNodePath,
-      const QMap<QDBusObjectPath,
-                 QSharedPointer<const QMap<QString, QVariant>>>& properties,
+      const QMap<QDBusObjectPath, QSharedPointer<const QMap<QString, vx::Any>>>&
+          properties,
       const QMap<QDBusObjectPath, QSharedPointer<NodePrototype>>& prototypes,
       const QMap<QDBusObjectPath, QMap<QString, QString>>& extensionInfo,
       const QMap<QDBusObjectPath, DataInfo>& dataMap)

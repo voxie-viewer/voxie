@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
           srf2_vertices(i, 2) = extractedSurface->getVertex(i)[2];
         }
 
-        srf2_version = createQSharedPointer<
+        srf2_version = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(update->Finish(

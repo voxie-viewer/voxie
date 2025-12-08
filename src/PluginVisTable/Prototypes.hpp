@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -208,11 +209,11 @@ class AutoScaleTableUnitsPropertiesBase {
 };
 class AutoScaleTableUnitsPropertiesCopy
     : public AutoScaleTableUnitsPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   AutoScaleTableUnitsPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QDBusObjectPath tableRaw() override final;
   QDBusObjectPath outputRaw() override final;
 };
@@ -292,11 +293,11 @@ class HistogramPropertiesBase {
   virtual double upperBoundXFractionRaw() = 0;
 };
 class HistogramPropertiesCopy : public HistogramPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   HistogramPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   qint64 bucketCount() override final;
   qint64 bucketCountRaw() override final;
   QList<vx::ColorizerEntry> colorMap() override final;
@@ -476,11 +477,11 @@ class ScatterPlotPropertiesBase {
   virtual double viewPercentileRaw() = 0;
 };
 class ScatterPlotPropertiesCopy : public ScatterPlotPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   ScatterPlotPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<vx::ColorizerEntry> colorMap() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   colorMapRaw() override final;
@@ -683,11 +684,11 @@ class TablePropertiesBase {
   virtual QDBusObjectPath tableRaw() = 0;
 };
 class TablePropertiesCopy : public TablePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   TablePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   qint64 rowLimit() override final;
   qint64 rowLimitRaw() override final;
   QString sortColumn() override final;

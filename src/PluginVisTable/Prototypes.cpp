@@ -14,19 +14,19 @@ AutoScaleTableUnitsPropertiesEntry::AutoScaleTableUnitsPropertiesEntry(
     vx::PropType::Table, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Filter.AutoScaleTableUnits.Table",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 AutoScaleTableUnitsPropertiesEntry::AutoScaleTableUnitsPropertiesEntry(
     vx::PropType::Output, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Output",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 AutoScaleTableUnitsPropertiesBase::~AutoScaleTableUnitsPropertiesBase() {}
 AutoScaleTableUnitsPropertiesCopy::AutoScaleTableUnitsPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QDBusObjectPath AutoScaleTableUnitsPropertiesCopy::tableRaw() {
   return vx::Node::parseVariant<QDBusObjectPath>((
@@ -170,7 +170,7 @@ AutoScaleTableUnitsProperties::AutoScaleTableUnitsProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Table](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Table) return;
         vx::Node* valueCasted;
         try {
@@ -192,7 +192,7 @@ AutoScaleTableUnitsProperties::AutoScaleTableUnitsProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Output](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Output) return;
         vx::Node* valueCasted;
         try {
@@ -216,13 +216,13 @@ HistogramPropertiesEntry::HistogramPropertiesEntry(vx::PropType::BucketCount,
                                                    qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Histogram.BucketCount",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 HistogramPropertiesEntry::HistogramPropertiesEntry(
     vx::PropType::ColorMap, QList<vx::ColorizerEntry> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Histogram.ColorMap",
-          QVariant::fromValue<QList<std::tuple<
+          vx::make_any<QList<std::tuple<
               double, std::tuple<double, double, double, double>, qint32>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double,
@@ -233,42 +233,42 @@ HistogramPropertiesEntry::HistogramPropertiesEntry(vx::PropType::Column,
                                                    QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Histogram.Column",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 HistogramPropertiesEntry::HistogramPropertiesEntry(vx::PropType::LogarithmicX,
                                                    bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Histogram.LogarithmicX",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 HistogramPropertiesEntry::HistogramPropertiesEntry(vx::PropType::LogarithmicY,
                                                    bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Histogram.LogarithmicY",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 HistogramPropertiesEntry::HistogramPropertiesEntry(
     vx::PropType::LowerBoundXFraction, double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Histogram.LowerBoundXFraction",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 HistogramPropertiesEntry::HistogramPropertiesEntry(vx::PropType::Table,
                                                    vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Histogram.Table",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 HistogramPropertiesEntry::HistogramPropertiesEntry(
     vx::PropType::UpperBoundXFraction, double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Histogram.UpperBoundXFraction",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 HistogramPropertiesBase::~HistogramPropertiesBase() {}
 HistogramPropertiesCopy::HistogramPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 qint64 HistogramPropertiesCopy::bucketCount() {
   return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
@@ -761,7 +761,7 @@ HistogramProperties::HistogramProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_BucketCount](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_BucketCount) return;
         qint64 valueCasted;
         try {
@@ -782,7 +782,7 @@ HistogramProperties::HistogramProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ColorMap](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_ColorMap) return;
         QList<vx::ColorizerEntry> valueCasted;
         try {
@@ -808,7 +808,7 @@ HistogramProperties::HistogramProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Column](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Column) return;
         QString valueCasted;
         try {
@@ -829,7 +829,7 @@ HistogramProperties::HistogramProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LogarithmicX](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_LogarithmicX) return;
         bool valueCasted;
         try {
@@ -850,7 +850,7 @@ HistogramProperties::HistogramProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LogarithmicY](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_LogarithmicY) return;
         bool valueCasted;
         try {
@@ -871,7 +871,7 @@ HistogramProperties::HistogramProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LowerBoundXFraction](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_LowerBoundXFraction) return;
         double valueCasted;
         try {
@@ -892,7 +892,7 @@ HistogramProperties::HistogramProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Table](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Table) return;
         vx::Node* valueCasted;
         try {
@@ -914,7 +914,7 @@ HistogramProperties::HistogramProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_UpperBoundXFraction](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_UpperBoundXFraction) return;
         double valueCasted;
         try {
@@ -939,7 +939,7 @@ ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(
     vx::PropType::ColorMap, QList<vx::ColorizerEntry> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColorMap",
-          QVariant::fromValue<QList<std::tuple<
+          vx::make_any<QList<std::tuple<
               double, std::tuple<double, double, double, double>, qint32>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double,
@@ -950,66 +950,66 @@ ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(
     vx::PropType::ColumnColor, QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnColor",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(vx::PropType::ColumnX,
                                                        QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnX",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(vx::PropType::ColumnY,
                                                        QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ColumnY",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(
     vx::PropType::LogarithmicX, bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.LogarithmicX",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(
     vx::PropType::LogarithmicY, bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.LogarithmicY",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(vx::PropType::PointLimit,
                                                        qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointLimit",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(vx::PropType::PointScale,
                                                        double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.PointScale",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(vx::PropType::Table,
                                                        vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.Table",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(vx::PropType::ViewMargin,
                                                        double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ViewMargin",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 ScatterPlotPropertiesEntry::ScatterPlotPropertiesEntry(
     vx::PropType::ViewPercentile, double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.ScatterPlot.ViewPercentile",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 ScatterPlotPropertiesBase::~ScatterPlotPropertiesBase() {}
 ScatterPlotPropertiesCopy::ScatterPlotPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<vx::ColorizerEntry> ScatterPlotPropertiesCopy::colorMap() {
   return vx::PropertyValueConvertRaw<
@@ -1664,7 +1664,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ColorMap](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_ColorMap) return;
         QList<vx::ColorizerEntry> valueCasted;
         try {
@@ -1690,7 +1690,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ColumnColor](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_ColumnColor) return;
         QString valueCasted;
         try {
@@ -1711,7 +1711,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ColumnX](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_ColumnX) return;
         QString valueCasted;
         try {
@@ -1732,7 +1732,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ColumnY](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_ColumnY) return;
         QString valueCasted;
         try {
@@ -1753,7 +1753,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LogarithmicX](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_LogarithmicX) return;
         bool valueCasted;
         try {
@@ -1774,7 +1774,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LogarithmicY](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_LogarithmicY) return;
         bool valueCasted;
         try {
@@ -1795,7 +1795,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_PointLimit](const QSharedPointer<NodeProperty>& property,
-                               const QVariant& value) {
+                               const vx::Any& value) {
         if (property != _prop_PointLimit) return;
         qint64 valueCasted;
         try {
@@ -1816,7 +1816,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_PointScale](const QSharedPointer<NodeProperty>& property,
-                               const QVariant& value) {
+                               const vx::Any& value) {
         if (property != _prop_PointScale) return;
         double valueCasted;
         try {
@@ -1837,7 +1837,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Table](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Table) return;
         vx::Node* valueCasted;
         try {
@@ -1859,7 +1859,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ViewMargin](const QSharedPointer<NodeProperty>& property,
-                               const QVariant& value) {
+                               const vx::Any& value) {
         if (property != _prop_ViewMargin) return;
         double valueCasted;
         try {
@@ -1880,7 +1880,7 @@ ScatterPlotProperties::ScatterPlotProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ViewPercentile](const QSharedPointer<NodeProperty>& property,
-                                   const QVariant& value) {
+                                   const vx::Any& value) {
         if (property != _prop_ViewPercentile) return;
         double valueCasted;
         try {
@@ -1905,30 +1905,30 @@ TablePropertiesEntry::TablePropertiesEntry(vx::PropType::RowLimit,
                                            qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Table.RowLimit",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 TablePropertiesEntry::TablePropertiesEntry(vx::PropType::SortColumn,
                                            QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Table.SortColumn",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 TablePropertiesEntry::TablePropertiesEntry(vx::PropType::SortOrder,
                                            QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Table.SortOrder",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 TablePropertiesEntry::TablePropertiesEntry(vx::PropType::Table,
                                            vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.Table.Table",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 TablePropertiesBase::~TablePropertiesBase() {}
 TablePropertiesCopy::TablePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 qint64 TablePropertiesCopy::rowLimit() {
   return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
@@ -2211,7 +2211,7 @@ TableProperties::TableProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_RowLimit](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_RowLimit) return;
         qint64 valueCasted;
         try {
@@ -2231,7 +2231,7 @@ TableProperties::TableProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_SortColumn](const QSharedPointer<NodeProperty>& property,
-                               const QVariant& value) {
+                               const vx::Any& value) {
         if (property != _prop_SortColumn) return;
         QString valueCasted;
         try {
@@ -2252,7 +2252,7 @@ TableProperties::TableProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_SortOrder](const QSharedPointer<NodeProperty>& property,
-                              const QVariant& value) {
+                              const vx::Any& value) {
         if (property != _prop_SortOrder) return;
         QString valueCasted;
         try {
@@ -2273,7 +2273,7 @@ TableProperties::TableProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Table](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Table) return;
         vx::Node* valueCasted;
         try {

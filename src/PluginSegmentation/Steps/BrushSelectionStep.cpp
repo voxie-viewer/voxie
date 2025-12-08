@@ -72,94 +72,98 @@ QSharedPointer<OperationResult> BrushSelectionStep::calculate(
     QSharedPointer<ContainerData> containerData, QDBusObjectPath inputVolume) {
   Q_UNUSED(inputVolume);
 
-  return this->runThreaded("BrushSelectionStep", [parameterCopy, containerData,
-                                                  this](const QSharedPointer<
-                                                        Operation>& op) {
-    BrushSelectionStepPropertiesCopy propertyCopy(
-        parameterCopy->properties()[parameterCopy->mainNodePath()]);
+  return this->runThreaded(
+      "BrushSelectionStep", [parameterCopy, containerData,
+                             this](const QSharedPointer<Operation>& op) {
+        BrushSelectionStepPropertiesCopy propertyCopy(
+            parameterCopy->properties()[parameterCopy->mainNodePath()]);
 
-    auto compoundVoxelData = qSharedPointerDynamicCast<VolumeDataVoxel>(
-        containerData->getElement("labelVolume"));
+        auto compoundVoxelData = qSharedPointerDynamicCast<VolumeDataVoxel>(
+            containerData->getElement("labelVolume"));
 
-    if (qFuzzyCompare(compoundVoxelData->origin(),
-                      propertyCopy.volumeOrigin()) &&
-        qFuzzyCompare(compoundVoxelData->getSpacing(),
-                      propertyCopy.voxelSize())) {
-      qint64 voxelCount = 0;
+        if (qFuzzyCompare(compoundVoxelData->origin(),
+                          propertyCopy.volumeOrigin()) &&
+            qFuzzyCompare(compoundVoxelData->getSpacing(),
+                          propertyCopy.voxelSize())) {
+          qint64 voxelCount = 0;
 
-      QList<voxel_index> voxelsToSelect;
-      QList<voxel_index> voxelsToClear;
+          QList<voxel_index> voxelsToSelect;
+          QList<voxel_index> voxelsToClear;
 
-      int numberOfCenters = propertyCopy.brushSelectCentersWithRadius().size() +
-                            propertyCopy.brushEraseCentersWithRadius().size();
+          int numberOfCenters =
+              propertyCopy.brushSelectCentersWithRadius().size() +
+              propertyCopy.brushEraseCentersWithRadius().size();
 
-      int numberOfCalculatedCenters = 0;
+          int numberOfCalculatedCenters = 0;
 
-      for (auto& entry : propertyCopy.brushSelectCentersWithRadius()) {
-        auto calculator = BrushCalculator(
-            // TODO: Avoid QVector3D
-            toQVector(vectorCastNarrow<float>(std::get<0>(entry))),
-            std::get<1>(entry), compoundVoxelData, propertyCopy.planeOrigin(),
-            propertyCopy.planeOrientation());
-        calculator.growRegion();
-        voxelsToSelect.append(calculator.getFoundVoxels());
-        numberOfCalculatedCenters += 1;
-        op->updateProgress(1.0f * numberOfCalculatedCenters / numberOfCenters);
-      }
+          for (auto& entry : propertyCopy.brushSelectCentersWithRadius()) {
+            auto calculator = BrushCalculator(
+                // TODO: Avoid QVector3D
+                toQVector(vectorCastNarrow<float>(std::get<0>(entry))),
+                std::get<1>(entry), compoundVoxelData,
+                propertyCopy.planeOrigin(), propertyCopy.planeOrientation());
+            calculator.growRegion();
+            voxelsToSelect.append(calculator.getFoundVoxels());
+            numberOfCalculatedCenters += 1;
+            op->updateProgress(1.0f * numberOfCalculatedCenters /
+                               numberOfCenters);
+          }
 
-      auto selectFunc =
-          [&voxelCount](
-              quint32& x, quint32& y, quint32& z,
-              const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
-                  labelData) {
-            SegmentationType voxelVal =
-                (SegmentationType)labelData->getVoxel(x, y, z);
-            if (getBit(voxelVal, segmentationShift) == 0) {
-              voxelCount++;
-              setBit(voxelVal, segmentationShift);
-              labelData->setVoxel(x, y, z, voxelVal);
-            }
-          };
+          auto selectFunc =
+              [&voxelCount](
+                  quint32& x, quint32& y, quint32& z,
+                  const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                      labelData) {
+                SegmentationType voxelVal =
+                    (SegmentationType)labelData->getVoxel(x, y, z);
+                if (getBit(voxelVal, segmentationShift) == 0) {
+                  voxelCount++;
+                  setBit(voxelVal, segmentationShift);
+                  labelData->setVoxel(x, y, z, voxelVal);
+                }
+              };
 
-      iterateAllPassedLabelVolumeVoxels(selectFunc, voxelsToSelect,
-                                        containerData, op, false);
+          iterateAllPassedLabelVolumeVoxels(selectFunc, voxelsToSelect,
+                                            containerData, op, false);
 
-      for (auto& entry : propertyCopy.brushEraseCentersWithRadius()) {
-        auto calculator = BrushCalculator(
-            // TODO: Avoid QVector3D
-            toQVector(vectorCastNarrow<float>(std::get<0>(entry))),
-            std::get<1>(entry), compoundVoxelData, propertyCopy.planeOrigin(),
-            propertyCopy.planeOrientation());
-        calculator.growRegion();
-        voxelsToClear.append(calculator.getFoundVoxels());
-        numberOfCalculatedCenters += 1;
-        op->updateProgress(1.0f * numberOfCalculatedCenters / numberOfCenters);
-      }
+          for (auto& entry : propertyCopy.brushEraseCentersWithRadius()) {
+            auto calculator = BrushCalculator(
+                // TODO: Avoid QVector3D
+                toQVector(vectorCastNarrow<float>(std::get<0>(entry))),
+                std::get<1>(entry), compoundVoxelData,
+                propertyCopy.planeOrigin(), propertyCopy.planeOrientation());
+            calculator.growRegion();
+            voxelsToClear.append(calculator.getFoundVoxels());
+            numberOfCalculatedCenters += 1;
+            op->updateProgress(1.0f * numberOfCalculatedCenters /
+                               numberOfCenters);
+          }
 
-      auto clearFunc =
-          [&voxelCount](
-              quint32& x, quint32& y, quint32& z,
-              const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
-                  labelData) {
-            SegmentationType voxelVal =
-                (SegmentationType)labelData->getVoxel(x, y, z);
-            if (getBit(voxelVal, segmentationShift) != 0) {
-              voxelCount--;
-              clearBit(voxelVal, segmentationShift);
-              labelData->setVoxel(x, y, z, voxelVal);
-            }
-          };
+          auto clearFunc =
+              [&voxelCount](
+                  quint32& x, quint32& y, quint32& z,
+                  const QSharedPointer<VolumeDataVoxelInst<SegmentationType>>&
+                      labelData) {
+                SegmentationType voxelVal =
+                    (SegmentationType)labelData->getVoxel(x, y, z);
+                if (getBit(voxelVal, segmentationShift) != 0) {
+                  voxelCount--;
+                  clearBit(voxelVal, segmentationShift);
+                  labelData->setVoxel(x, y, z, voxelVal);
+                }
+              };
 
-      iterateAllPassedLabelVolumeVoxels(clearFunc, voxelsToClear, containerData,
-                                        op, false);
-      Q_EMIT(this->updateSelectedVoxelCount(voxelCount, true));
-    } else {
-      throw vx::Exception(
-          "de.uni_stuttgart.Voxie.InvalidOperation",
-          QString("The orientation, the origin and the voxel size of the step "
+          iterateAllPassedLabelVolumeVoxels(clearFunc, voxelsToClear,
+                                            containerData, op, false);
+          Q_EMIT(this->updateSelectedVoxelCount(voxelCount, true));
+        } else {
+          throw vx::Exception(
+              "de.uni_stuttgart.Voxie.InvalidOperation",
+              QString(
+                  "The orientation, the origin and the voxel size of the step "
                   "and the labelVolume should match"));
-    }
-  });
+        }
+      });
 }
 
 QSharedPointer<vx::io::Operation> BrushSelectionStep::selectPassedVoxels(

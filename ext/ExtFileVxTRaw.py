@@ -30,7 +30,7 @@ import os
 
 import numpy as np
 
-import data_source
+import voxie.file.data_source
 
 args = voxie.parser.parse_args()
 context = voxie.VoxieContext(args, enableService=True)
@@ -177,7 +177,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
         if len(perImageMetadata) != imageCount:
             raise Exception('Unexpected number of PerImageMetadata entries')
 
-        source = data_source.get(filename, streamData['DataSourceType'], streamData['DataSource'], array_shape=arrayShape, data_type=None)
+        source = voxie.file.data_source.get(filename, streamData['DataSourceType'], streamData['DataSource'], array_shape=arrayShape, data_type=None)
 
         streams.append(Stream(name=name, imageCount=imageCount, source=source, perImageMetadata=perImageMetadata))
 

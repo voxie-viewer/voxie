@@ -171,6 +171,11 @@
                         ]
                     ]
                 },
+                "de.uni_stuttgart.Voxie.Visualizer.Slice.GeometricPrimitiveShowDescriptions": {
+                    "DisplayName": "Geometric primitives: Show descriptions",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
+                    "DefaultValue": true
+                },
                 "de.uni_stuttgart.Voxie.Visualizer.Slice.GridShow": {
                     "CompatibilityNames": [
                         "de.uni_stuttgart.Voxie.SliceVisualizer.GridShow"
@@ -401,6 +406,11 @@
                     "DisplayName": "Show legend",
                     "Type": "de.uni_stuttgart.Voxie.PropertyType.Boolean",
                     "DefaultValue": false
+                },
+                "de.uni_stuttgart.Voxie.SeriesEntry": {
+                    "DisplayName": "Series entry",
+                    "Type": "de.uni_stuttgart.Voxie.PropertyType.SeriesEntrySelection",
+                    "ParentProperty": "de.uni_stuttgart.Voxie.Visualizer.Slice.Volume"
                 }
             },
             "UI": {
@@ -412,6 +422,16 @@
                             {
                                 "Type": "Custom",
                                 "Name": "de.uni_stuttgart.Voxie.SliceVisualizer.Info"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Control3DSettingsSection",
+                        "DisplayName": "Render Settings",
+                        "Entries": [
+                            {
+                                "Type": "Custom",
+                                "Name": "de.uni_stuttgart.Voxie.Visualizer.View3D.Control3DSettings"
                             }
                         ]
                     },
@@ -447,6 +467,17 @@
                             {
                                 "Type": "Property",
                                 "Property": "de.uni_stuttgart.Voxie.View2D.VerticalSize"
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "SeriesEntry",
+                        "DisplayName": "Series entry",
+                        "Entries": [
+                            {
+                                "Type": "Property",
+                                "Property": "de.uni_stuttgart.Voxie.SeriesEntry",
+                                "LabelStyle": "None"
                             }
                         ]
                     },

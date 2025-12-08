@@ -178,7 +178,7 @@ bool LabelViewModel::setData(const QModelIndex& index, const QVariant& value,
     if (this->stepManager)
       this->stepManager->createMetaStep(
           row.data().at(labels->getColumnIndexByName("LabelID")).toInt(),
-          "Name", value);
+          "Name", vx::make_any<QString>(value.toString()));
     Q_EMIT dataChanged(index, index, {role});
     return true;
   }
@@ -191,7 +191,7 @@ bool LabelViewModel::setData(const QModelIndex& index, const QVariant& value,
     if (this->stepManager)
       this->stepManager->createMetaStep(
           row.data().at(labels->getColumnIndexByName("LabelID")).toInt(),
-          "Visibility", value == Qt::CheckState::Checked);
+          "Visibility", vx::make_any<bool>(value == Qt::CheckState::Checked));
     Q_EMIT dataChanged(index, index, {role});
     return true;
   }

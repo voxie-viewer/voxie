@@ -119,8 +119,7 @@ class SeriesDimensionAdaptorImpl : public SeriesDimensionAdaptor {
 }  // namespace vx
 
 vx::SeriesDimension::SeriesDimension(
-    const QSharedPointer<DataProperty>& property,
-    const QList<QVariant>& entries)
+    const QSharedPointer<DataProperty>& property, const QList<vx::Any>& entries)
     : RefCountedObject("SeriesDimension"),
       property_(property),
       entries_(entries) {
@@ -137,7 +136,7 @@ vx::SeriesDimension::SeriesDimension(
 
 vx::SeriesDimension::~SeriesDimension() {}
 
-QVariant vx::SeriesDimension::getEntryValue(EntryKey key) {
+vx::Any vx::SeriesDimension::getEntryValue(EntryKey key) {
   if (key >= length())
     throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                         "SeriesData key is out of range");
@@ -145,10 +144,11 @@ QVariant vx::SeriesDimension::getEntryValue(EntryKey key) {
 }
 
 vx::SeriesDimension::EntryKey vx::SeriesDimension::lookupEntryByValueOrInvalid(
-    const QVariant& value) {
+    const vx::Any& value) {
   // TODO: Faster lookup?
+  auto type = this->property()->type();
   for (EntryKey i = 0; i < length(); i++) {
-    if (entries()[i] == value) return i;
+    if (type->compare(entries()[i], value) == 0) return i;
   }
   return invalidEntryKey;
 }

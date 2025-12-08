@@ -24,9 +24,12 @@
 
 #include <VoxieClient/DBusTypeList.hpp>
 #include <VoxieClient/DBusUtil.hpp>
+#include <VoxieClient/DBusUtilVoxie.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 #include <VoxieClient/Format.hpp>
 #include <VoxieClient/JsonDBus.hpp>
 #include <VoxieClient/JsonUtil.hpp>
+#include <VoxieClient/QtCollections.hpp>
 
 #include <Voxie/DebugOptions.hpp>
 #include <Voxie/IVoxie.hpp>
@@ -42,12 +45,15 @@
 #include <Voxie/Data/GeometricPrimitiveObject.hpp>
 #include <Voxie/Data/PiecewisePolynomialFunction.hpp>
 #include <Voxie/Data/SurfaceNode.hpp>
+#include <Voxie/Data/TensorComponent.hpp>
 #include <Voxie/Data/TomographyRawDataNode.hpp>
 
+#include <VoxieBackend/Data/DataProperty.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
 #include <VoxieBackend/Data/GeometricPrimitive.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveData.hpp>
 #include <VoxieBackend/Data/GeometricPrimitiveType.hpp>
+#include <VoxieBackend/Data/SeriesData.hpp>
 #include <VoxieBackend/Data/SurfaceAttribute.hpp>
 #include <VoxieBackend/Data/TomographyRawData2DAccessor.hpp>
 
@@ -350,22 +356,22 @@ class UInt64UI : public PropertyUI {
     input = new QSpinBox();
     QObject::connect(this, &QObject::destroyed, input, &QObject::deleteLater);
 
-    QObject::connect(
-        input, (void(QSpinBox::*)(int)) & QSpinBox::valueChanged, this,
-        [this](int value) {
-          // qDebug() << "Value in QSpinBox changed to" << value;
-          if (!this->node()) return;
-          try {
-            this->node()->setNodeProperty(
-                this->property(), QVariant::fromValue<qulonglong>(value));
-          } catch (Exception& e) {
-            qCritical() << "Error while updating property value:" << e.what();
-          }
-        });
+    QObject::connect(input, (void(QSpinBox::*)(int)) & QSpinBox::valueChanged,
+                     this, [this](int value) {
+                       // qDebug() << "Value in QSpinBox changed to" << value;
+                       if (!this->node()) return;
+                       try {
+                         this->node()->setNodeProperty(
+                             this->property(), vx::make_any<qulonglong>(value));
+                       } catch (Exception& e) {
+                         qCritical() << "Error while updating property value:"
+                                     << e.what();
+                       }
+                     });
 
     QObject::connect(node, &Node::propertyChanged, this,
                      [this](const QSharedPointer<NodeProperty>& property2,
-                            const QVariant& value) {
+                            const vx::Any& value) {
                        // qDebug() << "Property change of" <<
                        // property->name()
                        // << "to" << value;
@@ -374,14 +380,14 @@ class UInt64UI : public PropertyUI {
                        // qDebug() << "Property change of" <<
                        // property->name()
                        // << "to" << value;
-                       auto valueInt = value.value<qulonglong>();
+                       auto valueInt = Node::parseVariant<qulonglong>(value);
                        // TODO: overflow?
                        this->input->setValue(valueInt);
                      });
 
     try {
       auto value = this->node()->getNodeProperty(this->property());
-      auto valueInt = value.value<qulonglong>();
+      auto valueInt = Node::parseVariant<qulonglong>(value);
       // TODO: overflow?
       this->input->setValue(valueInt);
     } catch (Exception& e) {
@@ -407,7 +413,7 @@ class BooleanUI : public PropertyUI {
       try {
         bool value = state != Qt::Unchecked;
         this->node()->setNodeProperty(this->property(),
-                                      QVariant::fromValue<bool>(value));
+                                      vx::make_any<bool>(value));
       } catch (Exception& e) {
         qCritical() << "Error while updating property value:" << e.what();
       }
@@ -416,7 +422,7 @@ class BooleanUI : public PropertyUI {
     QObject::connect(
         node, &Node::propertyChanged, this,
         [this](const QSharedPointer<NodeProperty>& property2,
-               const QVariant& value) {
+               const vx::Any& value) {
           // qDebug() << "Property change of" <<
           // property->name()
           // << "to" << value;
@@ -425,13 +431,13 @@ class BooleanUI : public PropertyUI {
           // qDebug() << "Property change of" <<
           // property->name()
           // << "to" << value;
-          auto valueCast = value.value<bool>();
+          auto valueCast = Node::parseVariant<bool>(value);
           this->input->setCheckState(valueCast ? Qt::Checked : Qt::Unchecked);
         });
 
     try {
       auto value = this->node()->getNodeProperty(this->property());
-      auto valueCast = value.value<bool>();
+      auto valueCast = Node::parseVariant<bool>(value);
       this->input->setCheckState(valueCast ? Qt::Checked : Qt::Unchecked);
     } catch (Exception& e) {
       qCritical() << "Error while setting initial value:" << e.what();
@@ -472,8 +478,8 @@ class FileNameUI : public PropertyUI {
           if (!directory.isEmpty()) {
             if (!this->node()) return;
             try {
-              this->node()->setNodeProperty(
-                  this->property(), QVariant::fromValue<QString>(directory));
+              this->node()->setNodeProperty(this->property(),
+                                            vx::make_any<QString>(directory));
             } catch (Exception& e) {
               qCritical() << "Error while updating property value:" << e.what();
             }
@@ -502,7 +508,7 @@ class FileNameUI : public PropertyUI {
           if (!this->node()) return;
           try {
             this->node()->setNodeProperty(this->property(),
-                                          QVariant::fromValue<QString>(value));
+                                          vx::make_any<QString>(value));
           } catch (Exception& e) {
             qCritical() << "Error while updating property value:" << e.what();
           }
@@ -510,7 +516,7 @@ class FileNameUI : public PropertyUI {
 
     QObject::connect(node, &Node::propertyChanged, this,
                      [this](const QSharedPointer<NodeProperty>& property2,
-                            const QVariant& value) {
+                            const vx::Any& value) {
                        // qDebug() << "Property change of" <<
                        // property2->name()
                        // << "to" << value;
@@ -519,13 +525,13 @@ class FileNameUI : public PropertyUI {
                        // qDebug() << "Property change of" <<
                        // property2->name()
                        // << "to" << value;
-                       auto valueCast = value.value<QString>();
+                       auto valueCast = Node::parseVariant<QString>(value);
                        this->input->setText(valueCast);
                      });
 
     try {
       auto value = this->node()->getNodeProperty(this->property());
-      auto valueCast = value.value<QString>();
+      auto valueCast = Node::parseVariant<QString>(value);
       this->input->setText(valueCast);
     } catch (Exception& e) {
       qCritical() << "Error while setting initial value:" << e.what();
@@ -559,7 +565,7 @@ class StringUI : public PropertyUIImplBase<vx::types::String> {
 
     try {
       auto value = this->node()->getNodeProperty(this->property());
-      auto valueCast = value.value<QString>();
+      auto valueCast = Node::parseVariant<QString>(value);
       this->input->setText(valueCast);
     } catch (Exception& e) {
       qCritical() << "Error while setting initial value:" << e.what();
@@ -598,7 +604,7 @@ class EnumerationUI : public PropertyUI {
                                   " instead of a QString in QComboBox");
             auto value = valueVar.value<QString>();
             this->node()->setNodeProperty(this->property(),
-                                          QVariant::fromValue<QString>(value));
+                                          vx::make_any<QString>(value));
           } catch (Exception& e) {
             qCritical() << "Error while updating property value:" << e.what();
           }
@@ -606,7 +612,7 @@ class EnumerationUI : public PropertyUI {
 
     QObject::connect(node, &Node::propertyChanged, this,
                      [this](const QSharedPointer<NodeProperty>& property2,
-                            const QVariant& value) {
+                            const vx::Any& value) {
                        // qDebug() << "Property change of" <<
                        // property->name()
                        // << "to" << value;
@@ -615,7 +621,7 @@ class EnumerationUI : public PropertyUI {
                        // qDebug() << "Property change of" <<
                        // property->name()
                        // << "to" << value;
-                       auto valueCast = value.value<QString>();
+                       auto valueCast = Node::parseVariant<QString>(value);
 
                        int index;
                        bool found = false;
@@ -636,7 +642,7 @@ class EnumerationUI : public PropertyUI {
 
     try {
       auto value = this->node()->getNodeProperty(this->property());
-      auto valueCast = value.value<QString>();
+      auto valueCast = Node::parseVariant<QString>(value);
 
       int index;
       bool found = false;
@@ -1973,6 +1979,23 @@ class QuantityUI : public PropertyUIImplBase<vx::types::Quantity> {
   QWidget* widget() override { return todo; }
 };
 
+// TODO
+class TensorComponentUI
+    : public PropertyUIImplBase<vx::types::TensorComponent> {
+ public:
+  QLabel* todo;
+
+  TensorComponentUI(const QSharedPointer<PropertyInstance>& propertyInstance)
+      : PropertyUIImplBase(propertyInstance) {
+    todo = new QLabel("TODO");
+    QObject::connect(this, &QObject::destroyed, todo, &QObject::deleteLater);
+  }
+
+  void updateUIValue(const TensorComponent& value) override { (void)value; }
+
+  QWidget* widget() override { return todo; }
+};
+
 void ChemicalCompositionEditDialog::editingDone() {
   try {
     auto text = edit->document()->toPlainText();
@@ -1984,6 +2007,361 @@ void ChemicalCompositionEditDialog::editingDone() {
     vx::showErrorMessage("Got exception parsing chemical composition", e);
   }
 }
+
+class SeriesEntrySelectionUI
+    : public PropertyUIImplBase<vx::types::SeriesEntrySelection> {
+ public:
+  QSharedPointer<NodeProperty> parentProperty;
+  QWidget* widget_;
+  QVBoxLayout* layout;
+  QList<QSharedPointer<SeriesDimension>> currentDimensions;
+  QList<QPointer<QComboBox>> currentDimensionsComboBoxes;
+  QList<QWidget*> childWidgets;
+
+  SeriesEntrySelectionUI(const QSharedPointer<NodeProperty>& property,
+                         Node* node)
+      : PropertyUIImplBase(property, node) {
+    const auto& json = property->rawJson();
+
+    QString parentPropertyName = vx::expectString(json["ParentProperty"]);
+    parentProperty = node->prototype()->getProperty(parentPropertyName, false);
+
+    forwardSignalFromPropertyOnReconnect(node, parentProperty,
+                                         &DataNode::dataChangedFinished, this,
+                                         &SeriesEntrySelectionUI::updateUI);
+
+    widget_ = new QWidget();
+    layout = new QVBoxLayout();
+    widget_->setLayout(layout);
+    QObject::connect(this, &QObject::destroyed, widget_, &QObject::deleteLater);
+
+    updateUI();
+  }
+
+  bool isMultiline() override { return true; }
+
+  QList<QSharedPointer<SeriesDimension>> getSeriesDimensions() {
+    try {
+      auto val = this->node()->getNodeProperty(parentProperty);
+      auto node = Node::parseVariantNode(val);
+      if (!node) return {};
+
+      auto dataNode = dynamic_cast<DataNode*>(node);
+      if (!dataNode) {
+        qWarning() << "SeriesEntrySelectionUI: Node is not DataNode";
+        return {};
+      }
+
+      auto data = dataNode->data();
+      if (!data) return {};
+
+      auto seriesData = qSharedPointerDynamicCast<SeriesData>(data);
+      if (!seriesData) {
+        // This will happen e.g. if a normal volume is opened in the
+        // SliceVisualizer.
+        // qWarning() << "SeriesEntrySelectionUI: Data is not SeriesData";
+        return {};
+      }
+
+      return seriesData->dimensions();
+    } catch (Exception& e) {
+      qWarning() << "Error in SeriesEntrySelectionUI::getSeriesDimensions():"
+                 << e.what();
+      return {};
+    }
+  }
+
+  void updateUI() {
+    try {
+      auto dimensions = getSeriesDimensions();
+      // qDebug() << "SeriesEntrySelectionUI::updateUI" <<
+      // currentDimensions.size()
+      //          << dimensions.size();
+
+      bool change = false;
+      if (dimensions.size() == currentDimensions.size()) {
+        for (int i = 0; i < dimensions.size(); i++)
+          if (dimensions[i] != currentDimensions[i]) change = true;
+      } else {
+        change = true;
+      }
+      if (!change) return;
+
+      QMap<QString, vx::DBusVariant> currentValues;
+      try {
+        currentValues = getValue();
+      } catch (Exception& e) {
+        qCritical() << "SeriesEntrySelectionUI::updateUI: Error while reading "
+                       "property value:"
+                    << e.what();
+        return;
+      }
+
+      // qDebug() << "SeriesEntrySelectionUI::updateUI: Updating";
+
+      for (const auto& child : childWidgets) delete child;
+      childWidgets.clear();
+      currentDimensionsComboBoxes.clear();
+
+      QList<QPointer<QComboBox>> newCurrentDimensionsComboBoxes;
+      for (const auto& dimension : dimensions) {
+        auto child = new QWidget();
+        auto hbox = new QHBoxLayout();
+        child->setLayout(hbox);
+
+        auto label = new QLabel(dimension->property()->displayName());
+        hbox->addWidget(label);
+
+        bool haveValue = currentValues.contains(dimension->property()->name());
+        vx::Any currentValue;
+        if (haveValue) {
+          // TODO: Error handling (values where conversion fails probably should
+          // be ignored)
+          // currentValue = dimension->property()->type()->dbusToRaw(
+          currentValue = dimension->property()->type()->dbusVoxieToRaw(
+              getQMapValue(currentValues, dimension->property()->name()));
+        }
+        // qDebug() << haveValue << currentValue;
+
+        auto box = new QComboBox();
+        hbox->addWidget(box);
+        int index = -1;
+        for (int i = 0; i < dimension->entries().size(); i++) {
+          auto entry = dimension->entries()[i];
+          QString desc = vx::format(
+              "{}: {}", i, dimension->property()->type()->valueToString(entry));
+          box->addItem(desc, QVariant::fromValue<int>(i));
+
+          if (index == -1) {
+            if (haveValue) {
+              if (dimension->property()->type()->equals(currentValue, entry))
+                index = i;
+            } else {
+              // Select the first value if this is a new dimension
+              index = i;
+            }
+          }
+        }
+        if (index == -1) {
+          // TODO: Remove this after another element was selected? Or just set
+          // index to 0?
+          index = dimension->entries().size();
+          box->addItem("<Unknown>", QVariant::fromValue<int>(index));
+        }
+        box->setCurrentIndex(index);
+
+        QObject::connect(
+            box, (void(QComboBox::*)(int)) & QComboBox::activated, this,
+            [this, box, dimension](int newIndex) {
+              // qDebug() << "Value in QComboBox changed to" << newIndex;
+              if (!this->node()) return;
+              try {
+                auto valueVar = box->itemData(newIndex);
+                if (valueVar.userType() != qMetaTypeId<int>())
+                  throw Exception("de.uni_stuttgart.Voxie.Error",
+                                  QString() + "Got a " +
+                                      QMetaType::typeName(valueVar.userType()) +
+                                      " instead of a int in QComboBox");
+                auto value = valueVar.value<int>();
+                this->updateFromUI(dimension, value);
+              } catch (Exception& e) {
+                qCritical()
+                    << "Error while updating property value : " << e.what();
+              }
+            });
+
+        // TODO: Clean up a lot of stuff, e.g. handling of different dimensions,
+        // where the mapping between combo box index and data is stored, etc.
+
+        auto backwardButton =
+            new QPushButton(QIcon(":/icons-voxie/skip-previous.png"), "");
+        hbox->addWidget(backwardButton);
+        QObject::connect(backwardButton, &QPushButton::clicked,
+                         // TODO: Make sure that box is not destroyed?
+                         this, [this, box, dimension]() {
+                           // qDebug() << "Backward" << box <<
+                           // box->currentIndex();
+                           int newIndex = box->currentIndex() - 1;
+                           if (newIndex < 0) {
+                             return;
+                           }
+                           // qDebug() << "Setting" <<
+                           // dimension->property()->name() << "to" << newIndex;
+                           try {
+                             updateFromUI(dimension, newIndex, false);
+                           } catch (Exception& e) {
+                             qCritical()
+                                 << "Error while updating property value : "
+                                 << e.what();
+                           }
+                         });
+
+        auto playButton = new QPushButton(QIcon(":/icons-voxie/play.png"), "");
+        hbox->addWidget(playButton);
+        auto running = createQSharedPointer<bool>(false);
+        // TODO: Clean up lifetime of timer? Currently timer is kept alive by
+        // the reference from the playButton lambda.
+        auto timer = makeSharedQObject<QTimer>();
+        vx::debug_option::SeriesEntrySelection_SlideshowTime()
+            ->registerAndCallChangeHandler(timer.data(), [timer](double time) {
+              qDebug() << "Setting timer to" << time;
+              timer->setInterval(time * 1000);
+            });
+        QObject::connect(
+            playButton, &QPushButton::clicked, this,
+            [this, playButton, running, timer]() {
+              if (*running) {
+                playButton->setIcon(QIcon(":/icons-voxie/play.png"));
+                *running = false;
+                timer->stop();
+              } else {
+                playButton->setIcon(QIcon(":/icons-voxie/pause.png"));
+                *running = true;
+                timer->start();
+              }
+            });
+        // TODO: Make sure that box and playButton is not destroyed?
+        QObject::connect(
+            timer.data(), &QTimer::timeout, this,
+            [this, box, dimension, running, timer, playButton]() {
+              // qDebug() << "Timer forward" << box << box->currentIndex();
+              int newIndex = box->currentIndex() + 1;
+              if (newIndex >= box->count()) {
+                // TODO: Clean up
+                // TODO: Do the stop earlier?
+                playButton->setIcon(QIcon(":/icons-voxie/play.png"));
+                *running = false;
+                timer->stop();
+                return;
+              }
+              // qDebug() << "Setting" << dimension->property()->name() << "to"
+              //          << newIndex;
+              try {
+                updateFromUI(dimension, newIndex, false);
+              } catch (Exception& e) {
+                qCritical()
+                    << "Error while updating property value : " << e.what();
+              }
+            });
+
+        auto forwardButton =
+            new QPushButton(QIcon(":/icons-voxie/skip-next.png"), "");
+        hbox->addWidget(forwardButton);
+        QObject::connect(forwardButton, &QPushButton::clicked,
+                         // TODO: Make sure that box is not destroyed?
+                         this, [this, box, dimension]() {
+                           // qDebug() << "Forward" << box <<
+                           // box->currentIndex();
+                           int newIndex = box->currentIndex() + 1;
+                           if (newIndex >= box->count()) {
+                             return;
+                           }
+                           // qDebug() << "Setting" <<
+                           // dimension->property()->name() << "to"
+                           //          << newIndex;
+                           try {
+                             updateFromUI(dimension, newIndex, false);
+                           } catch (Exception& e) {
+                             qCritical()
+                                 << "Error while updating property value : "
+                                 << e.what();
+                           }
+                         });
+
+        childWidgets << child;
+        newCurrentDimensionsComboBoxes << box;
+        layout->addWidget(child);
+      }
+
+      currentDimensions = dimensions;
+      currentDimensionsComboBoxes = newCurrentDimensionsComboBoxes;
+    } catch (Exception& e) {
+      qWarning() << "Error in SeriesEntrySelectionUI::updateUI():" << e.what();
+    }
+  }
+
+  // Can throw
+  // TODO: Rename?
+  void updateFromUI(const QSharedPointer<SeriesDimension>& dimension, int value,
+                    bool isUpdateFromUI = true) {
+    // qDebug() << "Update" << dimension->property()->name() << "to" << value;
+
+    // - Set dimension to value if value is valid
+    // - Keep all dimensions in currentDimensions
+    // - Drop all other dimensions
+
+    auto current = getValue();
+    QMap<QString, vx::DBusVariant> newValues;
+    for (const auto& dim : currentDimensions) {
+      if (dim == dimension && value >= 0 &&
+          value < dimension->entries().size()) {
+        newValues.insert(dim->property()->name(),
+                         // dimension->property()->type()->rawToDBus(
+                         dimension->property()->type()->rawToDBusVoxie(
+                             dimension->entries()[value]));
+      } else if (current.contains(dim->property()->name())) {
+        newValues.insert(dim->property()->name(),
+                         getQMapValue(current, dim->property()->name()));
+      }
+    }
+    // qDebug() << vx::toString(newValues);
+    setValueChecked(newValues, isUpdateFromUI);
+  }
+
+  // Can throw
+  // void updateUIValue(const SeriesEntrySelection& value) override {
+  void updateUIValue(const QMap<QString, vx::DBusVariant>& newValues) override {
+    // TODO: To some extent copied from updateUI(), should probably be merged
+    for (int dimIndex = 0; dimIndex < currentDimensions.size(); dimIndex++) {
+      const auto& dimension = currentDimensions[dimIndex];
+      bool haveValue = newValues.contains(dimension->property()->name());
+      vx::Any currentValue;
+      if (haveValue) {
+        // TODO: Error handling (values where conversion fails probably should
+        // be ignored)
+        // currentValue = dimension->property()->type()->dbusToRaw(
+        currentValue = dimension->property()->type()->dbusVoxieToRaw(
+            getQMapValue(newValues, dimension->property()->name()));
+      }
+      // qDebug() << haveValue << currentValue;
+
+      if (dimIndex >= currentDimensionsComboBoxes.size()) {
+        qWarning() << "dimIndex >= currentDimensionsComboBoxes.size()";
+        continue;
+      }
+      QComboBox* box = currentDimensionsComboBoxes[dimIndex];
+      if (!box) {
+        qWarning() << "currentDimensionsComboBoxes[dimIndex] is nullptr";
+        continue;
+      }
+
+      int index = -1;
+      for (int i = 0; i < dimension->entries().size(); i++) {
+        auto entry = dimension->entries()[i];
+
+        if (index == -1) {
+          if (haveValue) {
+            if (dimension->property()->type()->equals(currentValue, entry))
+              index = i;
+          } else {
+            // Select the first value if this is a new dimension
+            index = i;
+          }
+        }
+      }
+      if (index == -1) {
+        // TODO: Remove this after another element was selected? Or just set
+        // index to 0?
+        index = dimension->entries().size();
+        if (box->count() == index)
+          box->addItem("<Unknown>", QVariant::fromValue<int>(index));
+      }
+      box->setCurrentIndex(index);
+    }
+  }
+
+  QWidget* widget() override { return widget_; }
+};
 }  // namespace
 
 template <typename T>
@@ -2244,6 +2622,21 @@ struct ParseJsonFun<std::tuple<T, U, V>> {
   }
 };
 
+template <typename T>
+struct ParseJsonFun<QMap<QString, T>> {
+  static QMap<QString, T> parse(const QJsonValue& value) {
+    if (!value.isObject())
+      throw Exception("de.uni_stuttgart.Voxie.InvalidJsonType",
+                      "JSON value is not an object");
+    QJsonObject object = value.toObject();
+    QMap<QString, T> result;
+    for (const auto& key : object.keys()) {
+      result.insert(key, parseJson<T>(object[key]));
+    }
+    return result;
+  }
+};
+
 template <>
 struct ParseJsonFun<QJsonObject> {
   static QJsonObject parse(const QJsonValue& value) {
@@ -2257,6 +2650,22 @@ struct ParseJsonFun<QJsonObject> {
 template <>
 struct ParseJsonFun<QJsonValue> {
   static QJsonValue parse(const QJsonValue& value) { return value; }
+};
+
+/*
+template <>
+struct ParseJsonFun<QDBusVariant> {
+static QDBusVariant parse(const QJsonValue& value) {
+  return vx::jsonToDBus(value);
+}
+};
+*/
+
+template <>
+struct ParseJsonFun<vx::DBusVariant> {
+  static vx::DBusVariant parse(const QJsonValue& value) {
+    return vx::jsonToDBusVoxie(value);
+  }
 };
 
 template <>
@@ -2280,8 +2689,28 @@ struct ParseJsonFun<std::tuple<QString, QJsonObject>> {
 };
 
 template <typename T>
-QString valueToString(const QVariant& value,
+QString valueToString(const vx::Any& value,
                       const vx::PropertyType* type = nullptr) {
+  // Check if the type contained in the vx::Any matches the template argument
+  if (value.type() != typeid(T)) {
+    throw Exception(
+        "de.uni_stuttgart.Voxie.InvalidStringConversionType",
+        QStringLiteral("Type mismatch during string conversion: Raw type '") +
+            vx::getTypeNameString<T>() + "' does not match variant type '" +
+            vx::toString(value.type()) + "'");
+  } else if (StringConversionFallbackHelper<T>::isFallback && type != nullptr) {
+    // No toString available? Convert to type name instead, if given
+    return type->displayName();
+  } else {
+    // Use string conversion specialization
+    return StringConversionHelper<T>::toString(vx::any_cast<T>(value));
+  }
+}
+
+// TODO: Remove? (Needed by QVariant for TableData)
+template <typename T>
+QString valueToStringQVariant(const QVariant& value,
+                              const vx::PropertyType* type = nullptr) {
   // Check if the type contained in the QVariant matches the template argument
   if (!value.canConvert<T>()) {
     throw Exception(
@@ -2296,6 +2725,18 @@ QString valueToString(const QVariant& value,
     // Use string conversion specialization
     return StringConversionHelper<T>::toString(value.value<T>());
   }
+}
+
+QString piecewisePolynomialFunctionToString(
+    const std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                     QList<QList<double>>>& raw) {
+  return vx::PiecewisePolynomialFunction::parse(raw).toString();
+}
+
+QString piecewisePolynomialFunctionGetDescription(
+    const std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
+                     QList<QList<double>>>& raw) {
+  return vx::PiecewisePolynomialFunction::parse(raw).description();
 }
 
 QString chemicalCompositionToString(const QJsonValue& json) {
@@ -2421,6 +2862,17 @@ void verifyValueColorMapping(
 }
 }  // namespace
 }  // namespace vx
+
+// TODO: Remove? (Needed by QVariant for TableData)
+template <typename T>
+static T parseQVariant(const QVariant& variant) {
+  if (variant.userType() != qMetaTypeId<T>())
+    throw Exception("de.uni_stuttgart.Voxie.Error",
+                    QString() + "Got invalid type: Expected " +
+                        QMetaType::typeName(qMetaTypeId<T>()) + ", got " +
+                        QMetaType::typeName(variant.userType()));
+  return variant.value<T>();
+}
 
 #include "Types.List.cpp"
 

@@ -129,7 +129,7 @@ QDBusObjectPath vx::io::ImporterAdaptorImpl::StartImport(
     auto values =
         ExportedObject::getOptionValueOrDefault<QMap<QString, QDBusVariant>>(
             options, "Properties", {});
-    QVariantMap properties;
+    QMap<QString, vx::Any> properties;
     for (const auto& key : values.keys()) {
       auto property = object->getProperty(key, allowCompatibilityNames);
       auto valueRaw = property->type()->dbusToRaw(QDBusVariant(values[key]));

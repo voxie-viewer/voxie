@@ -26,6 +26,8 @@
 
 #include <QtCore/QList>
 
+class QJsonArray;
+
 namespace vx {
 class VOXIECORESHARED_EXPORT BernsteinPolynomial {
   QList<double> coefficients_;
@@ -39,11 +41,7 @@ class VOXIECORESHARED_EXPORT BernsteinPolynomial {
   static BernsteinPolynomial parse(const QList<double>& raw);
   QList<double> toRaw() const;
 
-  bool isZero() const {
-    for (const auto& coefficient : this->coefficients())
-      if (coefficient != 0) return false;
-    return true;
-  }
+  bool isZero() const;
 };
 
 class VOXIECORESHARED_EXPORT PiecewisePolynomialFunction {
@@ -79,11 +77,23 @@ class VOXIECORESHARED_EXPORT PiecewisePolynomialFunction {
   const QList<Breakpoint>& breakpoints() const { return breakpoints_; }
   const QList<BernsteinPolynomial>& intervals() const { return intervals_; }
 
+  const BernsteinPolynomial& firstInterval() const { return intervals()[0]; }
+  const BernsteinPolynomial& lastInterval() const {
+    return intervals()[intervals().size() - 1];
+  }
+
+  static PiecewisePolynomialFunction zero();
+
   static PiecewisePolynomialFunction parse(
       const std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
                        QList<QList<double>>>& raw);
   std::tuple<QList<std::tuple<double, std::tuple<double, double>>>,
              QList<QList<double>>>
   toRaw() const;
+
+  QString toString() const;
+  QString description() const;
+
+  QJsonArray toJson() const;
 };
 }  // namespace vx

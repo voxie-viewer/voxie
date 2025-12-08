@@ -67,7 +67,7 @@ NodeGroupSelectWindow::NodeGroupSelectWindow()
     if (!dialogResult) return;
 
     auto node = NodeGroup::getPrototypeSingleton()->create(
-        QMap<QString, QVariant>(), QList<Node*>(),
+        QMap<QString, vx::Any>(), QList<Node*>(),
         QMap<QString, QDBusVariant>());
     node->setManualDisplayName(std::make_tuple(true, name));
 

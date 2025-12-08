@@ -525,7 +525,7 @@ int SegmentationWidget::addLabel() {
   int labelID = this->labelViewModel->getLabelIdCounter();
   stepManager->addLabelTableRow(
       labelID, QString("Label #%1").arg(labelID), "",
-      QVariant::fromValue(
+      vx::make_any<vx::TupleVector<double, 4>>(
           Color(defaultColorPalette.at(labelID % defaultColorPalette.size()))
               .asTuple()),
       true);
@@ -545,8 +545,9 @@ int SegmentationWidget::addLabelByColor(Color color) {
   }
 
   int labelID = this->labelViewModel->getLabelIdCounter();
-  stepManager->addLabelTableRow(labelID, QString("Label #%1").arg(labelID), "",
-                                QVariant::fromValue(color.asTuple()), true);
+  stepManager->addLabelTableRow(
+      labelID, QString("Label #%1").arg(labelID), "",
+      vx::make_any<vx::TupleVector<double, 4>>(color.asTuple()), true);
 
   if (this->labelViewModel->getLabelIdCounter() >
       (std::numeric_limits<SegmentationType>::max() >> 1)) {
@@ -570,8 +571,9 @@ void SegmentationWidget::colorizeLabels() {
       int labelID = labelViewModel->getLabelTable()
                         ->getRowColumnData(rowIndices.at(i), "LabelID")
                         .toInt();
-      stepManager->createMetaStep(labelID, "Color",
-                                  QVariant::fromValue(Color(color).asTuple()));
+      stepManager->createMetaStep(
+          labelID, "Color",
+          vx::make_any<vx::TupleVector<double, 4>>(Color(color).asTuple()));
     }
   }
 }

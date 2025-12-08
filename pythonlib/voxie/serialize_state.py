@@ -1,4 +1,3 @@
-import voxie
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,6 +19,8 @@ import voxie
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+import voxie
 import voxie.json_dbus
 import sys
 import functools
@@ -114,31 +115,9 @@ def compareNode(obj1, obj2):
 
     return 0
 
-# TODO: remove
 
-
-def serializePropertyValueSimple(serializedNodes, value):
-    if type(value) == tuple or type(value) == list:
-        return list(map(lambda x: serializePropertyValueSimple(serializedNodes, x), value))
-    if type(value) == dbus.ObjectPath:
-        if value == dbus.ObjectPath('/'):
-            return None
-        elif value in serializedNodes:
-            return serializedNodes[value]  # TODO: must not be quoted
-        else:
-            print('Warning: Could not find node %s' %
-                  str(value), file=sys.stderr)
-            return None
-    if type(value) in [bool, int, float]:
-        return value
-    print('Got type: %s' % type(value), file=sys.stderr)
-    return value
-
-
-def serializePropertyValue(serializedNodes, sig, value):
+def serializePropertyValue(serializedNodes, variant_style, sig, value):
     sig = dbus.Signature(sig)
-    # return repr(value)
-    # return repr(serializePropertyValueSimple(serializedNodes, value))
     if sig == 'b':
         return repr(bool(value))
     elif sig in ['y', 'n', 'q', 'i', 'u', 'x', 't']:
@@ -167,18 +146,33 @@ def serializePropertyValue(serializedNodes, sig, value):
             return 'None'
             # return "dbus.ObjectPath('/')"
     elif sig[0] == 'a' and sig[1] != '{':
-        return '[' + ', '.join([serializePropertyValue(serializedNodes, sig[1:], v) for v in value]) + ']'
+        return '[' + ', '.join([serializePropertyValue(serializedNodes, variant_style, sig[1:], v) for v in value]) + ']'
     elif sig[0] == '(' and sig[-1] == ')':
         sigs = dbus.Signature(sig[1:-1])
-        return '(' + ', '.join([serializePropertyValue(serializedNodes, s, v) for s, v in zip(sigs, value)]) + ')'
-    elif sig == 'a{sv}':  # TODO: This assumes this is a JSON-like value
+        return '(' + ', '.join([serializePropertyValue(serializedNodes, variant_style, s, v) for s, v in zip(sigs, value)]) + ')'
+    elif sig == 'a{sv}' and variant_style == 'de.uni_stuttgart.Voxie.DBusVariantStyle.JSON':
         obj = voxie.json_dbus.dbus_to_json_dict(value)
         # TODO: Is repr() the right thing here?
         return 'voxie.json_dbus.json_to_dbus_dict(' + repr(obj) + ')'
-    elif sig == 'v':  # TODO: This assumes this is a JSON-like value
+    elif sig == 'v' and variant_style == 'de.uni_stuttgart.Voxie.DBusVariantStyle.JSON':
         obj = voxie.json_dbus.dbus_to_json(value)
         # TODO: Is repr() the right thing here?
         return 'voxie.json_dbus.json_to_dbus(' + repr(obj) + ')'
+    elif sig[0] == 'a' and sig[1] == '{':
+        sig_key, sig_value = list(dbus.Signature(sig[2:-1]))
+        if len(value) == 0:
+            return '{}'
+        res = '{\n'
+        for key in value:
+            ser_key = serializePropertyValue(serializedNodes, variant_style, sig_key, key)
+            ser_value = serializePropertyValue(serializedNodes, variant_style, sig_value, value[key])
+            res += '    {}: {},\n'.format(ser_key, ser_value)
+        res += '  }'
+        return res
+    elif sig == 'v' and variant_style == 'de.uni_stuttgart.Voxie.DBusVariantStyle.DBusVariant':
+        val_sig = value.signature
+        ser_value = serializePropertyValue(serializedNodes, variant_style, val_sig, value.value)
+        return 'voxie.Variant({}, {})'.format(repr(str(val_sig)), ser_value)
     else:
         print('Warning: Could not serialize DBus signature %s' %
               str(sig), file=sys.stderr)
@@ -192,6 +186,8 @@ def serializeNode(instance, file, serializedNodes, obj, oname):
         propertiesExpr += '  '
         # TODO: Handle errors
         name = property.Name
+        # TODO: Cache some lookups?
+        variant_style = property.Type.DBusVariantStyle
         try:
             value = obj.obj.GetProperty(name)
         except Exception as e:
@@ -199,7 +195,7 @@ def serializeNode(instance, file, serializedNodes, obj, oname):
                   (repr(name), str(obj.path), e))
             continue
         propertiesExpr += '%s: voxie.Variant(%s, %s),' % (repr(name), repr(str(
-            value.signature)), serializePropertyValue(serializedNodes, value.signature, value.value))
+            value.signature)), serializePropertyValue(serializedNodes, variant_style, value.signature, value.value))
         propertiesExpr += '\n'
     propertiesExpr += '}'
     filename = ''
@@ -221,8 +217,11 @@ def serializeNode(instance, file, serializedNodes, obj, oname):
             for name in importProperties:
                 propertiesExpr2 += '  '
                 value = importProperties[name]
+                # TODO: Get variant_style from importer properties
+                # variant_style = property.DBusVariantStyle
+                variant_style = 'de.uni_stuttgart.Voxie.DBusVariantStyle.JSON'
                 propertiesExpr2 += '%s: voxie.Variant(%s, %s),' % (repr(name), repr(str(
-                    value.signature)), serializePropertyValue(serializedNodes, value.signature, value.value))
+                    value.signature)), serializePropertyValue(serializedNodes, variant_style, value.signature, value.value))
                 propertiesExpr2 += '\n'
             propertiesExpr2 += '}'
             print('%s = instance.Components.GetComponent(\'de.uni_stuttgart.Voxie.ComponentType.Importer\', %s).CastTo(\'de.uni_stuttgart.Voxie.Importer\').ImportNode(%s, {\'Properties\': voxie.Variant(\'a{sv}\', %s)}) # %s' %

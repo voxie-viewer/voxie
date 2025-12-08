@@ -1,4 +1,3 @@
-import voxie
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,6 +19,8 @@ import voxie
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+import voxie
 import sys
 import functools
 import dbus
@@ -48,8 +49,13 @@ def process(instance, cwd, files, options, argOptions):
         fileName = os.path.join(cwd, fileName)
         if fileName.endswith('.vxprj.py'):
             # TODO: This doesn't work under Windows because PYTHONPATH is ignored
-            subprocess.run([sys.executable, fileName] +
-                           sys.argv[1:], check=True)
+            res = subprocess.run([sys.executable, fileName] + sys.argv[1:])
+            if res.returncode != 0:
+                print('Got exit code {} while running {!r}'.format(res.returncode, fileName), file=sys.stderr)
+                # TODO: Do this here?
+                instance._context.client.destroy()
+                # TODO: Signal error to caller differently?
+                sys.exit(1)
         else:
             print('Opening %s...' % (repr(fileName),))
             if 'import-property' in argOptions:

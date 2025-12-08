@@ -95,16 +95,5 @@ class VOXIECORESHARED_EXPORT VolumeNode : public MovableDataNode {
    * list are edited, added or removed.
    */
   void pointListChanged();
-
-  // Forwarded from properties
-  // TODO: This are currently needed for
-  // forwardSignalFromPropertyNodeOnReconnect(), but probably
-  // forwardSignalFromPropertyNodeOnReconnect() should be changed to allow
-  // forwarding property changed events directly (then it also could pass to
-  // value for the OnReconnect() variant). Probably there also should be some
-  // template magic so that one doesn't have to pass both the getter and the
-  // changed handler for both properties.
-  void rotationChanged(QQuaternion value);
-  void translationChanged(QVector3D value);
 };
 }  // namespace vx

@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
             iterations, thresholdDifferenceSignificance, epsilon);
         filter.run();
 
-        volume_version = createQSharedPointer<
+        volume_version = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(update->Finish(

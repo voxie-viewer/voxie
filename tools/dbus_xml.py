@@ -29,11 +29,6 @@ def getQtType(sig):
         return None
     elif sig == 'ao' or sig == 'as' or sig == 'ay':
         return None
-    # elif sig in property_types.dbusToQtType:
-    #     return property_types.dbusToQtType[sig]
-    # else:
-    #     sys.stderr.write('Warning: unknown signature: %s\n' % sig)
-    #     return None
     else:
         return property_types.dbusToCppRawType(sig)
 

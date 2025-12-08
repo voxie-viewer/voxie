@@ -1,0 +1,12 @@
+{
+    "Type": "de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol",
+    "VolumeType": "Voxel",
+    "DataType": [ "uint", 16, "little" ],
+    "ArrayShape": [ 10, 20, 30 ],
+    "GridSpacing": [ 1.5, 2.5, 3.5 ],
+    "VolumeOrigin": [ -10.5, -20.5, -30.5 ],
+    "DataSourceType": "DenseBinaryFile",
+    "DataSource": {
+        "DataFilename": "testarray_6000.dat"
+    }
+}

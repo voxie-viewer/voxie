@@ -73,7 +73,7 @@ class ToolCreateSphere : public vx::ToolGlobal {
   QProcess* startGlobal(QProcess* process = new QProcess()) override {
     auto filter = dynamic_cast<FilterNode*>(
         TheSphereGenerator::getPrototypeSingleton()
-            ->create(QMap<QString, QVariant>(), QList<Node*>(),
+            ->create(QMap<QString, vx::Any>(), QList<Node*>(),
                      QMap<QString, QDBusVariant>())
             .data());
     if (filter) filter->run();

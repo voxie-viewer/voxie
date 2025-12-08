@@ -3,7 +3,8 @@ import os
 
 import numpy as np
 
-import voxie
+# TODO: This should not trigger inclusion of dbus etc.
+import voxie.data_types
 
 # TODO: Test whether the StorageOrder stuff work properly (for both vol and raw)
 
@@ -18,7 +19,7 @@ def throwOnUnexpectedMember(data, desc, expected):
     if 'OptionalMembers' in data:
         optional = set(data['OptionalMembers'])
     for key in data:
-        if key not in expected and key not in optional:
+        if key not in expected and key not in optional and key != 'OptionalMembers':
             raise Exception('Unexpected member {!r} in {}'.format(key, desc))
 
 
@@ -136,8 +137,7 @@ class DataSourceDenseBinaryFile(DataSource):
         if fileType[1] % 8 != 0:
             raise Exception('Data type size is not multiple of 8')
 
-        # TODO: Create wrapper function in voxie namespace for this
-        self.fileDtype = voxie.buffer.endianMap[fileType[2]] + voxie.buffer.typeNameMap[fileType[0]] + str(fileType[1] // 8)
+        self.fileDtype = voxie.data_types.to_numpy_dtype_string(fileType)
 
         self.overallSize = fileType[1] // 8
         self.strides = []
@@ -151,8 +151,7 @@ class DataSourceDenseBinaryFile(DataSource):
         # Always set self.memType to native endian
         self.memType = (self.memType[0], self.memType[1], 'native')
 
-        # TODO: Create wrapper function in voxie namespace for this
-        self.memDtype = voxie.buffer.endianMap[self.memType[2]] + voxie.buffer.typeNameMap[self.memType[0]] + str(self.memType[1] // 8)
+        self.memDtype = voxie.data_types.to_numpy_dtype_string(self.memType, allow_native=True)
 
         # Various buffer
         # Note: Currently this breaks multithreaded access to a DataSource object
@@ -195,7 +194,7 @@ class DataSourceDenseBinaryFile(DataSource):
             raise Exception('Unexpected EOF')
         if self.valueOffset is not None or self.valueScalingFactor is not None:
             # TODO: Avoid copy if file is already float? Probably not really needed
-            self.buff.imgConverted[:, :] = imgFile
+            self.buff.imgConverted[:, :] = self.buff.imgFile
             if self.valueScalingFactor is not None:
                 self.buff.imgConverted *= self.valueScalingFactor
             if self.valueOffset is not None:
@@ -209,7 +208,7 @@ class DataSourceImageArchive(DataSource):
         throwOnUnexpectedMember(data, 'JSON object "DataSource"', ('DataFilename', 'StorageOrder', 'ValueOffset', 'ValueScalingFactor'))
 
         # Copied from ctscripts
-        import imagearchive
+        from . import imagearchive
 
         dataFilename = str(data['DataFilename'])
         if 'StorageOrder' in data:
@@ -255,7 +254,7 @@ class DataSourceImageArchive(DataSource):
                 if int(info['TypeSize']) != data_type[1]:
                     raise Exception("int(info['TypeSize']) (%d) != data_type[1] (%d)" % (int(info['TypeSize']), data_type[1]))
                 if info['TypeEndian'] != data_type[2]:
-                    raise Exception("info['TypeEndian'] (%s) != data_type[2] (%s)", (repr(info['TypeEndian']), repr(data_type[2])))
+                    raise Exception("info['TypeEndian'] (%s) != data_type[2] (%s)" % (repr(info['TypeEndian']), repr(data_type[2])))
             if self.diskSize[0] is not None and int(info['Width']) != self.diskSize[0]:
                 raise Exception("self.diskSize[0] is not None and int(info['Width']) != self.diskSize[0]")
             if self.diskSize[1] is not None and int(info['Height']) != self.diskSize[1]:
@@ -268,8 +267,7 @@ class DataSourceImageArchive(DataSource):
             # Always set self.memType to native endian
             self.memType = (self.memType[0], self.memType[1], 'native')
 
-            # TODO: Create wrapper function in voxie namespace for this
-            self.memDtype = voxie.buffer.endianMap[self.memType[2]] + voxie.buffer.typeNameMap[self.memType[0]] + str(self.memType[1] // 8)
+            self.memDtype = voxie.data_types.to_numpy_dtype_string(self.memType, allow_native=True)
         else:
             self.memType = None
             self.memDtype = None
@@ -367,8 +365,7 @@ class DataSourceImageList(DataSource):
                 raise Exception('ZippedImages and ImageStack files require ArrayShape/ImageShape values')
 
         if data_type is not None:
-            # TODO: Create wrapper function in voxie namespace for this
-            self.fileDtype = voxie.buffer.endianMap[data_type[2]] + voxie.buffer.typeNameMap[data_type[0]] + str(data_type[1] // 8)
+            self.fileDtype = voxie.data_types.to_numpy_dtype_string(data_type)
 
             self.memType = data_type
             if (self.valueOffset is not None or self.valueScalingFactor is not None) and data_type[0] != 'float':
@@ -376,8 +373,7 @@ class DataSourceImageList(DataSource):
             # Always set self.memType to native endian
             self.memType = (self.memType[0], self.memType[1], 'native')
 
-            # TODO: Create wrapper function in voxie namespace for this
-            self.memDtype = voxie.buffer.endianMap[self.memType[2]] + voxie.buffer.typeNameMap[self.memType[0]] + str(self.memType[1] // 8)
+            self.memDtype = voxie.data_types.to_numpy_dtype_string(self.memType, allow_native=True)
         else:
             self.fileDtype = None
             self.memType = None
@@ -402,6 +398,9 @@ class DataSourceImageList(DataSource):
                 img = np.array(PIL.Image.open(file))
         except Exception as e:
             raise Exception('Error while reading image {} from {!r}: {}'.format(z, image_filename, e)) from e
+
+        # Put X dimension first end mirror Y dimension
+        img = img.T[:, ::-1]
 
         # Sanity checks
         if self.diskSize[0] is not None and img.shape[0] != self.diskSize[0]:

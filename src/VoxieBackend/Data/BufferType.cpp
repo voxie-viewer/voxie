@@ -254,3 +254,8 @@ QList<QString> vx::BufferType::supportedComponentDBusInterfaces() {
 // actual type should be hardcoded
 VX_BUFFER_TYPE_DEFINE(vx::ByteBuffer,
                       "de.uni_stuttgart.Voxie.Internal.ByteBuffer")
+
+// Note: The name of the buffer type should not be used anywhere, instead the
+// actual type should be hardcoded
+VX_BUFFER_TYPE_DEFINE(vx::Float32Buffer,
+                      "de.uni_stuttgart.Voxie.Internal.Float32Buffer")

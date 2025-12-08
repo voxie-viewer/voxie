@@ -32,5 +32,5 @@ class RAWImporter : public vx::io::Importer {
 
   QSharedPointer<vx::OperationResultImport> import(
       const QString& fileName, bool doCreateNode,
-      const QMap<QString, QVariant>& properties) override;
+      const QMap<QString, vx::Any>& properties) override;
 };

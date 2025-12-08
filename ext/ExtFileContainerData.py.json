@@ -18,7 +18,8 @@
             "DisplayName": "Voxie ContainerData JSON",
             "Description": "Load ContainerData from JSON files",
             "Patterns": [
-                "*.vxco.json"
+                "*.vxco.json",
+                "*.vxco"
             ]
         }
     ]

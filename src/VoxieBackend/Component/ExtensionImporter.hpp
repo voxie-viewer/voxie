@@ -43,7 +43,7 @@ class VOXIEBACKEND_EXPORT ExtensionImporter : public vx::io::Importer {
   // throws Exception
   QSharedPointer<OperationResultImport> import(
       const QString& fileName, bool doCreateNode,
-      const QMap<QString, QVariant>& properties) override;
+      const QMap<QString, vx::Any>& properties) override;
 };
 
 VOXIEBACKEND_EXPORT QSharedPointer<vx::io::ExtensionImporter> parseImporter(

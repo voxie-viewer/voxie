@@ -78,5 +78,22 @@ class VOXIEBACKEND_EXPORT Buffer : public RefCountedObject {
     return vx::Array1<Type>((Type*)data()->getData(), {this->count()},
                             {this->strideBytes()}, this->thisShared());
   }
+
+  // TODO: Merge with asArray1?
+  template <typename T>
+  // vx::Array1<typename T::Type>
+  vx::Array1<typename std::conditional<
+      std::is_const<T>::value, const typename T::Type, typename T::Type>::type>
+  asArray1Primitive() {
+    constexpr bool isConst = std::is_const<T>::value;
+    using T_ = typename std::remove_cv<T>::type;
+    using Type_ = typename T_::Type;
+    using Type = typename std::conditional<isConst, const Type_, Type_>::type;
+
+    checkTypeAndStrides(T_::bufferType());
+
+    return vx::Array1<Type>((Type*)data()->getData(), {this->count()},
+                            {this->strideBytes()}, this->thisShared());
+  }
 };
 }  // namespace vx

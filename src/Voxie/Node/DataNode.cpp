@@ -167,10 +167,11 @@ bool DataNode::isAllowedParent(NodeKind kind) {
 
 void DataNode::setFileInfo(const QFileInfo& fileInfo,
                            const QSharedPointer<vx::io::Importer>& importer,
-                           const QMap<QString, QVariant>& importProperties) {
-  QMap<QString, QVariant> importProperties2 = importProperties;
+                           const QMap<QString, vx::Any>& importProperties) {
+  QMap<QString, vx::Any> importProperties2 = importProperties;
   for (const auto& property : importer->properties()) {
-    if (importProperties2[property->name()] == property->defaultValue())
+    if (property->type()->equals(importProperties2[property->name()],
+                                 property->defaultValue()))
       importProperties2.remove(property->name());
   }
 

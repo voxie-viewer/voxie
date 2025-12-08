@@ -338,8 +338,8 @@ struct VgiFile {
       currentSection = "";
     }
 
-    auto res = createQSharedPointer<VgiFile>(std::move(sections),
-                                             QFileInfo(filename).dir().path());
+    auto res = vx::createQSharedPointer<VgiFile>(
+        std::move(sections), QFileInfo(filename).dir().path());
 
     for (auto key : sections.keys()) {
       if (!key.startsWith("volume")) continue;
@@ -347,7 +347,7 @@ struct VgiFile {
       if (id == "" || !id[0].isDigit()) continue;
       auto nr = VgiValue::myToInt32(id);
       res->volumes.insert(
-          nr, createQSharedPointer<Volume>(sections[key], res->directory));
+          nr, vx::createQSharedPointer<Volume>(sections[key], res->directory));
     }
 
     qint32 firstId = std::numeric_limits<qint32>::min();
@@ -356,8 +356,8 @@ struct VgiFile {
       auto id = key.mid(strlen("volumeprimitive"));
       if (id == "" || !id[0].isDigit()) continue;
       auto nr = VgiValue::myToInt32(id);
-      auto primitive =
-          createQSharedPointer<VolumePrimitive>(sections[key], res->volumes);
+      auto primitive = vx::createQSharedPointer<VolumePrimitive>(sections[key],
+                                                                 res->volumes);
       res->volumePrimitives.insert(nr, primitive);
       if (firstId <= nr) {
         res->firstVolumePrimitive = primitive;
@@ -442,14 +442,14 @@ QSharedPointer<DataConverter> DataConverter::create(const QString& dataType,
     error("Unkown endianness");
   }
 
-#define T(Ty)                                                        \
-  do {                                                               \
-    if (bitsPerElement == sizeof(Ty) * 8) {                          \
-      if (swapEndian)                                                \
-        return createQSharedPointer<DataConverterImpl<Ty, true>>();  \
-      else                                                           \
-        return createQSharedPointer<DataConverterImpl<Ty, false>>(); \
-    }                                                                \
+#define T(Ty)                                                            \
+  do {                                                                   \
+    if (bitsPerElement == sizeof(Ty) * 8) {                              \
+      if (swapEndian)                                                    \
+        return vx::createQSharedPointer<DataConverterImpl<Ty, true>>();  \
+      else                                                               \
+        return vx::createQSharedPointer<DataConverterImpl<Ty, false>>(); \
+    }                                                                    \
   } while (0)
   if (dataType == "unsigned integer" || dataType == "int") {
     T(quint8);

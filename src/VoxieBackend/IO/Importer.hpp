@@ -37,6 +37,7 @@
 
 namespace vx {
 // Forward declarations
+class Any;
 class PropertyBase;
 class OperationResultImport;
 template <typename T>
@@ -74,7 +75,7 @@ class VOXIEBACKEND_EXPORT Importer : public vx::plugin::Component {
   // OperationResultImport object?
   virtual QSharedPointer<OperationResultImport> import(
       const QString& fileName, bool doCreateNode,
-      const QMap<QString, QVariant>& properties) = 0;
+      const QMap<QString, vx::Any>& properties) = 0;
 
   static QSharedPointer<OperationResultImport> runThreaded(
       const QString& description, bool doCreateNode,
@@ -94,7 +95,7 @@ class VOXIEBACKEND_EXPORT Importer : public vx::plugin::Component {
    */
   using CreateNodeHandler = vx::SharedFunPtr<void(
       const QSharedPointer<OperationResultImport>&, const QString&,
-      const QSharedPointer<Importer>&, const QMap<QString, QVariant>&)>;
+      const QSharedPointer<Importer>&, const QMap<QString, vx::Any>&)>;
   static void registerCreateNodeHandler(const CreateNodeHandler& fun);
 
   QList<QString> supportedComponentDBusInterfaces() override;

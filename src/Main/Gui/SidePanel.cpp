@@ -48,7 +48,6 @@
 #include <QtCore/QPointer>
 #include <QtCore/QStack>
 
-#include <QVariant>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
@@ -524,7 +523,7 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
       contextMenu->addAction(QIcon(":/icons/plus.png"), "New node &group");
   connect(this->contextMenuActionNodeGroup, &QAction::triggered, this, [this] {
     auto node = NodeGroup::getPrototypeSingleton()->create(
-        QMap<QString, QVariant>(), QList<Node*>(),
+        QMap<QString, vx::Any>(), QList<Node*>(),
         QMap<QString, QDBusVariant>());
     node->setParentNodeGroup(dataflowWidget->currentNodeGroup());
   });
@@ -552,8 +551,9 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
     QList<Node*> oldSelectedNodes = selectedNodes();
     QList<Node*> newSelectedNodes;
     for (Node* node : oldSelectedNodes) {
-      QSharedPointer<Node> newNode = node->prototype()->create(
-          QVariantMap(), QList<Node*>(), QMap<QString, QDBusVariant>());
+      QSharedPointer<Node> newNode =
+          node->prototype()->create(QMap<QString, vx::Any>(), QList<Node*>(),
+                                    QMap<QString, QDBusVariant>());
       newNodes.insert(node, newNode);
       voxieRoot().setGraphPosition(
           newNode.data(),
@@ -586,19 +586,19 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
       }
 
       // copy over properties
-      auto properties = QVariantMap();
+      auto properties = QMap<QString, vx::Any>();
       for (QSharedPointer<NodeProperty> property :
            node->prototype()->nodeProperties()) {
         // if property is a connection to another node, check that that node is
         // also selected. Otherwise don't copy the connection
         if (property->isReference()) {
-          QDBusObjectPath objPath =
-              node->getNodeProperty(property).value<QDBusObjectPath>();
+          QDBusObjectPath objPath = Node::parseVariant<QDBusObjectPath>(
+              node->getNodeProperty(property));
           for (Node* otherNode : oldSelectedNodes) {
             if (otherNode->getPath() == objPath) {
-              properties.insert(
-                  property->name(),
-                  QVariant::fromValue(newNodes[otherNode]->getPath()));
+              properties.insert(property->name(),
+                                vx::make_any<QDBusObjectPath>(
+                                    newNodes[otherNode]->getPath()));
               break;
             }
           }
@@ -614,10 +614,10 @@ SidePanel::SidePanel(vx::Root* root, QMainWindow* mainWindow,
         // if property is a connection to another node, check that that node is
         // also selected. Otherwise don't copy the connection
         if (variant.canConvert<QDBusObjectPath>()) {
-          QDBusObjectPath objectPath = variant.value<QDBusObjectPath>();
-          for (Node* otherNode : oldSelectedNodes) {
-            if (otherNode->getPath() == objectPath) {
-              properties.insert(key, QVariant::fromValue(
+          QDBusObjectPath objectPath =
+      Node::parseVariant<QDBusObjectPath>(variant); for (Node* otherNode :
+      oldSelectedNodes) { if (otherNode->getPath() == objectPath) {
+              properties.insert(key, vx::make_any<Node*>(
                                          newNodes.value(otherNode)->getPath()));
               break;
             }
@@ -1049,7 +1049,7 @@ void SidePanel::onCurrentNodeGroupChanged(NodeGroup* newNodeGroup) {
 void SidePanel::userPromptRenameNode(Node* node) {
   // save node for later so we know which node to rename when user is done
   // inputting text
-  dataflowRenameBox->setProperty("node", QVariant::fromValue(node));
+  dataflowRenameBox->setProperty("node", QVariant::fromValue<Node*>(node));
 
   dataflowRenameBox->setText(node->displayName());
   dataflowRenameBox->setVisible(true);

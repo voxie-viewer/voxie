@@ -58,6 +58,10 @@ VolumeGrid::VolumeGrid(SliceVisualizer* sv) {
   connect(sv, &SliceVisualizer::volumeDataChangedFinished, this,
           &Layer::triggerRedraw);
 
+  // Redraw when the selected series entry changes
+  connect(sv->properties, &SliceProperties::seriesEntryChanged, this,
+          &Layer::triggerRedraw);
+
   // Redraw when properties of the data change
   connect(sv, &SliceVisualizer::volumeDataRotationChanged, this,
           &Layer::triggerRedraw);

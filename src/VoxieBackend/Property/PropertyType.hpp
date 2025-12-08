@@ -27,6 +27,8 @@
 #include <VoxieBackend/Component/Component.hpp>
 #include <VoxieBackend/Component/ComponentTypeInfo.hpp>
 
+#include <VoxieClient/Any.hpp>
+
 #include <QList>
 #include <QMap>
 #include <QtDBus/QDBusAbstractAdaptor>
@@ -43,16 +45,18 @@ class NodeProperty;
 
 class PropertyUI;
 
+class DBusVariant;
+
 class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
   Q_OBJECT
 
   QString name_;
   QString displayName_;
-  QVariant defaultValue_;
+  vx::Any defaultValue_;
 
  protected:
   PropertyType(const QString& name, const QString& displayName,
-               const QVariant& defaultValue);
+               const vx::Any& defaultValue);
   ~PropertyType();
 
  public:
@@ -70,29 +74,29 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
    * @brief Return the value which is used as default value if it is not changed
    * by the property itself.
    */
-  const QVariant& defaultValue() const { return defaultValue_; }
+  const vx::Any& defaultValue() const { return defaultValue_; }
 
   /**
    * @brief Check whether value is a valid value for property and throw an
    * exception otherwise (property has to have this as type).
    * Non-canonical values are considered invalid.
    */
-  virtual void verifyValue(NodeProperty& property, const QVariant& value) = 0;
+  virtual void verifyValue(NodeProperty& property, const vx::Any& value) = 0;
 
   /**
    * @brief Check whether value is a valid value in a context where there is no
    * property.
    * Non-canonical values are considered invalid.
    */
-  virtual void verifyValueWithoutProperty(const QVariant& value) = 0;
+  virtual void verifyValueWithoutProperty(const vx::Any& value) = 0;
 
   /**
    * @brief Check whether value is a valid value for property and throw an
    * exception otherwise (property has to have this as type). Return the
    * canonical version of the property.
    */
-  virtual QVariant canonicalize(NodeProperty& property,
-                                const QVariant& value) = 0;
+  virtual vx::Any canonicalize(NodeProperty& property,
+                               const vx::Any& value) = 0;
 
   /**
    * @brief Return the Qt meta type id for the type used in the (raw) variants
@@ -111,7 +115,7 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
    *
    * Throws a Exception if the value cannot be parsed.
    */
-  virtual QVariant parseJson(const QJsonValue& value) = 0;
+  virtual vx::Any parseJson(const QJsonValue& value) = 0;
 
   /**
    * @brief Convert the raw representation of the specified data type to a
@@ -123,7 +127,7 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
    * Returns the type DisplayName if no string conversion function is defined
    * for this PropertyType.
    */
-  virtual QString valueToString(const QVariant& value) = 0;
+  virtual QString valueToString(const vx::Any& value) = 0;
 
   /**
    * @brief Get a detailed description of the value as a human-readable string.
@@ -133,26 +137,45 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
    *
    * Returns an empty string if no description is defined for this PropertyType.
    */
-  virtual QString valueGetDescription(const QVariant& value) = 0;
+  virtual QString valueGetDescription(const vx::Any& value) = 0;
 
   /**
    * @brief Convert the raw representation to the DBus representation.
    *
    * Throws a Exception if the value cannot be converted;
    */
-  virtual QDBusVariant rawToDBus(const QVariant& value) = 0;
+  virtual QDBusVariant rawToDBus(const vx::Any& value) = 0;
   /**
    * @brief Convert the DBus representation to the raw representation.
    *
    * Throws a Exception if the value cannot be converted;
    */
-  virtual QVariant dbusToRaw(const QDBusVariant& value) = 0;
+  virtual vx::Any dbusToRaw(const QDBusVariant& value) = 0;
+
+  // TODO: Remove? (Needed by QVariant for TableData)
+  virtual QVariant dbusToRawQVariant(const QDBusVariant& value) = 0;
+  virtual QDBusVariant rawToDBusQVariant(const QVariant& value) = 0;
+  // TODO: Remove? (Needed by QVariant for TableData)
+  virtual QString valueToStringQVariant(const QVariant& value) = 0;
+  // TODO: Remove? (Needed by QVariant for TableData)
+  virtual int compareQVariant(const QVariant& v1, const QVariant& v2) = 0;
+
+  virtual vx::DBusVariant rawToDBusVoxie(const vx::Any& value) = 0;
+  virtual vx::Any dbusVoxieToRaw(const vx::DBusVariant& value) = 0;
 
   // Same as rawToDBus and dbusToRaw, but with a list of values
-  virtual QDBusVariant rawToDBusList(const QList<QVariant>& value) = 0;
-  virtual QList<QVariant> dbusToRawList(const QDBusVariant& value) = 0;
+  virtual QDBusVariant rawToDBusList(const QList<vx::Any>& value) = 0;
+  virtual QList<vx::Any> dbusToRawList(const QDBusVariant& value) = 0;
 
   virtual QDBusSignature dbusSignature() = 0;
+  virtual QString dbusVariantStyle() = 0;
+
+  /**
+   * Returns true if v1 == v2 and false otherwise.
+   *
+   * v1 and v2 must be raw values of this type.
+   */
+  virtual bool equals(const vx::Any& v1, const vx::Any& v2) = 0;
 
   /**
    * Returns true iff two values of this type can be compared with a total
@@ -166,7 +189,7 @@ class VOXIEBACKEND_EXPORT PropertyType : public vx::plugin::Component {
    *
    * Throws an exception is isComparable() returns false.
    */
-  virtual int compare(const QVariant& v1, const QVariant& v2) = 0;
+  virtual int compare(const vx::Any& v1, const vx::Any& v2) = 0;
 
   QList<QString> supportedComponentDBusInterfaces() override;
 };

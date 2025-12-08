@@ -34,6 +34,7 @@ class QDBusVariant;
 class QJsonValue;
 
 namespace vx {
+class DBusVariant;
 
 // All methods will throw an exception for invalid values
 
@@ -42,8 +43,18 @@ VOXIECLIENT_EXPORT QMap<QString, QDBusVariant> jsonToDBus(
     const QJsonObject& object);
 VOXIECLIENT_EXPORT QList<QDBusVariant> jsonToDBus(const QJsonArray& array);
 
+VOXIECLIENT_EXPORT vx::DBusVariant jsonToDBusVoxie(const QJsonValue& value);
+VOXIECLIENT_EXPORT QMap<QString, vx::DBusVariant> jsonToDBusVoxie(
+    const QJsonObject& object);
+VOXIECLIENT_EXPORT QList<vx::DBusVariant> jsonToDBusVoxie(
+    const QJsonArray& array);
+
 VOXIECLIENT_EXPORT QJsonValue dbusToJson(const QDBusVariant& value);
 VOXIECLIENT_EXPORT QJsonObject
 dbusToJson(const QMap<QString, QDBusVariant>& value);
+
+VOXIECLIENT_EXPORT QJsonValue dbusVoxieToJson(const vx::DBusVariant& value);
+VOXIECLIENT_EXPORT QJsonObject
+dbusVoxieToJson(const QMap<QString, vx::DBusVariant>& value);
 
 }  // namespace vx

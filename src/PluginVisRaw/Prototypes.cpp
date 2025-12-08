@@ -14,27 +14,27 @@ TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::CenterPoint, QPointF value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.View2D.CenterPoint",
-          QVariant::fromValue<std::tuple<double, double>>(
+          vx::make_any<std::tuple<double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double>,
                                           QPointF>::toRaw(value_))) {}
 TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::VerticalSize, double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.View2D.VerticalSize",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::CurrentImage, qint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.CurrentImage",
-          QVariant::fromValue<qint64>(
+          vx::make_any<qint64>(
               vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
 TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::CurrentImageList, std::tuple<QString, QJsonObject> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData."
           "CurrentImageList",
-          QVariant::fromValue<std::tuple<QString, QJsonObject>>(
+          vx::make_any<std::tuple<QString, QJsonObject>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<QString, QJsonObject>,
                   std::tuple<QString, QJsonObject>>::toRaw(value_))) {}
@@ -42,26 +42,26 @@ TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::ImageKind, QJsonObject value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImageKind",
-          QVariant::fromValue<QJsonObject>(
+          vx::make_any<QJsonObject>(
               vx::PropertyValueConvertRaw<QJsonObject, QJsonObject>::toRaw(
                   value_))) {}
 TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::ImagesPerSecond, double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.ImagesPerSecond",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::Interpolation, QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.Interpolation",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::RawData, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.RawData",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
@@ -69,7 +69,7 @@ TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData."
           "ValueColorMapping",
-          QVariant::fromValue<QList<std::tuple<
+          vx::make_any<QList<std::tuple<
               double, std::tuple<double, double, double, double>, qint32>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double,
@@ -80,11 +80,11 @@ TomographyRawDataPropertiesEntry::TomographyRawDataPropertiesEntry(
     vx::PropType::WaitForImages, bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.TomographyRawData.WaitForImages",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 TomographyRawDataPropertiesBase::~TomographyRawDataPropertiesBase() {}
 TomographyRawDataPropertiesCopy::TomographyRawDataPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QPointF TomographyRawDataPropertiesCopy::centerPoint() {
   return vx::PropertyValueConvertRaw<std::tuple<double, double>, QPointF>::
@@ -797,7 +797,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_CenterPoint](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_CenterPoint) return;
         QPointF valueCasted;
         try {
@@ -819,7 +819,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_VerticalSize](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_VerticalSize) return;
         double valueCasted;
         try {
@@ -840,7 +840,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_CurrentImage](const QSharedPointer<NodeProperty>& property,
-                                 const QVariant& value) {
+                                 const vx::Any& value) {
         if (property != _prop_CurrentImage) return;
         qint64 valueCasted;
         try {
@@ -862,7 +862,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_CurrentImageList](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_CurrentImageList) return;
         std::tuple<QString, QJsonObject> valueCasted;
         try {
@@ -886,7 +886,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ImageKind](const QSharedPointer<NodeProperty>& property,
-                              const QVariant& value) {
+                              const vx::Any& value) {
         if (property != _prop_ImageKind) return;
         QJsonObject valueCasted;
         try {
@@ -909,7 +909,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ImagesPerSecond](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_ImagesPerSecond) return;
         double valueCasted;
         try {
@@ -931,7 +931,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Interpolation](const QSharedPointer<NodeProperty>& property,
-                                  const QVariant& value) {
+                                  const vx::Any& value) {
         if (property != _prop_Interpolation) return;
         QString valueCasted;
         try {
@@ -952,7 +952,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_RawData](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_RawData) return;
         vx::Node* valueCasted;
         try {
@@ -975,7 +975,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ValueColorMapping](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_ValueColorMapping) return;
         QList<vx::ColorizerEntry> valueCasted;
         try {
@@ -1002,7 +1002,7 @@ TomographyRawDataProperties::TomographyRawDataProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_WaitForImages](const QSharedPointer<NodeProperty>& property,
-                                  const QVariant& value) {
+                                  const vx::Any& value) {
         if (property != _prop_WaitForImages) return;
         bool valueCasted;
         try {

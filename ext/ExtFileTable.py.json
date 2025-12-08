@@ -18,7 +18,8 @@
             "DisplayName": "Voxie Table JSON",
             "Description": "Load table from JSON file",
             "Patterns": [
-                "*.vxtbl.json"
+                "*.vxtbl.json",
+                "*.vxtbl"
             ]
         }
     ]

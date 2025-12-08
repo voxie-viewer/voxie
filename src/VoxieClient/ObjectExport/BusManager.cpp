@@ -22,6 +22,7 @@
 
 #include "BusManager.hpp"
 
+#include <VoxieClient/DBusClient.hpp>
 #include <VoxieClient/DBusConnectionUtil.hpp>
 #include <VoxieClient/QtUtil.hpp>
 
@@ -98,6 +99,7 @@ BusManager::BusManager() {}
 void BusManager::addConnection(
     const QSharedPointer<BusConnection>& connection) {
   vx::checkOnMainThread("BusManager::addConnection");
+  // qDebug() << "addConnection" << connection << connection->connectionName();
 
   QObject::connect(
       connection.data(), &BusConnection::disconnected, this,
@@ -216,6 +218,11 @@ QSharedPointer<BusConnection> BusManager::findConnection(
   throw vx::Exception(
       "de.uni_stuttgart.Voxie.Error",
       "Could not find DBus connection with name '" + name + "'");
+}
+
+void BusManager::setupClient(DBusClient& client) {
+  this->addConnection(makeSharedQObject<vx::BusConnection>(
+      client.connection(), client.uniqueName() != ""));
 }
 
 BusManager* vx::getBusManager() {

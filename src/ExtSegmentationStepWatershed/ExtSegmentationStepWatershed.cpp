@@ -273,19 +273,19 @@ int main(int argc, char* argv[]) {
               labelTableUpdate.path(), rowData, QMap<QString, QDBusVariant>()));
         }
 
-        labelVolumeVersion = createQSharedPointer<
+        labelVolumeVersion = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(labelVolumeUpdate->Finish(
                 dbusClient.clientPath(), QMap<QString, QDBusVariant>())));
 
-        labelTableVersion = createQSharedPointer<
+        labelTableVersion = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(labelTableUpdate->Finish(
                 dbusClient.clientPath(), QMap<QString, QDBusVariant>())));
 
-        containerVersion = createQSharedPointer<
+        containerVersion = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(containerUpdate->Finish(

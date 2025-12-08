@@ -73,7 +73,7 @@ with context.makeObject(context.bus, context.busName, args.voxie_operation, ['de
                 for z in range(0, zCount):
                     op.ThrowIfCancelled()
                     operation(inputArray1[:, :, z], operand2,
-                              outputBuffer.array[:, :, z])
+                              outputBuffer.array[:, :, z], casting='unsafe')
                     op.SetProgress((z + 1) / zCount)
                 version = update.Finish()
 

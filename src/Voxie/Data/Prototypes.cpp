@@ -12,7 +12,7 @@ inline namespace data_prop {
 ContainerPropertiesEntry::~ContainerPropertiesEntry() {}
 ContainerPropertiesBase::~ContainerPropertiesBase() {}
 ContainerPropertiesCopy::ContainerPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_Container_[] = {
     123, 34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121,
@@ -82,7 +82,7 @@ inline namespace data_prop {
 EventListDataPropertiesEntry::~EventListDataPropertiesEntry() {}
 EventListDataPropertiesBase::~EventListDataPropertiesBase() {}
 EventListDataPropertiesCopy::EventListDataPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_EventListData_[] = {
     123, 34,  68,  101, 102, 97,  117, 108, 116, 69,  120, 112, 111, 114, 116,
@@ -136,7 +136,7 @@ inline namespace data_prop {
 FilePropertiesEntry::~FilePropertiesEntry() {}
 FilePropertiesBase::~FilePropertiesBase() {}
 FilePropertiesCopy::FilePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_File_[] = {
     123, 34,  68,  101, 102, 97,  117, 108, 116, 69,  120, 112, 111, 114, 116,
@@ -199,24 +199,24 @@ GeometricPrimitivePropertiesEntry::GeometricPrimitivePropertiesEntry(
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Data.GeometricPrimitive."
           "MeasurementPrimitive1",
-          QVariant::fromValue<quint64>(
+          vx::make_any<quint64>(
               vx::PropertyValueConvertRaw<quint64, quint64>::toRaw(value_))) {}
 GeometricPrimitivePropertiesEntry::GeometricPrimitivePropertiesEntry(
     vx::PropType::MeasurementPrimitive2, quint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Data.GeometricPrimitive."
           "MeasurementPrimitive2",
-          QVariant::fromValue<quint64>(
+          vx::make_any<quint64>(
               vx::PropertyValueConvertRaw<quint64, quint64>::toRaw(value_))) {}
 GeometricPrimitivePropertiesEntry::GeometricPrimitivePropertiesEntry(
     vx::PropType::SelectedPrimitive, quint64 value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Data.GeometricPrimitive.SelectedPrimitive",
-          QVariant::fromValue<quint64>(
+          vx::make_any<quint64>(
               vx::PropertyValueConvertRaw<quint64, quint64>::toRaw(value_))) {}
 GeometricPrimitivePropertiesBase::~GeometricPrimitivePropertiesBase() {}
 GeometricPrimitivePropertiesCopy::GeometricPrimitivePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 quint64 GeometricPrimitivePropertiesCopy::measurementPrimitive1() {
   return vx::PropertyValueConvertRaw<quint64, quint64>::fromRaw(
@@ -447,7 +447,7 @@ GeometricPrimitiveProperties::GeometricPrimitiveProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_MeasurementPrimitive1](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_MeasurementPrimitive1) return;
         quint64 valueCasted;
         try {
@@ -469,7 +469,7 @@ GeometricPrimitiveProperties::GeometricPrimitiveProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_MeasurementPrimitive2](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_MeasurementPrimitive2) return;
         quint64 valueCasted;
         try {
@@ -491,7 +491,7 @@ GeometricPrimitiveProperties::GeometricPrimitiveProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_SelectedPrimitive](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_SelectedPrimitive) return;
         quint64 valueCasted;
         try {
@@ -516,7 +516,7 @@ SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::Rotation,
                                                QQuaternion value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.MovableDataNode.Rotation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -524,12 +524,12 @@ SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::Translation,
                                                QVector3D value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.MovableDataNode.Translation",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 SurfacePropertiesBase::~SurfacePropertiesBase() {}
 SurfacePropertiesCopy::SurfacePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QQuaternion SurfacePropertiesCopy::rotation() {
   return vx::PropertyValueConvertRaw<
@@ -693,7 +693,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Rotation](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_Rotation) return;
         QQuaternion valueCasted;
         try {
@@ -715,7 +715,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Translation](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_Translation) return;
         QVector3D valueCasted;
         try {
@@ -742,7 +742,7 @@ inline namespace data_prop {
 TablePropertiesEntry::~TablePropertiesEntry() {}
 TablePropertiesBase::~TablePropertiesBase() {}
 TablePropertiesCopy::TablePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_Table_[] = {
     123, 34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121,
@@ -794,7 +794,7 @@ inline namespace data_prop {
 TomographyRawDataPropertiesEntry::~TomographyRawDataPropertiesEntry() {}
 TomographyRawDataPropertiesBase::~TomographyRawDataPropertiesBase() {}
 TomographyRawDataPropertiesCopy::TomographyRawDataPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_TomographyRawData_[] = {
     123, 34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121,
@@ -854,7 +854,7 @@ VolumePropertiesEntry::VolumePropertiesEntry(vx::PropType::Rotation,
                                              QQuaternion value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.MovableDataNode.Rotation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -862,12 +862,12 @@ VolumePropertiesEntry::VolumePropertiesEntry(vx::PropType::Translation,
                                              QVector3D value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.MovableDataNode.Translation",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 VolumePropertiesBase::~VolumePropertiesBase() {}
 VolumePropertiesCopy::VolumePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QQuaternion VolumePropertiesCopy::rotation() {
   return vx::PropertyValueConvertRaw<
@@ -1027,7 +1027,7 @@ VolumeProperties::VolumeProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Rotation](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_Rotation) return;
         QQuaternion valueCasted;
         try {
@@ -1049,7 +1049,7 @@ VolumeProperties::VolumeProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Translation](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_Translation) return;
         QVector3D valueCasted;
         try {
@@ -1078,7 +1078,7 @@ VolumeSeriesPropertiesEntry::VolumeSeriesPropertiesEntry(vx::PropType::Rotation,
                                                          QQuaternion value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.MovableDataNode.Rotation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -1086,12 +1086,12 @@ VolumeSeriesPropertiesEntry::VolumeSeriesPropertiesEntry(
     vx::PropType::Translation, QVector3D value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.MovableDataNode.Translation",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 VolumeSeriesPropertiesBase::~VolumeSeriesPropertiesBase() {}
 VolumeSeriesPropertiesCopy::VolumeSeriesPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QQuaternion VolumeSeriesPropertiesCopy::rotation() {
   return vx::PropertyValueConvertRaw<
@@ -1240,7 +1240,7 @@ VolumeSeriesProperties::VolumeSeriesProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Rotation](const QSharedPointer<NodeProperty>& property,
-                             const QVariant& value) {
+                             const vx::Any& value) {
         if (property != _prop_Rotation) return;
         QQuaternion valueCasted;
         try {
@@ -1262,7 +1262,7 @@ VolumeSeriesProperties::VolumeSeriesProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Translation](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_Translation) return;
         QVector3D valueCasted;
         try {
@@ -1289,7 +1289,7 @@ inline namespace node_prop {
 NodeGroupPropertiesEntry::~NodeGroupPropertiesEntry() {}
 NodeGroupPropertiesBase::~NodeGroupPropertiesBase() {}
 NodeGroupPropertiesCopy::NodeGroupPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_NodeGroup_[] = {
     123, 34,  68,  101, 115, 99,  114, 105, 112, 116, 105, 111, 110, 34,  58,
@@ -1331,7 +1331,7 @@ PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::Orientation,
                                            QQuaternion value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Property.Plane.Orientation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -1339,12 +1339,12 @@ PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::Origin,
                                            QVector3D value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Property.Plane.Origin",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 PlanePropertiesBase::~PlanePropertiesBase() {}
 PlanePropertiesCopy::PlanePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QQuaternion PlanePropertiesCopy::orientation() {
   return vx::PropertyValueConvertRaw<
@@ -1499,7 +1499,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Orientation](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_Orientation) return;
         QQuaternion valueCasted;
         try {
@@ -1522,7 +1522,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Origin](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Origin) return;
         QVector3D valueCasted;
         try {
@@ -1548,7 +1548,7 @@ inline namespace property_prop {
 PreviewBoxPropertiesEntry::~PreviewBoxPropertiesEntry() {}
 PreviewBoxPropertiesBase::~PreviewBoxPropertiesBase() {}
 PreviewBoxPropertiesCopy::PreviewBoxPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_PreviewBox_[] = {
     123, 34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121,

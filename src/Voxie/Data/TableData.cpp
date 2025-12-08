@@ -205,7 +205,7 @@ quint64 TableData::addRowDBus(const QSharedPointer<DataUpdate>& update,
                     "Number of columns does not match table");
   QList<QVariant> dataRaw;
   for (int i = 0; i < data.size(); i++) {
-    dataRaw << columns()[i].type()->dbusToRaw(QDBusVariant(data[i]));
+    dataRaw << columns()[i].type()->dbusToRawQVariant(QDBusVariant(data[i]));
     /*
     if (data[i].userType() != columns()[i].type()->getRawQMetaType())
       throw Exception(
@@ -285,7 +285,7 @@ QList<std::tuple<quint64, QList<QDBusVariant>>> TableData::getRowsDBus(
     if (row.rowID() < firstRowID || row.rowID() > lastRowID) continue;
     QList<QDBusVariant> dataDBus;
     for (int i = 0; i < columns().size(); i++)
-      dataDBus << columns()[i].type()->rawToDBus(row.data()[i]);
+      dataDBus << columns()[i].type()->rawToDBusQVariant(row.data()[i]);
     result << std::make_tuple(row.rowID(), dataDBus);
   }
   return result;

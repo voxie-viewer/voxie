@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -155,11 +156,11 @@ class TomographyRawDataPropertiesBase {
   virtual bool waitForImagesRaw() = 0;
 };
 class TomographyRawDataPropertiesCopy : public TomographyRawDataPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   TomographyRawDataPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QPointF centerPoint() override final;
   std::tuple<double, double> centerPointRaw() override final;
   double verticalSize() override final;

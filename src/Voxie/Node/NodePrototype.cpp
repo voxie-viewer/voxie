@@ -115,7 +115,7 @@ void NodePrototype::resolve2(
 }
 
 void NodePrototype::createHelper(QSharedPointer<Node> node,
-                                 QMap<QString, QVariant> properties,
+                                 QMap<QString, vx::Any> properties,
                                  QList<Node*> inputs,
                                  const QMap<QString, QDBusVariant>& options,
                                  bool registerNode) {
@@ -245,7 +245,7 @@ QJsonValue NodePrototype::toJson() {
 namespace vx {
 class NodePrototypeImplementation : public NodePrototype {
   SharedFunPtr<QSharedPointer<Node>(
-      const QMap<QString, QVariant>&, const QList<Node*>&,
+      const QMap<QString, vx::Any>&, const QList<Node*>&,
       const QMap<QString, QDBusVariant>&, vx::NodePrototype*, bool)>
       constructor;
 
@@ -268,7 +268,7 @@ class NodePrototypeImplementation : public NodePrototype {
   NodePrototypeImplementation(
       const QJsonObject& json,
       const SharedFunPtr<QSharedPointer<Node>(
-          const QMap<QString, QVariant>&, const QList<Node*>&,
+          const QMap<QString, vx::Any>&, const QList<Node*>&,
           const QMap<QString, QDBusVariant>&, vx::NodePrototype*, bool)>&
           customNodeClassConstructor)
       : NodePrototype(json) {
@@ -348,7 +348,7 @@ class NodePrototypeImplementation : public NodePrototype {
     };
   }
 
-  QSharedPointer<Node> create(const QMap<QString, QVariant>& properties,
+  QSharedPointer<Node> create(const QMap<QString, vx::Any>& properties,
                               const QList<Node*>& inputs,
                               const QMap<QString, QDBusVariant>& options,
                               bool registerNode) override {
@@ -367,7 +367,7 @@ class NodePrototypeImplementation : public NodePrototype {
 QSharedPointer<vx::NodePrototype> NodePrototype::fromJson(
     const QJsonObject& json,
     const SharedFunPtr<QSharedPointer<Node>(
-        const QMap<QString, QVariant>&, const QList<Node*>&,
+        const QMap<QString, vx::Any>&, const QList<Node*>&,
         const QMap<QString, QDBusVariant>&, vx::NodePrototype*, bool)>&
         customNodeClassConstructor) {
   if (!customNodeClassConstructor)
@@ -382,7 +382,7 @@ QSharedPointer<vx::NodePrototype> NodePrototype::fromJson(
 QSharedPointer<vx::NodePrototype> NodePrototype::fromJson(
     const char* json,
     const SharedFunPtr<QSharedPointer<Node>(
-        const QMap<QString, QVariant>&, const QList<Node*>&,
+        const QMap<QString, vx::Any>&, const QList<Node*>&,
         const QMap<QString, QDBusVariant>&, vx::NodePrototype*, bool)>&
         customNodeClassConstructor) {
   QJsonParseError error;
@@ -464,7 +464,7 @@ class NodePrototypeAdaptorImpl : public NodePrototypeAdaptor,
           // qDebug() << "Got key" << key << "with sig" <<
           // QMetaType::typeName(properties[key].userType());
         }
-      QVariantMap properties2;
+      QMap<QString, vx::Any> properties2;
       bool allowCompatibilityNames =
           ExportedObject::getOptionValueOrDefault<bool>(
               options, "AllowCompatibilityNames", true);
@@ -512,7 +512,7 @@ class NodePrototypeAdaptorImpl : public NodePrototypeAdaptor,
           // qDebug() << "Got key" << key << "with sig" <<
           // QMetaType::typeName(properties[key].userType());
         }
-      QVariantMap properties2;
+      QMap<QString, vx::Any> properties2;
       bool allowCompatibilityNames =
           ExportedObject::getOptionValueOrDefault<bool>(
               options, "AllowCompatibilityNames", true);

@@ -35,7 +35,7 @@ args = voxie.parser.parse_args()
 context = voxie.VoxieContext(args)
 instance = context.createInstance()
 
-# TODO: Should this depend on the property type? Currently mostly used for ChemicalComposition, which contains JSON data.
+# TODO: Should this depend on the property type? Currently mostly used for ChemicalComposition, which contains JSON data. See also data_properties.py.
 style = voxie.dbus_as_json.DBusAsJSONStyle()
 style.variant_style = voxie.dbus_as_json.VariantStyle.JsonVariant
 

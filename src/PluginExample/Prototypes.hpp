@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -68,11 +69,11 @@ class TheSphereGeneratorPropertiesBase {
 };
 class TheSphereGeneratorPropertiesCopy
     : public TheSphereGeneratorPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   TheSphereGeneratorPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   qint64 seed() override final;
   qint64 seedRaw() override final;
   qint64 size() override final;
@@ -142,11 +143,11 @@ class RandomChartPropertiesBase {
   virtual ~RandomChartPropertiesBase();
 };
 class RandomChartPropertiesCopy : public RandomChartPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   RandomChartPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
 };
 class RandomChartProperties : public QObject, public RandomChartPropertiesBase {
   Q_OBJECT

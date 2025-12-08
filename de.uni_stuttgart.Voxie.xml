@@ -1178,8 +1178,15 @@
         The DBus signature of a value of this type.
     -->
     <property access="read" name="DBusSignature" type="g" />
+
+    <!--
+        DBusVariantStyle:
+
+        How DBus variants in the value should be serialized.
+    -->
+    <property access="read" name="DBusVariantStyle" type="s" />
   </interface>
-  
+
   <interface name="de.uni_stuttgart.Voxie.Property">
     <property access="read" name="Name" type="s" />
     <property access="read" name="DisplayName" type="s" />
@@ -2883,6 +2890,7 @@
       <arg direction="in" name="options" type="a{sv}" />
     </method>
 
+    <!-- TODO: Rename to GetDataProperty or GetOrCreateDataProperty or something like that? (And keep old name for compatibility) -->
     <!--
         CreateDataProperty:
         
@@ -2903,6 +2911,7 @@
       <arg direction="in" name="options" type="a{sv}" />
     </method>
 
+    <!-- TODO: Rename to GetSeriesDimension or GetOrCreateSeriesDimension or something like that and change the implementation to cache SeriesDimension instances? (And keep old name for compatibility) -->
     <!--
         CreateSeriesDimension:
 
@@ -3142,6 +3151,22 @@
   </interface>
 
   <interface name="de.uni_stuttgart.Voxie.Utilities">
+    <method name="ExtractLine">
+      <arg direction="in" name="volume" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeData" />
+      </arg>
+      <arg direction="in" name="startPoint" type="(ddd)" />
+      <arg direction="in" name="endPoint" type="(ddd)" />
+      <arg direction="in" name="outputBuffer" type="o">
+        <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.Buffer" />
+        <!-- <annotation name="de.uni_stuttgart.Voxie.BufferTypeJson" value="[&quot;primitive&quot;, &quot;float&quot;, 32, &quot;native&quot;]" /> -->
+        <annotation name="de.uni_stuttgart.Voxie.BufferIsWritable" value="true" />
+      </arg>
+      <arg direction="in" name="outputBufferOffset" type="t" />
+      <arg direction="in" name="outputBufferCount" type="t" />
+      <arg direction="in" name="options" type="a{sv}" />
+    </method>
+
     <method name="ExtractSlice">
       <arg direction="in" name="volume" type="o">
         <annotation name="de.uni_stuttgart.Voxie.Interface" value="de.uni_stuttgart.Voxie.VolumeData" />
@@ -3166,6 +3191,14 @@
       <arg direction="in" name="end" type="d" />
       <arg direction="in" name="options" type="a{sv}" />
       <arg direction="out" name="result" type="a(td)" />
+    </method>
+
+    <!-- Should only be used for debugging -->
+    <!-- TODO: Move to another interface? -->
+    <method name="DebugReturnValue">
+      <arg direction="in" name="mode" type="i" />
+      <arg direction="in" name="value" type="v" />
+      <arg direction="out" name="result" type="v" />
     </method>
   </interface>
 

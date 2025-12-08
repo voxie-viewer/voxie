@@ -16,6 +16,7 @@
 #include <Voxie/Node/Node.hpp>
 #include <Voxie/Node/Types.hpp>
 #include <VoxieBackend/Data/DataType.hpp>
+#include <VoxieClient/DBusVariant.hpp>
 
 class NodeNodeProperty;  // In Voxie/Node/NodeNodeProperty.hpp
 
@@ -126,11 +127,11 @@ class ColorizeLabeledSurfacePropertiesBase {
 };
 class ColorizeLabeledSurfacePropertiesCopy
     : public ColorizeLabeledSurfacePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   ColorizeLabeledSurfacePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<vx::ColorizerEntry> inputColorizer() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   inputColorizerRaw() override final;
@@ -233,11 +234,11 @@ class ColorizeSurfaceFromAttributePropertiesBase {
 };
 class ColorizeSurfaceFromAttributePropertiesCopy
     : public ColorizeSurfaceFromAttributePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   ColorizeSurfaceFromAttributePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<vx::ColorizerEntry> inputColorizer() override final;
   QList<std::tuple<double, std::tuple<double, double, double, double>, qint32>>
   inputColorizerRaw() override final;
@@ -325,11 +326,11 @@ class CreateSurfacePropertiesBase {
   virtual QDBusObjectPath outputRaw() = 0;
 };
 class CreateSurfacePropertiesCopy : public CreateSurfacePropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   CreateSurfacePropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QString algorithm() override final;
   QString algorithmRaw() override final;
   QDBusObjectPath inputVolumeRaw() override final;
@@ -433,11 +434,11 @@ class TableFilterPropertiesBase {
   virtual QDBusObjectPath outputRaw() = 0;
 };
 class TableFilterPropertiesCopy : public TableFilterPropertiesBase {
-  QSharedPointer<const QMap<QString, QVariant>> _properties;
+  QSharedPointer<const QMap<QString, vx::Any>> _properties;
 
  public:
   TableFilterPropertiesCopy(
-      const QSharedPointer<const QMap<QString, QVariant>>& properties);
+      const QSharedPointer<const QMap<QString, vx::Any>>& properties);
   QList<QDBusObjectPath> inputRaw() override final;
   QDBusObjectPath outputRaw() override final;
 };

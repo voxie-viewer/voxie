@@ -146,4 +146,10 @@ struct VOXIEBACKEND_EXPORT ByteBuffer {
 
   VX_BUFFER_TYPE_DECLARE
 };
+
+struct VOXIEBACKEND_EXPORT Float32Buffer {
+  using Type = float;
+
+  VX_BUFFER_TYPE_DECLARE
+};
 }  // namespace vx

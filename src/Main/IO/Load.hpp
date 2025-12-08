@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <VoxieClient/Any.hpp>
+
 #include <QtCore/QList>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QString>
@@ -45,11 +47,11 @@ class Load {
   static void registerCreateNode(
       vx::Root* root, const QSharedPointer<OperationResultImport>& result,
       const QString& fileName, const QSharedPointer<Importer>& importer,
-      const QMap<QString, QVariant>& properties);
+      const QMap<QString, vx::Any>& properties);
 
   static QSharedPointer<OperationResultImport> openFile(
       vx::Root* root, const QSharedPointer<vx::io::Importer>& importer,
-      const QString& file, const QMap<QString, QVariant>& properties,
+      const QString& file, const QMap<QString, vx::Any>& properties,
       bool doCreateNode = true);
   static QSharedPointer<OperationResultImport> openFile(
       vx::Root* root, const QString& file, bool doCreateNode = true);

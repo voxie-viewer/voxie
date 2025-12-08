@@ -26,6 +26,8 @@
 #include <VoxieClient/Optional.hpp>
 #include <VoxieClient/Vector.hpp>
 
+#include <VoxieBackend/Data/InterpolationMethod.hpp>
+
 // https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
 // https://www.codingwiththomas.com/blog/c-static-dynamic-polymorphism-crtp-and-c20s-concepts
 // https://www.delftstack.com/howto/cpp/static-polymorphism-cpp/
@@ -287,4 +289,17 @@ LinearInterpolation<Src> linearInterpolation(Src src) {
   return LinearInterpolation<Src>(std::move(src));
 }
 
+VOXIEBACKEND_EXPORT void withInterpolation_invalidInterpolationMethod();
+
+template <typename Accessor, typename F>
+void withInterpolation(const Accessor& accessor,
+                       vx::InterpolationMethod interpolationMethod,
+                       const F& f) {
+  if (interpolationMethod == vx::InterpolationMethod::NearestNeighbor)
+    f(nearestInterpolation(accessor));
+  else if (interpolationMethod == vx::InterpolationMethod::Linear)
+    f(linearInterpolation(accessor));
+  else
+    withInterpolation_invalidInterpolationMethod();
+}
 }  // namespace vx

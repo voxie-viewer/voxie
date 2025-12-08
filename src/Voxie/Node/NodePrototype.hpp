@@ -48,7 +48,7 @@
     static QSharedPointer<vx::NodePrototype> prototype(                   \
         vx::NodePrototype::fromJson(                                      \
             classname::PropertiesType::_getPrototypeJson(),               \
-            [](const QMap<QString, QVariant>& properties,                 \
+            [](const QMap<QString, vx::Any>& properties,                  \
                const QList<Node*>& inputs,                                \
                const QMap<QString, QDBusVariant>& options,                \
                vx::NodePrototype* prototype2, bool registerNode) {        \
@@ -135,7 +135,7 @@ class VOXIECORESHARED_EXPORT NodePrototype : public vx::plugin::Component {
 
  public:
   virtual QSharedPointer<Node> create(
-      const QMap<QString, QVariant>& properties, const QList<Node*>& inputs,
+      const QMap<QString, vx::Any>& properties, const QList<Node*>& inputs,
       const QMap<QString, QDBusVariant>& options, bool registerNode = true) = 0;
 
   /**
@@ -149,7 +149,7 @@ class VOXIECORESHARED_EXPORT NodePrototype : public vx::plugin::Component {
    * @param options passed from create
    */
   void createHelper(QSharedPointer<vx::Node> node,
-                    QMap<QString, QVariant> properties, QList<Node*> inputs,
+                    QMap<QString, vx::Any> properties, QList<Node*> inputs,
                     const QMap<QString, QDBusVariant>& options,
                     bool registerNode);
 
@@ -199,14 +199,14 @@ class VOXIECORESHARED_EXPORT NodePrototype : public vx::plugin::Component {
   QSharedPointer<vx::NodePrototype> static fromJson(
       const char* json,
       const SharedFunPtr<QSharedPointer<Node>(
-          const QMap<QString, QVariant>&, const QList<Node*>&,
+          const QMap<QString, vx::Any>&, const QList<Node*>&,
           const QMap<QString, QDBusVariant>&, vx::NodePrototype*, bool)>&
           customNodeClassConstructor);
 
   QSharedPointer<vx::NodePrototype> static fromJson(
       const QJsonObject& json,
       const SharedFunPtr<QSharedPointer<Node>(
-          const QMap<QString, QVariant>&, const QList<Node*>&,
+          const QMap<QString, vx::Any>&, const QList<Node*>&,
           const QMap<QString, QDBusVariant>&, vx::NodePrototype*, bool)>&
           customNodeClassConstructor);
 };

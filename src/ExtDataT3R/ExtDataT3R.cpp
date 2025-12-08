@@ -94,11 +94,7 @@ int main(int argc, char* argv[]) {
         de::uni_stuttgart::Voxie::ExternalOperationImport>>::
         create(dbusClient, QDBusObjectPath(operationPath));
 
-    // TODO: Support for peer-to-peer connections
-    vx::getBusManager()->addConnection(makeSharedQObject<vx::BusConnection>(
-        QDBusConnection::sessionBus(), true));
-    // auto dbusService =
-    //     makeSharedQObject<vx::DBusServiceBus>(QDBusConnection::sessionBus());
+    vx::getBusManager()->setupClient(dbusClient);
 
     vx::ClientManager clientManager;
 

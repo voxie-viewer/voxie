@@ -60,7 +60,7 @@ QSharedPointer<QList<QSharedPointer<Importer>>> Load::getImporters(
 // TODO: Remove this method?
 QSharedPointer<OperationResultImport> Load::openFile(
     vx::Root* root, const QSharedPointer<Importer>& importer,
-    const QString& fileName, const QMap<QString, QVariant>& properties,
+    const QString& fileName, const QMap<QString, vx::Any>& properties,
     bool doCreateNode) {
   auto absFileName = QFileInfo(fileName).absoluteFilePath();
 
@@ -79,7 +79,7 @@ QSharedPointer<OperationResultImport> Load::openFile(
 void Load::registerCreateNode(
     vx::Root* root, const QSharedPointer<OperationResultImport>& result,
     const QString& fileName, const QSharedPointer<Importer>& importer,
-    const QMap<QString, QVariant>& properties) {
+    const QMap<QString, vx::Any>& properties) {
   result->onBeforeFinishedSuccess(
       root,  // TODO?
       [root, fileName, importer,
@@ -131,7 +131,7 @@ void Load::registerCreateNode(
         QSharedPointer<Node> obj0;
         try {
           obj0 =
-              resultPrototype->create(QMap<QString, QVariant>(), QList<Node*>(),
+              resultPrototype->create(QMap<QString, vx::Any>(), QList<Node*>(),
                                       QMap<QString, QDBusVariant>());
         } catch (vx::Exception& e) {
           // TODO: Should this trigger an error? The operation has already
@@ -175,7 +175,7 @@ QSharedPointer<OperationResultImport> Load::openFile(vx::Root* root,
   for (const auto& importer : *importers) {
     if (importer->filter().matches(file)) {
       // Use default properties when the importer was not specified
-      QMap<QString, QVariant> properties;
+      QMap<QString, vx::Any> properties;
       for (const auto& prop : importer->properties())
         properties[prop->name()] = prop->defaultValue();
 

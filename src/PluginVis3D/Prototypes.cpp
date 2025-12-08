@@ -14,11 +14,11 @@ Test3DObjectPropertiesEntry::Test3DObjectPropertiesEntry(vx::PropType::Length,
                                                          double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Example.Object3D.Test3DObject.Length",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 Test3DObjectPropertiesBase::~Test3DObjectPropertiesBase() {}
 Test3DObjectPropertiesCopy::Test3DObjectPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 double Test3DObjectPropertiesCopy::length() {
   return vx::PropertyValueConvertRaw<double, double>::fromRaw(
@@ -100,7 +100,7 @@ Test3DObjectProperties::Test3DObjectProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Length](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_Length) return;
         double valueCasted;
         try {
@@ -125,19 +125,19 @@ GeometricPrimitivePropertiesEntry::GeometricPrimitivePropertiesEntry(
     vx::PropType::Visible, bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Generic.Visible",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 GeometricPrimitivePropertiesEntry::GeometricPrimitivePropertiesEntry(
     vx::PropType::GeometricPrimitive, vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.GeometricPrimitive."
           "GeometricPrimitive",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 GeometricPrimitivePropertiesBase::~GeometricPrimitivePropertiesBase() {}
 GeometricPrimitivePropertiesCopy::GeometricPrimitivePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 bool GeometricPrimitivePropertiesCopy::visible() {
   return vx::PropertyValueConvertRaw<bool, bool>::fromRaw(
@@ -277,7 +277,7 @@ GeometricPrimitiveProperties::GeometricPrimitiveProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Visible](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_Visible) return;
         bool valueCasted;
         try {
@@ -298,7 +298,7 @@ GeometricPrimitiveProperties::GeometricPrimitiveProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_GeometricPrimitive](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_GeometricPrimitive) return;
         vx::Node* valueCasted;
         try {
@@ -322,7 +322,7 @@ inline namespace object3d_prop {
 GridPropertiesEntry::~GridPropertiesEntry() {}
 GridPropertiesBase::~GridPropertiesBase() {}
 GridPropertiesCopy::GridPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 static const char _prototype_Grid_[] = {
     123, 34,  68,  101, 115, 99,  114, 105, 112, 116, 105, 111, 110, 34,  58,
@@ -353,18 +353,918 @@ GridProperties::GridProperties(vx::Node* parent) : QObject(parent) {
 
 }  // namespace object3d_prop
 inline namespace object3d_prop {
+LineVisualizerPropertiesEntry::~LineVisualizerPropertiesEntry() {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::Visible, bool value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.Generic.Visible",
+          vx::make_any<bool>(
+              vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::ColorMode, QString value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode",
+          vx::make_any<QString>(
+              vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::Field, vx::Node* value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Field",
+          vx::make_any<QDBusObjectPath>(
+              vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
+                  value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::FixedColor, vx::Color value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.FixedColor",
+          vx::make_any<std::tuple<double, double, double, double>>(
+              vx::PropertyValueConvertRaw<
+                  std::tuple<double, double, double, double>,
+                  vx::Color>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::Integrator, QString value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Integrator",
+          vx::make_any<QString>(
+              vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::MagnitudeThreshold, double value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MagnitudeThreshold",
+          vx::make_any<double>(
+              vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::MaxStreamlines, qint64 value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MaxStreamlines",
+          vx::make_any<qint64>(
+              vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::NumSteps, qint64 value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps",
+          vx::make_any<qint64>(
+              vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::ScaleFactor, double value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ScaleFactor",
+          vx::make_any<double>(
+              vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(vx::PropType::Step,
+                                                             qint64 value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step",
+          vx::make_any<qint64>(
+              vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
+LineVisualizerPropertiesEntry::LineVisualizerPropertiesEntry(
+    vx::PropType::selectGrid, QString value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.selectGrid",
+          vx::make_any<QString>(
+              vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
+LineVisualizerPropertiesBase::~LineVisualizerPropertiesBase() {}
+LineVisualizerPropertiesCopy::LineVisualizerPropertiesCopy(
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
+    : _properties(properties) {}
+bool LineVisualizerPropertiesCopy::visible() {
+  return vx::PropertyValueConvertRaw<bool, bool>::fromRaw(
+      vx::Node::parseVariant<bool>(
+          (*_properties)["de.uni_stuttgart.Voxie.Object3D.Generic.Visible"]));
+}
+bool LineVisualizerPropertiesCopy::visibleRaw() {
+  return vx::Node::parseVariant<bool>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.Generic.Visible"]);
+}
+QString LineVisualizerPropertiesCopy::colorMode() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      vx::Node::parseVariant<QString>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode"]));
+}
+QString LineVisualizerPropertiesCopy::colorModeRaw() {
+  return vx::Node::parseVariant<QString>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode"]);
+}
+QDBusObjectPath LineVisualizerPropertiesCopy::fieldRaw() {
+  return vx::Node::parseVariant<QDBusObjectPath>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Field"]);
+}
+vx::Color LineVisualizerPropertiesCopy::fixedColor() {
+  return vx::PropertyValueConvertRaw<
+      std::tuple<double, double, double, double>,
+      vx::Color>::fromRaw(vx::Node::parseVariant<std::tuple<double, double,
+                                                            double, double>>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.FixedColor"]));
+}
+std::tuple<double, double, double, double>
+LineVisualizerPropertiesCopy::fixedColorRaw() {
+  return vx::Node::parseVariant<std::tuple<double, double, double, double>>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.FixedColor"]);
+}
+QString LineVisualizerPropertiesCopy::integrator() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      vx::Node::parseVariant<QString>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Integrator"]));
+}
+QString LineVisualizerPropertiesCopy::integratorRaw() {
+  return vx::Node::parseVariant<QString>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Integrator"]);
+}
+double LineVisualizerPropertiesCopy::magnitudeThreshold() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      vx::Node::parseVariant<double>(
+          (*_properties)["de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                         "MagnitudeThreshold"]));
+}
+double LineVisualizerPropertiesCopy::magnitudeThresholdRaw() {
+  return vx::Node::parseVariant<double>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                     "MagnitudeThreshold"]);
+}
+qint64 LineVisualizerPropertiesCopy::maxStreamlines() {
+  return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+      vx::Node::parseVariant<qint64>(
+          (*_properties)["de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                         "MaxStreamlines"]));
+}
+qint64 LineVisualizerPropertiesCopy::maxStreamlinesRaw() {
+  return vx::Node::parseVariant<qint64>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MaxStreamlines"]);
+}
+qint64 LineVisualizerPropertiesCopy::numSteps() {
+  return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+      vx::Node::parseVariant<qint64>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps"]));
+}
+qint64 LineVisualizerPropertiesCopy::numStepsRaw() {
+  return vx::Node::parseVariant<qint64>((
+      *_properties)["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps"]);
+}
+double LineVisualizerPropertiesCopy::scaleFactor() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      vx::Node::parseVariant<double>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ScaleFactor"]));
+}
+double LineVisualizerPropertiesCopy::scaleFactorRaw() {
+  return vx::Node::parseVariant<double>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ScaleFactor"]);
+}
+qint64 LineVisualizerPropertiesCopy::step() {
+  return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+      vx::Node::parseVariant<qint64>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step"]));
+}
+qint64 LineVisualizerPropertiesCopy::stepRaw() {
+  return vx::Node::parseVariant<qint64>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step"]);
+}
+QString LineVisualizerPropertiesCopy::selectGrid() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      vx::Node::parseVariant<QString>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.selectGrid"]));
+}
+QString LineVisualizerPropertiesCopy::selectGridRaw() {
+  return vx::Node::parseVariant<QString>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Object3D.LineVisualizer.selectGrid"]);
+}
+static const char _prototype_LineVisualizer_[] = {
+    123, 34,  68,  101, 115, 99,  114, 105, 112, 116, 105, 111, 110, 34,  58,
+    32,  34,  86,  101, 99,  116, 111, 114, 32,  70,  105, 101, 108, 100, 32,
+    118, 105, 115, 117, 97,  108, 105, 122, 101, 114, 32,  119, 105, 116, 104,
+    32,  108, 105, 110, 101, 115, 34,  44,  32,  34,  68,  105, 115, 112, 108,
+    97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  76,  105, 110, 101, 32,
+    86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 34,  44,  32,  34,  73,
+    99,  111, 110, 34,  58,  32,  34,  58,  47,  105, 99,  111, 110, 115, 47,
+    117, 110, 105, 118, 101, 114, 115, 97,  108, 46,  112, 110, 103, 34,  44,
+    32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110,
+    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
+    105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  76,  105, 110,
+    101, 86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 34,  44,  32,  34,
+    78,  111, 100, 101, 75,  105, 110, 100, 34,  58,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  78,  111, 100, 101, 75,  105, 110, 100, 46,  79,
+    98,  106, 101, 99,  116, 51,  68,  34,  44,  32,  34,  80,  114, 111, 112,
+    101, 114, 116, 105, 101, 115, 34,  58,  32,  123, 34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  71,  101,
+    110, 101, 114, 105, 99,  46,  86,  105, 115, 105, 98,  108, 101, 34,  58,
+    32,  123, 34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116,
+    121, 78,  97,  109, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  86,  105,
+    115, 105, 98,  108, 101, 34,  93,  44,  32,  34,  68,  101, 102, 97,  117,
+    108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  116, 114, 117, 101, 44,
+    32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,
+    32,  34,  86,  105, 115, 105, 98,  108, 101, 34,  44,  32,  34,  84,  121,
+    112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116,
+    117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,
+    114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  66,  111, 111,
+    108, 101, 97,  110, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105,
+    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
+    101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  76,  105, 110, 101,
+    86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  67,  111, 108, 111,
+    114, 77,  111, 100, 101, 34,  58,  32,  123, 34,  68,  101, 102, 97,  117,
+    108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  34,  66,  121, 77,  97,
+    103, 110, 105, 116, 117, 100, 101, 34,  44,  32,  34,  68,  105, 115, 112,
+    108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  67,  111, 108, 111,
+    114, 32,  77,  111, 100, 101, 34,  44,  32,  34,  69,  110, 117, 109, 69,
+    110, 116, 114, 105, 101, 115, 34,  58,  32,  123, 34,  66,  121, 77,  97,
+    103, 110, 105, 116, 117, 100, 101, 34,  58,  32,  123, 34,  68,  105, 115,
+    112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  66,  121, 32,
+    77,  97,  103, 110, 105, 116, 117, 100, 101, 34,  44,  32,  34,  85,  73,
+    80,  111, 115, 105, 116, 105, 111, 110, 34,  58,  32,  50,  125, 44,  32,
+    34,  70,  105, 120, 101, 100, 34,  58,  32,  123, 34,  68,  105, 115, 112,
+    108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  70,  105, 120, 101,
+    100, 34,  44,  32,  34,  85,  73,  80,  111, 115, 105, 116, 105, 111, 110,
+    34,  58,  32,  49,  125, 125, 44,  32,  34,  84,  121, 112, 101, 34,  58,
+    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101,
+    114, 116, 121, 84,  121, 112, 101, 46,  69,  110, 117, 109, 101, 114, 97,
+    116, 105, 111, 110, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105,
+    95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105,
+    101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  76,  105, 110, 101,
+    86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  70,  105, 101, 108,
+    100, 34,  58,  32,  123, 34,  65,  108, 108, 111, 119, 101, 100, 78,  111,
+    100, 101, 80,  114, 111, 116, 111, 116, 121, 112, 101, 115, 34,  58,  32,
+    91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116, 97,  46,
+    86,  111, 108, 117, 109, 101, 83,  101, 114, 105, 101, 115, 34,  93,  44,
+    32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,
+    32,  34,  76,  105, 110, 101, 32,  86,  105, 115, 117, 97,  108, 105, 122,
+    101, 114, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121,
+    84,  121, 112, 101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101,
+    110, 99,  101, 34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,
+    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
+    46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  76,  105, 110, 101, 86,
+    105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  70,  105, 120, 101, 100,
+    67,  111, 108, 111, 114, 34,  58,  32,  123, 34,  68,  101, 102, 97,  117,
+    108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  91,  49,  46,  48,  44,
+    32,  48,  46,  48,  44,  32,  48,  46,  48,  44,  32,  49,  46,  48,  93,
+    44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,
+    58,  32,  34,  70,  105, 120, 101, 100, 32,  67,  111, 108, 111, 114, 34,
+    44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112,
+    101, 46,  67,  111, 108, 111, 114, 34,  125, 44,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  76,
+    105, 110, 101, 86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  73,
+    110, 116, 101, 103, 114, 97,  116, 111, 114, 34,  58,  32,  123, 34,  68,
+    101, 102, 97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  34,
+    82,  75,  52,  34,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,
+    97,  109, 101, 34,  58,  32,  34,  73,  110, 116, 101, 103, 114, 97,  116,
+    111, 114, 34,  44,  32,  34,  69,  110, 117, 109, 69,  110, 116, 114, 105,
+    101, 115, 34,  58,  32,  123, 34,  82,  75,  52,  34,  58,  32,  123, 34,
+    68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,
+    82,  75,  52,  34,  44,  32,  34,  85,  73,  80,  111, 115, 105, 116, 105,
+    111, 110, 34,  58,  32,  49,  125, 44,  32,  34,  82,  75,  52,  53,  34,
+    58,  32,  123, 34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101,
+    34,  58,  32,  34,  82,  75,  52,  53,  34,  125, 125, 44,  32,  34,  84,
+    121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
+    116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
+    80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  69,  110,
+    117, 109, 101, 114, 97,  116, 105, 111, 110, 34,  125, 44,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,
+    46,  76,  105, 110, 101, 86,  105, 115, 117, 97,  108, 105, 122, 101, 114,
+    46,  77,  97,  103, 110, 105, 116, 117, 100, 101, 84,  104, 114, 101, 115,
+    104, 111, 108, 100, 34,  58,  32,  123, 34,  68,  101, 102, 97,  117, 108,
+    116, 86,  97,  108, 117, 101, 34,  58,  32,  48,  46,  48,  53,  44,  32,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  77,  97,  103, 110, 105, 116, 117, 100, 101, 32,  84,  104, 114, 101,
+    115, 104, 111, 108, 100, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,
+    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101,
+    114, 116, 121, 84,  121, 112, 101, 46,  70,  108, 111, 97,  116, 34,  44,
+    32,  34,  85,  110, 105, 116, 34,  58,  32,  91,  93,  125, 44,  32,  34,
+    100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114,
+    116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,
+    68,  46,  76,  105, 110, 101, 86,  105, 115, 117, 97,  108, 105, 122, 101,
+    114, 46,  77,  97,  120, 83,  116, 114, 101, 97,  109, 108, 105, 110, 101,
+    115, 34,  58,  32,  123, 34,  68,  101, 102, 97,  117, 108, 116, 86,  97,
+    108, 117, 101, 34,  58,  32,  49,  48,  48,  48,  44,  32,  34,  68,  105,
+    115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  77,  97,
+    120, 32,  83,  116, 114, 101, 97,  109, 108, 105, 110, 101, 115, 34,  44,
+    32,  34,  77,  97,  120, 105, 109, 117, 109, 34,  58,  32,  49,  48,  48,
+    48,  48,  44,  32,  34,  77,  105, 110, 105, 109, 117, 109, 34,  58,  32,
+    49,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121,
+    112, 101, 46,  73,  110, 116, 34,  125, 44,  32,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  76,  105,
+    110, 101, 86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  78,  117,
+    109, 83,  116, 101, 112, 115, 34,  58,  32,  123, 34,  68,  101, 102, 97,
+    117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  56,  48,  44,  32,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  78,  117, 109, 98,  101, 114, 32,  111, 102, 32,  83,  116, 101, 112,
+    115, 34,  44,  32,  34,  77,  97,  120, 105, 109, 117, 109, 34,  58,  32,
+    49,  48,  48,  48,  44,  32,  34,  77,  105, 110, 105, 109, 117, 109, 34,
+    58,  32,  49,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121,
+    84,  121, 112, 101, 46,  73,  110, 116, 34,  125, 44,  32,  34,  100, 101,
+    46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
+    86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,
+    76,  105, 110, 101, 86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,
+    83,  99,  97,  108, 101, 70,  97,  99,  116, 111, 114, 34,  58,  32,  123,
+    34,  68,  101, 102, 97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,
+    32,  53,  101, 45,  48,  55,  44,  32,  34,  68,  105, 115, 112, 108, 97,
+    121, 78,  97,  109, 101, 34,  58,  32,  34,  83,  99,  97,  108, 101, 32,
+    70,  97,  99,  116, 111, 114, 34,  44,  32,  34,  84,  121, 112, 101, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112,
+    101, 114, 116, 121, 84,  121, 112, 101, 46,  70,  108, 111, 97,  116, 34,
+    44,  32,  34,  85,  110, 105, 116, 34,  58,  32,  91,  93,  125, 44,  32,
+    34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
+    114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116,
+    51,  68,  46,  76,  105, 110, 101, 86,  105, 115, 117, 97,  108, 105, 122,
+    101, 114, 46,  83,  116, 101, 112, 34,  58,  32,  123, 34,  68,  101, 102,
+    97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  52,  48,  44,
+    32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,
+    32,  34,  83,  116, 101, 112, 34,  44,  32,  34,  84,  121, 112, 101, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112,
+    101, 114, 116, 121, 84,  121, 112, 101, 46,  73,  110, 116, 34,  125, 44,
+    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,
+    116, 51,  68,  46,  76,  105, 110, 101, 86,  105, 115, 117, 97,  108, 105,
+    122, 101, 114, 46,  115, 101, 108, 101, 99,  116, 71,  114, 105, 100, 34,
+    58,  32,  123, 34,  68,  101, 102, 97,  117, 108, 116, 86,  97,  108, 117,
+    101, 34,  58,  32,  34,  82,  101, 103, 117, 108, 97,  114, 34,  44,  32,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  83,  101, 108, 101, 99,  116, 71,  114, 105, 100, 34,  44,  32,  34,
+    69,  110, 117, 109, 69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  123,
+    34,  82,  101, 103, 117, 108, 97,  114, 34,  58,  32,  123, 34,  68,  105,
+    115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  82,  101,
+    103, 117, 108, 97,  114, 34,  44,  32,  34,  85,  73,  80,  111, 115, 105,
+    116, 105, 111, 110, 34,  58,  32,  49,  125, 44,  32,  34,  85,  110, 115,
+    116, 114, 117, 99,  116, 117, 114, 101, 100, 34,  58,  32,  123, 34,  68,
+    105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  85,
+    110, 115, 116, 114, 117, 99,  116, 117, 114, 101, 100, 34,  44,  32,  34,
+    85,  73,  80,  111, 115, 105, 116, 105, 111, 110, 34,  58,  32,  50,  125,
+    125, 44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,
+    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
+    111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121,
+    112, 101, 46,  69,  110, 117, 109, 101, 114, 97,  116, 105, 111, 110, 34,
+    125, 125, 125, 0};
+const char* LineVisualizerProperties::_getPrototypeJson() {
+  return _prototype_LineVisualizer_;
+}
+
+LineVisualizerProperties::~LineVisualizerProperties() {}
+
+bool LineVisualizerProperties::visible() {
+  return vx::PropertyValueConvertRaw<bool, bool>::fromRaw(
+      _node->getNodePropertyTyped<bool>(
+          "de.uni_stuttgart.Voxie.Object3D.Generic.Visible"));
+}
+bool LineVisualizerProperties::visibleRaw() {
+  return _node->getNodePropertyTyped<bool>(
+      "de.uni_stuttgart.Voxie.Object3D.Generic.Visible");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::visibleProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.Generic.Visible", false);
+}
+NodePropertyTyped<vx::types::Boolean>
+LineVisualizerProperties::visiblePropertyTyped() {
+  return NodePropertyTyped<vx::types::Boolean>(visibleProperty());
+}
+NodeNodeProperty LineVisualizerProperties::visibleInstance() {
+  return NodeNodeProperty(_node, visibleProperty());
+}
+void LineVisualizerProperties::setVisible(bool value) {
+  _node->setNodePropertyTyped<bool>(
+      "de.uni_stuttgart.Voxie.Object3D.Generic.Visible",
+      vx::PropertyValueConvertRaw<bool, bool>::toRaw(value));
+}
+QString LineVisualizerProperties::colorMode() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      _node->getNodePropertyTyped<QString>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode"));
+}
+QString LineVisualizerProperties::colorModeRaw() {
+  return _node->getNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::colorModeProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode", false);
+}
+NodePropertyTyped<vx::types::Enumeration>
+LineVisualizerProperties::colorModePropertyTyped() {
+  return NodePropertyTyped<vx::types::Enumeration>(colorModeProperty());
+}
+NodeNodeProperty LineVisualizerProperties::colorModeInstance() {
+  return NodeNodeProperty(_node, colorModeProperty());
+}
+void LineVisualizerProperties::setColorMode(QString value) {
+  _node->setNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode",
+      vx::PropertyValueConvertRaw<QString, QString>::toRaw(value));
+}
+vx::Node* LineVisualizerProperties::field() {
+  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
+      _node->getNodePropertyTyped<QDBusObjectPath>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Field"));
+}
+QDBusObjectPath LineVisualizerProperties::fieldRaw() {
+  return _node->getNodePropertyTyped<QDBusObjectPath>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Field");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::fieldProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Field", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+LineVisualizerProperties::fieldPropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(fieldProperty());
+}
+NodeNodeProperty LineVisualizerProperties::fieldInstance() {
+  return NodeNodeProperty(_node, fieldProperty());
+}
+void LineVisualizerProperties::setField(vx::Node* value) {
+  _node->setNodePropertyTyped<QDBusObjectPath>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Field",
+      vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(value));
+}
+vx::Color LineVisualizerProperties::fixedColor() {
+  return vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
+                                     vx::Color>::
+      fromRaw(_node->getNodePropertyTyped<
+              std::tuple<double, double, double, double>>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.FixedColor"));
+}
+std::tuple<double, double, double, double>
+LineVisualizerProperties::fixedColorRaw() {
+  return _node
+      ->getNodePropertyTyped<std::tuple<double, double, double, double>>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.FixedColor");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::fixedColorProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.FixedColor", false);
+}
+NodePropertyTyped<vx::types::Color>
+LineVisualizerProperties::fixedColorPropertyTyped() {
+  return NodePropertyTyped<vx::types::Color>(fixedColorProperty());
+}
+NodeNodeProperty LineVisualizerProperties::fixedColorInstance() {
+  return NodeNodeProperty(_node, fixedColorProperty());
+}
+void LineVisualizerProperties::setFixedColor(vx::Color value) {
+  _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.FixedColor",
+      vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
+                                  vx::Color>::toRaw(value));
+}
+QString LineVisualizerProperties::integrator() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      _node->getNodePropertyTyped<QString>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Integrator"));
+}
+QString LineVisualizerProperties::integratorRaw() {
+  return _node->getNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Integrator");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::integratorProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Integrator", false);
+}
+NodePropertyTyped<vx::types::Enumeration>
+LineVisualizerProperties::integratorPropertyTyped() {
+  return NodePropertyTyped<vx::types::Enumeration>(integratorProperty());
+}
+NodeNodeProperty LineVisualizerProperties::integratorInstance() {
+  return NodeNodeProperty(_node, integratorProperty());
+}
+void LineVisualizerProperties::setIntegrator(QString value) {
+  _node->setNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Integrator",
+      vx::PropertyValueConvertRaw<QString, QString>::toRaw(value));
+}
+double LineVisualizerProperties::magnitudeThreshold() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      _node->getNodePropertyTyped<double>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MagnitudeThreshold"));
+}
+double LineVisualizerProperties::magnitudeThresholdRaw() {
+  return _node->getNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MagnitudeThreshold");
+}
+QSharedPointer<NodeProperty>
+LineVisualizerProperties::magnitudeThresholdProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MagnitudeThreshold",
+      false);
+}
+NodePropertyTyped<vx::types::Float>
+LineVisualizerProperties::magnitudeThresholdPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(magnitudeThresholdProperty());
+}
+NodeNodeProperty LineVisualizerProperties::magnitudeThresholdInstance() {
+  return NodeNodeProperty(_node, magnitudeThresholdProperty());
+}
+void LineVisualizerProperties::setMagnitudeThreshold(double value) {
+  _node->setNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MagnitudeThreshold",
+      vx::PropertyValueConvertRaw<double, double>::toRaw(value));
+}
+qint64 LineVisualizerProperties::maxStreamlines() {
+  return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+      _node->getNodePropertyTyped<qint64>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MaxStreamlines"));
+}
+qint64 LineVisualizerProperties::maxStreamlinesRaw() {
+  return _node->getNodePropertyTyped<qint64>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MaxStreamlines");
+}
+QSharedPointer<NodeProperty>
+LineVisualizerProperties::maxStreamlinesProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MaxStreamlines", false);
+}
+NodePropertyTyped<vx::types::Int>
+LineVisualizerProperties::maxStreamlinesPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(maxStreamlinesProperty());
+}
+NodeNodeProperty LineVisualizerProperties::maxStreamlinesInstance() {
+  return NodeNodeProperty(_node, maxStreamlinesProperty());
+}
+void LineVisualizerProperties::setMaxStreamlines(qint64 value) {
+  _node->setNodePropertyTyped<qint64>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MaxStreamlines",
+      vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value));
+}
+qint64 LineVisualizerProperties::numSteps() {
+  return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+      _node->getNodePropertyTyped<qint64>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps"));
+}
+qint64 LineVisualizerProperties::numStepsRaw() {
+  return _node->getNodePropertyTyped<qint64>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::numStepsProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps", false);
+}
+NodePropertyTyped<vx::types::Int>
+LineVisualizerProperties::numStepsPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(numStepsProperty());
+}
+NodeNodeProperty LineVisualizerProperties::numStepsInstance() {
+  return NodeNodeProperty(_node, numStepsProperty());
+}
+void LineVisualizerProperties::setNumSteps(qint64 value) {
+  _node->setNodePropertyTyped<qint64>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps",
+      vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value));
+}
+double LineVisualizerProperties::scaleFactor() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      _node->getNodePropertyTyped<double>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ScaleFactor"));
+}
+double LineVisualizerProperties::scaleFactorRaw() {
+  return _node->getNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ScaleFactor");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::scaleFactorProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ScaleFactor", false);
+}
+NodePropertyTyped<vx::types::Float>
+LineVisualizerProperties::scaleFactorPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(scaleFactorProperty());
+}
+NodeNodeProperty LineVisualizerProperties::scaleFactorInstance() {
+  return NodeNodeProperty(_node, scaleFactorProperty());
+}
+void LineVisualizerProperties::setScaleFactor(double value) {
+  _node->setNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ScaleFactor",
+      vx::PropertyValueConvertRaw<double, double>::toRaw(value));
+}
+qint64 LineVisualizerProperties::step() {
+  return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+      _node->getNodePropertyTyped<qint64>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step"));
+}
+qint64 LineVisualizerProperties::stepRaw() {
+  return _node->getNodePropertyTyped<qint64>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::stepProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step", false);
+}
+NodePropertyTyped<vx::types::Int>
+LineVisualizerProperties::stepPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(stepProperty());
+}
+NodeNodeProperty LineVisualizerProperties::stepInstance() {
+  return NodeNodeProperty(_node, stepProperty());
+}
+void LineVisualizerProperties::setStep(qint64 value) {
+  _node->setNodePropertyTyped<qint64>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step",
+      vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value));
+}
+QString LineVisualizerProperties::selectGrid() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      _node->getNodePropertyTyped<QString>(
+          "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.selectGrid"));
+}
+QString LineVisualizerProperties::selectGridRaw() {
+  return _node->getNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.selectGrid");
+}
+QSharedPointer<NodeProperty> LineVisualizerProperties::selectGridProperty() {
+  return LineVisualizerProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.selectGrid", false);
+}
+NodePropertyTyped<vx::types::Enumeration>
+LineVisualizerProperties::selectGridPropertyTyped() {
+  return NodePropertyTyped<vx::types::Enumeration>(selectGridProperty());
+}
+NodeNodeProperty LineVisualizerProperties::selectGridInstance() {
+  return NodeNodeProperty(_node, selectGridProperty());
+}
+void LineVisualizerProperties::setSelectGrid(QString value) {
+  _node->setNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.selectGrid",
+      vx::PropertyValueConvertRaw<QString, QString>::toRaw(value));
+}
+LineVisualizerProperties::LineVisualizerProperties(vx::Node* parent)
+    : QObject(parent) {
+  this->_node = parent;
+  auto _prop_Visible = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.Generic.Visible", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Visible](const QSharedPointer<NodeProperty>& property,
+                            const vx::Any& value) {
+        if (property != _prop_Visible) return;
+        bool valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<bool, bool>::fromRaw(
+              Node::parseVariant<bool>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property \"de.uni_stuttgart.Voxie.Object3D.Generic.Visible\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->visibleChanged(valueCasted);
+      });
+  auto _prop_ColorMode = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_ColorMode](const QSharedPointer<NodeProperty>& property,
+                              const vx::Any& value) {
+        if (property != _prop_ColorMode) return;
+        QString valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+              Node::parseVariant<QString>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ColorMode\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->colorModeChanged(valueCasted);
+      });
+  auto _prop_Field = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Field", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Field](const QSharedPointer<NodeProperty>& property,
+                          const vx::Any& value) {
+        if (property != _prop_Field) return;
+        vx::Node* valueCasted;
+        try {
+          valueCasted =
+              vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
+                  Node::parseVariant<QDBusObjectPath>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Field\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->fieldChanged(valueCasted);
+      });
+  auto _prop_FixedColor = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.FixedColor", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_FixedColor](const QSharedPointer<NodeProperty>& property,
+                               const vx::Any& value) {
+        if (property != _prop_FixedColor) return;
+        vx::Color valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<
+              std::tuple<double, double, double, double>, vx::Color>::
+              fromRaw(Node::parseVariant<
+                      std::tuple<double, double, double, double>>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                         "FixedColor\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->fixedColorChanged(valueCasted);
+      });
+  auto _prop_Integrator = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Integrator", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Integrator](const QSharedPointer<NodeProperty>& property,
+                               const vx::Any& value) {
+        if (property != _prop_Integrator) return;
+        QString valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+              Node::parseVariant<QString>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                         "Integrator\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->integratorChanged(valueCasted);
+      });
+  auto _prop_MagnitudeThreshold = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MagnitudeThreshold",
+      false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_MagnitudeThreshold](
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
+        if (property != _prop_MagnitudeThreshold) return;
+        double valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<double, double>::fromRaw(
+              Node::parseVariant<double>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                         "MagnitudeThreshold\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->magnitudeThresholdChanged(valueCasted);
+      });
+  auto _prop_MaxStreamlines = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.MaxStreamlines", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_MaxStreamlines](const QSharedPointer<NodeProperty>& property,
+                                   const vx::Any& value) {
+        if (property != _prop_MaxStreamlines) return;
+        qint64 valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+              Node::parseVariant<qint64>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                         "MaxStreamlines\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->maxStreamlinesChanged(valueCasted);
+      });
+  auto _prop_NumSteps = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_NumSteps](const QSharedPointer<NodeProperty>& property,
+                             const vx::Any& value) {
+        if (property != _prop_NumSteps) return;
+        qint64 valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+              Node::parseVariant<qint64>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer.NumSteps\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->numStepsChanged(valueCasted);
+      });
+  auto _prop_ScaleFactor = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.ScaleFactor", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_ScaleFactor](const QSharedPointer<NodeProperty>& property,
+                                const vx::Any& value) {
+        if (property != _prop_ScaleFactor) return;
+        double valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<double, double>::fromRaw(
+              Node::parseVariant<double>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                         "ScaleFactor\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->scaleFactorChanged(valueCasted);
+      });
+  auto _prop_Step = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Step](const QSharedPointer<NodeProperty>& property,
+                         const vx::Any& value) {
+        if (property != _prop_Step) return;
+        qint64 valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+              Node::parseVariant<qint64>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer.Step\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->stepChanged(valueCasted);
+      });
+  auto _prop_selectGrid = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.LineVisualizer.selectGrid", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_selectGrid](const QSharedPointer<NodeProperty>& property,
+                               const vx::Any& value) {
+        if (property != _prop_selectGrid) return;
+        QString valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+              Node::parseVariant<QString>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Object3D.LineVisualizer."
+                         "selectGrid\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->selectGridChanged(valueCasted);
+      });
+}
+
+}  // namespace object3d_prop
+inline namespace object3d_prop {
 PlanePropertiesEntry::~PlanePropertiesEntry() {}
 PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::ClippingDirection,
                                            QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Plane.ClippingDirection",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::Color,
                                            vx::Color value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Plane.Color",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   vx::Color>::toRaw(value_))) {}
@@ -372,32 +1272,32 @@ PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::DefaultSize,
                                            double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Plane.DefaultSize",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::Plane,
                                            vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Plane.Plane",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::ShowVolumeSlice,
                                            bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Plane.ShowVolumeSlice",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::SliceTextureResolution,
                                            QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Plane.SliceTextureResolution",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::SliceValueColorMapping,
                                            QList<vx::ColorizerEntry> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Plane.SliceValueColorMapping",
-          QVariant::fromValue<QList<std::tuple<
+          vx::make_any<QList<std::tuple<
               double, std::tuple<double, double, double, double>, qint32>>>(
               vx::PropertyValueConvertRaw<
                   QList<std::tuple<double,
@@ -408,12 +1308,12 @@ PlanePropertiesEntry::PlanePropertiesEntry(vx::PropType::SliceVolume,
                                            vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Plane.SliceVolume",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 PlanePropertiesBase::~PlanePropertiesBase() {}
 PlanePropertiesCopy::PlanePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QString PlanePropertiesCopy::clippingDirection() {
   return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
@@ -910,7 +1810,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ClippingDirection](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_ClippingDirection) return;
         QString valueCasted;
         try {
@@ -931,7 +1831,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Color](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Color) return;
         vx::Color valueCasted;
         try {
@@ -953,7 +1853,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_DefaultSize](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_DefaultSize) return;
         double valueCasted;
         try {
@@ -974,7 +1874,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Plane](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Plane) return;
         vx::Node* valueCasted;
         try {
@@ -995,7 +1895,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ShowVolumeSlice](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_ShowVolumeSlice) return;
         bool valueCasted;
         try {
@@ -1016,7 +1916,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_SliceTextureResolution](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_SliceTextureResolution) return;
         QString valueCasted;
         try {
@@ -1037,7 +1937,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_SliceValueColorMapping](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_SliceValueColorMapping) return;
         QList<vx::ColorizerEntry> valueCasted;
         try {
@@ -1063,7 +1963,7 @@ PlaneProperties::PlaneProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_SliceVolume](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_SliceVolume) return;
         vx::Node* valueCasted;
         try {
@@ -1089,13 +1989,13 @@ SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::Visible,
                                                bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Generic.Visible",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::BackColor,
                                                vx::Color value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.BackColor",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   vx::Color>::toRaw(value_))) {}
@@ -1103,31 +2003,31 @@ SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::DrawAxisArrows,
                                                bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.DrawAxisArrows",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::DrawBoundingBox,
                                                bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.DrawBoundingBox",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::DrawOrigin,
                                                bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.DrawOrigin",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::FaceCulling,
                                                QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.FaceCulling",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::FrontColor,
                                                vx::Color value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.FrontColor",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   vx::Color>::toRaw(value_))) {}
@@ -1135,24 +2035,24 @@ SurfacePropertiesEntry::SurfacePropertiesEntry(
     vx::PropType::HighlightCurrentTriangle, bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.HighlightCurrentTriangle",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::ShadingTechnique,
                                                QString value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.ShadingTechnique",
-          QVariant::fromValue<QString>(
+          vx::make_any<QString>(
               vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
 SurfacePropertiesEntry::SurfacePropertiesEntry(vx::PropType::Surface,
                                                vx::Node* value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Object3D.Surface.Surface",
-          QVariant::fromValue<QDBusObjectPath>(
+          vx::make_any<QDBusObjectPath>(
               vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
                   value_))) {}
 SurfacePropertiesBase::~SurfacePropertiesBase() {}
 SurfacePropertiesCopy::SurfacePropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 bool SurfacePropertiesCopy::visible() {
   return vx::PropertyValueConvertRaw<bool, bool>::fromRaw(
@@ -1752,7 +2652,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Visible](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_Visible) return;
         bool valueCasted;
         try {
@@ -1772,7 +2672,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_BackColor](const QSharedPointer<NodeProperty>& property,
-                              const QVariant& value) {
+                              const vx::Any& value) {
         if (property != _prop_BackColor) return;
         vx::Color valueCasted;
         try {
@@ -1795,7 +2695,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_DrawAxisArrows](const QSharedPointer<NodeProperty>& property,
-                                   const QVariant& value) {
+                                   const vx::Any& value) {
         if (property != _prop_DrawAxisArrows) return;
         bool valueCasted;
         try {
@@ -1816,7 +2716,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_DrawBoundingBox](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_DrawBoundingBox) return;
         bool valueCasted;
         try {
@@ -1837,7 +2737,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_DrawOrigin](const QSharedPointer<NodeProperty>& property,
-                               const QVariant& value) {
+                               const vx::Any& value) {
         if (property != _prop_DrawOrigin) return;
         bool valueCasted;
         try {
@@ -1858,7 +2758,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_FaceCulling](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_FaceCulling) return;
         QString valueCasted;
         try {
@@ -1879,7 +2779,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_FrontColor](const QSharedPointer<NodeProperty>& property,
-                               const QVariant& value) {
+                               const vx::Any& value) {
         if (property != _prop_FrontColor) return;
         vx::Color valueCasted;
         try {
@@ -1903,7 +2803,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_HighlightCurrentTriangle](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_HighlightCurrentTriangle) return;
         bool valueCasted;
         try {
@@ -1924,7 +2824,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ShadingTechnique](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_ShadingTechnique) return;
         QString valueCasted;
         try {
@@ -1945,7 +2845,7 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Surface](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_Surface) return;
         vx::Node* valueCasted;
         try {
@@ -1964,26 +2864,682 @@ SurfaceProperties::SurfaceProperties(vx::Node* parent) : QObject(parent) {
 }
 
 }  // namespace object3d_prop
+inline namespace object3d_prop {
+VectorFieldPropertiesEntry::~VectorFieldPropertiesEntry() {}
+VectorFieldPropertiesEntry::VectorFieldPropertiesEntry(vx::PropType::Visible,
+                                                       bool value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.Generic.Visible",
+          vx::make_any<bool>(
+              vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
+VectorFieldPropertiesEntry::VectorFieldPropertiesEntry(vx::PropType::ColorMode,
+                                                       QString value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode",
+          vx::make_any<QString>(
+              vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
+VectorFieldPropertiesEntry::VectorFieldPropertiesEntry(vx::PropType::Field,
+                                                       vx::Node* value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.Field",
+          vx::make_any<QDBusObjectPath>(
+              vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(
+                  value_))) {}
+VectorFieldPropertiesEntry::VectorFieldPropertiesEntry(vx::PropType::FixedColor,
+                                                       vx::Color value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor",
+          vx::make_any<std::tuple<double, double, double, double>>(
+              vx::PropertyValueConvertRaw<
+                  std::tuple<double, double, double, double>,
+                  vx::Color>::toRaw(value_))) {}
+VectorFieldPropertiesEntry::VectorFieldPropertiesEntry(
+    vx::PropType::MagnitudeThreshold, double value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.MagnitudeThreshold",
+          vx::make_any<double>(
+              vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
+VectorFieldPropertiesEntry::VectorFieldPropertiesEntry(
+    vx::PropType::ScaleFactor, double value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor",
+          vx::make_any<double>(
+              vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
+VectorFieldPropertiesEntry::VectorFieldPropertiesEntry(vx::PropType::Step,
+                                                       qint64 value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.Step",
+          vx::make_any<qint64>(
+              vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value_))) {}
+VectorFieldPropertiesEntry::VectorFieldPropertiesEntry(vx::PropType::selectGrid,
+                                                       QString value_)
+    : vx::PropertiesEntryBase(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid",
+          vx::make_any<QString>(
+              vx::PropertyValueConvertRaw<QString, QString>::toRaw(value_))) {}
+VectorFieldPropertiesBase::~VectorFieldPropertiesBase() {}
+VectorFieldPropertiesCopy::VectorFieldPropertiesCopy(
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
+    : _properties(properties) {}
+bool VectorFieldPropertiesCopy::visible() {
+  return vx::PropertyValueConvertRaw<bool, bool>::fromRaw(
+      vx::Node::parseVariant<bool>(
+          (*_properties)["de.uni_stuttgart.Voxie.Object3D.Generic.Visible"]));
+}
+bool VectorFieldPropertiesCopy::visibleRaw() {
+  return vx::Node::parseVariant<bool>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.Generic.Visible"]);
+}
+QString VectorFieldPropertiesCopy::colorMode() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      vx::Node::parseVariant<QString>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode"]));
+}
+QString VectorFieldPropertiesCopy::colorModeRaw() {
+  return vx::Node::parseVariant<QString>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode"]);
+}
+QDBusObjectPath VectorFieldPropertiesCopy::fieldRaw() {
+  return vx::Node::parseVariant<QDBusObjectPath>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField.Field"]);
+}
+vx::Color VectorFieldPropertiesCopy::fixedColor() {
+  return vx::PropertyValueConvertRaw<
+      std::tuple<double, double, double, double>,
+      vx::Color>::fromRaw(vx::Node::parseVariant<std::tuple<double, double,
+                                                            double, double>>((
+      *_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor"]));
+}
+std::tuple<double, double, double, double>
+VectorFieldPropertiesCopy::fixedColorRaw() {
+  return vx::Node::parseVariant<std::tuple<double, double, double, double>>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor"]);
+}
+double VectorFieldPropertiesCopy::magnitudeThreshold() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      vx::Node::parseVariant<double>(
+          (*_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField."
+                         "MagnitudeThreshold"]));
+}
+double VectorFieldPropertiesCopy::magnitudeThresholdRaw() {
+  return vx::Node::parseVariant<double>(
+      (*_properties)
+          ["de.uni_stuttgart.Voxie.Object3D.VectorField.MagnitudeThreshold"]);
+}
+double VectorFieldPropertiesCopy::scaleFactor() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      vx::Node::parseVariant<double>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor"]));
+}
+double VectorFieldPropertiesCopy::scaleFactorRaw() {
+  return vx::Node::parseVariant<double>((
+      *_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor"]);
+}
+qint64 VectorFieldPropertiesCopy::step() {
+  return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+      vx::Node::parseVariant<qint64>(
+          (*_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField.Step"]));
+}
+qint64 VectorFieldPropertiesCopy::stepRaw() {
+  return vx::Node::parseVariant<qint64>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField.Step"]);
+}
+QString VectorFieldPropertiesCopy::selectGrid() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      vx::Node::parseVariant<QString>(
+          (*_properties)
+              ["de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid"]));
+}
+QString VectorFieldPropertiesCopy::selectGridRaw() {
+  return vx::Node::parseVariant<QString>(
+      (*_properties)["de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid"]);
+}
+static const char _prototype_VectorField_[] = {
+    123, 34,  68,  101, 115, 99,  114, 105, 112, 116, 105, 111, 110, 34,  58,
+    32,  34,  86,  101, 99,  116, 111, 114, 32,  70,  105, 101, 108, 100, 32,
+    65,  82,  82,  79,  87,  32,  115, 104, 111, 119, 110, 32,  105, 110, 32,
+    116, 104, 101, 32,  51,  68,  32,  118, 105, 115, 117, 97,  108, 105, 122,
+    101, 114, 34,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,
+    109, 101, 34,  58,  32,  34,  86,  101, 99,  116, 111, 114, 32,  70,  105,
+    101, 108, 100, 34,  44,  32,  34,  73,  99,  111, 110, 34,  58,  32,  34,
+    58,  47,  105, 99,  111, 110, 115, 47,  117, 110, 105, 118, 101, 114, 115,
+    97,  108, 46,  112, 110, 103, 34,  44,  32,  34,  78,  97,  109, 101, 34,
+    58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101,
+    99,  116, 51,  68,  46,  86,  101, 99,  116, 111, 114, 70,  105, 101, 108,
+    100, 34,  44,  32,  34,  78,  111, 100, 101, 75,  105, 110, 100, 34,  58,
+    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  78,  111, 100, 101, 75,
+    105, 110, 100, 46,  79,  98,  106, 101, 99,  116, 51,  68,  34,  44,  32,
+    34,  80,  114, 111, 112, 101, 114, 116, 105, 101, 115, 34,  58,  32,  123,
+    34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
+    114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116,
+    51,  68,  46,  71,  101, 110, 101, 114, 105, 99,  46,  86,  105, 115, 105,
+    98,  108, 101, 34,  58,  32,  123, 34,  67,  111, 109, 112, 97,  116, 105,
+    98,  105, 108, 105, 116, 121, 78,  97,  109, 101, 115, 34,  58,  32,  91,
+    34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
+    114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116,
+    51,  68,  46,  86,  105, 115, 105, 98,  108, 101, 34,  93,  44,  32,  34,
+    68,  101, 102, 97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,
+    116, 114, 117, 101, 44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,
+    97,  109, 101, 34,  58,  32,  34,  86,  105, 115, 105, 98,  108, 101, 34,
+    44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112,
+    101, 46,  66,  111, 111, 108, 101, 97,  110, 34,  125, 44,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,
+    46,  86,  101, 99,  116, 111, 114, 70,  105, 101, 108, 100, 46,  67,  111,
+    108, 111, 114, 77,  111, 100, 101, 34,  58,  32,  123, 34,  68,  101, 102,
+    97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  34,  66,  121,
+    77,  97,  103, 110, 105, 116, 117, 100, 101, 34,  44,  32,  34,  68,  105,
+    115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  67,  111,
+    108, 111, 114, 32,  77,  111, 100, 101, 34,  44,  32,  34,  69,  110, 117,
+    109, 69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  123, 34,  66,  121,
+    77,  97,  103, 110, 105, 116, 117, 100, 101, 34,  58,  32,  123, 34,  68,
+    105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  66,
+    121, 32,  77,  97,  103, 110, 105, 116, 117, 100, 101, 34,  44,  32,  34,
+    85,  73,  80,  111, 115, 105, 116, 105, 111, 110, 34,  58,  32,  50,  125,
+    44,  32,  34,  70,  105, 120, 101, 100, 34,  58,  32,  123, 34,  68,  105,
+    115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  70,  105,
+    120, 101, 100, 34,  44,  32,  34,  85,  73,  80,  111, 115, 105, 116, 105,
+    111, 110, 34,  58,  32,  49,  125, 125, 44,  32,  34,  84,  121, 112, 101,
+    34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
+    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111,
+    112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  69,  110, 117, 109, 101,
+    114, 97,  116, 105, 111, 110, 34,  125, 44,  32,  34,  100, 101, 46,  117,
+    110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
+    120, 105, 101, 46,  79,  98,  106, 101, 99,  116, 51,  68,  46,  86,  101,
+    99,  116, 111, 114, 70,  105, 101, 108, 100, 46,  70,  105, 101, 108, 100,
+    34,  58,  32,  123, 34,  65,  108, 108, 111, 119, 101, 100, 78,  111, 100,
+    101, 80,  114, 111, 116, 111, 116, 121, 112, 101, 115, 34,  58,  32,  91,
+    34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
+    114, 116, 46,  86,  111, 120, 105, 101, 46,  68,  97,  116, 97,  46,  86,
+    111, 108, 117, 109, 101, 83,  101, 114, 105, 101, 115, 34,  93,  44,  32,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  86,  101, 99,  116, 111, 114, 32,  70,  105, 101, 108, 100, 34,  44,
+    32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110,
+    105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
+    105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101,
+    46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101, 110, 99,  101, 34,
+    125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
+    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106,
+    101, 99,  116, 51,  68,  46,  86,  101, 99,  116, 111, 114, 70,  105, 101,
+    108, 100, 46,  70,  105, 120, 101, 100, 67,  111, 108, 111, 114, 34,  58,
+    32,  123, 34,  68,  101, 102, 97,  117, 108, 116, 86,  97,  108, 117, 101,
+    34,  58,  32,  91,  49,  46,  48,  44,  32,  48,  46,  48,  44,  32,  48,
+    46,  48,  44,  32,  49,  46,  48,  93,  44,  32,  34,  68,  105, 115, 112,
+    108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  70,  105, 120, 101,
+    100, 32,  67,  111, 108, 111, 114, 34,  44,  32,  34,  84,  121, 112, 101,
+    34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
+    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111,
+    112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  67,  111, 108, 111, 114,
+    34,  125, 44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,
+    106, 101, 99,  116, 51,  68,  46,  86,  101, 99,  116, 111, 114, 70,  105,
+    101, 108, 100, 46,  77,  97,  103, 110, 105, 116, 117, 100, 101, 84,  104,
+    114, 101, 115, 104, 111, 108, 100, 34,  58,  32,  123, 34,  68,  101, 102,
+    97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  48,  46,  48,
+    53,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101,
+    34,  58,  32,  34,  77,  97,  103, 110, 105, 116, 117, 100, 101, 32,  84,
+    104, 114, 101, 115, 104, 111, 108, 100, 34,  44,  32,  34,  84,  121, 112,
+    101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114,
+    111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  70,  108, 111, 97,
+    116, 34,  44,  32,  34,  85,  110, 105, 116, 34,  58,  32,  91,  93,  125,
+    44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101,
+    99,  116, 51,  68,  46,  86,  101, 99,  116, 111, 114, 70,  105, 101, 108,
+    100, 46,  83,  99,  97,  108, 101, 70,  97,  99,  116, 111, 114, 34,  58,
+    32,  123, 34,  68,  101, 102, 97,  117, 108, 116, 86,  97,  108, 117, 101,
+    34,  58,  32,  53,  101, 45,  48,  55,  44,  32,  34,  68,  105, 115, 112,
+    108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  83,  99,  97,  108,
+    101, 32,  70,  97,  99,  116, 111, 114, 34,  44,  32,  34,  84,  121, 112,
+    101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114,
+    111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  70,  108, 111, 97,
+    116, 34,  44,  32,  34,  85,  110, 105, 116, 34,  58,  32,  91,  93,  125,
+    44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101,
+    99,  116, 51,  68,  46,  86,  101, 99,  116, 111, 114, 70,  105, 101, 108,
+    100, 46,  83,  116, 101, 112, 34,  58,  32,  123, 34,  68,  101, 102, 97,
+    117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  49,  53,  44,  32,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  83,  116, 101, 112, 34,  44,  32,  34,  77,  97,  120, 105, 109, 117,
+    109, 34,  58,  32,  49,  48,  48,  44,  32,  34,  77,  105, 110, 105, 109,
+    117, 109, 34,  58,  32,  49,  44,  32,  34,  84,  121, 112, 101, 34,  58,
+    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
+    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101,
+    114, 116, 121, 84,  121, 112, 101, 46,  73,  110, 116, 34,  125, 44,  32,
+    34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
+    114, 116, 46,  86,  111, 120, 105, 101, 46,  79,  98,  106, 101, 99,  116,
+    51,  68,  46,  86,  101, 99,  116, 111, 114, 70,  105, 101, 108, 100, 46,
+    115, 101, 108, 101, 99,  116, 71,  114, 105, 100, 34,  58,  32,  123, 34,
+    68,  101, 102, 97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,
+    34,  82,  101, 103, 117, 108, 97,  114, 34,  44,  32,  34,  68,  105, 115,
+    112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  83,  101, 108,
+    101, 99,  116, 71,  114, 105, 100, 34,  44,  32,  34,  69,  110, 117, 109,
+    69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  123, 34,  82,  101, 103,
+    117, 108, 97,  114, 34,  58,  32,  123, 34,  68,  105, 115, 112, 108, 97,
+    121, 78,  97,  109, 101, 34,  58,  32,  34,  82,  101, 103, 117, 108, 97,
+    114, 34,  44,  32,  34,  85,  73,  80,  111, 115, 105, 116, 105, 111, 110,
+    34,  58,  32,  49,  125, 44,  32,  34,  85,  110, 115, 116, 114, 117, 99,
+    116, 117, 114, 101, 100, 34,  58,  32,  123, 34,  68,  105, 115, 112, 108,
+    97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  85,  110, 115, 116, 114,
+    117, 99,  116, 117, 114, 101, 100, 34,  44,  32,  34,  85,  73,  80,  111,
+    115, 105, 116, 105, 111, 110, 34,  58,  32,  50,  125, 125, 44,  32,  34,
+    84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
+    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
+    46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  69,
+    110, 117, 109, 101, 114, 97,  116, 105, 111, 110, 34,  125, 125, 125, 0};
+const char* VectorFieldProperties::_getPrototypeJson() {
+  return _prototype_VectorField_;
+}
+
+VectorFieldProperties::~VectorFieldProperties() {}
+
+bool VectorFieldProperties::visible() {
+  return vx::PropertyValueConvertRaw<bool, bool>::fromRaw(
+      _node->getNodePropertyTyped<bool>(
+          "de.uni_stuttgart.Voxie.Object3D.Generic.Visible"));
+}
+bool VectorFieldProperties::visibleRaw() {
+  return _node->getNodePropertyTyped<bool>(
+      "de.uni_stuttgart.Voxie.Object3D.Generic.Visible");
+}
+QSharedPointer<NodeProperty> VectorFieldProperties::visibleProperty() {
+  return VectorFieldProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.Generic.Visible", false);
+}
+NodePropertyTyped<vx::types::Boolean>
+VectorFieldProperties::visiblePropertyTyped() {
+  return NodePropertyTyped<vx::types::Boolean>(visibleProperty());
+}
+NodeNodeProperty VectorFieldProperties::visibleInstance() {
+  return NodeNodeProperty(_node, visibleProperty());
+}
+void VectorFieldProperties::setVisible(bool value) {
+  _node->setNodePropertyTyped<bool>(
+      "de.uni_stuttgart.Voxie.Object3D.Generic.Visible",
+      vx::PropertyValueConvertRaw<bool, bool>::toRaw(value));
+}
+QString VectorFieldProperties::colorMode() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      _node->getNodePropertyTyped<QString>(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode"));
+}
+QString VectorFieldProperties::colorModeRaw() {
+  return _node->getNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode");
+}
+QSharedPointer<NodeProperty> VectorFieldProperties::colorModeProperty() {
+  return VectorFieldProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode", false);
+}
+NodePropertyTyped<vx::types::Enumeration>
+VectorFieldProperties::colorModePropertyTyped() {
+  return NodePropertyTyped<vx::types::Enumeration>(colorModeProperty());
+}
+NodeNodeProperty VectorFieldProperties::colorModeInstance() {
+  return NodeNodeProperty(_node, colorModeProperty());
+}
+void VectorFieldProperties::setColorMode(QString value) {
+  _node->setNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode",
+      vx::PropertyValueConvertRaw<QString, QString>::toRaw(value));
+}
+vx::Node* VectorFieldProperties::field() {
+  return vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
+      _node->getNodePropertyTyped<QDBusObjectPath>(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.Field"));
+}
+QDBusObjectPath VectorFieldProperties::fieldRaw() {
+  return _node->getNodePropertyTyped<QDBusObjectPath>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.Field");
+}
+QSharedPointer<NodeProperty> VectorFieldProperties::fieldProperty() {
+  return VectorFieldProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.Field", false);
+}
+NodePropertyTyped<vx::types::NodeReference>
+VectorFieldProperties::fieldPropertyTyped() {
+  return NodePropertyTyped<vx::types::NodeReference>(fieldProperty());
+}
+NodeNodeProperty VectorFieldProperties::fieldInstance() {
+  return NodeNodeProperty(_node, fieldProperty());
+}
+void VectorFieldProperties::setField(vx::Node* value) {
+  _node->setNodePropertyTyped<QDBusObjectPath>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.Field",
+      vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::toRaw(value));
+}
+vx::Color VectorFieldProperties::fixedColor() {
+  return vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
+                                     vx::Color>::
+      fromRaw(_node->getNodePropertyTyped<
+              std::tuple<double, double, double, double>>(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor"));
+}
+std::tuple<double, double, double, double>
+VectorFieldProperties::fixedColorRaw() {
+  return _node
+      ->getNodePropertyTyped<std::tuple<double, double, double, double>>(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor");
+}
+QSharedPointer<NodeProperty> VectorFieldProperties::fixedColorProperty() {
+  return VectorFieldProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor", false);
+}
+NodePropertyTyped<vx::types::Color>
+VectorFieldProperties::fixedColorPropertyTyped() {
+  return NodePropertyTyped<vx::types::Color>(fixedColorProperty());
+}
+NodeNodeProperty VectorFieldProperties::fixedColorInstance() {
+  return NodeNodeProperty(_node, fixedColorProperty());
+}
+void VectorFieldProperties::setFixedColor(vx::Color value) {
+  _node->setNodePropertyTyped<std::tuple<double, double, double, double>>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor",
+      vx::PropertyValueConvertRaw<std::tuple<double, double, double, double>,
+                                  vx::Color>::toRaw(value));
+}
+double VectorFieldProperties::magnitudeThreshold() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      _node->getNodePropertyTyped<double>(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.MagnitudeThreshold"));
+}
+double VectorFieldProperties::magnitudeThresholdRaw() {
+  return _node->getNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.MagnitudeThreshold");
+}
+QSharedPointer<NodeProperty>
+VectorFieldProperties::magnitudeThresholdProperty() {
+  return VectorFieldProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.MagnitudeThreshold", false);
+}
+NodePropertyTyped<vx::types::Float>
+VectorFieldProperties::magnitudeThresholdPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(magnitudeThresholdProperty());
+}
+NodeNodeProperty VectorFieldProperties::magnitudeThresholdInstance() {
+  return NodeNodeProperty(_node, magnitudeThresholdProperty());
+}
+void VectorFieldProperties::setMagnitudeThreshold(double value) {
+  _node->setNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.MagnitudeThreshold",
+      vx::PropertyValueConvertRaw<double, double>::toRaw(value));
+}
+double VectorFieldProperties::scaleFactor() {
+  return vx::PropertyValueConvertRaw<double, double>::fromRaw(
+      _node->getNodePropertyTyped<double>(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor"));
+}
+double VectorFieldProperties::scaleFactorRaw() {
+  return _node->getNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor");
+}
+QSharedPointer<NodeProperty> VectorFieldProperties::scaleFactorProperty() {
+  return VectorFieldProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor", false);
+}
+NodePropertyTyped<vx::types::Float>
+VectorFieldProperties::scaleFactorPropertyTyped() {
+  return NodePropertyTyped<vx::types::Float>(scaleFactorProperty());
+}
+NodeNodeProperty VectorFieldProperties::scaleFactorInstance() {
+  return NodeNodeProperty(_node, scaleFactorProperty());
+}
+void VectorFieldProperties::setScaleFactor(double value) {
+  _node->setNodePropertyTyped<double>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor",
+      vx::PropertyValueConvertRaw<double, double>::toRaw(value));
+}
+qint64 VectorFieldProperties::step() {
+  return vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+      _node->getNodePropertyTyped<qint64>(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.Step"));
+}
+qint64 VectorFieldProperties::stepRaw() {
+  return _node->getNodePropertyTyped<qint64>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.Step");
+}
+QSharedPointer<NodeProperty> VectorFieldProperties::stepProperty() {
+  return VectorFieldProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.Step", false);
+}
+NodePropertyTyped<vx::types::Int> VectorFieldProperties::stepPropertyTyped() {
+  return NodePropertyTyped<vx::types::Int>(stepProperty());
+}
+NodeNodeProperty VectorFieldProperties::stepInstance() {
+  return NodeNodeProperty(_node, stepProperty());
+}
+void VectorFieldProperties::setStep(qint64 value) {
+  _node->setNodePropertyTyped<qint64>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.Step",
+      vx::PropertyValueConvertRaw<qint64, qint64>::toRaw(value));
+}
+QString VectorFieldProperties::selectGrid() {
+  return vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+      _node->getNodePropertyTyped<QString>(
+          "de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid"));
+}
+QString VectorFieldProperties::selectGridRaw() {
+  return _node->getNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid");
+}
+QSharedPointer<NodeProperty> VectorFieldProperties::selectGridProperty() {
+  return VectorFieldProperties::getNodePrototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid", false);
+}
+NodePropertyTyped<vx::types::Enumeration>
+VectorFieldProperties::selectGridPropertyTyped() {
+  return NodePropertyTyped<vx::types::Enumeration>(selectGridProperty());
+}
+NodeNodeProperty VectorFieldProperties::selectGridInstance() {
+  return NodeNodeProperty(_node, selectGridProperty());
+}
+void VectorFieldProperties::setSelectGrid(QString value) {
+  _node->setNodePropertyTyped<QString>(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid",
+      vx::PropertyValueConvertRaw<QString, QString>::toRaw(value));
+}
+VectorFieldProperties::VectorFieldProperties(vx::Node* parent)
+    : QObject(parent) {
+  this->_node = parent;
+  auto _prop_Visible = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.Generic.Visible", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Visible](const QSharedPointer<NodeProperty>& property,
+                            const vx::Any& value) {
+        if (property != _prop_Visible) return;
+        bool valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<bool, bool>::fromRaw(
+              Node::parseVariant<bool>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property \"de.uni_stuttgart.Voxie.Object3D.Generic.Visible\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->visibleChanged(valueCasted);
+      });
+  auto _prop_ColorMode = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_ColorMode](const QSharedPointer<NodeProperty>& property,
+                              const vx::Any& value) {
+        if (property != _prop_ColorMode) return;
+        QString valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+              Node::parseVariant<QString>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.VectorField.ColorMode\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->colorModeChanged(valueCasted);
+      });
+  auto _prop_Field = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.Field", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Field](const QSharedPointer<NodeProperty>& property,
+                          const vx::Any& value) {
+        if (property != _prop_Field) return;
+        vx::Node* valueCasted;
+        try {
+          valueCasted =
+              vx::PropertyValueConvertRaw<QDBusObjectPath, vx::Node*>::fromRaw(
+                  Node::parseVariant<QDBusObjectPath>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.VectorField.Field\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->fieldChanged(valueCasted);
+      });
+  auto _prop_FixedColor = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_FixedColor](const QSharedPointer<NodeProperty>& property,
+                               const vx::Any& value) {
+        if (property != _prop_FixedColor) return;
+        vx::Color valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<
+              std::tuple<double, double, double, double>, vx::Color>::
+              fromRaw(Node::parseVariant<
+                      std::tuple<double, double, double, double>>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.VectorField.FixedColor\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->fixedColorChanged(valueCasted);
+      });
+  auto _prop_MagnitudeThreshold = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.MagnitudeThreshold", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_MagnitudeThreshold](
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
+        if (property != _prop_MagnitudeThreshold) return;
+        double valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<double, double>::fromRaw(
+              Node::parseVariant<double>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Object3D.VectorField."
+                         "MagnitudeThreshold\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->magnitudeThresholdChanged(valueCasted);
+      });
+  auto _prop_ScaleFactor = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_ScaleFactor](const QSharedPointer<NodeProperty>& property,
+                                const vx::Any& value) {
+        if (property != _prop_ScaleFactor) return;
+        double valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<double, double>::fromRaw(
+              Node::parseVariant<double>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.VectorField.ScaleFactor\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->scaleFactorChanged(valueCasted);
+      });
+  auto _prop_Step = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.Step", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_Step](const QSharedPointer<NodeProperty>& property,
+                         const vx::Any& value) {
+        if (property != _prop_Step) return;
+        qint64 valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<qint64, qint64>::fromRaw(
+              Node::parseVariant<qint64>(value));
+        } catch (vx::Exception& e) {
+          qCritical() << "Error while parsing property value for event handler "
+                         "for property "
+                         "\"de.uni_stuttgart.Voxie.Object3D.VectorField.Step\":"
+                      << e.what();
+          return;
+        }
+        Q_EMIT this->stepChanged(valueCasted);
+      });
+  auto _prop_selectGrid = this->_node->prototype()->getProperty(
+      "de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid", false);
+  QObject::connect(
+      this->_node, &vx::Node::propertyChanged, this,
+      [this, _prop_selectGrid](const QSharedPointer<NodeProperty>& property,
+                               const vx::Any& value) {
+        if (property != _prop_selectGrid) return;
+        QString valueCasted;
+        try {
+          valueCasted = vx::PropertyValueConvertRaw<QString, QString>::fromRaw(
+              Node::parseVariant<QString>(value));
+        } catch (vx::Exception& e) {
+          qCritical()
+              << "Error while parsing property value for event handler for "
+                 "property "
+                 "\"de.uni_stuttgart.Voxie.Object3D.VectorField.selectGrid\":"
+              << e.what();
+          return;
+        }
+        Q_EMIT this->selectGridChanged(valueCasted);
+      });
+}
+
+}  // namespace object3d_prop
 inline namespace visualizer_prop {
 View3DPropertiesEntry::~View3DPropertiesEntry() {}
 View3DPropertiesEntry::View3DPropertiesEntry(vx::PropType::FieldOfView,
                                              double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.FieldOfView",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 View3DPropertiesEntry::View3DPropertiesEntry(vx::PropType::LookAt,
                                              QVector3D value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.LookAt",
-          QVariant::fromValue<std::tuple<double, double, double>>(
+          vx::make_any<std::tuple<double, double, double>>(
               vx::PropertyValueConvertRaw<std::tuple<double, double, double>,
                                           QVector3D>::toRaw(value_))) {}
 View3DPropertiesEntry::View3DPropertiesEntry(vx::PropType::Orientation,
                                              QQuaternion value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.Orientation",
-          QVariant::fromValue<std::tuple<double, double, double, double>>(
+          vx::make_any<std::tuple<double, double, double, double>>(
               vx::PropertyValueConvertRaw<
                   std::tuple<double, double, double, double>,
                   QQuaternion>::toRaw(value_))) {}
@@ -1991,30 +3547,30 @@ View3DPropertiesEntry::View3DPropertiesEntry(vx::PropType::ViewSizeUnzoomed,
                                              double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ViewSizeUnzoomed",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 View3DPropertiesEntry::View3DPropertiesEntry(vx::PropType::ZoomLog,
                                              double value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.View3D.Camera.ZoomLog",
-          QVariant::fromValue<double>(
+          vx::make_any<double>(
               vx::PropertyValueConvertRaw<double, double>::toRaw(value_))) {}
 View3DPropertiesEntry::View3DPropertiesEntry(vx::PropType::Objects,
                                              QList<vx::Node*> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.View3D.Objects",
-          QVariant::fromValue<QList<QDBusObjectPath>>(
+          vx::make_any<QList<QDBusObjectPath>>(
               vx::PropertyValueConvertRaw<QList<QDBusObjectPath>,
                                           QList<vx::Node*>>::toRaw(value_))) {}
 View3DPropertiesEntry::View3DPropertiesEntry(vx::PropType::ShowViewCenter,
                                              bool value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Visualizer.View3D.ShowViewCenter",
-          QVariant::fromValue<bool>(
+          vx::make_any<bool>(
               vx::PropertyValueConvertRaw<bool, bool>::toRaw(value_))) {}
 View3DPropertiesBase::~View3DPropertiesBase() {}
 View3DPropertiesCopy::View3DPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 double View3DPropertiesCopy::fieldOfView() {
   return vx::PropertyValueConvertRaw<double, double>::fromRaw(
@@ -2235,100 +3791,101 @@ static const char _prototype_View3D_[] = {
     101, 75,  105, 110, 100, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117,
     110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111,
     120, 105, 101, 46,  78,  111, 100, 101, 75,  105, 110, 100, 46,  79,  98,
-    106, 101, 99,  116, 51,  68,  34,  93,  44,  32,  34,  67,  111, 109, 112,
-    97,  116, 105, 98,  105, 108, 105, 116, 121, 78,  97,  109, 101, 115, 34,
-    58,  32,  91,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116,
-    116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115,
-    117, 97,  108, 105, 122, 101, 114, 51,  68,  46,  79,  98,  106, 101, 99,
-    116, 115, 34,  93,  44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,
-    97,  109, 101, 34,  58,  32,  34,  51,  68,  32,  79,  98,  106, 101, 99,
-    116, 115, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  100,
-    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
-    46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101, 114, 116, 121,
-    84,  121, 112, 101, 46,  78,  111, 100, 101, 82,  101, 102, 101, 114, 101,
-    110, 99,  101, 76,  105, 115, 116, 34,  125, 44,  32,  34,  100, 101, 46,
-    117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,
-    111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122, 101, 114,
-    46,  86,  105, 101, 119, 51,  68,  46,  83,  104, 111, 119, 86,  105, 101,
-    119, 67,  101, 110, 116, 101, 114, 34,  58,  32,  123, 34,  68,  101, 102,
-    97,  117, 108, 116, 86,  97,  108, 117, 101, 34,  58,  32,  116, 114, 117,
-    101, 44,  32,  34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101,
-    34,  58,  32,  34,  83,  104, 111, 119, 32,  118, 105, 101, 119, 32,  99,
-    101, 110, 116, 101, 114, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,
-    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
-    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114, 111, 112, 101,
-    114, 116, 121, 84,  121, 112, 101, 46,  66,  111, 111, 108, 101, 97,  110,
-    34,  125, 125, 44,  32,  34,  84,  114, 111, 118, 101, 67,  108, 97,  115,
-    115, 105, 102, 105, 101, 114, 115, 34,  58,  32,  91,  34,  68,  101, 118,
-    101, 108, 111, 112, 109, 101, 110, 116, 32,  83,  116, 97,  116, 117, 115,
-    32,  58,  58,  32,  53,  32,  45,  32,  80,  114, 111, 100, 117, 99,  116,
-    105, 111, 110, 47,  83,  116, 97,  98,  108, 101, 34,  93,  44,  32,  34,
-    85,  73,  34,  58,  32,  123, 34,  83,  105, 100, 101, 80,  97,  110, 101,
-    108, 83,  101, 99,  116, 105, 111, 110, 115, 34,  58,  32,  91,  123, 34,
-    68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,
-    82,  101, 110, 100, 101, 114, 32,  83,  101, 116, 116, 105, 110, 103, 115,
-    34,  44,  32,  34,  69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,
-    123, 34,  78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110,
+    106, 101, 99,  116, 51,  68,  34,  93,  44,  32,  34,  67,  97,  108, 108,
+    83,  101, 116, 79,  114, 100, 101, 114, 34,  58,  32,  45,  49,  48,  44,
+    32,  34,  67,  111, 109, 112, 97,  116, 105, 98,  105, 108, 105, 116, 121,
+    78,  97,  109, 101, 115, 34,  58,  32,  91,  34,  100, 101, 46,  117, 110,
     105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120,
-    105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  86,
-    105, 101, 119, 51,  68,  46,  67,  111, 110, 116, 114, 111, 108, 51,  68,
-    83,  101, 116, 116, 105, 110, 103, 115, 34,  44,  32,  34,  84,  121, 112,
-    101, 34,  58,  32,  34,  67,  117, 115, 116, 111, 109, 34,  125, 93,  44,
-    32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  67,  111, 110, 116, 114,
-    111, 108, 51,  68,  83,  101, 116, 116, 105, 110, 103, 115, 83,  101, 99,
-    116, 105, 111, 110, 34,  125, 44,  32,  123, 34,  68,  105, 115, 112, 108,
-    97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  67,  97,  109, 101, 114,
-    97,  32,  80,  114, 111, 112, 101, 114, 116, 105, 101, 115, 34,  44,  32,
-    34,  69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,  123, 34,  76,
-    97,  98,  101, 108, 83,  116, 121, 108, 101, 34,  58,  32,  34,  69,  120,
-    116, 114, 97,  76,  105, 110, 101, 34,  44,  32,  34,  80,  114, 111, 112,
+    105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 51,  68,
+    46,  79,  98,  106, 101, 99,  116, 115, 34,  93,  44,  32,  34,  68,  105,
+    115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  51,  68,
+    32,  79,  98,  106, 101, 99,  116, 115, 34,  44,  32,  34,  84,  121, 112,
+    101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  80,  114,
+    111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  78,  111, 100, 101,
+    82,  101, 102, 101, 114, 101, 110, 99,  101, 76,  105, 115, 116, 34,  125,
+    44,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116,
+    103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117,
+    97,  108, 105, 122, 101, 114, 46,  86,  105, 101, 119, 51,  68,  46,  83,
+    104, 111, 119, 86,  105, 101, 119, 67,  101, 110, 116, 101, 114, 34,  58,
+    32,  123, 34,  68,  101, 102, 97,  117, 108, 116, 86,  97,  108, 117, 101,
+    34,  58,  32,  116, 114, 117, 101, 44,  32,  34,  68,  105, 115, 112, 108,
+    97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  83,  104, 111, 119, 32,
+    118, 105, 101, 119, 32,  99,  101, 110, 116, 101, 114, 34,  44,  32,  34,
+    84,  121, 112, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
+    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
+    46,  80,  114, 111, 112, 101, 114, 116, 121, 84,  121, 112, 101, 46,  66,
+    111, 111, 108, 101, 97,  110, 34,  125, 125, 44,  32,  34,  84,  114, 111,
+    118, 101, 67,  108, 97,  115, 115, 105, 102, 105, 101, 114, 115, 34,  58,
+    32,  91,  34,  68,  101, 118, 101, 108, 111, 112, 109, 101, 110, 116, 32,
+    83,  116, 97,  116, 117, 115, 32,  58,  58,  32,  53,  32,  45,  32,  80,
+    114, 111, 100, 117, 99,  116, 105, 111, 110, 47,  83,  116, 97,  98,  108,
+    101, 34,  93,  44,  32,  34,  85,  73,  34,  58,  32,  123, 34,  83,  105,
+    100, 101, 80,  97,  110, 101, 108, 83,  101, 99,  116, 105, 111, 110, 115,
+    34,  58,  32,  91,  123, 34,  68,  105, 115, 112, 108, 97,  121, 78,  97,
+    109, 101, 34,  58,  32,  34,  82,  101, 110, 100, 101, 114, 32,  83,  101,
+    116, 116, 105, 110, 103, 115, 34,  44,  32,  34,  69,  110, 116, 114, 105,
+    101, 115, 34,  58,  32,  91,  123, 34,  78,  97,  109, 101, 34,  58,  32,
+    34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,
+    114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108,
+    105, 122, 101, 114, 46,  86,  105, 101, 119, 51,  68,  46,  67,  111, 110,
+    116, 114, 111, 108, 51,  68,  83,  101, 116, 116, 105, 110, 103, 115, 34,
+    44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  67,  117, 115, 116,
+    111, 109, 34,  125, 93,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,
+    34,  67,  111, 110, 116, 114, 111, 108, 51,  68,  83,  101, 116, 116, 105,
+    110, 103, 115, 83,  101, 99,  116, 105, 111, 110, 34,  125, 44,  32,  123,
+    34,  68,  105, 115, 112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,
+    34,  67,  97,  109, 101, 114, 97,  32,  80,  114, 111, 112, 101, 114, 116,
+    105, 101, 115, 34,  44,  32,  34,  69,  110, 116, 114, 105, 101, 115, 34,
+    58,  32,  91,  123, 34,  76,  97,  98,  101, 108, 83,  116, 121, 108, 101,
+    34,  58,  32,  34,  69,  120, 116, 114, 97,  76,  105, 110, 101, 34,  44,
+    32,  34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  58,  32,  34,  100,
+    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
+    46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122,
+    101, 114, 46,  86,  105, 101, 119, 51,  68,  46,  67,  97,  109, 101, 114,
+    97,  46,  76,  111, 111, 107, 65,  116, 34,  44,  32,  34,  84,  121, 112,
+    101, 34,  58,  32,  34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  125,
+    44,  32,  123, 34,  76,  97,  98,  101, 108, 83,  116, 121, 108, 101, 34,
+    58,  32,  34,  69,  120, 116, 114, 97,  76,  105, 110, 101, 34,  44,  32,
+    34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  58,  32,  34,  100, 101,
+    46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116, 46,
+    86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122, 101,
+    114, 46,  86,  105, 101, 119, 51,  68,  46,  67,  97,  109, 101, 114, 97,
+    46,  79,  114, 105, 101, 110, 116, 97,  116, 105, 111, 110, 34,  44,  32,
+    34,  84,  121, 112, 101, 34,  58,  32,  34,  80,  114, 111, 112, 101, 114,
+    116, 121, 34,  125, 44,  32,  123, 34,  80,  114, 111, 112, 101, 114, 116,
+    121, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105,
+    115, 117, 97,  108, 105, 122, 101, 114, 46,  86,  105, 101, 119, 51,  68,
+    46,  67,  97,  109, 101, 114, 97,  46,  90,  111, 111, 109, 76,  111, 103,
+    34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  80,  114, 111,
+    112, 101, 114, 116, 121, 34,  125, 44,  32,  123, 34,  80,  114, 111, 112,
     101, 114, 116, 121, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
     115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
     46,  86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  86,  105, 101,
-    119, 51,  68,  46,  67,  97,  109, 101, 114, 97,  46,  76,  111, 111, 107,
-    65,  116, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  80,
-    114, 111, 112, 101, 114, 116, 121, 34,  125, 44,  32,  123, 34,  76,  97,
-    98,  101, 108, 83,  116, 121, 108, 101, 34,  58,  32,  34,  69,  120, 116,
-    114, 97,  76,  105, 110, 101, 34,  44,  32,  34,  80,  114, 111, 112, 101,
-    114, 116, 121, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115,
-    116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,
-    86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  86,  105, 101, 119,
-    51,  68,  46,  67,  97,  109, 101, 114, 97,  46,  79,  114, 105, 101, 110,
-    116, 97,  116, 105, 111, 110, 34,  44,  32,  34,  84,  121, 112, 101, 34,
-    58,  32,  34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  125, 44,  32,
-    123, 34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  58,  32,  34,  100,
-    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
-    46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122,
-    101, 114, 46,  86,  105, 101, 119, 51,  68,  46,  67,  97,  109, 101, 114,
-    97,  46,  90,  111, 111, 109, 76,  111, 103, 34,  44,  32,  34,  84,  121,
-    112, 101, 34,  58,  32,  34,  80,  114, 111, 112, 101, 114, 116, 121, 34,
-    125, 44,  32,  123, 34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  58,
-    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
-    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,
-    108, 105, 122, 101, 114, 46,  86,  105, 101, 119, 51,  68,  46,  67,  97,
-    109, 101, 114, 97,  46,  86,  105, 101, 119, 83,  105, 122, 101, 85,  110,
-    122, 111, 111, 109, 101, 100, 34,  44,  32,  34,  84,  121, 112, 101, 34,
-    58,  32,  34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  125, 44,  32,
-    123, 34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  58,  32,  34,  100,
-    101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103, 97,  114, 116,
-    46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,  108, 105, 122,
-    101, 114, 46,  86,  105, 101, 119, 51,  68,  46,  67,  97,  109, 101, 114,
-    97,  46,  70,  105, 101, 108, 100, 79,  102, 86,  105, 101, 119, 34,  44,
-    32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  80,  114, 111, 112, 101,
-    114, 116, 121, 34,  125, 93,  44,  32,  34,  78,  97,  109, 101, 34,  58,
-    32,  34,  67,  97,  109, 101, 114, 97,  83,  101, 99,  116, 105, 111, 110,
-    34,  125, 44,  32,  123, 34,  68,  105, 115, 112, 108, 97,  121, 78,  97,
-    109, 101, 34,  58,  32,  34,  80,  108, 97,  110, 101, 32,  80,  114, 111,
-    112, 101, 114, 116, 105, 101, 115, 34,  44,  32,  34,  69,  110, 116, 114,
-    105, 101, 115, 34,  58,  32,  91,  123, 34,  78,  97,  109, 101, 34,  58,
-    32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117, 116, 116, 103,
-    97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105, 115, 117, 97,
-    108, 105, 122, 101, 114, 46,  86,  105, 101, 119, 51,  68,  46,  80,  108,
-    97,  110, 101, 83,  101, 116, 116, 105, 110, 103, 115, 34,  44,  32,  34,
-    84,  121, 112, 101, 34,  58,  32,  34,  67,  117, 115, 116, 111, 109, 34,
-    125, 93,  44,  32,  34,  78,  97,  109, 101, 34,  58,  32,  34,  80,  108,
-    97,  110, 101, 83,  101, 116, 116, 105, 110, 103, 115, 34,  125, 93,  125,
-    125, 0};
+    119, 51,  68,  46,  67,  97,  109, 101, 114, 97,  46,  86,  105, 101, 119,
+    83,  105, 122, 101, 85,  110, 122, 111, 111, 109, 101, 100, 34,  44,  32,
+    34,  84,  121, 112, 101, 34,  58,  32,  34,  80,  114, 111, 112, 101, 114,
+    116, 121, 34,  125, 44,  32,  123, 34,  80,  114, 111, 112, 101, 114, 116,
+    121, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,  115, 116, 117,
+    116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101, 46,  86,  105,
+    115, 117, 97,  108, 105, 122, 101, 114, 46,  86,  105, 101, 119, 51,  68,
+    46,  67,  97,  109, 101, 114, 97,  46,  70,  105, 101, 108, 100, 79,  102,
+    86,  105, 101, 119, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,
+    34,  80,  114, 111, 112, 101, 114, 116, 121, 34,  125, 93,  44,  32,  34,
+    78,  97,  109, 101, 34,  58,  32,  34,  67,  97,  109, 101, 114, 97,  83,
+    101, 99,  116, 105, 111, 110, 34,  125, 44,  32,  123, 34,  68,  105, 115,
+    112, 108, 97,  121, 78,  97,  109, 101, 34,  58,  32,  34,  80,  108, 97,
+    110, 101, 32,  80,  114, 111, 112, 101, 114, 116, 105, 101, 115, 34,  44,
+    32,  34,  69,  110, 116, 114, 105, 101, 115, 34,  58,  32,  91,  123, 34,
+    78,  97,  109, 101, 34,  58,  32,  34,  100, 101, 46,  117, 110, 105, 95,
+    115, 116, 117, 116, 116, 103, 97,  114, 116, 46,  86,  111, 120, 105, 101,
+    46,  86,  105, 115, 117, 97,  108, 105, 122, 101, 114, 46,  86,  105, 101,
+    119, 51,  68,  46,  80,  108, 97,  110, 101, 83,  101, 116, 116, 105, 110,
+    103, 115, 34,  44,  32,  34,  84,  121, 112, 101, 34,  58,  32,  34,  67,
+    117, 115, 116, 111, 109, 34,  125, 93,  44,  32,  34,  78,  97,  109, 101,
+    34,  58,  32,  34,  80,  108, 97,  110, 101, 83,  101, 116, 116, 105, 110,
+    103, 115, 34,  125, 93,  125, 125, 0};
 const char* View3DProperties::_getPrototypeJson() { return _prototype_View3D_; }
 
 View3DProperties::~View3DProperties() {}
@@ -2522,7 +4079,7 @@ View3DProperties::View3DProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_FieldOfView](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_FieldOfView) return;
         double valueCasted;
         try {
@@ -2543,7 +4100,7 @@ View3DProperties::View3DProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_LookAt](const QSharedPointer<NodeProperty>& property,
-                           const QVariant& value) {
+                           const vx::Any& value) {
         if (property != _prop_LookAt) return;
         QVector3D valueCasted;
         try {
@@ -2568,7 +4125,7 @@ View3DProperties::View3DProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Orientation](const QSharedPointer<NodeProperty>& property,
-                                const QVariant& value) {
+                                const vx::Any& value) {
         if (property != _prop_Orientation) return;
         QQuaternion valueCasted;
         try {
@@ -2592,7 +4149,7 @@ View3DProperties::View3DProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ViewSizeUnzoomed](
-          const QSharedPointer<NodeProperty>& property, const QVariant& value) {
+          const QSharedPointer<NodeProperty>& property, const vx::Any& value) {
         if (property != _prop_ViewSizeUnzoomed) return;
         double valueCasted;
         try {
@@ -2613,7 +4170,7 @@ View3DProperties::View3DProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ZoomLog](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_ZoomLog) return;
         double valueCasted;
         try {
@@ -2634,7 +4191,7 @@ View3DProperties::View3DProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Objects](const QSharedPointer<NodeProperty>& property,
-                            const QVariant& value) {
+                            const vx::Any& value) {
         if (property != _prop_Objects) return;
         QList<vx::Node*> valueCasted;
         try {
@@ -2655,7 +4212,7 @@ View3DProperties::View3DProperties(vx::Node* parent) : QObject(parent) {
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_ShowViewCenter](const QSharedPointer<NodeProperty>& property,
-                                   const QVariant& value) {
+                                   const vx::Any& value) {
         if (property != _prop_ShowViewCenter) return;
         bool valueCasted;
         try {
@@ -2680,12 +4237,12 @@ VolumeRenderingPropertiesEntry::VolumeRenderingPropertiesEntry(
     vx::PropType::Input, QList<vx::Node*> value_)
     : vx::PropertiesEntryBase(
           "de.uni_stuttgart.Voxie.Input",
-          QVariant::fromValue<QList<QDBusObjectPath>>(
+          vx::make_any<QList<QDBusObjectPath>>(
               vx::PropertyValueConvertRaw<QList<QDBusObjectPath>,
                                           QList<vx::Node*>>::toRaw(value_))) {}
 VolumeRenderingPropertiesBase::~VolumeRenderingPropertiesBase() {}
 VolumeRenderingPropertiesCopy::VolumeRenderingPropertiesCopy(
-    const QSharedPointer<const QMap<QString, QVariant>>& properties)
+    const QSharedPointer<const QMap<QString, vx::Any>>& properties)
     : _properties(properties) {}
 QList<QDBusObjectPath> VolumeRenderingPropertiesCopy::inputRaw() {
   return vx::Node::parseVariant<QList<QDBusObjectPath>>(
@@ -2771,7 +4328,7 @@ VolumeRenderingProperties::VolumeRenderingProperties(vx::Node* parent)
   QObject::connect(
       this->_node, &vx::Node::propertyChanged, this,
       [this, _prop_Input](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
         if (property != _prop_Input) return;
         QList<vx::Node*> valueCasted;
         try {

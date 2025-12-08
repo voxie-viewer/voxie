@@ -51,6 +51,8 @@ files = [
      glob.glob('src/PluginVisTable/Prototypes/*.json'), False),
     ('src/PluginVis3D/Prototypes',
      glob.glob('src/PluginVis3D/Prototypes/*.json'), False),
+    ('src/PluginVisLinePlot/Prototypes',
+     glob.glob('src/PluginVisLinePlot/Prototypes/*.json'), False),
     ('src/PluginFitting/Prototypes',
      glob.glob('src/PluginFitting/Prototypes/*.json'), False),
     ('src/PluginExample/Prototypes',
@@ -79,8 +81,7 @@ def getCppType(name):
     if 'QtType' in ptype:
         return ptype['QtType']
     else:
-        # return property_types.dbusToQtTypeAll[ptype['DBusSignature']]
-        return property_types.dbusToCppRawType(ptype['DBusSignature'])
+        return property_types.dbusToCppRawType(ptype['DBusSignature'], useVoxieTypes=True)
 
 
 def getCppTypeRaw(name):
@@ -90,8 +91,7 @@ def getCppTypeRaw(name):
     if 'RawType' in ptype:
         return ptype['RawType']
     else:
-        # return property_types.dbusToQtTypeAll[ptype['DBusSignature']]
-        return property_types.dbusToCppRawType(ptype['DBusSignature'])
+        return property_types.dbusToCppRawType(ptype['DBusSignature'], useVoxieTypes=True)
 
 
 def getShortName(name):
@@ -162,6 +162,7 @@ for (outPrefix, inputFiles, doExport) in files:
         hpp.write('#include <Voxie/Data/ColorizerEntry.hpp>\n')
         hpp.write('#include <VoxieBackend/Data/DataType.hpp>\n')
         hpp.write('#include <Voxie/Node/Types.hpp>\n')  # TODO: Add this include?
+        hpp.write('#include <VoxieClient/DBusVariant.hpp>\n')
         hpp.write('\n')
         hpp.write('class NodeNodeProperty; // In Voxie/Node/NodeNodeProperty.hpp\n')
         hpp.write('\n')
@@ -235,7 +236,7 @@ for (outPrefix, inputFiles, doExport) in files:
                 ptypeCpp = getCppType(ptype)
                 ptypeCppRaw2 = getCppTypeRaw(ptype)
                 hpp.write('%s(vx::PropType::%s, %s);\n' % (namePropertiesEntry, pnameBare, ptypeCpp))
-                cpp.write('%s::%s(vx::PropType::%s, %s value_) : vx::PropertiesEntryBase(%s, QVariant::fromValue<%s>(vx::PropertyValueConvertRaw<%s, %s>::toRaw(value_))) {}\n' % (namePropertiesEntry, namePropertiesEntry, pnameBare, ptypeCpp, escapeCppString(pname), ptypeCppRaw2, ptypeCppRaw2, ptypeCpp))
+                cpp.write('%s::%s(vx::PropType::%s, %s value_) : vx::PropertiesEntryBase(%s, vx::make_any<%s>(vx::PropertyValueConvertRaw<%s, %s>::toRaw(value_))) {}\n' % (namePropertiesEntry, namePropertiesEntry, pnameBare, ptypeCpp, escapeCppString(pname), ptypeCppRaw2, ptypeCppRaw2, ptypeCpp))
             hpp.write('};\n')
 
             hppf.write('class %s;\n' % (namePropertiesBase,))
@@ -261,11 +262,11 @@ for (outPrefix, inputFiles, doExport) in files:
             hpp.write('class %s%s : public %s {\n' % (
                 exportStr, namePropertiesCopy, namePropertiesBase,))
             hpp.write(
-                'QSharedPointer<const QMap<QString, QVariant>> _properties;\n')
+                'QSharedPointer<const QMap<QString, vx::Any>> _properties;\n')
             hpp.write('public:\n')
-            hpp.write('%s(const QSharedPointer<const QMap<QString, QVariant>>& properties);\n' % (
+            hpp.write('%s(const QSharedPointer<const QMap<QString, vx::Any>>& properties);\n' % (
                 namePropertiesCopy,))
-            cpp.write('%s::%s(const QSharedPointer<const QMap<QString, QVariant>>& properties) : _properties(properties) {}\n' % (
+            cpp.write('%s::%s(const QSharedPointer<const QMap<QString, vx::Any>>& properties) : _properties(properties) {}\n' % (
                 namePropertiesCopy, namePropertiesCopy,))
             for pname in propertyKeys:
                 property = prototype['Properties'][pname]
@@ -338,6 +339,11 @@ for (outPrefix, inputFiles, doExport) in files:
                 propName = pnameBare[0].upper() + pnameBare[1:]
                 hpp.write('\n')
 
+                # Types for events arguments have to be declared with Q_DECLARE_METATYPE which requires the type to have a default constructor. Disable event argument for types containing vx::DBusVariant (which does not have a default constructor).
+                # TODO: Disable event argument for everything? Is not used in many cases, and if e.g. the raw version is used it has to be looked up anyway.
+                # TODO: Do this check in a better way?a
+                eventHasArgument = 'vx::DBusVariant' not in ptypeCpp
+
                 non_raw_modifies = ''
                 if is_in_base[pname]:
                     non_raw_modifies = ' override final'
@@ -385,16 +391,20 @@ for (outPrefix, inputFiles, doExport) in files:
                           (ptypeCppRaw2, escapeCppString(pname), ptypeCppRaw2, ptypeCpp,))
                 cpp.write('}\n')
                 hpp.write('Q_SIGNALS:\n')
-                hpp.write('void %s(%s value);\n' % (eventName, ptypeCpp))
+                if eventHasArgument:
+                    hpp.write('void %s(%s value);\n' % (eventName, ptypeCpp))
+                else:
+                    hpp.write('void %s();\n' % (eventName,))
                 hpp.write('public:\n')
                 # TODO: More efficient way than connecting once for every property?
                 propVariable = '_prop_' + pnameBare
                 ctorCode += 'auto %s = this->_node->prototype()->getProperty(%s, false);\n' % (propVariable,
                                                                                                escapeCppString(pname))
-                ctorCode += 'QObject::connect(this->_node, &vx::Node::propertyChanged, this, [this, %s](const QSharedPointer<NodeProperty>& property, const QVariant& value) {\n' % (
+                ctorCode += 'QObject::connect(this->_node, &vx::Node::propertyChanged, this, [this, %s](const QSharedPointer<NodeProperty>& property, const vx::Any& value) {\n' % (
                     propVariable,)
                 ctorCode += 'if (property != %s)\n' % (propVariable,)
                 ctorCode += 'return;\n'
+                # TODO: Should the cast code run if the value is not passed to the event?
                 ctorCode += '%s valueCasted;\n' % (ptypeCpp,)
                 ctorCode += 'try {\n'
                 ctorCode += 'valueCasted = vx::PropertyValueConvertRaw<%s, %s>::fromRaw(Node::parseVariant<%s>(value));\n' % (
@@ -403,7 +413,10 @@ for (outPrefix, inputFiles, doExport) in files:
                 ctorCode += 'qCritical() << "Error while parsing property value for event handler for property \\"%s\\":" << e.what();\n' % (pname,)
                 ctorCode += 'return;\n'
                 ctorCode += '}\n'
-                ctorCode += 'Q_EMIT this->%s(valueCasted);\n' % (eventName,)
+                if eventHasArgument:
+                    ctorCode += 'Q_EMIT this->%s(valueCasted);\n' % (eventName,)
+                else:
+                    ctorCode += 'Q_EMIT this->%s();\n' % (eventName,)
                 ctorCode += '});\n'
                 hpp.write('//Q_PROPERTY(%s %s READ %s WRITE %s NOTIFY %s)\n' %
                           (ptypeCpp, propName, getterName, setterName, eventName))

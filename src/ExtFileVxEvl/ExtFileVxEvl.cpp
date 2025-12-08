@@ -131,7 +131,7 @@ struct AttributeData {
       throw vx::Exception("de.uni_stuttgart.Voxie.Error", "pos0 < 0");
 
     mappedBuffer =
-        createQSharedPointer<vx::MappedBuffer>(info.handle, bytes, false);
+        vx::createQSharedPointer<vx::MappedBuffer>(info.handle, bytes, false);
 
     ptr = (uint8_t*)mappedBuffer->data() + ioffset;
   }

@@ -77,6 +77,9 @@ VX_NODE_INSTANTIATION(SliceVisualizer)
 using namespace vx::visualization;
 using namespace vx;
 
+SliceClickAction::SliceClickAction(QObject* parent) : QObject(parent) {}
+SliceClickAction::~SliceClickAction() {}
+
 SliceVisualizer::SliceVisualizer()
     : VisualizerNode(getPrototypeSingleton()),
       properties(new vx::SliceProperties(this)) {
@@ -106,6 +109,7 @@ SliceVisualizer::SliceVisualizer()
   new vx::vis_slice::View3DPropertiesConnection(this, this->properties,
                                                 view3d().data());
 
+  // TODO: Remove?
   connect(properties, &SliceProperties::centerPointChanged, this,
           &SliceVisualizer::signalRequestSliceImageUpdate);
   connect(properties, &SliceProperties::verticalSizeChanged, this,
@@ -171,11 +175,11 @@ SliceVisualizer::SliceVisualizer()
       &SliceVisualizer::volumeDataChangedFinished);
   forwardSignalFromPropertyNodeOnReconnect(
       properties, &SliceProperties::volume, &SliceProperties::volumeChanged,
-      &VolumeNode::rotationChanged, this,
+      &MovableDataNode::rotationChanged, this,
       &SliceVisualizer::volumeDataRotationChanged);
   forwardSignalFromPropertyNodeOnReconnect(
       properties, &SliceProperties::volume, &SliceProperties::volumeChanged,
-      &VolumeNode::translationChanged, this,
+      &MovableDataNode::translationChanged, this,
       &SliceVisualizer::volumeDataTranslationChanged);
 
   forwardSignalFromPropertyNodeOnReconnect(
@@ -292,6 +296,99 @@ SliceVisualizer::SliceVisualizer()
     }
   }
   // ***Automatically sets of tools view END***
+
+  // TODO: This code is mostly copied from the 3D visualizer. Try to merge this
+  // code.
+  {
+    this->control3DSettings = new QWidget();
+    auto controlLayout = new QGridLayout();
+
+    auto frontViewButton = new QPushButton("Front");
+    frontViewButton->setToolTip("Show front view (Numpad 1)");
+    auto rightViewButton = new QPushButton("Right");
+    rightViewButton->setToolTip("Show right view (Numpad 3)");
+    auto topViewButton = new QPushButton("Top");
+    topViewButton->setToolTip("Show top view (Numpad 7)");
+    auto backViewButton = new QPushButton("Back");
+    backViewButton->setToolTip("Show back view (Ctrl + Numpad 1)");
+    auto leftViewButton = new QPushButton("Left");
+    leftViewButton->setToolTip("Show left view (Ctrl + Numpad 3)");
+    auto bottomViewButton = new QPushButton("Bottom");
+    bottomViewButton->setToolTip("Show bottom view (Ctrl + Numpad 7)");
+
+    // The SignalMapper lets us call a function with arguments when a button
+    // is pressed
+    QSignalMapper* signalMapper = new QSignalMapper(this);
+    connect(frontViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(backViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(rightViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(leftViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(topViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+    connect(bottomViewButton, &QPushButton::pressed, signalMapper,
+            static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+
+    // Mapping the view angle arguments to the buttons
+    signalMapper->setMapping(frontViewButton, "front");
+    signalMapper->setMapping(backViewButton, "back");
+    signalMapper->setMapping(rightViewButton, "right");
+    signalMapper->setMapping(leftViewButton, "left");
+    signalMapper->setMapping(topViewButton, "top");
+    signalMapper->setMapping(bottomViewButton, "bottom");
+
+    connect(signalMapper,
+            static_cast<void (QSignalMapper::*)(const QString&)>(
+                &QSignalMapper::mapped),
+            this, [this](const QString& direction) {
+              this->view3d()->setFixedAngle(direction);
+            });
+
+    controlLayout->addWidget(frontViewButton, 1, 0);
+    controlLayout->addWidget(rightViewButton, 1, 1);
+    controlLayout->addWidget(topViewButton, 1, 2);
+    controlLayout->addWidget(backViewButton, 2, 0);
+    controlLayout->addWidget(leftViewButton, 2, 1);
+    controlLayout->addWidget(bottomViewButton, 2, 2);
+
+    QPushButton* resetButton = new QPushButton("Reset zoom / pos");
+    resetButton->setToolTip(
+        "Reset zoom and position to show everything (Home, Numpad 0)");
+    QObject::connect(resetButton, &QPushButton::clicked, this, [this]() {
+      this->view3d()->resetView(View3DProperty::LookAt |
+                                View3DProperty::ZoomLog);
+    });
+    controlLayout->addWidget(resetButton, 0, 0);
+
+    QPushButton* zoomToOneButton = new QPushButton("Physical zoom 1");
+    zoomToOneButton->setToolTip("Set zoom on screen to 1");
+    QObject::connect(zoomToOneButton, &QPushButton::clicked, this, [this]() {
+      // TODO: Clean up this code / merge with code in OpenGLWidget.cpp?
+
+      auto viewSizePixelDIP = this->_imageDisplayingWidget->height();
+
+      // https://doc.qt.io/qt-5/qwindow.html#devicePixelRatio
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+      double factor = this->view->window()->devicePixelRatioF();
+#else
+      double factor = this->view->window()->devicePixelRatio();
+#endif
+      auto viewSizePixelPhysical = viewSizePixelDIP * factor;
+
+      auto viewSizeM = viewSizePixelPhysical /
+                       this->_imageDisplayingWidget->physicalDpiY() * 0.0254;
+      // qDebug() << "View size" << viewSizePixelDIP << "px log /"
+      //          << viewSizePixelPhysical << "px phys /" << viewSizeM << "m";
+
+      this->properties->setVerticalSize(viewSizeM);
+    });
+    controlLayout->addWidget(zoomToOneButton, 0, 1);
+
+    this->control3DSettings->setLayout(controlLayout);
+  }
 
   //*********FilterChain2D***********
   _filterChain2DWidget = new FilterChain2DWidget(view);
@@ -488,7 +585,9 @@ SliceVisualizer::SliceVisualizer()
 }
 
 QWidget* SliceVisualizer::getCustomPropertySectionContent(const QString& name) {
-  if (name == "de.uni_stuttgart.Voxie.SliceVisualizer.Histogram") {
+  if (name == "de.uni_stuttgart.Voxie.Visualizer.View3D.Control3DSettings") {
+    return control3DSettings;
+  } else if (name == "de.uni_stuttgart.Voxie.SliceVisualizer.Histogram") {
     return histogramBox;
   } else if (name == "de.uni_stuttgart.Voxie.SliceVisualizer.Info") {
     return infoWidget;
@@ -524,6 +623,7 @@ QRectF SliceVisualizer::getCurrentPlaneArea(SlicePropertiesBase* properties,
   float heightF = properties->verticalSize();
   float widthF = heightF * aspectRatio;
   auto center = properties->centerPoint();
+  // qDebug() << "SliceVisualizer::getCurrentPlaneArea" << heightC << heightF;
   return QRectF(center.x() - widthF / 2, center.y() - heightF / 2, widthF,
                 heightF);
 }
@@ -606,34 +706,47 @@ void SliceVisualizer::switchToolTo(Visualizer2DTool* tool) {
   this->_imageDisplayingWidget->setFocus();
 }
 
-QVariant SliceVisualizer::getNodePropertyCustom(QString key) {
+void SliceVisualizer::setClickAction(SliceClickAction* action) {
+  if (this->currentClickAction_ == action) return;
+  this->currentClickAction_ = action;
+  Q_EMIT this->currentClickActionChanged(action);
+}
+void SliceVisualizer::removeClickAction(SliceClickAction* actionToRemove) {
+  if (this->currentClickAction_ == actionToRemove)
+    this->setClickAction(nullptr);
+}
+SliceClickAction* SliceVisualizer::currentClickAction() {
+  return this->currentClickAction_;
+}
+
+vx::Any SliceVisualizer::getNodePropertyCustom(QString key) {
   if (key == "de.uni_stuttgart.Voxie.Visualizer.Slice.Filter2DConfiguration") {
-    return this->_filterChain2DWidget->getFilterChain()->toXMLString();
+    return vx::make_any<QString>(
+        this->_filterChain2DWidget->getFilterChain()->toXMLString());
   } else if (key ==
              "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Orientation") {
     auto plane = dynamic_cast<PlaneNode*>(this->properties->plane());
     if (plane)
-      return QVariant::fromValue<vx::TupleVector<double, 4>>(
+      return vx::make_any<vx::TupleVector<double, 4>>(
           PropertyValueConvertRaw<vx::TupleVector<double, 4>,
                                   QQuaternion>::toRaw(plane->plane()
                                                           ->rotation));
     else
-      return QVariant::fromValue<vx::TupleVector<double, 4>>(
+      return vx::make_any<vx::TupleVector<double, 4>>(
           this->standaloneOrientation);
   } else if (key == "de.uni_stuttgart.Voxie.Visualizer.Slice.Plane.Origin") {
     auto plane = dynamic_cast<PlaneNode*>(this->properties->plane());
     if (plane)
-      return QVariant::fromValue(
+      return vx::make_any<vx::TupleVector<double, 3>>(
           PropertyValueConvertRaw<vx::TupleVector<double, 3>, QVector3D>::toRaw(
               plane->plane()->origin));
     else
-      return QVariant::fromValue<vx::TupleVector<double, 3>>(
-          this->standaloneOrigin);
+      return vx::make_any<vx::TupleVector<double, 3>>(this->standaloneOrigin);
   } else {
     return VisualizerNode::getNodePropertyCustom(key);
   }
 }
-void SliceVisualizer::setNodePropertyCustom(QString key, QVariant value) {
+void SliceVisualizer::setNodePropertyCustom(QString key, vx::Any value) {
   if (key == "de.uni_stuttgart.Voxie.Visualizer.Slice.Filter2DConfiguration") {
     this->_filterChain2DWidget->getFilterChain()->fromXMLString(
         Node::parseVariant<QString>(value));

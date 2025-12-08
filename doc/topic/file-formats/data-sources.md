@@ -33,10 +33,10 @@ information where in the file each image is stored.
 The following keys are in `DataSource`:
 - `"DataFilename"`: A string containing the filename of the data file. The image archive info file has the same name with `.iai` appended.
 - `"StorageOrder"`: An array with 3 integer values (for X, Y and Z) indicating how each dimension of the data is stored in the file. The default is `[1, 2, 3]`. The meaning of the values is:
-  - 1: The dimension is stored as the X dimension of the image
-  - -1: The dimension is stored as the X dimension of the image (mirrored)
-  - 2: The dimension is stored as the Y dimension of the image
-  - -2: The dimension is stored as the Y dimension of the image (mirrored)
+  - 1: The dimension is stored as the X dimension of the images (larger positions are further right in the image)
+  - -1: The dimension is stored as the X dimension of the images (mirrored) (larger positions are further left in the image)
+  - 2: The dimension is stored as the Y dimension of the images (larger positions are further up in the image)
+  - -2: The dimension is stored as the Y dimension of the images (mirrored) (larger positions are further down in the image)
   - 3: The dimension is stored as the position in the list of images
   - -3: The dimension is stored as the position in the list of images (mirrored)
 
@@ -53,10 +53,10 @@ The following keys are in `DataSource`:
 - `"ImageFilePattern"`: A [python format string] which will be passed one integer value (the position in the list of images plus the `"FirstImageIndex`" value).
 - `"ImageFileNames"`: An object mapping integral values to strings (filenames). These names have higher priority than the names produced by `"ImageFilePattern"` if both are given.
 - `"StorageOrder"`: An array with 3 integer values (for X, Y and Z) indicating how each dimension of the data is stored in the file. The default is `[1, 2, 3]`. The meaning of the values is:
-  - 1: The dimension is stored as the X dimension of the images
-  - -1: The dimension is stored as the X dimension of the images (mirrored)
-  - 2: The dimension is stored as the Y dimension of the images
-  - -2: The dimension is stored as the Y dimension of the images (mirrored)
+  - 1: The dimension is stored as the X dimension of the images (larger positions are further right in the image)
+  - -1: The dimension is stored as the X dimension of the images (mirrored) (larger positions are further left in the image)
+  - 2: The dimension is stored as the Y dimension of the images (larger positions are further up in the image)
+  - -2: The dimension is stored as the Y dimension of the images (mirrored) (larger positions are further down in the image)
   - 3: The dimension is stored as the position in the list of images
   - -3: The dimension is stored as the position in the list of images (mirrored)
 

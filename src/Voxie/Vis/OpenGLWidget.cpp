@@ -213,59 +213,83 @@ void OpenGLDrawUtils::initialize() {
   }
   */
 
-  const char* vshader =
-      "#version 110\n"
-      "\n"
-      "attribute vec3 vertexPosition_modelspace;\n"
-      "attribute vec4 vertexColor;\n"
-      "\n"
-      "varying vec4 fragmentColor;\n"
-      "\n"
-      "uniform mat4 MVP;\n"
-      "\n"
-      "void main() {\n"
-      "    gl_Position = MVP * vec4(vertexPosition_modelspace,1);\n"
-      "    fragmentColor = vertexColor;\n"
-      "}\n";
-  if (!program.addShaderFromSourceCode(QOpenGLShader::Vertex, vshader)) {
+  // Simple shader
+
+  if (!programSimple.addShaderFromSourceFile(
+          QOpenGLShader::Vertex, ":/Voxie/Vis/Shader/SimpleShader.vs.glsl")) {
     throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                         "Compiling vertex shader failed");
   }
 
-  const char* fshader =
-      "#version 110\n"
-      "\n"
-      "varying vec4 fragmentColor;\n"
-      "\n"
-      "void main(){\n"
-      "\n"
-      "    gl_FragColor = fragmentColor;\n"
-      "\n"
-      "}\n";
-  if (!program.addShaderFromSourceCode(QOpenGLShader::Fragment, fshader)) {
+  if (!programSimple.addShaderFromSourceFile(
+          QOpenGLShader::Fragment, ":/Voxie/Vis/Shader/SimpleShader.fs.glsl")) {
     throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                         "Compiling fragment shader failed");
   }
 
-  if (!program.link()) {
+  if (!programSimple.link()) {
     throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                         "Linking shaders failed");
   }
 
-  MVP_ID = glGetUniformLocation(program.programId(), "MVP");
+  simple_MVP_ID = glGetUniformLocation(programSimple.programId(), "MVP");
 
-  vertexPosition_modelspaceID =
-      glGetAttribLocation(program.programId(), "vertexPosition_modelspace");
-  vertexColorID = glGetAttribLocation(program.programId(), "vertexColor");
+  simple_vertexPosition_modelspaceID = glGetAttribLocation(
+      programSimple.programId(), "vertexPosition_modelspace");
+  simple_vertexColorID =
+      glGetAttribLocation(programSimple.programId(), "vertexColor");
 
-  if (!program.bind()) {
+  if (!programSimple.bind()) {
     throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                         "Binding shaders failed");
   }
 
+  // Flat shader
+
+  if (!programFlat.addShaderFromSourceFile(
+          QOpenGLShader::Vertex, ":/Voxie/Vis/Shader/FlatShader.vs.glsl")) {
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Compiling vertex shader failed");
+  }
+
+  if (!programFlat.addShaderFromSourceFile(
+          QOpenGLShader::Fragment, ":/Voxie/Vis/Shader/FlatShader.fs.glsl")) {
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Compiling fragment shader failed");
+  }
+
+  if (!programFlat.link()) {
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Linking shaders failed");
+  }
+
+  flat_MVP_ID = glGetUniformLocation(programFlat.programId(), "MVP");
+  flat_M_ID = glGetUniformLocation(programFlat.programId(), "M");
+  flat_lightPositionID =
+      glGetUniformLocation(programFlat.programId(), "lightPosition");
+
+  flat_vertexPosition_modelspaceID =
+      glGetAttribLocation(programFlat.programId(), "vertexPosition_modelspace");
+  flat_vertexNormalID =
+      glGetAttribLocation(programFlat.programId(), "vertexNormal");
+  flat_vertexColorID =
+      glGetAttribLocation(programFlat.programId(), "vertexColor");
+
+  if (!programFlat.bind()) {
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Binding shaders failed");
+  }
+
+  // End of shaders
+
   if (!vertexbuffer.create()) {
     throw vx::Exception("de.uni_stuttgart.Voxie.Error",
                         "Vertex buffer create failed");
+  }
+
+  if (!normalbuffer.create()) {
+    throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                        "Normal buffer create failed");
   }
 
   if (!colorbuffer.create()) {
@@ -355,9 +379,27 @@ void OpenGLDrawUtils::PrimitiveBuffer::clear() {
   colors.clear();
 }
 
+// Like QVector3D::normalized(), but with a smaller minimum size
+// TODO: Is this needed here? Duplicate from src/PluginVis3D/Surface.cpp
+static QVector3D normalized(const QVector3D& value) {
+  double absSquared = double(value.x()) * double(value.x()) +
+                      double(value.y()) * double(value.y()) +
+                      double(value.z()) * double(value.z());
+  if (absSquared >= 1e-50) {  // minimum length 1e-25
+    double len = std::sqrt(absSquared);
+    return QVector3D(float(double(value.x()) / len),
+                     float(double(value.y()) / len),
+                     float(double(value.z()) / len));
+  } else {
+    return QVector3D();
+  }
+}
+
 void OpenGLDrawUtils::draw(GLenum mode, const std::vector<GLfloat>& vertices,
                            const std::vector<GLfloat>& colors,
-                           const QMatrix4x4& modelViewProjectionMatrix) {
+                           const QMatrix4x4& modelMatrix,
+                           const QMatrix4x4& modelViewProjectionMatrix,
+                           const QVector4D* lightPosition) {
   // Create new vao to make sure it is valid for the current context
   QOpenGLVertexArrayObject vao;
   if (!vao.create()) {
@@ -375,6 +417,46 @@ void OpenGLDrawUtils::draw(GLenum mode, const std::vector<GLfloat>& vertices,
                vertices.data(), GL_STATIC_DRAW);
   vertexbuffer.release();
 
+  if (lightPosition) {
+    if (mode != GL_TRIANGLES) {
+      qCritical() << "Attempt to draw with light in non-GL_TRIANGLES mode";
+      return;
+    }
+    if (vertices.size() % 9 != 0) {
+      qCritical() << "Number of vertices entries is not a multiple of 9";
+      return;
+    }
+    size_t count = vertices.size() / 9;
+
+    std::vector<GLfloat> normals(count * 9);
+    for (size_t i = 0; i < count; i++) {
+      size_t base = i * 9;
+      QVector3D v1(vertices[base + 0], vertices[base + 1], vertices[base + 2]);
+      QVector3D v2(vertices[base + 3], vertices[base + 4], vertices[base + 5]);
+      QVector3D v3(vertices[base + 6], vertices[base + 7], vertices[base + 8]);
+
+      // Calculate triangle normal
+      QVector3D normal = normalized(QVector3D::crossProduct(v2 - v3, v3 - v1));
+      // qDebug() << "Normal" << v1 << v2 << v3 << "=>" << normal;
+
+      // Fill in the normal for all three vertices
+      // TODO: Avoid this? Probably only needed for the controlling vertex.
+      for (size_t j = 0; j < 3; j++) {
+        normals[i * 9 + j * 3 + 0] = normal.x();
+        normals[i * 9 + j * 3 + 1] = normal.y();
+        normals[i * 9 + j * 3 + 2] = normal.z();
+      }
+    }
+
+    if (!normalbuffer.bind()) {
+      qCritical() << "Binding normal buffer failed";
+      return;
+    }
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float),
+                 normals.data(), GL_STATIC_DRAW);
+    normalbuffer.release();
+  }
+
   if (!colorbuffer.bind()) {
     qCritical() << "Binding color buffer failed";
     return;
@@ -383,52 +465,115 @@ void OpenGLDrawUtils::draw(GLenum mode, const std::vector<GLfloat>& vertices,
                GL_STATIC_DRAW);
   colorbuffer.release();
 
-  glUseProgram(program.programId());
+  if (lightPosition) {
+    // qDebug() << "Light position" << *lightPosition;
 
-  glUniformMatrix4fv(MVP_ID, 1, GL_FALSE,
-                     modelViewProjectionMatrix.constData());
+    glUseProgram(programFlat.programId());
 
-  // 1st attribute buffer : vertices
-  glEnableVertexAttribArray(vertexPosition_modelspaceID);
-  if (!vertexbuffer.bind()) {
-    qCritical() << "Binding vertex buffer failed";
-    return;
+    glUniformMatrix4fv(flat_M_ID, 1, GL_FALSE, modelMatrix.constData());
+    glUniformMatrix4fv(flat_MVP_ID, 1, GL_FALSE,
+                       modelViewProjectionMatrix.constData());
+    glUniform4f(flat_lightPositionID, lightPosition->x(), lightPosition->y(),
+                lightPosition->z(), lightPosition->w());
+
+    // 1st attribute buffer : vertices
+    glEnableVertexAttribArray(flat_vertexPosition_modelspaceID);
+    if (!vertexbuffer.bind()) {
+      qCritical() << "Binding vertex buffer failed";
+      return;
+    }
+    glVertexAttribPointer(flat_vertexPosition_modelspaceID,  // attribute
+                          3,                                 // size
+                          GL_FLOAT,                          // type
+                          GL_FALSE,                          // normalized?
+                          0,                                 // stride
+                          (void*)0  // array buffer offset
+    );
+
+    // 2nd attribute buffer : normals
+    glEnableVertexAttribArray(flat_vertexNormalID);
+    if (!normalbuffer.bind()) {
+      qCritical() << "Binding normal buffer failed";
+      return;
+    }
+    glVertexAttribPointer(flat_vertexNormalID,  // attribute
+                          3,                    // size
+                          GL_FLOAT,             // type
+                          GL_FALSE,             // normalized?
+                          0,                    // stride
+                          (void*)0              // array buffer offset
+    );
+
+    // 3rd attribute buffer : colors
+    glEnableVertexAttribArray(flat_vertexColorID);
+    if (!colorbuffer.bind()) {
+      qCritical() << "Binding color buffer failed";
+      return;
+    }
+    glVertexAttribPointer(flat_vertexColorID,  // attribute
+                          4,                   // size
+                          GL_FLOAT,            // type
+                          GL_FALSE,            // normalized?
+                          0,                   // stride
+                          (void*)0             // array buffer offset
+    );
+  } else {
+    glUseProgram(programSimple.programId());
+
+    glUniformMatrix4fv(simple_MVP_ID, 1, GL_FALSE,
+                       modelViewProjectionMatrix.constData());
+
+    // 1st attribute buffer : vertices
+    glEnableVertexAttribArray(simple_vertexPosition_modelspaceID);
+    if (!vertexbuffer.bind()) {
+      qCritical() << "Binding vertex buffer failed";
+      return;
+    }
+    glVertexAttribPointer(simple_vertexPosition_modelspaceID,  // attribute
+                          3,                                   // size
+                          GL_FLOAT,                            // type
+                          GL_FALSE,                            // normalized?
+                          0,                                   // stride
+                          (void*)0  // array buffer offset
+    );
+
+    // 2nd attribute buffer : colors
+    glEnableVertexAttribArray(simple_vertexColorID);
+    if (!colorbuffer.bind()) {
+      qCritical() << "Binding color buffer failed";
+      return;
+    }
+    glVertexAttribPointer(simple_vertexColorID,  // attribute
+                          4,                     // size
+                          GL_FLOAT,              // type
+                          GL_FALSE,              // normalized?
+                          0,                     // stride
+                          (void*)0               // array buffer offset
+    );
   }
-  glVertexAttribPointer(vertexPosition_modelspaceID,  // attribute
-                        3,                            // size
-                        GL_FLOAT,                     // type
-                        GL_FALSE,                     // normalized?
-                        0,                            // stride
-                        (void*)0                      // array buffer offset
-  );
-
-  // 2nd attribute buffer : colors
-  glEnableVertexAttribArray(vertexColorID);
-  if (!colorbuffer.bind()) {
-    qCritical() << "Binding color buffer failed";
-    return;
-  }
-  glVertexAttribPointer(vertexColorID,  // attribute
-                        4,              // size
-                        GL_FLOAT,       // type
-                        GL_FALSE,       // normalized?
-                        0,              // stride
-                        (void*)0        // array buffer offset
-  );
 
   glDrawArrays(mode, 0, vertices.size() / 3);
 
-  glDisableVertexAttribArray(vertexPosition_modelspaceID);
-  glDisableVertexAttribArray(vertexColorID);
+  if (lightPosition) {
+    glDisableVertexAttribArray(flat_vertexPosition_modelspaceID);
+    glDisableVertexAttribArray(flat_vertexNormalID);
+    glDisableVertexAttribArray(flat_vertexColorID);
+  } else {
+    glDisableVertexAttribArray(simple_vertexPosition_modelspaceID);
+    glDisableVertexAttribArray(simple_vertexColorID);
+  }
 
   vao.release();
 }
 
 void OpenGLDrawUtils::draw(const PrimitiveBuffer& buffer,
-                           const QMatrix4x4& modelViewProjectionMatrix) {
+                           const QMatrix4x4& modelMatrix,
+                           const QMatrix4x4& modelViewProjectionMatrix,
+                           const QVector4D* lightPosition) {
   if (buffer.vertices.size() == 0) return;
 
-  draw(buffer.mode, buffer.vertices, buffer.colors, modelViewProjectionMatrix);
+  draw(buffer.mode, buffer.vertices, buffer.colors, modelMatrix,
+       modelViewProjectionMatrix, lightPosition);
 }
 
 OpenGLDrawWidget::OpenGLDrawWidget(QWidget* parent)
@@ -451,6 +596,8 @@ QString OpenGLDrawWidget::initialize() {
 }
 
 void OpenGLDrawWidget::draw(const PrimitiveBuffer& buffer,
-                            const QMatrix4x4& modelViewProjectionMatrix) {
-  utils->draw(buffer, modelViewProjectionMatrix);
+                            const QMatrix4x4& modelMatrix,
+                            const QMatrix4x4& modelViewProjectionMatrix,
+                            const QVector4D* lightPosition) {
+  utils->draw(buffer, modelMatrix, modelViewProjectionMatrix, lightPosition);
 }

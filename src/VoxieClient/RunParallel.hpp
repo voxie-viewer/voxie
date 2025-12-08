@@ -104,7 +104,8 @@ void runParallelStaticPrepare(Task* task, CancellationToken* cancellationToken,
         if (task) {
           QMutexLocker locker(&mutex);
           finishedItems += 1;
-          vx::Intern::runParallelSetProgress(task, 1.0 * finishedItems / itemCount);
+          vx::Intern::runParallelSetProgress(task,
+                                             1.0 * finishedItems / itemCount);
         }
       }
     });
@@ -127,7 +128,8 @@ void runParallelStatic(Task* task, CancellationToken* cancellationToken,
       if (task) {
         QMutexLocker locker(&mutex);
         finishedItems += 1;
-        vx::Intern::runParallelSetProgress(task, 1.0 * finishedItems / itemCount);
+        vx::Intern::runParallelSetProgress(task,
+                                           1.0 * finishedItems / itemCount);
       }
     }
   });
@@ -177,7 +179,8 @@ void runParallelDynamicPrepare(Task* task, CancellationToken* cancellationToken,
 
               if (itemDone) {
                 finishedItems += 1;
-                vx::Intern::runParallelSetProgress(task, 1.0 * finishedItems / itemCount);
+                vx::Intern::runParallelSetProgress(
+                    task, 1.0 * finishedItems / itemCount);
               }
 
               // If another thread failed, stop now

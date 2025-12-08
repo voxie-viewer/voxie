@@ -843,15 +843,18 @@ void Surface::render(const QSharedPointer<Object3DPerShareGroup>& perShareGroup,
                           dataCenter + QVector3D(0.0f, 0.0f, size.z()));
   }
 
-  psg->drawUtils->draw(drawingBuffer, viewProj);
+  psg->drawUtils->draw(drawingBuffer, QMatrix4x4(), viewProj);
 
   if (properties->drawBoundingBox()) {
-    QMatrix4x4 matrix = viewProj;
-    matrix.translate(surface->getAdjustedPosition());
-    matrix.rotate(surface->getAdjustedRotation());
+    QMatrix4x4 modelMatrix;
+    QMatrix4x4 viewProjMatrix = viewProj;
+    modelMatrix.translate(surface->getAdjustedPosition());
+    viewProjMatrix.translate(surface->getAdjustedPosition());
+    modelMatrix.rotate(surface->getAdjustedRotation());
+    viewProjMatrix.rotate(surface->getAdjustedRotation());
     OpenGLDrawWidget::PrimitiveBuffer drawingBuffer2;
     drawBoundingBox(drawingBuffer2, surface);
-    psg->drawUtils->draw(drawingBuffer2, matrix);
+    psg->drawUtils->draw(drawingBuffer2, modelMatrix, viewProjMatrix);
   }
 }
 

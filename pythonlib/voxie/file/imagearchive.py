@@ -1,4 +1,3 @@
-import csv
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,18 +19,11 @@ import csv
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+import csv
 import numpy as np
 
-typeNameMap = {
-    "float": "f",
-    "uint": "u",
-    "int": "i",
-}
-endianMap = {
-    "none": "|",
-    "little": "<",
-    "big": ">",
-}
+import voxie.data_types
 
 
 class ImageArchive:
@@ -78,7 +70,7 @@ class ImageArchive:
         if bitsPerPixel % 8 != 0:
             raise 'bitsPerPixel % 8 != 0'
         bytesPerPixel = bitsPerPixel // 8
-        dtype = endianMap[info['TypeEndian']] + typeNameMap[info['TypeName']] + str(bytesPerPixel)
+        dtype = voxie.data_types.endianness_to_numpy[info['TypeEndian']] + voxie.data_types.base_type_to_numpy[info['TypeName']] + str(bytesPerPixel)
         size = width * height * bytesPerPixel
         # print(size)
         with open(self.filename, 'rb') as file:
@@ -89,3 +81,6 @@ class ImageArchive:
         array = np.ndarray((width, height), dtype=dtype, strides=(bytesPerPixel, bytesPerPixel * width), buffer=data, offset=0)
         array = array[:, ::-1]  # Mirror Y axis
         return array
+
+    def getInfo(self, id):
+        return self.info[id]

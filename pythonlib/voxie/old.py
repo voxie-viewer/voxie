@@ -1,4 +1,3 @@
-import sys
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,6 +19,8 @@ import sys
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+import sys
 import voxie
 from voxie.buffer import Buffer
 import dbus

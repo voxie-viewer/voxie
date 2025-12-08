@@ -64,8 +64,10 @@ class SelectWindow : public QDialog {
    * Only if the displayed name of a node contains the entered text in the
    * searchBox, the node is shown. The nodes are filtered whenever the text
    * in the searchBox is changed and the magnifier icon is cicked.
+   *
+   * Returns index of first show node or -1 otherwise.
    */
-  void filterNodes();
+  int filterNodes();
 
  private:
   QSet<int> getFilteredNodes(const QString& searchText, bool showNonApplicable,

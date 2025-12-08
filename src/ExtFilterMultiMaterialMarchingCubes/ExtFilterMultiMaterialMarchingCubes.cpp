@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
                                           std::cref(volumeData));
         filter.run();
 
-        volume_version = createQSharedPointer<
+        volume_version = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(update->Finish(

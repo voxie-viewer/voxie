@@ -63,7 +63,7 @@ void PropertyUI::init() {
     for (const auto& dep : deps) {
       connect(node(), &Node::propertyChanged, this,
               [this, dep](const QSharedPointer<NodeProperty>& property,
-                          const QVariant& value) {
+                          const vx::Any& value) {
                 Q_UNUSED(value);
                 if (property != dep) return;
                 Node* obj2 = this->node();

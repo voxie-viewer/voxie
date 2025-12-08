@@ -28,6 +28,8 @@ build-linux-12:
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh"
+    - "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-dbus python3-pil"
+    - "tools/run-tests --use-release"
 
   artifacts:
     paths:
@@ -44,6 +46,8 @@ build-linux-12-nointern:
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh --no-intern"
+    - "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-dbus python3-pil"
+    - "tools/run-tests --use-release"
 
 
 build-linux-11:
@@ -57,6 +61,8 @@ build-linux-11:
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh"
+    - "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-dbus python3-pil"
+    - "tools/run-tests --use-release"
 
   artifacts:
     paths:
@@ -74,6 +80,8 @@ build-linux-2004:
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh --unpack-meson"
+    - "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-dbus python3-pil"
+    - "tools/run-tests --use-release"
 
   artifacts:
     paths:
@@ -103,6 +111,8 @@ build-linux-2004-nointern:
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh --unpack-meson --no-intern"
+    - "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-dbus python3-pil"
+    - "tools/run-tests --use-release"
 
 
 build-linux-1804:
@@ -116,6 +126,8 @@ build-linux-1804:
   script:
     - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev qtwebengine5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-pycodestyle python3-numpy python3-scipy python3-pyqt5 ca-certificates git"
     - "tools/create-release.sh --unpack-meson"
+    - "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-dbus python3-pil"
+    - "tools/run-tests --use-release"
 
   artifacts:
     paths:
@@ -135,8 +147,11 @@ build-linux-1604:
       - voxie*.tar.gz
 
   script:
-    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-numpy python3-scipy python3-pyqt5 ca-certificates git unzip
-    - tools/create-release.sh --unpack-meson --unpack-ninja --disable-help-browser
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential meson ninja-build pkg-config libqt5opengl5-dev libqt5x11extras5-dev opencl-headers libhdf5-dev libboost-all-dev liblapacke-dev python3-numpy python3-scipy python3-pyqt5 ca-certificates git unzip"
+    - "tools/create-release.sh --unpack-meson --unpack-ninja --disable-help-browser"
+    # The python version in Ubuntu 16.04 is too old (e.g. for f'' strings which are used in src/Test/Projects/run.py)
+    # - "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-dbus python3-pil"
+    # - "tools/run-tests --use-release"
 
 
 build-windows-10:
@@ -146,6 +161,7 @@ build-windows-10:
     - windows-10
 
   script: "powershell -ExecutionPolicy Unrestricted .\\tools\\build-windows.ps1"
+  # TODO: Run tests
 
   artifacts:
     paths:
@@ -165,7 +181,15 @@ build-macos:
   tags:
     - macosx
 
-  script: 'PATH="/opt/Qt5.14.2/5.14.2/clang_64/bin:$PATH" QT_VERSION=5.14.2 tools/create-release-mac.sh --disable-hdf5 --disable-lapack'
+  script:
+    - 'PATH="/opt/Qt5.14.2/5.14.2/clang_64/bin:$PATH" QT_VERSION=5.14.2 tools/create-release-mac.sh --disable-hdf5 --disable-lapack'
+    # TODO: Make this work
+    # - "tools/run-tests --use-release"
+    # Running test vxvol...
+    # dyld: Library not loaded: @rpath/QtCore.framework/Versions/5/QtCore
+    #     Referenced from: /Users/gitlab-runner/builds/2xz7vXF_/0/kiesssn/voxie-intern/build/src/Main/voxie
+    #   Reason: image not found
+    # Test vxvol failed with returncode -6
 
   artifacts:
     paths:

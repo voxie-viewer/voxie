@@ -86,7 +86,7 @@ class VOXIECLIENT_EXPORT DebugOptionFloat : public DebugOption {
 
  public:
   DebugOptionFloat(const char* name, double initialValue)
-      : DebugOption(name), valueAtomic(initialValue ? 1 : 0) {}
+      : DebugOption(name), valueAtomic(initialValue) {}
   double get() { return valueAtomic.load(); }
   void set(double value);
 

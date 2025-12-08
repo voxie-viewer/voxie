@@ -263,7 +263,7 @@ int main(int argc, char* argv[]) {
               "Unknown filter prototype name: '" + filterName + "'");
         }
 
-        srf2_version = createQSharedPointer<
+        srf2_version = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(update->Finish(

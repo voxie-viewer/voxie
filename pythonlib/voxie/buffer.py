@@ -1,4 +1,3 @@
-import os
 #
 # Copyright (c) 2014-2022 The Voxie Authors
 #
@@ -20,25 +19,14 @@ import os
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+import os
 import numpy
 import mmap
 import voxie
 import voxie.json_dbus
 import voxie.json_util
-
-typeNameMap = {
-    "float": "f",
-    "uint": "u",
-    "int": "i",
-    "bool": "b",
-}
-endianMap = {
-    "none": "|",
-    "little": "<",
-    "big": ">",
-    # TODO: ?
-    "native": "",
-}
+import voxie.data_types
 
 # TODO: Remove when all scripts are switched to new interface
 
@@ -65,7 +53,7 @@ class BufferTypePrimitive(BufferTypeBase):
 
         if self.typeSize < 0 or int(self.typeSize) % 8 != 0:
             raise Exception('Invalid size')
-        self.dtype = numpy.dtype(endianMap[self.typeEndian] + typeNameMap[self.typeName] + str(int(self.typeSize) // 8))
+        self.dtype = numpy.dtype(voxie.data_types.endianness_to_numpy[self.typeEndian] + voxie.data_types.base_type_to_numpy[self.typeName] + str(int(self.typeSize) // 8))
         # print (self.dtype)
 
         self.start_byte = 0
@@ -256,8 +244,8 @@ class Buffer(object):
 
             if int(self.typeSize) % 8 != 0:
                 raise Exception('Invalid size')
-            self.dtype = endianMap[self.typeEndian] + \
-                typeNameMap[self.typeName] + str(int(self.typeSize) // 8)
+            self.dtype = voxie.data_types.endianness_to_numpy[self.typeEndian] + \
+                voxie.data_types.base_type_to_numpy[self.typeName] + str(int(self.typeSize) // 8)
             # print (dtype)
 
             bytes = int(self.offset)

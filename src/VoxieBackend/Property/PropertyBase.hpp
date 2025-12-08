@@ -24,6 +24,8 @@
 
 #include <VoxieBackend/VoxieBackend.hpp>
 
+#include <VoxieClient/Any.hpp>
+
 #include <VoxieClient/ObjectExport/ExportedObject.hpp>
 
 #include <QtCore/QList>
@@ -56,7 +58,7 @@ class VOXIEBACKEND_EXPORT PropertyBase : public vx::RefCountedObject {
   QList<QString> compatibilityNames_;
   QString shortDescription_;
 
-  QVariant defaultValue_;
+  vx::Any defaultValue_;
   bool hasExplicitDefaultValue_;
 
   QList<EnumEntry> enumEntries_;
@@ -97,7 +99,7 @@ class VOXIEBACKEND_EXPORT PropertyBase : public vx::RefCountedObject {
   /**
    * @brief Return the default value for the property.
    */
-  const QVariant& defaultValue() const { return defaultValue_; }
+  const vx::Any& defaultValue() const { return defaultValue_; }
 
   /**
    * @brief True if the default value for this property was set explicitly.

@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
           }
         }
 
-        srf_version = createQSharedPointer<
+        srf_version = vx::createQSharedPointer<
             vx::RefObjWrapper<de::uni_stuttgart::Voxie::DataVersion>>(
             dbusClient,
             HANDLEDBUSPENDINGREPLY(update->Finish(

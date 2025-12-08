@@ -28,7 +28,11 @@
 #include "Utilities.hpp"
 
 #include <VoxieClient/DBusAdaptors.hpp>
+#include <VoxieClient/DBusVariant.hpp>
+#include <VoxieClient/ToString.hpp>
 
+#include <VoxieBackend/Data/Buffer.hpp>
+#include <VoxieBackend/Data/BufferType.hpp>
 #include <VoxieBackend/Data/ImageDataPixel.hpp>
 #include <VoxieBackend/Data/ImageDataPixelInst.hpp>
 #include <VoxieBackend/Data/InterpolationMethod.hpp>
@@ -48,6 +52,13 @@ class UtilitiesAdaptorImpl : public UtilitiesAdaptor {
       : UtilitiesAdaptor(object), object(object) {}
   ~UtilitiesAdaptorImpl() {}
 
+  void ExtractLine(const QDBusObjectPath& volume,
+                   const vx::TupleVector<double, 3>& startPoint,
+                   const vx::TupleVector<double, 3>& endPoint,
+                   const QDBusObjectPath& outputBuffer,
+                   quint64 outputBufferOffset, quint64 outputBufferCount,
+                   const QMap<QString, QDBusVariant>& options) override;
+
   void ExtractSlice(const QDBusObjectPath& volume,
                     const vx::TupleVector<double, 3>& origin,
                     const vx::TupleVector<double, 4>& rotation,
@@ -59,6 +70,9 @@ class UtilitiesAdaptorImpl : public UtilitiesAdaptor {
   QList<std::tuple<quint64, double>> DebugFindMatchingSpectrums(
       const QDBusObjectPath& dimension, double start, double end,
       const QMap<QString, QDBusVariant>& options) override;
+
+  QDBusVariant DebugReturnValue(qint32 mode,
+                                const QDBusVariant& value) override;
 };
 
 Utilities::Utilities(Root* root)
@@ -66,6 +80,61 @@ Utilities::Utilities(Root* root)
   new UtilitiesAdaptorImpl(this);
 }
 Utilities::~Utilities() {}
+
+void UtilitiesAdaptorImpl::ExtractLine(
+    const QDBusObjectPath& volume, const vx::TupleVector<double, 3>& startPoint,
+    const vx::TupleVector<double, 3>& endPoint,
+    const QDBusObjectPath& outputBuffer, quint64 outputBufferOffset,
+    quint64 outputBufferCount, const QMap<QString, QDBusVariant>& options) {
+  try {
+    vx::ExportedObject::checkOptions(options, "Interpolation");
+
+    auto volumeObj = vx::VolumeData::lookup(volume);
+
+    // TODO: Move code vor Interpolation option somewhere else
+    InterpolationMethod interpolation = vx::InterpolationMethod::Linear;
+    if (ExportedObject::hasOption(options, "Interpolation")) {
+      auto interpolationVal =
+          ExportedObject::getOptionValue<QString>(options, "Interpolation");
+      if (interpolationVal == "NearestNeighbor")
+        interpolation = vx::InterpolationMethod::NearestNeighbor;
+      else if (interpolationVal == "Linear")
+        interpolation = vx::InterpolationMethod::Linear;
+      else
+        throw vx::Exception("de.uni_stuttgart.Voxie.InvalidOptionValue",
+                            "Invalid value for 'Interpolation' option");
+    }
+
+    auto outputBufferObj = vx::Buffer::lookup(outputBuffer);
+
+    // TODO: support other types
+    auto array = outputBufferObj->asArray1<Float32Buffer>();
+
+    if (outputBufferOffset > std::numeric_limits<size_t>::max())
+      throw Exception("de.uni_stuttgart.Voxie.Overflow",
+                      "outputBufferOffset parameter too large");
+    size_t outputBufferOffsetS = outputBufferOffset;
+    if (outputBufferCount > std::numeric_limits<size_t>::max())
+      throw Exception("de.uni_stuttgart.Voxie.Overflow",
+                      "outputBufferCount parameter too large");
+    size_t outputBufferCountS = outputBufferCount;
+
+    if (outputBufferOffsetS + outputBufferCountS < outputBufferOffsetS)
+      throw Exception(
+          "de.uni_stuttgart.Voxie.Overflow",
+          "outputBufferOffset + outputBufferCount parameters too large");
+
+    if (outputBufferOffsetS + outputBufferCountS > array.size<0>())
+      throw Exception("de.uni_stuttgart.Voxie.InvalidArgument",
+                      "outputBuffer array too small");
+
+    volumeObj->extractLine(toVector(startPoint), toVector(endPoint),
+                           interpolation, array, outputBufferOffset,
+                           outputBufferCount);
+  } catch (vx::Exception& e) {
+    e.handle(object);
+  }
+}
 
 void UtilitiesAdaptorImpl::ExtractSlice(
     const QDBusObjectPath& volume, const vx::TupleVector<double, 3>& origin,
@@ -129,6 +198,32 @@ UtilitiesAdaptorImpl::DebugFindMatchingSpectrums(
     QList<std::tuple<quint64, double>> res;
     for (const auto& r : result) res.append(std::make_tuple(r.key, r.weight));
     return res;
+  } catch (vx::Exception& e) {
+    return e.handle(object);
+  }
+}
+
+QDBusVariant UtilitiesAdaptorImpl::DebugReturnValue(qint32 mode,
+                                                    const QDBusVariant& value) {
+  try {
+    qDebug() << "Mode=" << mode;
+    // qDebug() << value.variant().userType() << qMetaTypeId<QDBusArgument>();
+    // qDebug() << "GOT" << value;
+
+    if (mode == 0) {
+      return value;
+    } else if (mode == 1) {
+      auto variant = DBusVariant::fromQDBusVariant(value);
+      qDebug() << toString(variant);
+      return value;
+    } else if (mode == 2) {
+      auto variant = DBusVariant::fromQDBusVariant(value);
+      qDebug() << toString(variant);
+      return variant.asQDBusVariant();
+    } else {
+      throw vx::Exception("de.uni_stuttgart.Voxie.Error",
+                          "Unexpected mode value");
+    }
   } catch (vx::Exception& e) {
     return e.handle(object);
   }

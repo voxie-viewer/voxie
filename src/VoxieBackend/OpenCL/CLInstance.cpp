@@ -24,7 +24,7 @@
 
 #include <QtCore/QDebug>
 
-#include <VoxieClient/QtUtil.hpp>
+#include <VoxieClient/QtCollections.hpp>
 
 using namespace vx::opencl;
 using namespace vx;

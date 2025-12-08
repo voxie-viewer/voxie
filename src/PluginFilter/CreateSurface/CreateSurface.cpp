@@ -139,22 +139,19 @@ void CreateSurface::updateSurface(
   operation->emitFinished();
 }
 
-QVariant CreateSurface::getNodePropertyCustom(QString key) {
+vx::Any CreateSurface::getNodePropertyCustom(QString key) {
   // TODO nils konstante
   if (key == "de.uni_stuttgart.Voxie.Filter.CreateSurface.Algorithm") {
-    return QVariant(this->algorithmInput->currentText());
+    return vx::make_any<QString>(this->algorithmInput->currentText());
   } else {
     return Node::getNodePropertyCustom(key);
   }
 }
 
-void CreateSurface::setNodePropertyCustom(QString key, QVariant value) {
+void CreateSurface::setNodePropertyCustom(QString key, vx::Any value) {
   if (key == "de.uni_stuttgart.Voxie.Filter.CreateSurface.Algorithm") {
-    if ((QMetaType::Type)value.type() != QMetaType::QString) {
-      throw vx::Exception("de.uni_stuttgart.Voxie.Error",
-                          "Wrong type for algorithm value. String needed.");
-    }
-    auto index = this->algorithmInput->findText(value.toString());
+    auto index =
+        this->algorithmInput->findText(Node::parseVariant<QString>(value));
     if (index != -1) {
       this->algorithmInput->setCurrentIndex(index);
     }

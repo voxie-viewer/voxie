@@ -1,0 +1,15 @@
+{
+    "Type": "de.uni_stuttgart.Voxie.FileFormat.Volume.VxVol",
+    "VolumeType": "Voxel",
+    "DataType": [ "uint", 8, "none" ],
+    "ArrayShape": [ 4, 3, 2 ],
+    "GridSpacing": [ 1.5, 2.5, 3.5 ],
+    "VolumeOrigin": [ -10.5, -20.5, -30.5 ],
+    "DataSourceType": "ZippedImages",
+    "DataSource": {
+        "DataFilename": "images.zip",
+        "FirstImageIndex": 1,
+        "ImageFilePattern": "images/testarray_24_{:04}.tif",
+        "StorageOrder": [3, 2, 1]
+    }
+}

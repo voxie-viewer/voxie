@@ -32,6 +32,7 @@
 #include <QtDBus/QDBusServer>
 
 namespace vx {
+class DBusClient;
 class ExportedObject;
 
 class VOXIECLIENT_EXPORT DBusService : public QObject {
@@ -111,6 +112,10 @@ class VOXIECLIENT_EXPORT BusManager : public QObject {
       const QDBusConnection& connection);
 
   bool haveNonSingletonObjects();
+
+  // Set up a client to allow exporting objects (bus or p2p)
+  // This will add the client's connection to the BusManager.
+  void setupClient(DBusClient& client);
 
  Q_SIGNALS:
   // This will be emitted when haveNonSingletonObjects() was true and changes

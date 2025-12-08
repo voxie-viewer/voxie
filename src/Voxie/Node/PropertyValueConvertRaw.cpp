@@ -31,6 +31,7 @@
 #include <Voxie/Data/Color.hpp>
 #include <Voxie/Data/ColorizerEntry.hpp>
 #include <Voxie/Data/PiecewisePolynomialFunction.hpp>
+#include <Voxie/Data/TensorComponent.hpp>
 
 #include <VoxieBackend/Data/DataType.hpp>
 
@@ -289,5 +290,17 @@ PropertyValueConvertRaw<
                QList<QList<double>>>,
     PiecewisePolynomialFunction>::toRaw(const PiecewisePolynomialFunction&
                                             cooked) {
+  return cooked.toRaw();
+}
+
+TensorComponent PropertyValueConvertRaw<
+    std::tuple<QList<quint32>, QList<quint32>>,
+    TensorComponent>::fromRaw(const std::tuple<QList<quint32>, QList<quint32>>&
+                                  raw) {
+  return TensorComponent::parse(raw);
+}
+std::tuple<QList<quint32>, QList<quint32>>
+PropertyValueConvertRaw<std::tuple<QList<quint32>, QList<quint32>>,
+                        TensorComponent>::toRaw(const TensorComponent& cooked) {
   return cooked.toRaw();
 }

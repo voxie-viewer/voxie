@@ -44,12 +44,15 @@ class PropertyTypeAdaptorImpl : public PropertyTypeAdaptor {
   QDBusSignature dBusSignature() const override {
     return object->dbusSignature();
   }
+  QString dBusVariantStyle() const override {
+    return object->dbusVariantStyle();
+  }
 };
 }  // namespace
 }  // namespace vx
 
 PropertyType::PropertyType(const QString& name, const QString& displayName,
-                           const QVariant& defaultValue)
+                           const vx::Any& defaultValue)
     // TODO: Pass json? (e.g. for TroveClassifiers)
     : Component(ComponentTypeInfo<PropertyType>::name(), name, {}),
       name_(name),

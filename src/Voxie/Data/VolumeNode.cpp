@@ -63,9 +63,9 @@ VolumeNode::VolumeNode()
   });
 
   QObject::connect(properties, &VolumeProperties::rotationChanged, this,
-                   &VolumeNode::rotationChanged);
+                   &MovableDataNode::rotationChanged);
   QObject::connect(properties, &VolumeProperties::translationChanged, this,
-                   &VolumeNode::translationChanged);
+                   &MovableDataNode::translationChanged);
 
   // TODO: This should only be triggered if the bounding box actually changes
   QObject::connect(this, &DataNode::dataChangedFinished, this,

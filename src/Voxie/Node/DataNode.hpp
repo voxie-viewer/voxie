@@ -45,7 +45,7 @@ class VOXIECORESHARED_EXPORT DataNode : public vx::Node {
 
   QList<QSharedPointer<NodeTag>> tags;
   QSharedPointer<vx::io::Importer> importer_;
-  QMap<QString, QVariant> importProperties_;
+  QMap<QString, vx::Any> importProperties_;
 
  public:
   /**
@@ -67,12 +67,10 @@ class VOXIECORESHARED_EXPORT DataNode : public vx::Node {
 
   const QFileInfo& getFileInfo() const { return this->fileInfo; }
   const QSharedPointer<vx::io::Importer>& importer() { return importer_; }
-  const QMap<QString, QVariant>& importProperties() {
-    return importProperties_;
-  }
+  const QMap<QString, vx::Any>& importProperties() { return importProperties_; }
   void setFileInfo(const QFileInfo& fileInfo,
                    const QSharedPointer<vx::io::Importer>& importer,
-                   const QMap<QString, QVariant>& importProperties);
+                   const QMap<QString, vx::Any>& importProperties);
 
   QList<QSharedPointer<NodeTag>>& getTags() { return tags; }
 

@@ -158,11 +158,11 @@ class VOXIECORESHARED_EXPORT PropertyConditionIsEmpty
 class VOXIECORESHARED_EXPORT PropertyConditionHasValue
     : public PropertyCondition {
   QWeakPointer<vx::NodeProperty> property_;
-  QList<QVariant> values_;
+  QList<vx::Any> values_;
 
  public:
   PropertyConditionHasValue(const QWeakPointer<vx::NodeProperty>& property,
-                            const QList<QVariant>& values);
+                            const QList<vx::Any>& values);
   ~PropertyConditionHasValue();
 
   bool evaluate(vx::Node* obj) override;
@@ -171,7 +171,7 @@ class VOXIECORESHARED_EXPORT PropertyConditionHasValue
 
   // TODO: return QSharedPointer<>?
   const QWeakPointer<vx::NodeProperty>& property() const { return property_; }
-  const QList<QVariant>& values() const { return values_; }
+  const QList<vx::Any>& values() const { return values_; }
 
   static QSharedPointer<PropertyConditionHasValue> parseChild(
       const QSharedPointer<vx::NodePrototype>& prototype,

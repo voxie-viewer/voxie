@@ -60,7 +60,7 @@ is a future for the operation result (and is exported over DBus)
 
 namespace vx {
 class OperationResult;
-  
+
 namespace io {
 class VOXIEBACKEND_EXPORT Operation : public vx::RefCountedObject {
   Q_OBJECT

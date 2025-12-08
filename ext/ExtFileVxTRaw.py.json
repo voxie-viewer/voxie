@@ -5,7 +5,8 @@
             "DisplayName": "Voxie Tomography Raw Data JSON",
             "Description": "Load tomography raw data from JSON file",
             "Patterns": [
-                "*.vxtraw.json"
+                "*.vxtraw.json",
+                "*.vxtraw"
             ]
         }
     ]
